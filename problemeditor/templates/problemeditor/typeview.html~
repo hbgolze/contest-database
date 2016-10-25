@@ -1,0 +1,32 @@
+{% extends "./base.html" %}
+
+{% block title %}Choose a Category{% endblock %}
+
+{% block content %}
+<h2>Problem Editor</h2>
+Please select a test category.
+<div class="content">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Test Category</th>
+        <th>Number of Untagged Problems</th>
+	<th>Number of Problems with no Solution</th>
+	<th>Number of Problems</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for type,untagged,unsolution,num in rows %}
+      
+      <tr>
+        <td><a href="type/{{type}}">{{type}}</a></td>
+        <td> {{untagged}}</td>
+        <td>{{unsolution}}</td>
+        <td>{{num}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

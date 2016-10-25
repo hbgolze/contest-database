@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load staticfiles %}
+<head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
+    <title>{% block title %}Random Contest{% endblock %}</title>
+
+</head>
+
+<body>
+    <div class="page-header">
+{% if user.is_authenticated %}
+<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>)</small></p>
+    {% else %}
+        <p><small><a href="{% url 'login' %}" class="top-menu">Login</a></small></p>
+    {% endif %}
+    <h1>Random AMC 8/10/12/AIME/USAMO Test Creator</h1>
+    </div>
+{% if user.is_authenticated %}
+<div class="navig">
+<ul class="nav nav-tabs">
+  <li role="presentation" class="{% if nbar == 'viewmytests' %}active{% endif %}"><a href="/">View My Tests</a></li>
+  <li role="presentation" class="{% if nbar == 'problemeditor' %}active{% endif %}"><a href="/problemeditor/">Problem Editor</a></li>
+  <li role="presentation" class="{% if nbar == 'newtest' %}active{% endif %}"><a href="/createtest/">New Test</a></li>
+</ul>
+</div>
+{% endif %}
+<div class="content">
+  {% block content %}
+    
+  {% endblock %}
+</div>
+
+</body>
+</html>
+
+
+
+

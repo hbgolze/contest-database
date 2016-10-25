@@ -1,0 +1,15 @@
+{% extends './base.html' %}
+
+<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
+<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
+{% block title %}Problem: {{form.instance.label}}{% endblock %}
+
+{% block content %}
+    <h2>Edit Problem</h2>
+    <form method="POST" class="post-form">{% csrf_token %}
+      {{dropboxurl}}
+      <img src="{{dropboxurl}}{{ form.instance.label }}j.jpg" /> <br>
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+{% endblock %}

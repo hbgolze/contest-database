@@ -1,0 +1,42 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>{{test.name}}</h2>
+<input type="hidden" name="startform" value="{{pk}}">
+
+
+<pre><code>
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
+\begin{document}
+\begin{enumerate}
+{% for problemcode in rows %}
+\item {{problemcode}}
+{% endfor %}
+\end{enumerate}
+\end{document}
+</pre>
+</code>
+{% endblock %}

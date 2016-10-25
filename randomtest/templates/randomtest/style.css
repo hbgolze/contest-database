@@ -1,0 +1,8 @@
+body { font: 14px/1.3 verdana, arial, helvetica, sans-serif; }
+h1 { font-size:1.3em; }
+h2 { font-size:1.2em; }
+a:link { color:#33c; }
+a:visited { color:#339; }
+p { max-width: 60em; }
+
+a img { border:none; }

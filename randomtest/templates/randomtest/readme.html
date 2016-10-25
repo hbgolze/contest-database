@@ -1,0 +1,31 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>How to Create a Test</h2>
+To create a test, select the categories from which you wish to draw problems. If desired, you can specify the range of problem numbers, say "10 to 15" (if you don't do this, it will draw from all possible problem numbers).
+
+<h2>Initializing the Test</h2>
+<ul>
+<li>Tags and their counts are listed at the bottom of the Test Creator page.</li>
+<li>To draw problems with a particular tag, type that tag into the "Desired Tag" field (tags are case sensitive).</li>
+<li>Using tags like 2000AIMEI or 2009AMC10A will select problems from those particular tests. One can also ask for specific problems like 2000AIMEI12.</li>
+<li>To draw problems that match both of two tags, type tag1&amp;tag2 into the "Desired Tag" field.</li>
+<li>To draw problems that match one (or more) of two tags, type tag1|tag2 into the "Desired Tag" field.</li>
+<li>If the "Desired Tag" field is left blank, it will draw from all problems in the specified test categories.</li>
+</ul>
+If desired, specify the number of problems. If this field is left blank, then the test creator will simply select 10 random problems (or as many as it can if fewer than 10 problems match the specified tags).
+
+<h2>Editing the Test</h2>
+<p>
+After pressing "New Test," the random problem images should display, and you can take the test. From "View My Tests", you can also edit the test problems.
+<ul>
+<li>Use the checkboxes to the left of the problem to omit problems from the final version of the test. </li>
+<li>To remove the images of problems that you have deselected, press "Remove Unselected Problems."</li>
+<li> If desired, you can add more problems using the fields below the problem images (Feature to be added).
+</ul>
+</p>
+<h2>Sharing the Test</h2>
+<p>You can share the customized test with other users by sharing the url used when viewing the test. </p>
+<p>This site generates the LaTeX code to the random test, should you wish to create a printer-friendly version. This requires use of the LaTeX typesetting system (and the Asymptote vector graphics language if the problems have images). To create the actual pdf, one can use <a href="https://www.overleaf.com">Overleaf</a>. Once you have an account, you can create a new document and copy the code from the Test Creator into the document. If it has errors compiling, this may be due to images. You may need to add the files <a href="https://math.berkeley.edu/~monks/images/olympiad.asy">olympiad.asy</a> and <a href="http://www.mit.edu/~evanchen/handouts/cse5.asy">cse5.asy</a> to the Overleaf project (if you don't see "Add files..." in the upper left hand corner of Overleaf, then click on "Project" and it should appear). The test should display to the right, and you can download the pdf by clicking "pdf" at the top of the screen.
+</p>
+{% endblock %}

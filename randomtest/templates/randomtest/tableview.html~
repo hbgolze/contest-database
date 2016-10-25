@@ -1,0 +1,50 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>My Tests</h2>
+<div class="content">
+
+{% if tests.count == 0 %}
+You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
+{% else %}
+{{tests.allcount}}
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Test Name</th>
+        <th>Types</th>
+	<th>Number of Correct Answers</th>
+        <th>Number of Problems</th>
+	<th>Date Created</th>
+	<th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for test in tests %}
+      <tr>
+        <td><a href="test/{{test.pk}}/">{{test.name}}</a></td>
+        <td> {% for type in test.types.all %}
+	       {{type}}{% if not forloop.last%},{% endif %}
+	     {% endfor %}
+	</td>
+	<td>{{test.num_problems_correct}}</td>
+        <td>{{test.problems.count}}</td>
+        <td>{{test.created_date}}</td>
+	<td>
+	  <form action="edittest/{{test.pk}}/" method="post">
+	    {% csrf_token %}
+	    <input type="submit" value="Edit" />
+	  </form>
+
+	  <form action="delete/{{test.pk}}/" method="post">
+	    {% csrf_token %}
+	    <input type="submit" value="Delete" />
+	  </form>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

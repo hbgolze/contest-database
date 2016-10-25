@@ -1,0 +1,56 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<script type="text/javascript">
+function togglemarked() {
+    var y=document.getElementById("problems");
+    lang=y.elements.length;
+
+    check=0;
+    for (i=0;i<lang;i++) {
+        if (y.elements[i].type == "checkbox" && y.elements[i].checked==false) {
+            check=1;
+        }
+    }
+    if (check==1) {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=true;
+        }
+    } else {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=false;
+        }
+    }
+}
+</script>
+
+<h2>{{test.name}}</h2>
+{{msg}} <br>
+<button id="toggler" onclick="togglemarked();">Select/Deselect All</button>
+<form action="." method="POST" id="problems">
+{% csrf_token %}
+<input type="hidden" name="startform" value="{{pk}}">
+<table>
+<tr>
+<th>
+
+</th>
+<th>
+Problem
+</th>
+</tr>
+{% for label,answer,response,qt,chk in rows %}
+<tr>
+<td valign="top"><br>
+{{forloop.counter}}.<br>
+<input type="checkbox" name="chk{{label}}" {{chk}}/>
+</td>
+<td>
+<img src="https://dl.dropboxusercontent.com/u/4311401/{{label}}j.jpg"/>
+</td>
+</tr>
+{% endfor %}
+</table>
+<input type="submit" name="remove" value="Remove Unselected Problems" />
+</form>
+{% endblock %}

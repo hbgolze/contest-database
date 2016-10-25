@@ -1,0 +1,52 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>{{test.name}}</h2>
+<form action="." method="POST">
+{% csrf_token %}
+<input type="hidden" name="startform" value="{{pk}}">
+<table>
+{% for label,answer,response,qt in rows %}
+<tr>
+<td valign="top"><br>
+{{forloop.counter}}.
+</td>
+<td>
+<img src="{{dropboxpath}}{{label}}j.jpg"/>
+
+<p>
+{% if qt.question_type == 'short answer' %}
+Answer to Problem {{forloop.counter}}: <input type="text" name="answer{{label}}" value="{{response}}"> 
+{% if answer == response %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/>
+{% else %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
+{% endif %}
+
+{% endif %}
+
+{% if qt.question_type == 'multiple choice' %}
+Answer to Problem {{forloop.counter}}: 
+<input type="radio" name="answer{{label}}" value="A" {% if response == "A" %}checked="checked"{% endif %}> A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="B" {% if response == "B" %}checked="checked"{% endif %}> B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="C" {% if response == "C" %}checked="checked"{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="D" {% if response == "D" %}checked="checked"{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{% if answer == response %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/>
+{% else %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
+{% endif %}
+
+{% endif %}
+</p>
+
+
+
+</td>
+</tr>
+{% endfor %}
+</table>
+<input type="submit" value="Submit Answers" />
+</form>
+{% endblock %}
