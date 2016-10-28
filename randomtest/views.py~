@@ -10,7 +10,7 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
 
-from .models import Problem, Tag, Type, Test, UserProfile, Answer, QuestionType,Dropboxurl
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool
@@ -22,6 +22,19 @@ import time
 class TestDelete(DeleteView):
     model = Test
     success_url = reverse_lazy('tableview')
+
+@login_required
+def deletetestresponses(request,pk):
+    test = get_object_or_404(Test, pk=pk)
+    if test.responses_set.count()<=1:
+        test.delete()
+    else:
+        userprofile = get_or_create_up(request.user)
+        testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
+        if testresponses.count()>=1:
+            testresponses.delete()
+        userprofile.tests.remove(test)
+    return redirect('/')
 
 @login_required
 def startform(request):
@@ -82,23 +95,31 @@ def startform(request):
             shuffle(P)
             P=P[0:num]
             P=sorted(P,key=lambda x:(x.problem_number,x.year))
-            T=Test(name=testname,num_problems_correct=0)
+            T=Test(name=testname)
             T.save()
             for i in range(0,len(P)):
                 T.problems.add(P[i])
-                a=Answer(answer='',problem_label=P[i].label)
-                a.answer=form.get('answer'+P[i].label)
-                if a.answer==None:
-                    a.answer=''
-                a.save()
-                T.answers.add(a)
-                rows.append((P[i].label, str(P[i].answer), ''))
-            T.types.add(Type.objects.get(type=testtype))
             T.save()
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
             U.save()
-            return testview(request,T.pk)
+            R=Responses(test=T,num_problems_correct=0)
+            R.save()
+            for i in range(0,len(P)):
+                r=Response(response='',problem_label=P[i].label)
+                r.response=form.get('answer'+P[i].label)
+                if r.response==None:
+                    r.response=''
+                r.save()
+                R.responses.add(r)
+                rows.append((P[i].label, str(P[i].answer), ''))
+            R.save()
+            U.allresponses.add(R)
+            U.save()
+            T.types.add(Type.objects.get(type=testtype))
+            T.save()
+#            return testview(request,T.pk)
+            return redirect('/test/'+str(T.pk)+'/')
         else:
             return testview(request,int(form.get('startform','')))
     else:
@@ -118,48 +139,102 @@ def startform(request):
 @login_required
 def tableview(request):
     template=loader.get_template('randomtest/tableview.html')
-    userprof,boolcreated=UserProfile.objects.get_or_create(user=request.user)
-    if boolcreated==False:
+    userprof = get_or_create_up(request.user)
+    tests=list(userprof.tests.all())
+    rows=[]
+    for i in range(0,len(tests)):
+        if userprof.tests.filter(pk=tests[i].pk).count()==0:
+            userprof.tests.add(tests[i])
         userprof.save()
-    tests=userprof.tests.all()
-    context= {'tests': tests, 'nbar': 'viewmytests'}
+        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
+        if testresponses.count()==0:
+            allresponses=Responses(test=tests[i],num_problems_correct=0)
+            allresponses.save()
+            P=list(tests[i].problems.all())
+            for j in range(0,len(P)):
+                r=Response(response='',problem_label=P[j].label)
+                r.save()
+                allresponses.responses.add(r)
+            allresponses.save()
+            userprof.allresponses.add(allresponses)
+            userprof.save()
+        else:
+            allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
+        rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
+# for name,types,num_problems_correct,problems_count,created_date in rows
+
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests'}
     return HttpResponse(template.render(context,request))
 
 @login_required
 def testview(request,pk):
     test = get_object_or_404(Test, pk=pk)
+    userprofile = get_or_create_up(request.user)
+    if userprofile.tests.filter(pk=pk).count()==0:
+        userprofile.tests.add(test)
+    userprofile.save()
+    testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
+    if testresponses.count()==0:
+        allresponses=Responses(test=test,num_problems_correct=0)
+        allresponses.save()
+        P=list(test.problems.all())
+        for i in range(0,len(P)):
+            r=Response(response='',problem_label=P[i].label)
+            r.save()
+            allresponses.responses.add(r)
+        allresponses.save()
+        userprofile.allresponses.add(allresponses)
+        userprofile.save()
+    else:
+        allresponses=Responses.objects.get(test=test,user_profile=userprofile)
+    
     dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         form=request.POST
         P=list(test.problems.all())
         num_correct=0
         for i in range(0,len(P)):
-            a=test.answers.get(problem_label=P[i].label)
-            a.answer = form.get('answer'+P[i].label)
-            if a.answer==None:
-                a.answer=''
-            a.save()
-            if a.answer==P[i].answer and P[i].question_type.filter(question_type='proof').count()==0:
+            r=allresponses.responses.get(problem_label=P[i].label)
+            r.response = form.get('answer'+P[i].label)
+            if r.response==None:
+                r.response=''
+            r.save()
+            if r.response==P[i].answer and P[i].question_type.filter(question_type='proof').count()==0:
                 num_correct+=1
-        test.num_problems_correct=num_correct
-        test.save()
-        A=test.answers
+        allresponses.num_problems_correct=num_correct
+        allresponses.save()
+        R=allresponses.responses
         rows=[]
         for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),A.get(problem_label=P[i].label).answer,list(P[i].question_type.all())[0]))
+            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
     else:
         P=list(test.problems.all())
-        A=test.answers
+        R=allresponses.responses
         rows=[]
         for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),A.get(problem_label=P[i].label).answer,list(P[i].question_type.all())[0]))
-    return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'title':test.title})
+            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
+    return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name})
 
 
 
 @login_required
 def testeditview(request,pk):
     test = get_object_or_404(Test, pk=pk)
+    userprofile = get_or_create_up(request.user)
+    testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
+    if testresponses.count()==0:
+        allresponses=Responses(test=test,num_problems_correct=0)
+        allresponses.save()
+        P=list(test.problems.all())
+        for i in range(0,len(P)):
+            r=Response(response='',problem_label=P[i].label)
+            r.save()
+            allresponses.reponses.add(r)
+        allresponses.save()
+        userprofile.allresponses.add(allresponses)
+        userprofile.save()
+    else:
+        allresponses=Responses.objects.get(test=test,user_profile=userprofile)
     msg=""
     dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
@@ -170,35 +245,33 @@ def testeditview(request,pk):
             for i in range(0,len(P)):
                 if "chk"+P[i].label not in form:
                     test.problems.remove(P[i])
+                    r=allresponses.responses.get(problem_label=P[i].label)
+                    r.delete()
             P=list(test.problems.all())
             num_correct=0
             for i in range(0,len(P)):
-                a=test.answers.get(problem_label=P[i].label)
-                a.answer = form.get('answer'+P[i].label)
-                if a.answer==None:
-                    a.answer=''
-                a.save()
-                if a.answer==P[i].answer:
+                r=allresponses.responses.get(problem_label=P[i].label)
+                if r.response==P[i].answer:
                     num_correct+=1
-            test.num_problems_correct=num_correct
-            test.save()
-            A=test.answers
+            allresponses.num_problems_correct=num_correct
+            allresponses.save()
+            R=allresponses.responses
             for i in range(0,len(P)):
-                rows.append((P[i].label,str(P[i].answer),A.get(problem_label=P[i].label).answer,list(P[i].question_type.all())[0],"checked=\"checked\""))
+                rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
             msg="Problems Removed."
         elif request.POST.get("save"):
             pass
         else:
             P=list(test.problems.all())
-            A=test.answers
+            R=allresponses.responses
             for i in range(0,len(P)):
-                rows.append((P[i].label,str(P[i].answer),A.get(problem_label=P[i].label).answer,list(P[i].question_type.all())[0],"checked=\"checked\""))
+                rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
     else:
         P=list(test.problems.all())
-        A=test.answers
+        R=allresponses.responses
         rows=[]
         for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),A.get(problem_label=P[i].label).answer,list(P[i].question_type.all())[0],"checked=\"checked\""))
+            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
     return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath})
 
 @login_required
@@ -218,18 +291,15 @@ def UpdatePassword(request):
 @login_required
 def latexview(request,pk):
     test = get_object_or_404(Test, pk=pk)
-    if request.method == "POST":
-        form=request.POST
-        P=list(test.problems.all())
-        rows=[]
-        for i in range(0,len(P)):
-            rows.append(P[i].problem_text)
-    else:
-        P=list(test.problems.all())
-        rows=[]
-        for i in range(0,len(P)):
-            rows.append(P[i].problem_text)
-    return render(request, 'randomtest/latexview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests'})
+    P=list(test.problems.all())
+    rows=[]
+    include_problem_labels = True
+    for i in range(0,len(P)):
+        rows.append((P[i].problem_text,P[i].readable_label,P[i].answer_choices))
+    if request.method == "GET":
+        if request.GET.get('problemlabels')=='no':
+            include_problem_labels = False
+    return render(request, 'randomtest/latexview.html',{'name': test.name,'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'include_problem_labels' : include_problem_labels})
 
 @login_required
 def readme(request):

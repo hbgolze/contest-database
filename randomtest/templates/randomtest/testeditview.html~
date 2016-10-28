@@ -46,7 +46,7 @@ Problem
 <input type="checkbox" name="chk{{label}}" {{chk}}/>
 </td>
 <td>
-<img src="https://dl.dropboxusercontent.com/u/4311401/{{label}}j.jpg"/>
+<img src="{{dropboxurl}}{{label}}j.jpg"/>
 </td>
 </tr>
 {% endfor %}

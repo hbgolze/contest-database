@@ -6,6 +6,9 @@ db.sqlite3
 .DS_Store
 
 *~
+makedatabase.py
+loadproblemscommon.py
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

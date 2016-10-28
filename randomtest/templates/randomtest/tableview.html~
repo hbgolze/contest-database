@@ -7,7 +7,6 @@
 {% if tests.count == 0 %}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
-{{tests.allcount}}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -20,26 +19,29 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
       </tr>
     </thead>
     <tbody>
-      {% for test in tests %}
+      {% for tpk,name,types,num_problems_correct,problems_count,created_date in rows %}
       <tr>
-        <td><a href="test/{{test.pk}}/">{{test.name}}</a></td>
-        <td> {% for type in test.types.all %}
+        <td><a href="test/{{tpk}}/">{{name}}</a></td>
+        <td> {% for type in types %}
 	       {{type}}{% if not forloop.last%},{% endif %}
 	     {% endfor %}
 	</td>
-	<td>{{test.num_problems_correct}}</td>
-        <td>{{test.problems.count}}</td>
-        <td>{{test.created_date}}</td>
+	<td>{{num_problems_correct}}</td>
+        <td>{{problems_count}}</td>
+        <td>{{created_date}}</td>
 	<td>
-	  <form action="edittest/{{test.pk}}/" method="post">
+	  <form action="edittest/{{tpk}}/" method="post">
 	    {% csrf_token %}
 	    <input type="submit" value="Edit" />
 	  </form>
 
-	  <form action="delete/{{test.pk}}/" method="post">
+	  <form action="delete/{{tpk}}/" method="post">
 	    {% csrf_token %}
 	    <input type="submit" value="Delete" />
 	  </form>
+	</td>
+	<td>
+	  <a href="viewlatex/{{tpk}}/">View LaTeX</a>
 	</td>
       </tr>
       {% endfor %}
