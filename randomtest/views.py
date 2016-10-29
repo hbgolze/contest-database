@@ -191,6 +191,7 @@ def testview(request,pk):
     if request.method == "POST":
         form=request.POST
         P=list(test.problems.all())
+        P=sorted(P,key=lambda x:(x.problem_number,x.year))
         num_correct=0
         for i in range(0,len(P)):
             r=allresponses.responses.get(problem_label=P[i].label)
@@ -208,6 +209,7 @@ def testview(request,pk):
             rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
     else:
         P=list(test.problems.all())
+        P=sorted(P,key=lambda x:(x.problem_number,x.year))
         R=allresponses.responses
         rows=[]
         for i in range(0,len(P)):
@@ -236,6 +238,13 @@ def testeditview(request,pk):
         allresponses=Responses.objects.get(test=test,user_profile=userprofile)
     msg=""
     dropboxpath = list(Dropboxurl.objects.all())[0].url
+#Prepare for the add problems form
+    types=list(Type.objects.all())
+    testrows=[]
+    for i in range(0,len(types)):
+        testrows.append((types[i].type,types[i].label))
+    testrows=sorted(testrows,key=lambda x:x[1])
+        
     if request.method == "POST":
         rows=[]
         if request.POST.get("remove"):
@@ -244,9 +253,12 @@ def testeditview(request,pk):
             for i in range(0,len(P)):
                 if "chk"+P[i].label not in form:
                     test.problems.remove(P[i])
-                    r=allresponses.responses.get(problem_label=P[i].label)
-                    r.delete()
+                    A=list(Responses.objects.filter(test=test))
+                    for j in range(0,len(A)):
+                        r=A[j].responses.get(problem_label=P[i].label)
+                        r.delete()
             P=list(test.problems.all())
+            P=sorted(P,key=lambda x:(x.problem_number,x.year))
             num_correct=0
             for i in range(0,len(P)):
                 r=allresponses.responses.get(problem_label=P[i].label)
@@ -256,22 +268,84 @@ def testeditview(request,pk):
             allresponses.save()
             R=allresponses.responses
             for i in range(0,len(P)):
-                rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
+                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
             msg="Problems Removed."
-        elif request.POST.get("save"):
-            pass
+            test.refresh_types()
+        elif request.POST.get("addproblems"):
+            form=request.POST
+            if form.get('startform','')=="start":
+                testname=form.get('testname','')
+                testtype=form.get('testtype','')
+                tags=form.get('tag','')
+                if tags is None:
+                    tags=''
+                num=form.get('numproblems','')
+                if num is None or num==u'':
+                    num=10
+                else:
+                    num=int(num)
+                probbegin=form.get('probbegin','')
+                if probbegin is None or probbegin==u'':
+                    probbegin=0
+                else:
+                    probbegin=int(probbegin)
+                probend=form.get('probend','')
+                if probend is None or probend==u'':
+                    probend=10000
+                else:
+                    probend=int(probend)
+                yearbegin=form.get('yearbegin','')
+                if yearbegin is None or yearbegin==u'':
+                    yearbegin=0
+                else:
+                    yearbegin=int(yearbegin)
+                yearend=form.get('yearend','')
+                if yearend is None or yearend==u'':
+                    yearend=10000
+                else:
+                    yearend=int(yearend)
+                if len(tags)>0:
+                    boo,taglist=parsebool(tags)
+                    matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                    if boo=='or':
+                        matches=matches.filter(Q(tags__in=Tag.objects.filter(tag__in=taglist)) | Q(test_label__in=taglist) | Q(label__in=taglist))
+                    else:
+                        for t in taglist:
+                            matches=matches.filter(tags__in=Tag.objects.filter(tag__in=[t]))#this doesn't account for test/problem tags at the moment...(problem tags unnecessary with AND).
+                else:
+                    matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                matches.exclude(id__in=test.problems.all())
+
+
+            matches=list(matches)
+            shuffle(matches)
+            matches=matches[0:num]
+            for i in range(0,len(matches)):
+                test.problems.add(matches[i])
+                A=list(Responses.objects.filter(test=test))
+                for j in range(0,len(A)):
+                    r=Response(response='',problem_label=matches[i].label)
+                    r.save()
+                    A[j].responses.add(r)
+                    A[j].save()
+            test.save()
+            P=test.problems.all()
+            P=sorted(P,key=lambda x:(x.problem_number,x.year))
+            for i in range(0,len(P)):
+                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
+            test.refresh_types()
         else:
             P=list(test.problems.all())
-            R=allresponses.responses
+            P=sorted(P,key=lambda x:(x.problem_number,x.year))
             for i in range(0,len(P)):
-                rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
+                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
     else:
         P=list(test.problems.all())
-        R=allresponses.responses
+        P=sorted(P,key=lambda x:(x.problem_number,x.year))
         rows=[]
         for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0],"checked=\"checked\""))
-    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath})
+            rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
+    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows})
 
 @login_required
 def UpdatePassword(request):

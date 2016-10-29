@@ -33,7 +33,7 @@ class Solution(models.Model):
     problem_label = models.CharField(max_length=20,blank=True)
     tags = models.ManyToManyField(Tag,blank=True)
 
-class Response(models.Model):#previously named Answer (3 places)
+class Response(models.Model):
     response = models.CharField(max_length=10,blank=True)
     problem_label = models.CharField(max_length=20)
     def __str__(self):
@@ -67,8 +67,7 @@ class Problem(models.Model):
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
     problems = models.ManyToManyField(Problem)
-#    answers = models.ManyToManyField(Answer,blank=True,related_name='parent_test')
-    types = models.ManyToManyField(Type)
+    types = models.ManyToManyField(Type,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
     last_attempted_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
@@ -81,12 +80,18 @@ class Test(models.Model):
         for i in range(1,len(L)):
             s += ', '+L[i].type
         return s
-#    def delete(self, *args, **kwargs):
-#        A=list(self.answers.all())
-#        for i in range(0,len(A)):
-#            A[i].delete()
-#        super(Test, self).delete(*args, **kwargs)
-
+    def refresh_types(self):
+        t=list(self.types.all())
+        for i in t:
+            self.types.remove(i)
+        P=list(self.problems.all())
+        for i in P:
+            typs=i.types
+            for j in typs:
+                if self.types.filter(type=j).count()==0:
+                    self.types.add(j)
+        self.save()
+        
 
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
@@ -100,11 +105,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
-    # The additional attributes we wish to include.
-#    website = models.URLField(blank=True)
-#    picture = models.ImageField(upload_to='profile_images', blank=True)
 
-    # Override the __unicode__() method to return out something meaningful!
     def __unicode__(self):
         return self.user.username
 

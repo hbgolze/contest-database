@@ -67,7 +67,7 @@ class Problem(models.Model):
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
     problems = models.ManyToManyField(Problem)
-    types = models.ManyToManyField(Type)
+    types = models.ManyToManyField(Type,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
     last_attempted_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
@@ -80,7 +80,18 @@ class Test(models.Model):
         for i in range(1,len(L)):
             s += ', '+L[i].type
         return s
-
+    def refresh_types(self):
+        t=list(self.types.all())
+        for i in t:
+            self.types.remove(i)
+        P=list(self.problems.all())
+        for i in P:
+            typs=list(i.types.all())
+            for j in typs:
+                if self.types.filter(type=j).count()==0:
+                    self.types.add(j)
+        self.save()
+        
 
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)

@@ -39,7 +39,7 @@ function togglemarked() {
 Problem
 </th>
 </tr>
-{% for label,answer,response,qt,chk in rows %}
+{% for label,answer,chk in rows %}
 <tr>
 <td valign="top"><br>
 {{forloop.counter}}.<br>
@@ -52,5 +52,23 @@ Problem
 {% endfor %}
 </table>
 <input type="submit" name="remove" value="Remove Unselected Problems" />
+</form>
+<h3>Add Extra Problems</h3>
+<form action="." method="POST" id ="addproblems">
+{% csrf_token %}
+  <input type="hidden" name="startform" value="start">
+{% for test,testlabel in testrows %}
+ {% if forloop.counter == 1 %}
+  <input type="radio" name="testtype" value="{{test}}" checked="checked"> {{testlabel}} Problems<br>
+ {% else %}
+  <input type="radio" name="testtype" value="{{test}}"> {{testlabel}} Problems<br>
+ {% endif %}
+{% endfor %}
+<br>
+  Desired Tag:<br> <input type="text" name="tag"><br><br>
+  Number of Problems:<br><input type="number" name="numproblems"> <br><br>
+  Range of Problem Numbers (for all problems, leave this blank):<br><input type="number" name="probbegin" style="width: 45px;"> to <input type="number" name="probend" style="width: 45px;"><br><br>
+  Year Range (for all years, leave this blank):<br><input type="number" name="yearbegin" style="width: 75px;"> to <input type="number" name="yearend" style="width: 75px;"><br><br>
+  <input type="submit" name="addproblems" value="Add Problems">
 </form>
 {% endblock %}
