@@ -3,7 +3,7 @@
 {% block content %}
 <h2>New Test</h2>
 <p>Enter a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). Tags like 2000AIMEI or 2009AMC10A will give you the problems from that particular test. To get uncategorized problems, simply leave the tag field blank. Submit your answers when you are ready.</p>
-<p>For more information, see the <a href="readme.html">Readme</a>.</p>
+<p>For more information, see the <a href="readme">Readme</a>.</p>
 </p>
 
 <form action="." method="post">
@@ -19,7 +19,7 @@
  {% endif %}
 {% endfor %}
 <br>
-  Desired Tag:<br> <input type="text" name="tag"><br><br>
+  Desired Tag:<br> <input type="text" name="tag"><br><a href="/tagcounts/">Tag List</a><br><br>
   Number of Problems:<br><input type="number" name="numproblems"> <br><br>
   Range of Problem Numbers (for all problems, leave this blank):<br><input type="number" name="probbegin" style="width: 45px;"> to <input type="number" name="probend" style="width: 45px;"><br><br>
   Year Range (for all years, leave this blank):<br><input type="number" name="yearbegin" style="width: 75px;"> to <input type="number" name="yearend" style="width: 75px;"><br><br>

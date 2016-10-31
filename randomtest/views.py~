@@ -127,8 +127,36 @@ def startform(request):
         for i in range(0,len(types)):
             rows.append((types[i].type,types[i].label))
         rows=sorted(rows,key=lambda x:x[1])
+#####This might be slow to compute all the tag counts each time the page loads. It would be better to keep a table of tagcounts...and update each time a tag is updated.Perhaps this should be a charateristic of "type"? Or just make a tagcount table? Or make it a characteristic of tag?
+        tags=list(Tag.objects.all())
+        tags=sorted(tags,key=lambda x:x.tag)
+        tagcounts=[]
+        typeheaders=[]
+        for i in range(0,len(types)):
+            tagcounts.append([])
+            typeheaders.append(types[i].type)
+        for i in range(0,len(tags)):
+            t=Problem.objects.filter(tags__in=[tags[i]])
+            for j in range(0,len(types)):
+                c=t.filter(types__in=[types[j]]).count()
+                if c>0:
+                    tagcounts[j].append((tags[i].tag,c))
+        tagrows=[]
+        maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
+        for i in range(0,maxicounts):
+            t=[[]]*len(tagcounts)
+            for j in range(0,len(tagcounts)):
+                if i<len(tagcounts[j]):
+                    ent=tagcounts[j][i]
+                else:
+                    ent=('','')
+                t[j]=ent
+            tagrows.append(t)
+#####
+        
+
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar': 'newtest','rows':rows}
+        context={'nbar': 'newtest','rows':rows, 'typeheaders' : typeheaders,'tagrows':tagrows}
         return HttpResponse(template.render(context,request))
 
 #    P=Problem.objects.order_by('-year')
@@ -270,6 +298,7 @@ def testeditview(request,pk):
             for i in range(0,len(P)):
                 rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
             msg="Problems Removed."
+            test.refresh_types()
         elif request.POST.get("addproblems"):
             form=request.POST
             if form.get('startform','')=="start":
@@ -332,6 +361,7 @@ def testeditview(request,pk):
             P=sorted(P,key=lambda x:(x.problem_number,x.year))
             for i in range(0,len(P)):
                 rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
+            test.refresh_types()
         else:
             P=list(test.problems.all())
             P=sorted(P,key=lambda x:(x.problem_number,x.year))

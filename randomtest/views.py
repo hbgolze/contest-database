@@ -136,6 +136,37 @@ def startform(request):
 #    types = models.ManyToManyField(Type)
 
 @login_required
+def tagcounts(request):
+    types=list(Type.objects.all())
+    tags=list(Tag.objects.all())
+    tags=sorted(tags,key=lambda x:x.tag)
+    tagcounts=[]
+    typeheaders=[]
+    for i in range(0,len(types)):
+        tagcounts.append([])
+        typeheaders.append(types[i].type)
+    for i in range(0,len(tags)):
+        t=Problem.objects.filter(tags__in=[tags[i]])
+        for j in range(0,len(types)):
+            c=t.filter(types__in=[types[j]]).count()
+            if c>0:
+                tagcounts[j].append((tags[i].tag,c))
+    tagrows=[]
+    maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
+    for i in range(0,maxicounts):
+        t=[[]]*len(tagcounts)
+        for j in range(0,len(tagcounts)):
+            if i<len(tagcounts[j]):
+                ent=tagcounts[j][i]
+            else:
+                ent=('','')
+            t[j]=ent
+        tagrows.append(t)
+    template = loader.get_template('randomtest/taglist.html')
+    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
+    return HttpResponse(template.render(context,request))
+
+@login_required
 def tableview(request):
     template=loader.get_template('randomtest/tableview.html')
     userprof = get_or_create_up(request.user)

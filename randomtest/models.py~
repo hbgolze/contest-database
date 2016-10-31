@@ -86,7 +86,7 @@ class Test(models.Model):
             self.types.remove(i)
         P=list(self.problems.all())
         for i in P:
-            typs=i.types
+            typs=list(i.types.all())
             for j in typs:
                 if self.types.filter(type=j).count()==0:
                     self.types.add(j)

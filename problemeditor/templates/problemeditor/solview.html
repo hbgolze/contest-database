@@ -8,11 +8,12 @@
     <h2>Solutions to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
-        {% for solution in form %}
+        {% for form,solution in rows %}
           <h3>Solution {{forloop.counter}}</h3>
-          {{ solution.solution_text }} <br>
+	  {{solution|linebreaks}}<br><br>
+          {{ form }} <br>
         {% endfor %}
-	{% if form.objects.count > 0 %}
+	{% if rows.count > 0 %}
         <button type="submit" class="save btn btn-default">Save</button>
 	{% endif %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>

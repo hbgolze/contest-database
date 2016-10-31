@@ -9,6 +9,7 @@ db.sqlite3
 makedatabase.py
 loadproblemscommon.py
 *.txt
+makeannie.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

@@ -16,10 +16,10 @@ Please select a test category.
       </tr>
     </thead>
     <tbody>
-      {% for type,untagged,unsolution,num in rows %}
+      {% for type,label,untagged,unsolution,num in rows %}
       
       <tr>
-        <td><a href="tags/{{type}}">{{type}}</a></td>
+        <td><a href="tags/{{type}}">{{label}}</a></td>
         <td> {{untagged}}</td>
         <td>{{unsolution}}</td>
         <td>{{num}}</td>

@@ -1,7 +1,7 @@
 from django.conf.urls import include,url
 
 from . import views
-from views import TestDelete
+#from views import TestDelete
 
 urlpatterns = [
     url(r'^$', views.tableview, name='tableview'),
@@ -11,4 +11,5 @@ urlpatterns = [
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
+    url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
 ]

@@ -20,7 +20,7 @@ def typeview(request):
         num_untagged = untagged.count()
         nosolutions = P.filter(solutions__isnull=True)
         num_nosolutions = nosolutions.count()
-        rows.append((str(obj[i]),num_untagged,num_nosolutions,num_problems))
+        rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/typeview.html')
 #    tests=list(UserProfile.objects.get(user=request.user).tests.all())
     context= {'rows': rows, 'nbar': 'problemeditor'}
@@ -111,10 +111,14 @@ def solutionview(request,type,label):
 #    else:
     sols=list(prob.solutions.all())
     sollist=[]
+
+    rows=[]#
+
     for sol in sols:
         form = SolutionForm(instance=sol)
         sollist.append(form)
-    return render(request, 'problemeditor/solview.html', {'form': sollist,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath})
+        rows.append((form,sol.solution_text))
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath})
 
 @login_required
 def newsolutionview(request,type,label):
