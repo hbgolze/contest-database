@@ -5,6 +5,13 @@
 {% block title %}Solutions: {{label}}{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li><a href="../../../../">{{typelabel}}</a></li>
+  <li><a href="../../../">{{tag}}</a></li>
+  <li><a href="../">Solutions to {{label}}</a></li>
+  <li class="active">New</li>
+</ol>
     <h2>New Solution to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>

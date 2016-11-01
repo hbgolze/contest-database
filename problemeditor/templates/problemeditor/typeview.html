@@ -3,6 +3,9 @@
 {% block title %}Choose a Category{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li class="active">Select Type</li>
+</ol>
 <h2>Problem Editor</h2>
 Please select a test category.
 <div class="content">
@@ -10,6 +13,8 @@ Please select a test category.
     <thead>
       <tr>
         <th>Test Category</th>
+	<th>View by Tag</th>
+	<th>View by Test</th>
         <th>Number of Untagged Problems</th>
 	<th>Number of Problems with no Solution</th>
 	<th>Number of Problems</th>
@@ -19,7 +24,9 @@ Please select a test category.
       {% for type,label,untagged,unsolution,num in rows %}
       
       <tr>
-        <td><a href="tags/{{type}}">{{label}}</a></td>
+	<td>{{label}}</td>
+        <td><a href="bytag/{{type}}">View by Tag</a></td>
+        <td><a href="bytest/{{type}}">View by Test</a></td>
         <td> {{untagged}}</td>
         <td>{{unsolution}}</td>
         <td>{{num}}</td>

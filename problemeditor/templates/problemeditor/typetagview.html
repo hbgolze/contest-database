@@ -2,6 +2,11 @@
 {% block title %}Choose a Problem{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li><a href="../">{{typelabel}}</a></li>
+  <li class="active">{{tag}}</li>
+</ol>
 <h2>Problem Editor</h2>
 Please select a problem
 <div class="content">
@@ -21,8 +26,8 @@ Please select a problem
         <td>{{label}}</td>
         <td>{{tags}}</td>
         <td>{{num}}</td>
-	<td><a href="/problemeditor/problems/{{type}}/{{label}}">Edit Tags</a></td>
-	<td><a href="/problemeditor/solutions/{{type}}/{{label}}">Edit Solutions</a></td>
+	<td><a href="{{label}}">Edit Tags</a></td>
+	<td><a href="{{label}}/solutions/">Edit Solutions</a></td>
       </tr>
       {% endfor %}
     </tbody>

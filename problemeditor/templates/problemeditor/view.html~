@@ -5,10 +5,15 @@
 {% block title %}Problem: {{form.instance.label}}{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li><a href="../../">{{typelabel}}</a></li>
+  <li><a href="../">{{tag}}</a></li>
+  <li class="active">{{plabel}}</li>
+</ol>
     <h2>Edit Problem</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-      {{dropboxurl}}
-      <img src="{{dropboxurl}}{{ form.instance.label }}j.jpg" /> <br>
+      <img src="{{dropboxpath}}{{ form.instance.label }}j.jpg" /> <br>
         {{ form.as_p }}
         <button type="submit" class="save btn btn-default">Save</button>
     </form>

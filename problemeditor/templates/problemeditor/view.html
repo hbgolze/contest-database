@@ -5,6 +5,12 @@
 {% block title %}Problem: {{form.instance.label}}{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li><a href="../../">{{typelabel}}</a></li>
+  <li><a href="../">{{tag}}</a></li>
+  <li class="active">{{label}}</li>
+</ol>
     <h2>Edit Problem</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{ form.instance.label }}j.jpg" /> <br>

@@ -41,41 +41,55 @@ def tagview(request,type):
         testlabels.append(pot[i].test_label)
     testlabels=list(set(testlabels))
     testlabels.sort()
-    rows2=[]
-    for i in range(0,len(testlabels)):
-        rows2.append((testlabels[i],probsoftype.filter(test_label=testlabels[i]).filter(tags__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).filter(solutions__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).count()))
     for i in range(0,len(obj)):
         T = probsoftype.filter(tags__in=[obj[i]])
         num_problems=T.count()
-#        untagged = T.filter(tags__isnull=True)
-#        num_untagged = untagged.count()
         nosolutions = T.filter(solutions__isnull=True)
         num_nosolutions = nosolutions.count()
         if num_problems>0:
             rows.append((str(obj[i]),num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/tagview.html')
-#    tests=list(UserProfile.objects.get(user=request.user).tests.all())
+    context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'bytag'}
+    return HttpResponse(template.render(context,request))
 
-#now work on rows by testname....but add to database first
-    context= {'rows': rows, 'type' : typ.type, 'num_untagged': num_untagged, 'rows2' : rows2, 'nbar': 'problemeditor'}
+@login_required
+def testview(request,type):
+    typ=get_object_or_404(Type, type=type)
+    probsoftype=Problem.objects.filter(types__in=[typ])
+    untagged=probsoftype.filter(tags__isnull=True)
+    num_untagged = untagged.count()
+    testlabels=[]
+    pot=list(probsoftype)
+    for i in range(0,len(pot)):
+        testlabels.append(pot[i].test_label)
+    testlabels=list(set(testlabels))
+    testlabels.sort()
+    rows2=[]
+    for i in range(0,len(testlabels)):
+        rows2.append((testlabels[i],probsoftype.filter(test_label=testlabels[i]).filter(tags__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).filter(solutions__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).count()))
+    template=loader.get_template('problemeditor/testview.html')
+    context= { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest'}
     return HttpResponse(template.render(context,request))
 
 @login_required
 def typetagview(request,type,tag):
     typ=get_object_or_404(Type, type=type)
-    ttag=get_object_or_404(Tag, tag=tag)
     rows=[]
-    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+    if tag!='untagged':
+        ttag=get_object_or_404(Tag, tag=tag)
+        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+    else:
+        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor'}
+    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
 @login_required
-def problemview(request,type,label):
+def problemview(request,type,tag,label):
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     tags=Tag.objects.all()
@@ -87,11 +101,11 @@ def problemview(request,type,label):
             problem.save()
     else:
         form = ProblemForm(instance=prob)
-    return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath})
+    return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label})
 
 
 @login_required
-def solutionview(request,type,label):
+def solutionview(request,type,tag,label):
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -118,10 +132,10 @@ def solutionview(request,type,label):
         form = SolutionForm(instance=sol)
         sollist.append(form)
         rows.append((form,sol.solution_text))
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath})
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
 
 @login_required
-def newsolutionview(request,type,label):
+def newsolutionview(request,type,tag,label):
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     sol_num=prob.solutions.count()+1
@@ -138,7 +152,7 @@ def newsolutionview(request,type,label):
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath})
+    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
 
 @login_required
 def untaggedview(request,type):
@@ -163,5 +177,5 @@ def testlabelview(request,type,testlabel):
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor'}
+    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
     return HttpResponse(template.render(context,request))

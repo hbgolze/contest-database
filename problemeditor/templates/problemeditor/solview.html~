@@ -5,13 +5,19 @@
 {% block title %}Solutions: {{label}}{% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li><a href="../../../">{{typelabel}}</a></li>
+  <li><a href="../../">{{tag}}</a></li>
+  <li class="active">Solution to {{label}}</li>
+</ol>
     <h2>Solutions to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
         {% for form,solution in rows %}
           <h3>Solution {{forloop.counter}}</h3>
-	  {{solution}}<br><br>
-          {{ form }} <br>
+	  {{solution|linebreaks}}<br><br>
+          {{ form.as_p }} <br>
         {% endfor %}
 	{% if rows.count > 0 %}
         <button type="submit" class="save btn btn-default">Save</button>
