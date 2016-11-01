@@ -1,0 +1,36 @@
+{% extends "./base.html" %}
+{% block title %}Choose a Tag{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li class="active">{{typelabel}}</li>
+</ol>
+<h2>Problem Editor</h2>
+Tag the <a href="untagged/">{{num_untagged}} untagged problems</a>. <br>
+Please select a test.
+<div class="content">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Test</th>
+	<th>Number of Untagged Problems</th>
+	<th>Number of Problems with no Solution</th>
+	<th>Total Number of Problems</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for testlabel,untag,unsolution,num in rows2 %}
+      
+      <tr>
+        <td><a href="{{testlabel}}">{{testlabel}}</a></td>
+        <td>{{untag}}</td>
+        <td>{{unsolution}}</td>
+        <td>{{num}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

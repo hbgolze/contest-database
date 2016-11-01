@@ -1,0 +1,28 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>Tag Counts</h2>
+<table style="width:70%">
+<thead>
+ <tr>
+  {% for type in typeheaders %}
+    <th>{{type}}</th>
+  {% endfor %}
+ </tr>
+</thead>
+<tbody>
+{% for tagrow in tagrows %}
+ <tr>
+   {% for type in tagrow %}
+    <td>
+      {% for ent in type %}
+       {{ent}}
+      {% endfor %}
+    </td>
+   {% endfor %}
+ </tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock %}
