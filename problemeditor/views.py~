@@ -74,9 +74,9 @@ def testview(request,type):
 @login_required
 def typetagview(request,type,tag):
     typ=get_object_or_404(Type, type=type)
-    ttag=get_object_or_404(Tag, tag=tag)
     rows=[]
     if tag!='untagged':
+        ttag=get_object_or_404(Tag, tag=tag)
         problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
     else:
         problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
@@ -87,6 +87,23 @@ def typetagview(request,type,tag):
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
     return HttpResponse(template.render(context,request))
+
+@login_required
+def testlabelview(request,type,testlabel):
+    typ=get_object_or_404(Type, type=type)
+    rows=[]
+    if tag!='untagged':
+        problems=list(Problem.objects.filter(test_label=testlabel))
+    else:
+        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+    problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
+    for i in range(0,len(problems)):
+        num_solutions=problems[i].solutions.count()
+        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+    template=loader.get_template('problemeditor/typetagview.html')
+    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
+    return HttpResponse(template.render(context,request))
+
 
 @login_required
 def problemview(request,type,tag,label):
@@ -167,15 +184,3 @@ def untaggedview(request,type):
     context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
 
-@login_required
-def testlabelview(request,type,testlabel):
-    typ=get_object_or_404(Type, type=type)
-    rows=[]
-    problems=list(Problem.objects.filter(test_label=testlabel))
-    problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
-    template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
-    return HttpResponse(template.render(context,request))
