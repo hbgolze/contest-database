@@ -10,13 +10,16 @@ class ProblemForm(forms.ModelForm):
         widgets = {
             'tags': forms.SelectMultiple(attrs={'size': 30})
         }
+    def __init__(self, *args, **kwargs):
+        super(ProblemForm, self).__init__(*args, **kwargs)   
+        self.fields['tags'].queryset = Industry.objects.order_by('tag')
 
 class SolutionForm(forms.ModelForm):
     class Meta:
         model = Solution
         fields = ('solution_text',)
         widgets = {
-            'solution_text': forms.Textarea(attrs={'cols': 105, 'rows': 10})
+            'solution_text': forms.Textarea(attrs={'cols': 120, 'rows': 15})
         }
 
 

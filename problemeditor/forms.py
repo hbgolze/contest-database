@@ -10,6 +10,9 @@ class ProblemForm(forms.ModelForm):
         widgets = {
             'tags': forms.SelectMultiple(attrs={'size': 30})
         }
+    def __init__(self, *args, **kwargs):
+        super(ProblemForm, self).__init__(*args, **kwargs)   
+        self.fields['tags'].queryset = Tag.objects.order_by('tag')
 
 class SolutionForm(forms.ModelForm):
     class Meta:
