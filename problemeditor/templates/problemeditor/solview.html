@@ -19,7 +19,7 @@
 	  {{solution|linebreaks}}<br><br>
           {{ form.as_p }} <br>
         {% endfor %}
-	{% if rows.count > 0 %}
+	{% if rows|length > 0 %}
         <button type="submit" class="save btn btn-default">Save</button>
 	{% endif %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>

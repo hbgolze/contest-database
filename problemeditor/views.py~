@@ -92,7 +92,7 @@ def typetagview(request,type,tag):
 def testlabelview(request,type,testlabel):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-    if tag!='untagged':
+    if testlabel!='untagged':
         problems=list(Problem.objects.filter(test_label=testlabel))
     else:
         problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
@@ -149,6 +149,7 @@ def solutionview(request,type,tag,label):
         form = SolutionForm(instance=sol)
         sollist.append(form)
         rows.append((form,sol.solution_text))
+    print len(rows)
     return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
 
 @login_required

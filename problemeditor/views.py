@@ -165,7 +165,7 @@ def newsolutionview(request,type,tag,label):
             sol.save()
             prob.solutions.add(sol)
             prob.save()
-        return redirect(solutionview,type=type,label=label)
+        return redirect(solutionview,type=type,tag=tag,label=label)
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
