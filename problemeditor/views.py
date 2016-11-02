@@ -149,7 +149,7 @@ def solutionview(request,type,tag,label):
         form = SolutionForm(instance=sol)
         sollist.append(form)
         rows.append((form,sol.solution_text))
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
 
 @login_required
 def newsolutionview(request,type,tag,label):
@@ -169,7 +169,7 @@ def newsolutionview(request,type,tag,label):
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
+    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
 
 @login_required
 def untaggedview(request,type):

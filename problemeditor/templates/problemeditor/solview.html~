@@ -20,7 +20,6 @@
           {{ form.as_p }} <br>
         {% endfor %}
 	{% if rows|length > 0 %}
-	  {{rows|length}}
         <button type="submit" class="save btn btn-default">Save</button>
 	{% endif %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>

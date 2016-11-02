@@ -14,6 +14,7 @@
     <h2>Solutions to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
+      Answer: {{answer}}<br>
         {% for form,solution in rows %}
           <h3>Solution {{forloop.counter}}</h3>
 	  {{solution|linebreaks}}<br><br>

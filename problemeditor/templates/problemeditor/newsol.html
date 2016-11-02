@@ -15,6 +15,7 @@
     <h2>New Solution to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
+      Answer: {{answer}}<br>
           <h3>Solution</h3>
           {{ form.solution_text }} <br>
         <button type="submit" class="save btn btn-default">Save</button>
