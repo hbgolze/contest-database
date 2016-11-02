@@ -12,17 +12,12 @@
   <li class="active">Solutions to {{label}}</li>
 </ol>
     <h2>Solutions to {{label}}</h2>
-    <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
       Answer: {{answer}}<br>
-        {% for form,solution in rows %}
+        {% for solution,spk in rows %}
           <h3>Solution {{forloop.counter}}</h3>
+	  (<a href="edit/{{spk}}/">Edit</a>) (<a href="delete/{{spk}}/">Delete</a>)<br><br>
 	  {{solution|linebreaks}}<br><br>
-          {{ form.as_p }} <br>
         {% endfor %}
-	{% if rows|length > 0 %}
-        <button type="submit" class="save btn btn-default">Save</button>
-	{% endif %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>
-    </form>
 {% endblock %}

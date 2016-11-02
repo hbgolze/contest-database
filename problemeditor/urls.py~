@@ -14,8 +14,12 @@ urlpatterns = [
     url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/$', views.solutionview, name='solutionview'),
     url(r'^bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/new/$', views.newsolutionview, name='newsolutionview'),
     url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/new/$', views.newsolutionview, name='newsolutionview'),
-    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
-    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
+
+    url(r'^bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/edit/(?P<spk>\w+)/$', views.editsolutionview, name='editsolutionview'),
+    url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/edit/(?P<spk>\w+)/$', views.editsolutionview, name='editsolutionview'),
+
+#    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
+#    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 
 
 #    url(r'^untagged/(?P<type>\w+)/$', views.untaggedview, name='untaggedview'),

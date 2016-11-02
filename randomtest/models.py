@@ -32,7 +32,8 @@ class Solution(models.Model):
     solution_number = models.IntegerField(default=1)
     problem_label = models.CharField(max_length=20,blank=True)
     tags = models.ManyToManyField(Tag,blank=True)
-    def __str(self):
+    authors = models.ManyToManyField(User,blank=True)
+    def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)
 
 class Response(models.Model):

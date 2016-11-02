@@ -126,30 +126,23 @@ def solutionview(request,type,tag,label):
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
-    if request.method == "POST":
-        sollist = request.POST.getlist('solution_text')
-#        sollist = [SolutionForm(solution_text=sollist[i],solution_number=i+1,problem_label=label) for i in range(0,len(sollist))]
-        for i in range(0,len(sollist)):
-            s=prob.solutions.get(solution_number=i+1)
-            s.solution_text=sollist[i]
-            s.save()
-        prob.save()
-############ISSSUES!!!!
-#        form = ProblemForm(request.POST, instance=prob)
-#        if form.is_valid():
-#            problem = form.save()
-#            problem.save()
-#    else:
+#    if request.method == "POST":
+#        sollist = request.POST.getlist('solution_text')
+#        for i in range(0,len(sollist)):
+#            s=prob.solutions.get(solution_number=i+1)
+#            s.solution_text=sollist[i]
+#            s.save()
+#        prob.save()
     sols=list(prob.solutions.all())
     sollist=[]
 
     rows=[]#
 
     for sol in sols:
-        form = SolutionForm(instance=sol)
-        sollist.append(form)
-        rows.append((form,sol.solution_text))
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
+#        form = SolutionForm(instance=sol)
+#        sollist.append(form)
+        rows.append((sol.solution_text,sol.pk))
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
 
 @login_required
 def newsolutionview(request,type,tag,label):
@@ -169,7 +162,28 @@ def newsolutionview(request,type,tag,label):
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label})
+    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
+
+@login_required
+def editsolutionview(request,type,tag,label,spk):
+    typ=get_object_or_404(Type, type=type)
+    prob=get_object_or_404(Problem, label=label)
+    sol=Solution.objects.get(pk=spk)
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    if request.method == "POST":
+        if request.POST.get("save"):
+            sollist=request.POST.getlist('solution_text')
+            sol.solution_text=sollist[0]
+            sol.save()
+            return redirect(solutionview,type=type,tag=tag,label=label)
+    form = SolutionForm(instance=sol)
+    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
+
+@login_required
+def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
+    sol = get_object_or_404(Solution, pk=spk)
+    sol.delete()
+    return redirect('../../')
 
 @login_required
 def untaggedview(request,type):

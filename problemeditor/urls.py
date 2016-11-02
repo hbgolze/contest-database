@@ -14,6 +14,12 @@ urlpatterns = [
     url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/$', views.solutionview, name='solutionview'),
     url(r'^bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/new/$', views.newsolutionview, name='newsolutionview'),
     url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/new/$', views.newsolutionview, name='newsolutionview'),
+
+    url(r'^bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/edit/(?P<spk>\w+)/$', views.editsolutionview, name='editsolutionview'),
+    url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/edit/(?P<spk>\w+)/$', views.editsolutionview, name='editsolutionview'),
+    url(r'^bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/delete/(?P<spk>\w+)/$', views.deletesolutionview, name='deletesolutionview'),
+    url(r'^bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/solutions/delete/(?P<spk>\w+)/$', views.deletesolutionview, name='deletesolutionview'),
+
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 
