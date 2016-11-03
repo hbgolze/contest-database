@@ -173,10 +173,11 @@ def tableview(request):
     tests=list(userprof.tests.all())
     rows=[]
     for i in range(0,len(tests)):
-        if userprof.tests.filter(pk=tests[i].pk).count()==0:
-            userprof.tests.add(tests[i])
+#        if userprof.tests.filter(pk=tests[i].pk).count()==0:
+        userprof.tests.add(tests[i])#this line was indented
         userprof.save()
-        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
+#        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
+        testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
             allresponses=Responses(test=tests[i],num_problems_correct=0)
             allresponses.save()
@@ -191,8 +192,6 @@ def tableview(request):
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
-# for name,types,num_problems_correct,problems_count,created_date in rows
-
     context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests'}
     return HttpResponse(template.render(context,request))
 

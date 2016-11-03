@@ -4,7 +4,7 @@
 <h2>My Tests</h2>
 <div class="content">
 
-{% if tests.count == 0 %}
+{% if testcount == 0 %}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
 <table class="table table-striped">
@@ -33,15 +33,14 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	  <form action="edittest/{{tpk}}/" method="post">
 	    {% csrf_token %}
 	    <input type="submit" value="Edit" />
-	  </form>
-
-	  <form action="delete/{{tpk}}/" method="post">
-	    {% csrf_token %}
-	    <input type="submit" value="Delete" />
+	    <button type="submit" name="Edit" value="Edit" class="btn-link">Edit</button>
 	  </form>
 	</td>
 	<td>
 	  <a href="viewlatex/{{tpk}}/">View LaTeX</a>
+	</td>
+	<td>
+	  <a href="delete/{{tpk}}/">Delete</a>
 	</td>
       </tr>
       {% endfor %}

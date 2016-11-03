@@ -46,3 +46,15 @@ pre {border: solid 1px black;
      background: #ffffff}
 code {font-size:1.2em; 
      color: #008099}
+
+.btn-link{
+  border:none;
+  outline:none;
+  background:none;
+  cursor:pointer;
+  color:#33c;
+  padding:0;
+  text-decoration:underline;
+  font-family:inherit;
+  font-size:inherit;
+}

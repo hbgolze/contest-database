@@ -27,6 +27,7 @@ body { font: 14px/1.3 verdana, arial, helvetica, sans-serif; }
 
 h1 { font-size:1.6em; }
 h2 { font-size:1.4em; }
+h3 { font-size:1.3em; }
 a:link { color:#33c; }
 a:visited { color:#339; }
 p { max-width: 60em; }
@@ -45,3 +46,15 @@ pre {border: solid 1px black;
      background: #ffffff}
 code {font-size:1.2em; 
      color: #008099}
+
+.btn-link{
+  border:none;
+  outline:none;
+  background:none;
+  cursor:pointer;
+  color:#0000EE;
+  padding:0;
+  text-decoration:underline;
+  font-family:inherit;
+  font-size:inherit;
+}

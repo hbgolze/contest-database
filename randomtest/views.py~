@@ -173,10 +173,11 @@ def tableview(request):
     tests=list(userprof.tests.all())
     rows=[]
     for i in range(0,len(tests)):
-        if userprof.tests.filter(pk=tests[i].pk).count()==0:
-            userprof.tests.add(tests[i])
+#        if userprof.tests.filter(pk=tests[i].pk).count()==0:
+        userprof.tests.add(tests[i])#this line was indented
         userprof.save()
-        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
+#        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
+        testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
             allresponses=Responses(test=tests[i],num_problems_correct=0)
             allresponses.save()

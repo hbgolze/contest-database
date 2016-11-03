@@ -10,6 +10,7 @@ makedatabase.py
 loadproblemscommon.py
 *.txt
 makeannie.py
+instructions.py*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
