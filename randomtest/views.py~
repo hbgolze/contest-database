@@ -192,8 +192,6 @@ def tableview(request):
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
-# for name,types,num_problems_correct,problems_count,created_date in rows
-
     context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests'}
     return HttpResponse(template.render(context,request))
 

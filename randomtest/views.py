@@ -174,8 +174,8 @@ def tableview(request):
     rows=[]
     for i in range(0,len(tests)):
 #        if userprof.tests.filter(pk=tests[i].pk).count()==0:
-        userprof.tests.add(tests[i])#this line was indented
-        userprof.save()
+#        userprof.tests.add(tests[i])#this line was indented
+#        userprof.save()
 #        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
         testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
