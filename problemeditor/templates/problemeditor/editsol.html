@@ -17,6 +17,7 @@
       <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
       Answer: {{answer}}<br>
           <h3>Solution</h3>
+	  {{solution_text|linebreaks}}
           {{ form.solution_text }} <br>
         <input type="submit" class="save btn btn-default" name="save" value="Save">
     </form>
