@@ -19,7 +19,7 @@ class SolutionForm(forms.ModelForm):
         model = Solution
         fields = ('solution_text',)
         widgets = {
-            'solution_text': forms.Textarea(attrs={'cols': 120, 'rows': 15})
+            'solution_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'})
         }
 
 
