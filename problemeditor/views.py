@@ -156,6 +156,7 @@ def newsolutionview(request,type,tag,label):
             sol = sol_form.save()
             sol.solution_number=sol_num
             sol.authors.add(request.user)
+            sol.problem_label=label
             sol.save()
             prob.solutions.add(sol)
             prob.save()

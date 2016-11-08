@@ -16,7 +16,7 @@
       Answer: {{answer}}<br>
         {% for solution,spk in rows %}
           <h3>Solution {{forloop.counter}}</h3>
-	  (<a href="edit/{{spk}}/">Edit</a>) (<a href="delete/{{spk}}/">Delete</a>)<br><br>
+	  (<a href="edit/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="delete/{{spk}}/">Delete</a>){% endif %}<br><br>
 	  {{solution|linebreaks}}<br><br>
         {% endfor %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>

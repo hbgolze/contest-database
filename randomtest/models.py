@@ -34,7 +34,7 @@ class Solution(models.Model):
     tags = models.ManyToManyField(Tag,blank=True)
     authors = models.ManyToManyField(User,blank=True)
     def __str__(self):
-        return self.problem_label+' sol '+str(self.solution_number)
+        return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
 class Response(models.Model):
     response = models.CharField(max_length=10,blank=True)
@@ -100,6 +100,7 @@ class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
     responses = models.ManyToManyField(Response,blank=True)
     num_problems_correct = models.IntegerField(blank=True,null=True)
+    show_answer_marks=models.BooleanField(default=0)
     def __str__(self):
         return self.test.name
 

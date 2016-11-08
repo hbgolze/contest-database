@@ -179,7 +179,7 @@ def editsolutionview(request,type,tag,label,spk):
             sol.save()
             return redirect(solutionview,type=type,tag=tag,label=label)
     form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
+    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text})
 
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.

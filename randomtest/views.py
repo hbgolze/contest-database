@@ -232,6 +232,7 @@ def testview(request,pk):
             if r.response==P[i].answer and P[i].question_type.filter(question_type='proof').count()==0:
                 num_correct+=1
         allresponses.num_problems_correct=num_correct
+        allresponses.show_answer_marks=1
         allresponses.save()
         R=allresponses.responses
         rows=[]
@@ -244,7 +245,7 @@ def testview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
-    return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name})
+    return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
 
 

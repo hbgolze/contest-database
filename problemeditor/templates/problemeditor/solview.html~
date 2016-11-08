@@ -16,24 +16,7 @@
       Answer: {{answer}}<br>
         {% for solution,spk in rows %}
           <h3>Solution {{forloop.counter}}</h3>
-	  (<a href="edit/{{spk}}/">Edit</a>) (<a href="delete/{{spk}}/">Delete</a>)<br>
-	  <table>
-	   <tr>
-	     <td>
-               <form action="edit/{{spk}}/" method="post">
-		 {% csrf_token %}
-		 <input type="submit" value="Edit" name="edit"/>
-               </form>
-	     </td>
-	     <td>&nbsp; </td>
-	     <td>
-               <form action="delete/{{spk}}/" method="post">
-		 {% csrf_token %}
-		 <input type="submit" value="Delete" name="delete"/>
-               </form>
-	     </td>
-	   </tr>
-	   </table>
+	  (<a href="edit/{{spk}}/">Edit</a>) (<a href="delete/{{spk}}/">Delete</a>)<br><br>
 	  {{solution|linebreaks}}<br><br>
         {% endfor %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>
