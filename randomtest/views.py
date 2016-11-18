@@ -44,7 +44,7 @@ def startform(request):
             testname=form.get('testname','')
             testtype=form.get('testtype','')
             tags=form.get('tag','')
-            if tags is None:
+            if tags=="Unspecified":
                 tags=''
 
             num=form.get('numproblems','')
@@ -123,12 +123,13 @@ def startform(request):
             return testview(request,int(form.get('startform','')))
     else:
         types=list(Type.objects.all())
+        tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
         rows=[]
         for i in range(0,len(types)):
             rows.append((types[i].type,types[i].label))
         rows=sorted(rows,key=lambda x:x[1])
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar': 'newtest','rows':rows}
+        context={'nbar': 'newtest','rows':rows,'tags':tags}
         return HttpResponse(template.render(context,request))
 
 #    P=Problem.objects.order_by('-year')
@@ -151,6 +152,40 @@ def tagcounts(request):
             c=t.filter(types__in=[types[j]]).count()
             if c>0:
                 tagcounts[j].append((tags[i].tag,c))
+    tagrows=[]
+    maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
+    for i in range(0,maxicounts):
+        t=[[]]*len(tagcounts)
+        for j in range(0,len(tagcounts)):
+            if i<len(tagcounts[j]):
+                ent=tagcounts[j][i]
+            else:
+                ent=('','')
+            t[j]=ent
+        tagrows.append(t)
+    template = loader.get_template('randomtest/taglist.html')
+    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
+    return HttpResponse(template.render(context,request))
+
+def tagcounts2(request):
+    types=list(Type.objects.all())
+    tags=list(Tag.objects.all())
+    tags=sorted(tags,key=lambda x:x.tag)
+    tagcounts=[]# will be a #types x #tags array
+    typeheaders=[]
+    for i in range(0,len(types)):
+        tagcounts.append([])
+        Dcounts={}
+        typeheaders.append(types[i].type)
+        p=Problem.objects.filter(types__type=types[i].type)
+        for j in p:
+            for k in j.tags.all():
+                if k.tag in Dcounts:
+                    Dcounts[k.tag]+=1
+                else:
+                    Dcounts[k.tag]=1
+        for j in Dcounts:
+            tagcounts[i].append((j,Dcounts[j]))
     tagrows=[]
     maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
     for i in range(0,maxicounts):
@@ -271,6 +306,7 @@ def testeditview(request,pk):
     dropboxpath = list(Dropboxurl.objects.all())[0].url
 #Prepare for the add problems form
     types=list(Type.objects.all())
+    taglist=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
     testrows=[]
     for i in range(0,len(types)):
         testrows.append((types[i].type,types[i].label))
@@ -308,7 +344,7 @@ def testeditview(request,pk):
                 testname=form.get('testname','')
                 testtype=form.get('testtype','')
                 tags=form.get('tag','')
-                if tags is None:
+                if tags=="Unspecified":
                     tags=''
                 num=form.get('numproblems','')
                 if num is None or num==u'':
@@ -376,7 +412,7 @@ def testeditview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows})
+    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows,'taglist':taglist})
 
 @login_required
 def UpdatePassword(request):
