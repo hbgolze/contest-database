@@ -306,6 +306,7 @@ def testeditview(request,pk):
     dropboxpath = list(Dropboxurl.objects.all())[0].url
 #Prepare for the add problems form
     types=list(Type.objects.all())
+    taglist=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
     testrows=[]
     for i in range(0,len(types)):
         testrows.append((types[i].type,types[i].label))
@@ -343,7 +344,7 @@ def testeditview(request,pk):
                 testname=form.get('testname','')
                 testtype=form.get('testtype','')
                 tags=form.get('tag','')
-                if tags is None:
+                if tags=="Unspecified":
                     tags=''
                 num=form.get('numproblems','')
                 if num is None or num==u'':
@@ -411,7 +412,7 @@ def testeditview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows})
+    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows,'taglist':taglist})
 
 @login_required
 def UpdatePassword(request):

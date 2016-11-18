@@ -43,9 +43,9 @@ def startform(request):
         if form.get('startform','')=="start":
             testname=form.get('testname','')
             testtype=form.get('testtype','')
-            tags=form.get('tag','')
-            if tags=="Unspecified":
-                tags=''
+            tag=form.get('tag','')
+            if tag=="Unspecified":
+                tag=''
 
             num=form.get('numproblems','')
             if num is None or num==u'':
@@ -77,14 +77,9 @@ def startform(request):
                 yearend=10000
             else:
                 yearend=int(yearend)
-            if len(tags)>0:
-                boo,taglist=parsebool(tags)
+            if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                if boo=='or':
-                    P=P.filter(Q(tags__in=Tag.objects.filter(tag__in=taglist)) | Q(test_label__in=taglist) | Q(label__in=taglist))
-                else:
-                    for t in taglist:
-                        P=P.filter(tags__in=Tag.objects.filter(tag__in=[t]))#this doesn't account for test/problem tags at the moment...(problem tags unnecessary with AND).
+                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag))
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
 
