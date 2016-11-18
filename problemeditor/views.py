@@ -4,8 +4,8 @@ from django.template import loader,RequestContext
 from django.contrib.auth.decorators import login_required
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl
-from .forms import ProblemForm,SolutionForm
-
+from .forms import ProblemForm,SolutionForm,ProblemTextForm
+from randomtest.utils import asyreplacementindexes,ansscrape
 
 # Create your views here.
 @login_required
@@ -118,7 +118,49 @@ def problemview(request,type,tag,label):
             problem.save()
     else:
         form = ProblemForm(instance=prob)
-    return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label})
+    texcode=form.instance.problem_text
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode=texcode
+    else:
+        newtexcode=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode+=ansscrape(form.instance.answer_choices)
+    readablelabel=form.instance.readable_label.replace('\\#','#')
+    return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label,'prob_latex':newtexcode,'readablelabel':readablelabel})
+
+@login_required
+def editproblemtextview(request,type,tag,label):
+    typ=get_object_or_404(Type, type=type)
+    prob=get_object_or_404(Problem, label=label)
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    if request.method == "POST":
+        form = ProblemTextForm(request.POST, instance=prob)
+        if form.is_valid():
+            problem = form.save()
+            problem.save()
+    else:
+        form = ProblemTextForm(instance=prob)
+    texcode=form.instance.problem_text
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode=texcode
+    else:
+        newtexcode=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode+=ansscrape(form.instance.answer_choices)
+    readablelabel=form.instance.readable_label.replace('\\#','#')
+    return render(request, 'problemeditor/editproblemtext.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'label':label,'tag':tag,'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 
 @login_required
@@ -142,7 +184,23 @@ def solutionview(request,type,tag,label):
 #        form = SolutionForm(instance=sol)
 #        sollist.append(form)
         rows.append((sol.solution_text,sol.pk))
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
+
+    texcode=prob.problem_text
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode=texcode
+    else:
+        newtexcode=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode+=ansscrape(prob.answer_choices)
+    readablelabel=prob.readable_label.replace('\\#','#')
+
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def newsolutionview(request,type,tag,label):
@@ -164,7 +222,23 @@ def newsolutionview(request,type,tag,label):
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer})
+
+    texcode=prob.problem_text
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode=texcode
+    else:
+        newtexcode=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode+=ansscrape(prob.answer_choices)
+    readablelabel=prob.readable_label.replace('\\#','#')
+
+    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def editsolutionview(request,type,tag,label,spk):
@@ -180,7 +254,23 @@ def editsolutionview(request,type,tag,label,spk):
             sol.save()
             return redirect(solutionview,type=type,tag=tag,label=label)
     form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text})
+
+    texcode=prob.problem_text
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode=texcode
+    else:
+        newtexcode=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode+=ansscrape(prob.answer_choices)
+    readablelabel=prob.readable_label.replace('\\#','#')
+
+    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.

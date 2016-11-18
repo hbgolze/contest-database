@@ -14,7 +14,8 @@
 </ol>
     <h2>Edit Solution to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
+<!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
       Answer: {{answer}}<br>
           <h3>Solution</h3>
 	  {{solution_text|linebreaks}}

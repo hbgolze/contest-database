@@ -64,3 +64,9 @@ code {font-size:1.2em;
   font-family:inherit;
   font-size:inherit;
 }
+img.displayed {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    zoom: 50%; 
+}

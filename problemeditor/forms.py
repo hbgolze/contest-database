@@ -16,6 +16,13 @@ class ProblemForm(forms.ModelForm):
         super(ProblemForm, self).__init__(*args, **kwargs)   
         self.fields['tags'].queryset = Tag.objects.order_by('tag')
 
+class ProblemTextForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ( 'problem_text','answer_choices',)
+        widgets = { 'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),'answer_choices': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'})}
+
+
 class SolutionForm(forms.ModelForm):
     class Meta:
         model = Solution
