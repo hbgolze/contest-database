@@ -338,9 +338,9 @@ def testeditview(request,pk):
             if form.get('startform','')=="start":
                 testname=form.get('testname','')
                 testtype=form.get('testtype','')
-                tags=form.get('tag','')
-                if tags=="Unspecified":
-                    tags=''
+                tag=form.get('tag','')
+                if tag=="Unspecified":
+                    tag=''
                 num=form.get('numproblems','')
                 if num is None or num==u'':
                     num=10
@@ -366,14 +366,10 @@ def testeditview(request,pk):
                     yearend=10000
                 else:
                     yearend=int(yearend)
-                if len(tags)>0:
-                    boo,taglist=parsebool(tags)
+
+                if len(tag)>0:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                    if boo=='or':
-                        matches=matches.filter(Q(tags__in=Tag.objects.filter(tag__in=taglist)) | Q(test_label__in=taglist) | Q(label__in=taglist))
-                    else:
-                        for t in taglist:
-                            matches=matches.filter(tags__in=Tag.objects.filter(tag__in=[t]))#this doesn't account for test/problem tags at the moment...(problem tags unnecessary with AND).
+                    matches=matches.filter(tags__in=Tag.objects.filter(tag__startswith=tag))
                 else:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
                 matches.exclude(id__in=test.problems.all())
