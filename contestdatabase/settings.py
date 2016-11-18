@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'randomtest.apps.RandomtestConfig',
     'problemeditor.apps.ProblemeditorConfig',
+#    'tagging',
 ]
 
 MIDDLEWARE = [
@@ -121,6 +122,10 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+#Below was added for js outside admin
+#STATICFILES_DIRS = [
+#    os.path.join(BASE_DIR, "static"),
+#]
 
 # Added for login
 #LOGIN_URL = '/randomtest/login'

@@ -4,12 +4,14 @@ from randomtest.models import Problem,Tag,Type,Solution
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 class ProblemForm(forms.ModelForm):
+#    widgets = {
+#        'tags': forms.ModelMultipleChoiceField(widget=FilteredSelectMultiple(('tags'),False),queryset=Tag.objects.all(),required=False)
+#            'tags': forms.SelectMultiple(attrs={'size': 30})
+#    }
+    tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     class Meta:
         model = Problem
         fields = ( 'tags',)
-        widgets = {
-            'tags': forms.SelectMultiple(attrs={'size': 30})
-        }
     def __init__(self, *args, **kwargs):
         super(ProblemForm, self).__init__(*args, **kwargs)   
         self.fields['tags'].queryset = Tag.objects.order_by('tag')

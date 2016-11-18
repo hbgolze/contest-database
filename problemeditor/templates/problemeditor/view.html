@@ -1,10 +1,22 @@
 {% extends './base.html' %}
 
-<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
 {% block title %}Problem: {{form.instance.label}}{% endblock %}
 
+{% block head %}
+<script type="text/javascript" src="/static/js/jquery.init.js"></script>
+<script type="text/javascript" src="/static/js/core.js"></script>
+<script type="text/javascript" src="/static/js/SelectBox.js"></script>
+<script type="text/javascript" src="/static/js/SelectFilter2.js"></script>
+<script type="text/javascript" src="/static/js/jsi18n.js"></script>
+<link href="/static/css/widgets.css" type="text/css" media="all" rel="stylesheet" />
+<!--{{ form.media }}-->
+
+
+
+{% endblock %}
+
 {% block content %}
+
 <ol class="breadcrumb">
   <li><a href="/problemeditor/">Select Type</a></li>
   <li><a href="../../">{{typelabel}}</a></li>
@@ -15,6 +27,8 @@
     <form method="POST" class="post-form">{% csrf_token %}
       <img src="{{dropboxpath}}{{ form.instance.label }}j.jpg" /> <br>
         {{ form.as_p }}
+<p>
         <button type="submit" class="save btn btn-default">Save</button>
+</p>
     </form>
 {% endblock %}
