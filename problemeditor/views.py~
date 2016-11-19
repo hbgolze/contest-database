@@ -131,6 +131,9 @@ def problemview(request,type,tag,label):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(form.instance.answer_choices)
+    print newtexcode,newtexcode.count('\\')
+    newtexcode=newtexcode.replace('\\ ',' ')
+    print newtexcode
     readablelabel=form.instance.readable_label.replace('\\#','#')
     return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label,'prob_latex':newtexcode,'readablelabel':readablelabel})
 
@@ -200,7 +203,7 @@ def solutionview(request,type,tag,label):
     newtexcode+=ansscrape(prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
 
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabe})
+    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def newsolutionview(request,type,tag,label):
@@ -238,7 +241,7 @@ def newsolutionview(request,type,tag,label):
     newtexcode+=ansscrape(prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
 
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabe})
+    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def editsolutionview(request,type,tag,label,spk):
@@ -270,7 +273,7 @@ def editsolutionview(request,type,tag,label,spk):
     newtexcode+=ansscrape(prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
 
-    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':newtexcode,'readablelabel':readablelabe})
+    return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':newtexcode,'readablelabel':readablelabel})
 
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.

@@ -131,6 +131,7 @@ def problemview(request,type,tag,label):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(form.instance.answer_choices)
+    newtexcode=newtexcode.replace('\\ ',' ')
     readablelabel=form.instance.readable_label.replace('\\#','#')
     return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label,'prob_latex':newtexcode,'readablelabel':readablelabel})
 
@@ -159,6 +160,7 @@ def editproblemtextview(request,type,tag,label):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(form.instance.answer_choices)
+    newtexcode=newtexcode.replace('\\ ',' ')
     readablelabel=form.instance.readable_label.replace('\\#','#')
     return render(request, 'problemeditor/editproblemtext.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'label':label,'tag':tag,'prob_latex':newtexcode,'readablelabel':readablelabel})
 
@@ -198,6 +200,7 @@ def solutionview(request,type,tag,label):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(prob.answer_choices)
+    newtexcode=newtexcode.replace('\\ ',' ')
     readablelabel=prob.readable_label.replace('\\#','#')
 
     return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
@@ -236,6 +239,7 @@ def newsolutionview(request,type,tag,label):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(prob.answer_choices)
+    newtexcode=newtexcode.replace('\\ ',' ')
     readablelabel=prob.readable_label.replace('\\#','#')
 
     return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':newtexcode,'readablelabel':readablelabel})
@@ -268,6 +272,7 @@ def editsolutionview(request,type,tag,label,spk):
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+=ansscrape(prob.answer_choices)
+    newtexcode=newtexcode.replace('\\ ',' ')
     readablelabel=prob.readable_label.replace('\\#','#')
 
     return render(request, 'problemeditor/editsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':newtexcode,'readablelabel':readablelabel})
