@@ -55,6 +55,6 @@ def ansscrape(s):
     return s[closer+1:s.index('\\end{ans}')]
 
 def goodurl(t):
-    return t.replace('>','_').replace(' ','~')
+    return t.replace('>','_').replace(' ','__')
 def goodtag(t):
-    return t.replace('_','>').replace('~',' ')
+    return t.replace('__',' ').replace('_','>')
