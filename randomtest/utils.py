@@ -53,3 +53,8 @@ def ansscrape(s):
             closer=closes[j]
             break
     return s[closer+1:s.index('\\end{ans}')]
+
+def goodurl(t):
+    return t.replace('>','_').replace(' ','-')
+def goodtag(t):
+    return t.replace('_','>').replace('-',' ')

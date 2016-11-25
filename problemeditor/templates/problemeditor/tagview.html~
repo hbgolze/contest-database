@@ -7,7 +7,7 @@
   <li class="active">{{typelabel}}</li>
 </ol>
 <h2>Problem Editor</h2>
-Tag the <a href="/problemeditor/untagged/{{type}}">{{num_untagged}} untagged problems</a>. <br>
+Tag the <a href="untagged/">{{num_untagged}} untagged problems</a>. <br>
 Please select a tag.
 <div class="content">
 <table class="table table-striped">

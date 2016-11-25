@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl
 from .forms import ProblemForm,SolutionForm,ProblemTextForm
-from randomtest.utils import asyreplacementindexes,ansscrape
+from randomtest.utils import asyreplacementindexes,ansscrape,goodtag,goodurl
 
 # Create your views here.
 @login_required
@@ -47,7 +47,7 @@ def tagview(request,type):
         nosolutions = T.filter(solutions__isnull=True)
         num_nosolutions = nosolutions.count()
         if num_problems>0:
-            rows.append((str(obj[i]),num_nosolutions,num_problems))
+            rows.append((goodurl(str(obj[i])),str(obj[i]),num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/tagview.html')
     context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'bytag'}
     return HttpResponse(template.render(context,request))
@@ -73,6 +73,7 @@ def testview(request,type):
 
 @login_required
 def typetagview(request,type,tag):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     rows=[]
     if tag!='untagged':
@@ -107,6 +108,7 @@ def testlabelview(request,type,testlabel):
 
 @login_required
 def problemview(request,type,tag,label):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     tags=Tag.objects.all()
@@ -137,6 +139,7 @@ def problemview(request,type,tag,label):
 
 @login_required
 def editproblemtextview(request,type,tag,label):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -167,6 +170,7 @@ def editproblemtextview(request,type,tag,label):
 
 @login_required
 def solutionview(request,type,tag,label):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -207,6 +211,7 @@ def solutionview(request,type,tag,label):
 
 @login_required
 def newsolutionview(request,type,tag,label):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     sol_num=prob.solutions.count()+1
@@ -246,6 +251,7 @@ def newsolutionview(request,type,tag,label):
 
 @login_required
 def editsolutionview(request,type,tag,label,spk):
+    tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     sol=Solution.objects.get(pk=spk)
@@ -279,6 +285,7 @@ def editsolutionview(request,type,tag,label,spk):
 
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
+    tag=goodtag(tag)
     sol = get_object_or_404(Solution, pk=spk)
     sol.delete()
     return redirect('../../')
