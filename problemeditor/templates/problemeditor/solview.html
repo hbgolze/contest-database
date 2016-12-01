@@ -1,7 +1,5 @@
 {% extends './base.html' %}
 
-<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
 {% block title %}Solutions: {{label}}{% endblock %}
 
 {% block content %}
@@ -9,9 +7,9 @@
   <li><a href="/problemeditor/">Select Type</a></li>
   <li><a href="../../../">{{typelabel}}</a></li>
   <li><a href="../../">{{tag}}</a></li>
-  <li class="active">Solutions to {{label}}</li>
+  <li class="active">Solutions to {{readablelabel}}</li>
 </ol>
-    <h2>Solutions to {{label}}</h2>
+    <h2>Solutions to {{readablelabel}}</h2>
 <!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
 {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
       Answer: {{answer}}<br>

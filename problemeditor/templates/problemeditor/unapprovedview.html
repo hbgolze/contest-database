@@ -1,0 +1,35 @@
+{% extends "./base.html" %}
+{% block title %}Choose a Problem{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li class="active">Unapproved {{typelabel}} Problems</li>
+</ol>
+<h2>Problem Editor</h2>
+Please select a problem
+<div class="content">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Label</th>
+	<th>Current Tags</th>
+	<th>Number of Solutions</th>
+	<th>Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for label,tags,num,pk in rows %}
+      
+      <tr>
+        <td>{{label}}</td>
+        <td>{{tags}}</td>
+        <td>{{num}}</td>
+	<td><a href="{{pk}}/">Edit</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

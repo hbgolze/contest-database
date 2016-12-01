@@ -67,4 +67,6 @@ code {font-size:1.2em;
 img.displayed {
     display: block;
     margin-left: auto;
-    margin-right: auto }
+    margin-right: auto;
+    zoom: 50%; 
+}

@@ -1,20 +1,18 @@
 {% extends './base.html' %}
 
-<script type="text/javascript" src="/static/admin/js/jquery.min.js"></script>
-<script type="text/javascript" src="/static/admin/js/jquery.init.js"></script>
-{% block title %}Solutions: {{label}}{% endblock %}
+{% block title %}Solutions: {{readablelabel}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
   <li><a href="/problemeditor/">Select Type</a></li>
-  <li><a href="../../../../">{{typelabel}}</a></li>
-  <li><a href="../../../">{{tag}}</a></li>
-  <li><a href="../">Solutions to {{label}}</a></li>
-  <li class="active">New</li>
+{% for breadurl,breadlabel in breadcrumbs %}
+  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
+{% endfor %}
+  <li class="active">New Solution</li>
 </ol>
     <h2>New Solution to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
       Answer: {{answer}}<br>
           <h3>Solution</h3>
           {{ form.solution_text }} <br>

@@ -1,14 +1,13 @@
 {% extends './base.html' %}
 
-{% block title %}Problem: {{form.instance.label}}{% endblock %}
+{% block title %}Problem: {{form.instance.readable_label}}{% endblock %}
 
 {% block content %}
 
 <ol class="breadcrumb">
-  <li><a href="/problemeditor/">Select Type</a></li>
-  <li><a href="../../../">{{typelabel}}</a></li>
-  <li><a href="../../">{{tag}}</a></li>
-  <li><a href="../">{{label}}</a></li>
+{% for breadurl,breadlabel in breadcrumbs %}
+  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
+{% endfor %}
   <li class="active">Edit LaTeX</li>
 </ol>
     <h2>Edit Problem</h2>

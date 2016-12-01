@@ -11,6 +11,9 @@ loadproblemscommon.py
 *.txt
 makeannie.py
 instructions.py*
+harmonize.py
+probclass.py
+dbclass.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

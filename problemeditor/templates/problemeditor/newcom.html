@@ -1,6 +1,6 @@
 {% extends './base.html' %}
 
-{% block title %}Solutions: {{readablelabel}}{% endblock %}
+{% block title %}Comments: {{label}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -8,14 +8,11 @@
 {% for breadurl,breadlabel in breadcrumbs %}
   <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
 {% endfor %}
-  <li class="active">New Solution</li>
+  <li class="active">New Comment</li>
 </ol>
-    <h2>New Solution to {{readablelabel}}</h2>
+    <h2>New Comment to {{label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
-      Answer: {{answer}}<br>
-          <h3>Solution</h3>
-          {{ form.solution_text }} <br>
+          {{ form.as_p}} <br>
         <button type="submit" class="save btn btn-default">Save</button>
     </form>
 {% endblock %}
