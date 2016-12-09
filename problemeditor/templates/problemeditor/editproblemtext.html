@@ -13,8 +13,61 @@
     <h2>Edit Problem</h2>
     <form method="POST" class="post-form">{% csrf_token %}
 <!--      <img src="{{dropboxpath}}{{ form.instance.label }}j.jpg" /> <br>-->
-      {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %} [{{readablelabel}}]
-        {{ form.as_p }}
+
+<!--      {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %} [{{readablelabel}}]-->
+<div class="form-group">
+{% if mc %}
+<label>Problem Text:</label>
+{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+{% endif %}
+{% if sa or pf %}
+<label>Problem Text:</label>
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+{% endif %}
+{% if mcsa %}
+<label>Problem Text (Multiple Choice):</label>
+<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<label>Problem Text (Short Answer):</label>
+<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+{% endif %}
+</div>
+{% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
+
+<!--        {{ form.as_p }}-->
+
+{% if mc or mcsa %}
+<div class="form-group">
+  <label for="{{form.mc_problem_text.id}}">Multiple Choice Problem LaTeX</label>
+  <p>{{form.mc_problem_text}}</p>
+  {% if form.mc_problem_text.errors %}
+  <p class="help-block">    Please enter a problem.</p>
+  {% endif %}
+</div>
+<div class="form-group">
+  <label for="{{form.answer_A.id}}">Answer Choices</label>
+  <p>Please use LaTeX (No dollar signs necessary)</p>
+  <p>Choice A: {{form.answer_A}}</p>
+  <p>Choice B: {{form.answer_B}}</p>
+  <p>Choice C: {{form.answer_C}}</p>
+  <p>Choice D: {{form.answer_D}}</p>
+  <p>Choice E: {{form.answer_E}}</p>
+  {% if form.answer_A.errors or form.answer_B.errors or form.answer_C.errors or form.answer_D.errors or form.answer_E.errors %}
+  <p class="help-block">    Please enter five answer choices.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if sa or pf or mcsa %}
+<div class="form-group">
+  <label for="{{form.mc_problem_text.id}}">Problem LaTeX</label>
+  <p>{{form.problem_text}}</p>
+  {% if form.problem_text.errors %}
+  <p class="help-block">    Please enter a problem.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+
 <p>
         <button type="submit" class="save btn btn-default">Save</button>
 </p>

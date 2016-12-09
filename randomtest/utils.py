@@ -41,17 +41,17 @@ def asyreplacementindexes(s):
 
 def newtexcode(texcode,dropboxpath,label,answer_choices):
     repl=asyreplacementindexes(texcode)
-    newtexcode='<p>'
+    newtexcode=''
     if len(repl)==0:
-        newtexcode=texcode
+        newtexcode+=texcode
     else:
-        newtexcode=texcode[0:repl[0][0]]
+        newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
             newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
         newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
-    newtexcode+='</p><p>'+ansscrape(answer_choices)+'</p>'
+    newtexcode+='<br><br>'+ansscrape(answer_choices)
     newtexcode=newtexcode.replace('\\ ',' ')
     return newtexcode
                 

@@ -11,8 +11,28 @@
 </ol>
     <h2>Solutions to {{readablelabel}}</h2>
 <!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
-      Answer: {{answer}}<br>
+<div class="form-group">
+{% if mc %}
+<label>Problem Text:</label>
+<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{mc_answer}}</p>
+{% endif %}
+{% if sa or pf %}
+<label>Problem Text:</label>
+<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+{% if sa %}<p>Answer: {{sa_answer}}</p>{% endif %}
+{% endif %}
+{% if mcsa %}
+<label>Problem Text (Multiple Choice):</label>
+<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{mc_answer}}</p>
+<label>Problem Text (Short Answer):</label>
+<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{sa_answer}}</p>
+{% endif %}
+</div>
+
+<!--{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>-->
         {% for solution,spk in rows %}
           <h3>Solution {{forloop.counter}}</h3>
 	  (<a href="edit/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="delete/{{spk}}/">Delete</a>){% endif %}<br><br>

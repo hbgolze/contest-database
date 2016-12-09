@@ -51,7 +51,7 @@ Please select a test category or <a href="/problemeditor/newproblem/">add</a> a 
       
       <tr>
 	<td>{{label}}</td>
-        <td><a href="bytag/{{type}}">View by Tag</a></td>
+        <td><a href="CMbytag/{{type}}">View by Tag</a></td>
         <td><a href="unapproved/{{type}}">View Unapproved Problems</a></td>
         <td> {{untagged}}/{{num}}</td>
         <td>{{unsolution}}/{{num}}</td>

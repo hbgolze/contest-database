@@ -1,12 +1,229 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseRedirect,Http404
 from django.template import loader,RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment
+from formtools.wizard.views import SessionWizardView
+
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType
 from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm
 from randomtest.utils import goodtag,goodurl,newtexcode
+
+
+
+def show_mc_form_condition(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type')==QuestionType.objects.get(question_type='multiple choice')
+
+def show_sa_form_condition(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type')==QuestionType.objects.get(question_type='short answer')
+
+def show_pf_form_condition(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type')==QuestionType.objects.get(question_type='proof')
+
+def show_mcsa_form_condition(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type')==QuestionType.objects.get(question_type='multiple choice short answer')
+
+def show_mc_form_condition2(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type_new')==QuestionType.objects.get(question_type='multiple choice')
+
+def show_sa_form_condition2(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type_new')==QuestionType.objects.get(question_type='short answer')
+
+def show_pf_form_condition2(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type_new')==QuestionType.objects.get(question_type='proof')
+
+def show_mcsa_form_condition2(wizard):
+    cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
+    return cleaned_data.get('question_type_new')==QuestionType.objects.get(question_type='multiple choice short answer')
+
+class AddProblemWizard(SessionWizardView):
+    template_name='problemeditor/addviewwizard.html'
+    def get_context_data(self, **kwargs):
+        ctx = super(AddProblemWizard, self).get_context_data(**kwargs)
+        ctx['ctx'] = ctx
+        if self.storage.current_step=='5':
+            qt=QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type')) 
+            if qt.question_type=='multiple choice':
+                ctx['mc']=True
+            if qt.question_type=='short answer':
+                ctx['sa']=True
+            if qt.question_type=='proof':
+                ctx['pf']=True
+            if qt.question_type=='multiple choice short answer':
+                ctx['mcsa']=True
+        if 'problem_text' in self.get_form_initial('1'):
+            ctx['problem_text']=self.get_form_initial('1')['problem_text']
+        if 'mc_problem_text' in self.get_form_initial('1'):
+            ctx['mc_problem_text']=self.get_form_initial('1')['mc_problem_text']
+        return ctx
+    def get_form_initial(self, step):
+        # steps are named 'step1', 'step2', 'step3'
+        current_step = self.storage.current_step
+        
+        # get the data for step 1 on step 3
+        if current_step == '5':#CHANGE THIS
+            init_data = self.storage.get_step_data('0')
+            qtype = init_data.get('0-question_type')
+            q=QuestionType.objects.get(pk=qtype)
+            if q.question_type=='multiple choice':
+                prev_data = self.storage.get_step_data('1')
+                some_var = prev_data.get('1-mc_problem_text','')+'\n\n'+'$\\textbf{(A) }'+prev_data.get('1-answer_A','')+'\\qquad \\textbf{(B) }'+prev_data.get('1-answer_B','')+'\\qquad \\textbf{(C) }'+prev_data.get('1-answer_C','')+'\\qquad \\textbf{(D) }'+prev_data.get('1-answer_D','')+'\\qquad \\textbf{(E) }'+prev_data.get('1-answer_E','')+'$\n\n'
+                return self.initial_dict.get(step, {'mc_problem_text': some_var})
+            elif q.question_type=='short answer':
+                prev_data = self.storage.get_step_data('2')
+                some_var = prev_data.get('2-problem_text','')
+                return self.initial_dict.get(step, {'problem_text': some_var})
+            elif q.question_type=='proof':
+                prev_data = self.storage.get_step_data('3')
+                some_var = prev_data.get('3-problem_text','')
+                return self.initial_dict.get(step, {'problem_text': some_var})
+            elif q.question_type=='multiple choice short answer':
+                prev_data = self.storage.get_step_data('4')
+                some_var = prev_data.get('4-mc_problem_text','')
+                some_var1 = prev_data.get('4-problem_text','')
+                return self.initial_dict.get(step, {'mc_problem_text': some_var,'problem_text': some_var1})
+        return self.initial_dict.get(step, {})
+    def done(self,form_list,**kwargs):
+        D={}
+        for form in form_list:
+            x=form.cleaned_data
+            for i in x:
+                D[i]=x[i]
+        if D['question_type'].question_type == 'short answer':
+            prob = Problem(
+                problem_text=D['problem_text'],
+                author_name=D['author_name'],
+                answer=D['correct_short_answer_answer'],
+                sa_answer=D['correct_short_answer_answer'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+                )
+        elif D['question_type'].question_type == 'proof':
+            prob = Problem(
+                problem_text=D['problem_text'],
+                author_name=D['author_name'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+                )
+        elif D['question_type'].question_type == 'multiple choice':
+            prob = Problem(
+                mc_problem_text=D['mc_problem_text'],
+                author_name=D['author_name'],
+                answer=D['correct_multiple_choice_answer'],
+                mc_answer=D['correct_multiple_choice_answer'],
+                answer_choices='$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
+                answer_A=D['answer_A'],
+                answer_B=D['answer_B'],
+                answer_C=D['answer_C'],
+                answer_D=D['answer_D'],
+                answer_E=D['answer_E'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+                )
+        elif D['question_type'].question_type == 'multiple choice short answer':
+            prob = Problem(
+                problem_text=D['problem_text'],
+                mc_problem_text=D['mc_problem_text'],
+                author_name=D['author_name'],
+                answer=D['correct_multiple_choice_answer'],
+                mc_answer=D['correct_multiple_choice_answer'],
+                answer_choices='$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
+                answer_A=D['answer_A'],
+                answer_B=D['answer_B'],
+                answer_C=D['answer_C'],
+                answer_D=D['answer_D'],
+                answer_E=D['answer_E'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+                )
+        prob.save()
+        prob.question_type.add(D['question_type'])
+        prob.types.add(D['type'])
+        prob.author=self.request.user
+        t=prob.type_new
+        t.top_index+=1
+        t.save()
+        prob.label = t.type+str(t.top_index)
+        prob.readable_label = t.type+' '+str(t.top_index)
+        prob.save()
+        sol=Solution(solution_text = D['solution_text'])
+        sol.save()
+        sol.solution_number=1
+        sol.authors.add(self.request.user)
+        sol.problem_label=prob.label
+        sol.save()
+        prob.solutions.add(sol)
+        prob.save()
+        return redirect('/problemeditor/detailedview/'+str(prob.pk)+'/')
+
+#{'1':show_mc_form_condition2,'2':show_sa_form_condition2,'3':show_pf\
+#_form_condition2,'4':show_mcsa_form_condition2,})),
+
+CQTTEMPLATES = {
+    "0": "problemeditor/changequestiontypewizard.html",
+    "1": "problemeditor/changequestiontypewizardmc.html",
+    "2": "problemeditor/changequestiontypewizardsa.html",
+    "3": "problemeditor/changequestiontypewizardpf.html",
+    "4": "problemeditor/changequestiontypewizardmcsa.html",
+    }
+class ChangeQuestionTypeWizard(SessionWizardView):
+#    template_name='problemeditor/changequestiontypewizard.html'
+    instance=None
+    def get_context_data(self, **kwargs):
+        ctx = super(ChangeQuestionTypeWizard, self).get_context_data(**kwargs)
+        ctx['ctx'] = ctx
+        breadcrumbs=[]
+        prob=get_object_or_404(Problem,pk=self.kwargs['pk'])
+        if 'tagstatus' in self.kwargs:
+            if self.kwargs['tagstatus']=='untagged':
+                breadcrumbs=[
+                    ('../../',prob.type_new.label),
+                    ('../','untagged'),
+                    ('.',str(prob.readable_label)),
+                    ]
+            else:
+                raise Http404("Bad URL")
+        elif 'type' in self.kwargs:
+            breadcrumbs=[('../','Unapproved '+prob.type_new.label+' Problem'),('.',str(prob.readable_label))]
+        ctx['breadcrumbs']=breadcrumbs
+        return ctx
+    def get_template_names(self):
+        return [CQTTEMPLATES[self.steps.current]]
+    def get_form_initial(self, step):
+        if 'pk' in self.kwargs:
+            return {}
+        return self.initial_dict.get(step, {})
+    def get_form_instance(self, step):
+        if self.instance is None:
+            if 'pk' in self.kwargs:
+                pk = self.kwargs['pk']
+                self.instance = get_object_or_404(Problem,pk=pk)
+            else:
+                self.instance = Problem()
+        return self.instance
+    def get_form(self, step=None, data=None, files=None):
+#        print('get_form')
+        form = super(ChangeQuestionTypeWizard, self).get_form(step, data, files)
+        if step == '1' or step == '2' or step == '3' or step == '4':
+            prev_data = self.storage.get_step_data('0')
+            question_type = prev_data.get('0-question_type_new', '')
+            form.fields['question_type_new'].initial = question_type
+        return form
+    def done(self,form_list,**kwargs):
+        self.instance.question_type_new = QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type_new', ''))
+        self.instance.save()
+        return redirect('.')
+#        return redirect('/problemeditor/detailedview/'+str(self.instance.pk)+'/')
+
+
 
 # Create your views here.
 @login_required
@@ -15,7 +232,8 @@ def typeview(request):
     obj=sorted(obj,key=lambda x:x.type)
     rows=[]
     for i in range(0,len(obj)):
-        P = Problem.objects.filter(types__in=[obj[i]])
+#        P = Problem.objects.filter(types__in=[obj[i]])
+        P = Problem.objects.filter(type_new=obj[i])
         num_problems = P.count()
         untagged = P.filter(tags__isnull=True)
         num_untagged = untagged.count()
@@ -26,7 +244,8 @@ def typeview(request):
     obj2=sorted(obj2,key=lambda x:x.type)
     rows2=[]
     for i in range(0,len(obj2)):
-        P = Problem.objects.filter(types__in=[obj2[i]])
+#        P = Problem.objects.filter(types__in=[obj2[i]])
+        P = Problem.objects.filter(type_new=obj2[i])
         num_problems = P.count()
         untagged = P.filter(tags__isnull=True)
         num_untagged = untagged.count()
@@ -46,7 +265,8 @@ def tagview(request,type):
     obj=list(Tag.objects.all())
     obj=sorted(obj,key=lambda x:x.tag)
     rows=[]
-    probsoftype=Problem.objects.filter(types__in=[typ])
+#    probsoftype=Problem.objects.filter(types__in=[typ])
+    probsoftype=Problem.objects.filter(type_new=typ)
     untagged=probsoftype.filter(tags__isnull=True)
     num_untagged = untagged.count()
     testlabels=[]
@@ -72,7 +292,8 @@ def CMtagview(request,type):
     obj=list(Tag.objects.all())
     obj=sorted(obj,key=lambda x:x.tag)
     rows=[]
-    probsoftype=Problem.objects.filter(types__in=[typ])
+#    probsoftype=Problem.objects.filter(types__in=[typ])
+    probsoftype=Problem.objects.filter(type_new=typ)
     untagged=probsoftype.filter(tags__isnull=True)
     num_untagged = untagged.count()
     testlabels=[]
@@ -95,7 +316,8 @@ def CMtagview(request,type):
 @login_required
 def testview(request,type):
     typ=get_object_or_404(Type, type=type)
-    probsoftype=Problem.objects.filter(types__in=[typ])
+#    probsoftype=Problem.objects.filter(types__in=[typ])
+    probsoftype=Problem.objects.filter(type_new=typ)
     untagged=probsoftype.filter(tags__isnull=True)
     num_untagged = untagged.count()
     testlabels=[]
@@ -118,9 +340,11 @@ def typetagview(request,type,tag):
     rows=[]
     if tag!='untagged':
         ttag=get_object_or_404(Tag, tag=tag)
-        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+        problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
     else:
-        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
@@ -136,9 +360,11 @@ def CMtypetagview(request,type,tag):
     rows=[]
     if tag!='untagged':
         ttag=get_object_or_404(Tag, tag=tag)
-        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
+        problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
     else:
-        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
@@ -154,7 +380,8 @@ def testlabelview(request,type,testlabel):
     if testlabel!='untagged':
         problems=list(Problem.objects.filter(test_label=testlabel))
     else:
-        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
@@ -167,7 +394,8 @@ def testlabelview(request,type,testlabel):
 def unapprovedview(request,type):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-    problems=list(Problem.objects.filter(types__in=[typ]).filter(approval_status=False))
+#    problems=list(Problem.objects.filter(types__in=[typ]).filter(approval_status=False))
+    problems=list(Problem.objects.filter(type_new=typ).filter(approval_status=False))
     problems=sorted(problems, key=lambda x:(x.pk))
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
@@ -193,7 +421,36 @@ def problemview(request,type,tag,label):
         form = ProblemForm(instance=prob)
     texcode=newtexcode(form.instance.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=form.instance.readable_label.replace('\\#','#')
-    return render(request, 'problemeditor/view.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'tag':tag,'label':label,'prob_latex':texcode,'readablelabel':readablelabel})
+
+    context={}
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc']=True
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa']=True
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['mcsa']=True
+#    context['rows']=rows
+    context['form']=form
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['typelabel']= typ.label
+    context['label'] = label
+    context['tag'] = tag
+    context['readablelabel']=readablelabel
+
+    return render(request, 'problemeditor/view.html', context)
 
 @login_required
 def editproblemtextview(request,type,tag,label):
@@ -206,12 +463,42 @@ def editproblemtextview(request,type,tag,label):
         if form.is_valid():
             problem = form.save()
             problem.save()
+        return redirect('../')
     else:
         form = ProblemTextForm(instance=prob)
     texcode=newtexcode(form.instance.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=form.instance.readable_label.replace('\\#','#')
     breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',tag),('../',readablelabel),]
-    return render(request, 'problemeditor/editproblemtext.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'typelabel':typ.label,'label':label,'tag':tag,'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+
+    context={}
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc']=True
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa']=True
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['mcsa']=True
+#    context['rows']=rows
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['readablelabel']=readablelabel
+    context['form']=form
+    context['breadcrumbs']=breadcrumbs
+    context['typelabel']= typ.label
+    context['label'] = label
+    context['tag'] = tag
+    return render(request, 'problemeditor/editproblemtext.html', context)
 
 @login_required
 def editproblemtextpkview(request,**kwargs):
@@ -231,11 +518,38 @@ def editproblemtextpkview(request,**kwargs):
         if form.is_valid():
             problem = form.save()
             problem.save()
+        return redirect('../')
     else:
         form = ProblemTextForm(instance=prob)
+    print(prob.answer_choices)
     texcode=newtexcode(form.instance.problem_text,dropboxpath,prob.label,prob.answer_choices)
     readablelabel=form.instance.readable_label.replace('\\#','#')
-    return render(request, 'problemeditor/editproblemtext.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    context={}
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc']=True
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa']=True
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['mcsa']=True
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['readablelabel']=readablelabel
+    context['form']=form
+    context['breadcrumbs']=breadcrumbs
+
+    return render(request, 'problemeditor/editproblemtext.html', context)
 
 
 @login_required
@@ -249,9 +563,41 @@ def solutionview(request,type,tag,label):
     rows=[]
     for sol in sols:
         rows.append((sol.solution_text,sol.pk))
-    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
+#    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
-    return render(request, 'problemeditor/solview.html', {'rows': rows,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':texcode,'readablelabel':readablelabel})
+
+    context={}
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc']=True
+        context['mc_answer']=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa']=True
+        context['sa_answer']=prob.sa_answer
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['mcsa']=True
+        context['mc_answer']=prob.mc_answer
+        context['sa_answer']=prob.sa_answer
+    context['rows']=rows
+    context['label'] = label
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['typelabel']= typ.label
+    context['tag'] = tag
+    context['readablelabel']=readablelabel
+
+    return render(request, 'problemeditor/solview.html', context)
 
 @login_required
 def newsolutionview(request,type,tag,label):
@@ -274,11 +620,42 @@ def newsolutionview(request,type,tag,label):
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
-
-    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
     breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../','Solutions to '+readablelabel),]
-    return render(request, 'problemeditor/newsol.html', {'form': form,'label':label, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+
+    context={}
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc']=True
+        context['mc_answer']=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa']=True
+        context['sa_answer']=prob.sa_answer
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['mcsa']=True
+        context['mc_answer']=prob.mc_answer
+        context['sa_answer']=prob.sa_answer
+    context['form']=form
+    context['label'] = label
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['typelabel']= typ.label
+    context['tag'] = tag
+    context['readablelabel']=readablelabel
+    context['breadcrumbs']=breadcrumbs
+
+    return render(request, 'problemeditor/newsol.html', context)
 
 @login_required
 def newsolutionpkview(request,**kwargs):
@@ -389,7 +766,8 @@ def deletecommentpkview(request,**kwargs):#If solution_number is kept, this must
 def untaggedview(request,type):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+#    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
+    problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
@@ -428,13 +806,14 @@ def newcommentpkview(request,**kwargs):
         com=Comment(comment_text='', comment_number=com_num, problem_label=prob.label)
         com_form = CommentForm(instance=com)
 
-    return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'breadcrumbs':breadcrumbs})
+    return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'breadcrumbs':breadcrumbs,'label':prob.readable_label})
 
 
 @login_required
 def detailedproblemview(request,**kwargs):
     pk=kwargs['pk']
     prob=get_object_or_404(Problem, pk=pk)
+    context={}
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../',typ.label),('../',kwargs['tag']),]
@@ -455,8 +834,6 @@ def detailedproblemview(request,**kwargs):
                 problem.save()
     else:
         form=DetailedProblemForm(instance=prob)
-    #problem_text
-    texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
     #readablelabel
     readablelabel=prob.readable_label.replace('\\#','#')
     #sols...
@@ -470,7 +847,36 @@ def detailedproblemview(request,**kwargs):
     crows=[]
     for com in coms:
         crows.append((com.author_name,com.created_date,com.comment_text,com.pk))
-    return render(request, 'problemeditor/detailedview.html', {'rows': rows,'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'prob_latex':texcode,'readablelabel':readablelabel,'form':form,'crows':crows,'breadcrumbs':breadcrumbs})
+    if prob.question_type_new.question_type=='multiple choice':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc_answer']=prob.mc_answer
+        context['mc']=True
+    elif prob.question_type_new.question_type=='short answer':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['sa_answer']=prob.sa_answer
+        context['sa']=True
+    elif prob.question_type_new.question_type=='proof':
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+        context['prob_latex']=texcode
+        context['pf']=True
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        context['mc_prob_latex']=mc_texcode
+        context['mc_answer']=prob.mc_answer
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
+        context['prob_latex']=texcode
+        context['sa_answer']=prob.sa_answer
+        context['mcsa']=True
+    context['rows']=rows
+    context['nbar']='problemeditor'
+    context['dropboxpath']=dropboxpath
+    context['readablelabel']=readablelabel
+    context['form']=form
+    context['crows']=crows
+    context['breadcrumbs']=breadcrumbs
+    return render(request, 'problemeditor/detailedview.html', context)
 
 @login_required
 def addproblemview(request):

@@ -1,0 +1,180 @@
+{% extends './base.html' %}
+{% load i18n %}
+
+{% block head %}
+{{ wizard.form.media }}
+{% endblock %}
+{% block title %}Add New Problem{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li class="active">Add Problem</li>
+</ol>
+<!--
+<div class="stepwizard col-md-offset-3">
+    <div class="stepwizard-row setup-panel">
+      <div class="stepwizard-step">
+        <button name="step1wiz" type="submit" class="btn btn-primary btn-circle" value="" disabled="disabled">1</button>
+        <p>Step 1</p>
+      </div>
+      <div class="stepwizard-step">
+        <a href="#step-2" type="button" class="btn btn-default btn-circle" disabled="disabled">2</a>
+        <p>Step 2</p>
+      </div>
+    </div>
+  </div>
+
+
+        if D['question_type'].question_type == 'short answer':
+            prob = Problem(
+                problem_text=D['problem_text'],
+                author_name=D['author_name'],
+answer=D['correct_answer'],
+sa_answer=D['correct_answer'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+                )
+        elif D['question_type'].question_type == 'multiple choice':
+            prob = Problem(
+                mc_problem_text=D['problem_text'],
+                author_name=D['author_name'],
+                answer=D['correct_answer'],
+mc_answer=D['correct_answer'],
+                answer_choices='\n\n$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer\
+_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E\
+) }'+D['answer_E']+'$\n\n',
+                answer_A=D['answer_A'],
+                answer_B=D['answer_B'],
+                answer_C=D['answer_C'],
+                answer_D=D['answer_D'],
+                answer_E=D['answer_E'],
+                type_new=D['type'],
+                question_type_new=D['question_type'],
+-->
+    <h2>Add Problem</h2>
+
+<p> Step {{wizard.steps.step1}} of 3</p>
+<br>
+    <form method="POST" class="post-form">{% csrf_token %}
+<table>
+{{ wizard.management_form }}
+{% if wizard.form.forms %}
+
+    {{ wizard.form.management_form }}
+    {% for form in wizard.form.forms %}
+        {{ form.as_p }}
+    {% endfor %}
+
+{% else %}
+
+{% if sa or pf %}
+<label for "ptext">Problem Text</label>
+<p id="ptext">{{problem_text|linebreaks}}</p>
+{% endif %}
+{% if mc %}
+<label for "ptext">Problem Text</label>
+<p id="ptext">{{mc_problem_text|linebreaks}}</p>
+{% endif %}
+{% if mcsa %}
+<label for "ptext">Problem Text (Multiple Choice)</label>
+<p id="ptext">{{mc_problem_text|linebreaks}}</p>
+<label for "ptext">Problem Text (Short Answer)</label>
+<p id="ptext">{{problem_text|linebreaks}}</p>
+{% endif %}
+
+{% if wizard.form.question_type %}
+<div class="form-group">
+  <label for="{{wizard.form.question_type.id}}">Question Type</label>
+  <p>{{wizard.form.question_type}}</p>
+  {% if wizard.form.question_type.errors %}
+  <p class="help-block">    Please select a question type.</p>
+  {% endif %}
+</div>
+<div class="form-group">
+  <label for="{{wizard.form.type.id}}">Type</label>
+  <p>{{wizard.form.type}}</p>
+  {% if wizard.form.type.errors %}
+  <p class="help-block">    Please select a type.</p>
+  {% endif %}
+</div>
+<div class="form-group">
+  <label for="{{wizard.form.author_name.id}}">Author Name</label>
+  <p>{{wizard.form.author_name}}</p>
+  {% if wizard.form.author_name.errors %}
+  <p class="help-block">    Please enter an author.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if wizard.form.mc or wizard.form.mcsa %}
+<div class="form-group">
+  <label for="{{wizard.form.mc_problem_text.id}}">Problem LaTeX{% if wizard.form.mcsa %} (Multiple Choice){% endif %}</label>
+  <p>{{wizard.form.mc_problem_text}}</p>
+  {% if wizard.form.mc_problem_text.errors %}
+  <p class="help-block">    Please enter a problem.</p>
+  {% endif %}
+</div>
+<div class="form-group">
+  <label for="{{wizard.form.answer_A.id}}">Answer Choices</label>
+  <p>Please use LaTeX (No dollar signs necessary)</p>
+  <p>Choice A: {{wizard.form.answer_A}}</p>
+  <p>Choice B: {{wizard.form.answer_B}}</p>
+  <p>Choice C: {{wizard.form.answer_C}}</p>
+  <p>Choice D: {{wizard.form.answer_D}}</p>
+  <p>Choice E: {{wizard.form.answer_E}}</p>
+  {% if wizard.form.answer_A.errors or wizard.form.answer_B.errors or wizard.form.answer_C.errors or wizard.form.answer_D.errors or wizard.form.answer_E.errors %}
+  <p class="help-block">    Please enter five answer choices.</p>
+  {% endif %}
+</div>
+<div class="form-group">
+  <label for="{{wizard.form.correct_multiple_choice_answer.id}}">Correct Answer (Multiple Choice)</label>
+  <p>{{wizard.form.correct_multiple_choice_answer}}</p>
+  {% if wizard.form.correct_multiple_choice_answer.errors %}
+  <p class="help-block">    Please enter the correct answer.</p>
+  {% endif %}
+</div>
+
+{% endif %}
+
+{% if wizard.form.sa or wizard.form.pf or wizard.form.mcsa%}
+<div class="form-group">
+  <label for="{{wizard.form.problem_text.id}}">Problem LaTeX{% if wizard.form.mcsa %} (Short Answer){% endif %}</label>
+  <p>{{wizard.form.problem_text}}</p>
+  {% if wizard.form.problem_text.errors %}
+  <p class="help-block">    Please enter a problem.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if wizard.form.correct_short_answer_answer %}
+<div class="form-group">
+  <label for="{{wizard.form.correct_short_answer_answer.id}}">Correct Answer (Short Answer)</label>
+  <p>{{wizard.form.correct_short_answer_answer}}</p>
+  {% if wizard.form.correct_short_answer_answer.errors %}
+  <p class="help-block">    Please enter the correct answer.</p>
+  {% endif %}
+</div>
+{% endif %}
+
+{% if wizard.form.solution_text %}
+<div class="form-group">
+  <label for="{{wizard.form.solution_text.id}}">Solution LaTeX</label>
+  <p>{{wizard.form.solution_text}}</p>
+  {% if wizard.form.solution_text.errors %}
+  <p class="help-block">    Please enter a solution.</p>
+  {% endif %}
+{% endif %}
+
+
+<!--    {{ wizard.form.as_p }}-->
+{% endif %}
+</table>
+{% if wizard.steps.prev %}
+
+<!--<button name="wizard_goto_step" type="submit" class="btn btn-default" value="{{ wizard.steps.first }}">{% trans "First step" %}</button>-->
+<button name="wizard_goto_step" type="submit" class="btn btn-default" value="{{ wizard.steps.prev }}">{% trans "Previous step" %}</button>
+{% endif %}
+<input type="submit" class="btn btn-primary" value="{% trans "Submit" %}"/>
+</form>
+{% endblock %}

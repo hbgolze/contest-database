@@ -19,7 +19,7 @@ class Tag(models.Model):
 class Type(models.Model):
     type = models.CharField(max_length=10)
     label= models.CharField(max_length=20,blank=True)
-    topindex = models.IntegerField(default=0)
+    top_index = models.IntegerField(default=0)
     def __str__(self):
         return self.label
 
@@ -56,22 +56,32 @@ class Comment(models.Model):
 class Problem(models.Model):
     problem_number = models.IntegerField(default=0)
     tags = models.ManyToManyField(Tag,related_name='problems',blank=True)
+#    tags = models.ManyToManyField(Tag,blank=True)
+    type_new = models.ForeignKey(Type,related_name='type_new',blank=True,null=True)#new(should replace)
+    question_type_new = models.ForeignKey(QuestionType,related_name='question_type_new',blank=True,null=True)#new(should replace), then replace again.
     year = models.IntegerField(default=2016)
     difficulty = models.IntegerField(blank=True,null=True)
-    types = models.ManyToManyField(Type)#allows for  multiple types, though this isn't really utilized. 
-    answer = models.CharField(max_length=20,blank=True)
-    latexanswer = models.CharField(max_length=100,blank=True)
+    types = models.ManyToManyField(Type)#allows for  multiple types, should be replaced
+    answer = models.CharField(max_length=20,blank=True)#should be replaced
+    latexanswer = models.CharField(max_length=100,blank=True)#should be replaced
     label = models.CharField(max_length=20)
     readable_label = models.CharField(max_length=20,blank=True)
     problem_text = models.TextField(blank=True)
-    answer_choices = models.TextField(blank=True)
+    mc_problem_text = models.TextField(blank=True)
+    answer_choices = models.TextField(blank=True)#should be replaced
+    answer_A = models.CharField(max_length=500,blank=True)
+    answer_B = models.CharField(max_length=500,blank=True)
+    answer_C = models.CharField(max_length=500,blank=True)
+    answer_D = models.CharField(max_length=500,blank=True)
+    answer_E = models.CharField(max_length=500,blank=True)
+    mc_answer = models.CharField(max_length=1,blank=True)
+    sa_answer = models.CharField(max_length=20,blank=True)
     form_letter = models.CharField(max_length=2,blank=True)
     test_label = models.CharField(max_length=20,blank=True)
     question_type = models.ManyToManyField(QuestionType)
     solutions = models.ManyToManyField(Solution,blank=True)
     author = models.ForeignKey(User,related_name='author',blank=True,null=True)
     author_name = models.CharField(max_length=50,blank=True)
-    tags = models.ManyToManyField(Tag,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
     approval_status = models.BooleanField(default=0)
     approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)
@@ -86,6 +96,8 @@ class Problem(models.Model):
         for i in range(1,len(L)):
             s += ', '+L[i].tag
         return s
+    def answers(self):
+        return '\n\n$\\textbf{(A) }'+answer_A+'\\qquad\\textbf{(B) }'+answer_B+'\\qquad\\textbf{(C) }'+answer_C+'\\qquad\\textbf{(D) }'+answer_D+'\\qquad\\textbf{(E) }'+answer_E+'$\n\n'
 
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme

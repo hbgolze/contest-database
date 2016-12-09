@@ -18,36 +18,82 @@
 {% endfor %}
   <li class="active">{{readablelabel}}</li>
 </ol>
-    <h2>{{readablelabel}}</h2>
+    <h1>{{readablelabel}}</h1>
 <form method="POST" class="post-form">{% csrf_token %}
+<div class="form-group">
+{% if mc %}
+<label>Problem Text:</label>
+{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+{% endif %}
+{% if sa or pf %}
+<label>Problem Text:</label>
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+{% endif %}
+{% if mcsa %}
+<label>Problem Text (Multiple Choice):</label>
+<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<label>Problem Text (Short Answer):</label>
 <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-{% if request.user.is_superuser %}<p><a href="edittext/">Edit LaTeX Code</a></p>{% endif %}
+{% endif %}
+{% if request.user.is_superuser %}<p><a href="edittext/">Edit LaTeX Code{% if mc%} (including answer choices){% endif %}</a></p>{% endif %}
+</div>
 {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
-<br>
-    <p>Answer: <br>{{form.answer}}</p>
-    <p>LaTeX Answer: <br>{{form.latexanswer}}</p>
-    <p>Difficulty: <br>{{form.difficulty}}</p>
-    <p>Question Type: <br>{{form.question_type}}</p>
-    <h2>Solutions</h2>
-        {% for solution,spk in rows %}
-          <h3>Solution {{forloop.counter}}</h3>
-	  <p>(<a href="editsolution/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="deletesolution/{{spk}}/">Delete</a>){% endif %}</p>
-	  <p>{{solution|linebreaks}}</p>
-        {% endfor %}
-	{% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
-	<button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
-	</br></br>
-    <p>Tags:<br>
-{{form.tags}}</p>
-	<p>Approved: {{form.approval_status}}</p>
-    <h2>Comments</h2>
+
+{% if mc %}
+<label>Answer:</label>
+<p>{{form.mc_answer}}</p>
+{% endif %}
+{% if sa %}
+<label>Answer:</label>
+<p>{{form.sa_answer}}</p>
+{% endif %}
+{% if mcsa %}
+<p><label>Answer (Multiple Choice):</label>
+{{form.mc_answer}}</p>
+<p><label>Answer (Short Answer):</label></p>
+<p>{{form.sa_answer}}</p>
+{% endif %}
+
+
+<label>Current Question Type:</label>
+<p>
+{{form.instance.question_type_new.question_type}} (<a href="change_question_type">change</a>)
+</p>
+
+<label>Difficulty:</label>
+<p>
+{{form.difficulty}}
+</p>
+
+<label>Solutions</label><br>
+{% for solution,spk in rows %}
+<label>Solution {{forloop.counter}}:</label>
+  <p>(<a href="editsolution/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="deletesolution/{{spk}}/">Delete</a>){% endif %}</p>
+  {{solution|linebreaks}}
+  {% endfor %}
+  {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
+  <button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
+  <br><br>
+
+<div class="form-group">
+  <label for="tags">Tags:</label>
+  <p id="tags">
+    {{form.tags}}
+  </p>
+</div>
+<div class="form-group">
+  <p>
+  <label>Approval Status:</label>
+    {{form.approval_status}}
+  </p>
+</div>
+    <label>Comments:</label>
 <div class="comments-list">
         {% for name,date,comment,cpk in crows %}
 <div class="media">
 <p class="pull-right"><small>{{date}}</small></p>
 <div class="media-body">
-<h4 class="media-heading user_name">{{name}}</h4>
-<!--          <h3>{{name}} ({{date}})</h3>-->
+<h3 class="media-heading user_name">{{name}}</h3>
 	  <p>{{comment|linebreaks}}</p>
 {% if request.user.is_superuser %}<p><small>(<a href="deletecomment/{{cpk}}/">Delete</a>)</small></p>{% endif %}
 
@@ -56,10 +102,9 @@
         {% endfor %}
 </div>
 	{% if crows|length == 0 %}<p>No Comments Yet</p>{% endif %}
-	<button type="button" class="save btn btn-default" onclick="location.href='newcomment'">New Comment</button>
-	</br></br>
 
-<!--{{form.as_p}}-->
+	<button type="button" class="save btn btn-default" onclick="location.href='newcomment'">New Comment</button>
+	<br><br>
 <button type="submit" class="save btn btn-default">Save</button>
 </form>
 {% endblock %}
