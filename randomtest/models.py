@@ -98,19 +98,19 @@ class Problem(models.Model):
         return s
     def answers(self):
         s='\n\n$\\textbf{(A) }'+self.answer_A
-        if len(self.answer_A)>0 and self.answer_A[-1]!='\\':
+        if len(self.answer_A)>0 and self.answer_A[-1]=='\\':
             s+='\\\n\\textbf{(B) }'+self.answer_B
         else:
             s+='\\qquad\\textbf{(B) }'+self.answer_B
-        if len(self.answer_B)>0 and self.answer_B[-1]!='\\':
+        if len(self.answer_B)>0 and self.answer_B[-1]=='\\':
             s+='\\\n\\textbf{(C) }'+self.answer_C
         else:
             s+='\\qquad\\textbf{(C) }'+self.answer_C
-        if len(self.answer_C)>0 and self.answer_C[-1]!='\\':
+        if len(self.answer_C)>0 and self.answer_C[-1]=='\\':
             s+='\\\n\\textbf{(D) }'+self.answer_D
         else:
             s+='\\qquad\\textbf{(D) }'+self.answer_D
-        if len(self.answer_D)>0 and self.answer_D[-1]!='\\':
+        if len(self.answer_D)>0 and self.answer_D[-1]=='\\':
             s+='\\\n\\textbf{(E) }'+self.answer_E
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
