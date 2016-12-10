@@ -1,6 +1,9 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect
-from django.template import loader,RequestContext
+from django.template import loader,RequestContext,Context
+
+from django.template.loader import get_template
+
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
@@ -9,6 +12,9 @@ from django.db.models import Q
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 
+from subprocess import Popen,PIPE
+import tempfile
+import os
 
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
@@ -435,3 +441,61 @@ def latexview(request,pk):
 @login_required
 def readme(request):
     return render(request,'randomtest/readme.html',{'nbar':'newtest'})
+
+def test_as_pdf(request, pk):
+    test = get_object_or_404(Test, pk=pk)
+    P=list(test.problems.all())
+    rows=[]
+    include_problem_labels = True
+    for i in range(0,len(P)):
+        rows.append((P[i].problem_text,P[i].readable_label,P[i].answer_choices))
+    if request.method == "GET":
+        if request.GET.get('problemlabels')=='no':
+            include_problem_labels = False
+    context = Context({  
+            'name':test.name,
+            'rows':rows,
+            'pk':pk,
+            'include_problem_labels':include_problem_labels,
+            })
+    template = get_template('randomtest/my_latex_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')  
+    # Python3 only. For python2 check out the docs!
+    with tempfile.TemporaryDirectory() as tempdir:
+        # Create subprocess, supress output with PIPE and
+        # run latex twice to generate the TOC properly.
+        # Finally read the generated pdf.
+        for i in range(2):
+            process = Popen(
+                ['pdflatex', '-output-directory', tempdir],
+                stdin=PIPE,
+                stdout=PIPE,
+            )
+            process.communicate(rendered_tpl)
+#        print(os.listdir(tempdir))
+#        os.system('more '+tempdir+'/texput.log')
+        L=os.listdir(tempdir)
+        for i in range(0,len(L)):
+            if L[i][-4:]=='.asy':
+                process = Popen(
+#                    ['asy', '-o',os.path.join(tempdir,L[i].replace('.asy','.pdf')),os.path.join(tempdir,L[i])],
+                    ['asy', os.path.join(tempdir,L[i])],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    )
+#                process.communicate()
+#        process.communicate(rendered_tpl)
+#        print(os.listdir(tempdir))
+        for i in range(2):
+            process = Popen(
+                ['pdflatex', '-output-directory', tempdir],
+                stdin=PIPE,
+                stdout=PIPE,
+            )
+            process.communicate(rendered_tpl)
+        with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+            pdf = f.read()
+    r = HttpResponse(content_type='application/pdf')  
+    #r['Content-Disposition'] = 'attachment; filename=texput.pdf'
+    r.write(pdf)
+    return r

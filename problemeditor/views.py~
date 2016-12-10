@@ -49,6 +49,7 @@ class AddProblemWizard(SessionWizardView):
     def get_context_data(self, **kwargs):
         ctx = super(AddProblemWizard, self).get_context_data(**kwargs)
         ctx['ctx'] = ctx
+        ctx['nbar']= 'problemeditor'
         if self.storage.current_step=='5':
             qt=QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type')) 
             if qt.question_type=='multiple choice':
@@ -192,7 +193,7 @@ class ChangeQuestionTypeWizard(SessionWizardView):
             else:
                 raise Http404("Bad URL")
         elif 'type' in self.kwargs:
-            breadcrumbs=[('../','Unapproved '+prob.type_new.label+' Problem'),('../',str(prob.readable_label))]
+            breadcrumbs=[('../','Unapproved '+prob.type_new.label+' Problem'),('.',str(prob.readable_label))]
         ctx['breadcrumbs']=breadcrumbs
         return ctx
     def get_template_names(self):

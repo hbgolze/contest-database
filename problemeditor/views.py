@@ -49,6 +49,7 @@ class AddProblemWizard(SessionWizardView):
     def get_context_data(self, **kwargs):
         ctx = super(AddProblemWizard, self).get_context_data(**kwargs)
         ctx['ctx'] = ctx
+        ctx['nbar']= 'problemeditor'
         if self.storage.current_step=='5':
             qt=QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type')) 
             if qt.question_type=='multiple choice':
@@ -180,6 +181,7 @@ class ChangeQuestionTypeWizard(SessionWizardView):
     def get_context_data(self, **kwargs):
         ctx = super(ChangeQuestionTypeWizard, self).get_context_data(**kwargs)
         ctx['ctx'] = ctx
+        ctx['nbar']= 'problemeditor'
         breadcrumbs=[]
         prob=get_object_or_404(Problem,pk=self.kwargs['pk'])
         if 'tagstatus' in self.kwargs:

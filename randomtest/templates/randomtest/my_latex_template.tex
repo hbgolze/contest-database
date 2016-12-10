@@ -1,0 +1,41 @@
+
+{% autoescape off %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
+\title{ {{name}} }
+\author{}
+\date{}
+\begin{document}
+\maketitle
+\begin{enumerate}
+{% for problemcode,problemlabel,answerchoices in rows %}
+\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel}}]{% endif %}
+
+{{answerchoices}}
+{% endfor %}
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}

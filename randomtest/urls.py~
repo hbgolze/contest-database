@@ -11,5 +11,5 @@ urlpatterns = [
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
-    url(r'^tagcounts/$', views.tagcounts2, name='tag_counts'),
+    url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
 ]

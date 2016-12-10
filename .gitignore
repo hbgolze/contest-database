@@ -5,6 +5,7 @@ db.sqlite3
 /static
 .DS_Store
 
+*.pdf
 *~
 makedatabase.py
 loadproblemscommon.py
