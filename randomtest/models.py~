@@ -97,7 +97,7 @@ class Problem(models.Model):
             s += ', '+L[i].tag
         return s
     def answers(self):
-        return '\n\n$\\textbf{(A) }'+answer_A+'\\qquad\\textbf{(B) }'+answer_B+'\\qquad\\textbf{(C) }'+answer_C+'\\qquad\\textbf{(D) }'+answer_D+'\\qquad\\textbf{(E) }'+answer_E+'$\n\n'
+        return '\n\n$\\textbf{(A) }'+self.answer_A+'\\qquad\\textbf{(B) }'+self.answer_B+'\\qquad\\textbf{(C) }'+self.answer_C+'\\qquad\\textbf{(D) }'+self.answer_D+'\\qquad\\textbf{(E) }'+self.answer_E+'$\n\n'
 
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
