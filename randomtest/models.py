@@ -114,7 +114,7 @@ class Problem(models.Model):
             s+='\\\n\\textbf{(E) }'+self.answer_E
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
-        return s
+        return s+'$\n\n'
 
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
