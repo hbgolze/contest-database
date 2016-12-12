@@ -454,7 +454,7 @@ def test_as_pdf(request, pk):
     include_problem_labels = True
     for i in range(0,len(P)):
         ptext=''
-        if P[i].type_new.type=='multiple choice' or 'multiple choice short answer':
+        if P[i].question_type_new.question_type=='multiple choice' or 'multiple choice short answer':
             ptext=P[i].mc_problem_text
         else:
             ptext=P[i].problem_text
