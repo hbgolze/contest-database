@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval
 from django.contrib.admin.widgets import FilteredSelectMultiple
 
 ANSWER_CHOICES = (
@@ -10,7 +10,12 @@ ANSWER_CHOICES = (
     ('D','Answer D'),
     ('E','Answer E'),
     )
-
+APPROVAL_CHOICES = (
+    ('AP', 'Approved'),
+    ('MN', 'Approved Subject to Minor Revision'),
+    ('MJ', 'Needs Major Revision'),
+    ('DE', 'Propose For Deletion'),
+    )
 class ProblemForm(forms.ModelForm):
 #    widgets = {
 #        'tags': forms.ModelMultipleChoiceField(widget=FilteredSelectMultiple(('tags'),False),queryset=Tag.objects.all(),required=False)
@@ -29,7 +34,7 @@ class DetailedProblemForm(forms.ModelForm):
     tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     class Meta:
         model = Problem
-        fields = ('tags','mc_answer','sa_answer','difficulty','approval_status',)
+        fields = ('tags','mc_answer','sa_answer','difficulty','approval_status','approvals')
         widgets = {
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
         }
@@ -66,6 +71,17 @@ class CommentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)   
         self.fields['author_name'].required = True
+
+class ApprovalForm(forms.ModelForm):
+#    approval_status=forms.ChoiceField(widget = forms.RadioSelect())#,queryset=APPROVAL_CHOICES,label="Type")#,empty_label=None)
+    class Meta:
+        model = ProblemApproval
+        fields = ('author_name','approval_status',)
+    def __init__(self, *args, **kwargs):
+        super(ApprovalForm, self).__init__(*args, **kwargs)   
+        self.fields['author_name'].required = True
+        self.fields['approval_status'].required = True
+
 class AddProblemForm(forms.ModelForm):
     tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     question_type=forms.ModelMultipleChoiceField(widget = forms.CheckboxSelectMultiple(), queryset = QuestionType.objects.all(),required=True)
@@ -100,7 +116,7 @@ class AddProblemForm2MC(forms.Form):
     answer_C = forms.CharField()
     answer_D = forms.CharField()
     answer_E = forms.CharField()
-    correct_answer = forms.ChoiceField(widget = forms.RadioSelect(),choices=ANSWER_CHOICES)
+    correct_multiple_choice_answer = forms.ChoiceField(widget = forms.RadioSelect(),choices=ANSWER_CHOICES)
     mc = forms.CharField(required=False)
 
 class AddProblemForm2SA(forms.Form):
@@ -150,6 +166,15 @@ class ChangeQuestionTypeForm2MC(forms.ModelForm):
             'mc_problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
             }
+    def __init__(self, *args, **kwargs):
+        super(ChangeQuestionTypeForm2MC, self).__init__(*args, **kwargs)   
+        self.fields['mc_problem_text'].required = True
+        self.fields['answer_A'].required = True
+        self.fields['answer_B'].required = True
+        self.fields['answer_C'].required = True
+        self.fields['answer_D'].required = True
+        self.fields['answer_E'].required = True
+        self.fields['mc_answer'].required = True
 
 class ChangeQuestionTypeForm2SA(forms.ModelForm):
     class Meta:
@@ -161,18 +186,23 @@ class ChangeQuestionTypeForm2SA(forms.ModelForm):
         widgets = {
             'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             }
-
+    def __init__(self, *args, **kwargs):
+        super(ChangeQuestionTypeForm2SA, self).__init__(*args, **kwargs)   
+        self.fields['problem_text'].required = True
+        self.fields['sa_answer'].required = True
 
 class ChangeQuestionTypeForm2PF(forms.ModelForm):
     class Meta:
         model = Problem
         fields = ('problem_text',
-                  'sa_answer',
                   'question_type_new',
                   )
         widgets = {
             'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             }
+    def __init__(self, *args, **kwargs):
+        super(ChangeQuestionTypeForm2PF, self).__init__(*args, **kwargs)   
+        self.fields['problem_text'].required = True
 
 class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
     class Meta:
@@ -193,6 +223,17 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
             'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
             }
+    def __init__(self, *args, **kwargs):
+        super(ChangeQuestionTypeForm2MCSA, self).__init__(*args, **kwargs)   
+        self.fields['mc_problem_text'].required = True
+        self.fields['problem_text'].required = True
+        self.fields['answer_A'].required = True
+        self.fields['answer_B'].required = True
+        self.fields['answer_C'].required = True
+        self.fields['answer_D'].required = True
+        self.fields['answer_E'].required = True
+        self.fields['mc_answer'].required = True
+        self.fields['sa_answer'].required = True
 
 
 '''

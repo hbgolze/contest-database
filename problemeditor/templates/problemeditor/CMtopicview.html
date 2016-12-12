@@ -1,0 +1,52 @@
+{% extends "./base.html" %}
+{% block title %}Choose a Problem{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+  <li class="active">{{typelabel}} Problems</li>
+</ol>
+<h2>Problem Editor</h2>
+Please select a problem
+<div class="content">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Label</th>
+	<th>Current Tags</th>
+	<th>Number of Solutions</th>
+	<th>Edit</th>
+	<th>Approvals</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for label,tags,num,pk,apps in rows %}
+      
+      <tr>
+        <td>{{label}}</td>
+        <td>{{tags}}</td>
+        <td>{{num}}</td>
+	<td><a href="{{pk}}/">Edit</a></td>
+	<td>
+	  {% for app in apps %}
+	  {% if app.approval_status == "AP" %}
+	  <span class="glyphicon glyphicon-ok-sign">
+	  {% elif app.approval_status == "MN" %}
+	  <span class="glyphicon glyphicon-edit">
+	  {% elif app.approval_status == "MJ" %}
+	  <span class="glyphicon glyphicon-exclamation-sign">
+	  {% elif app.approval_status == "DE" %}
+	  <span class="glyphicon glyphicon-remove-sign">
+	  {% endif %}
+          {% endfor %}
+	  {% if apps.count == 0 %}
+	  N/A
+	  {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

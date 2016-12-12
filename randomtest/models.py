@@ -23,6 +23,17 @@ class Type(models.Model):
     def __str__(self):
         return self.label
 
+class ProblemApproval(models.Model):
+    approval_user = models.ForeignKey(User,blank=True,null=True)
+    APPROVAL_CHOICES = (
+        ('AP', 'Approved'),
+        ('MN', 'Approved Subject to Minor Revision'),
+        ('MJ', 'Needs Major Revision'),
+        ('DE', 'Propose For Deletion'),
+        )
+    approval_status = models.CharField(max_length = 2,choices=APPROVAL_CHOICES,blank=False,default='MJ')
+    author_name = models.CharField(max_length=50,blank=True)
+
 class QuestionType(models.Model):#multiple choice; short answer; proof
     question_type = models.CharField(max_length=20)
     def __str__(self):
@@ -86,6 +97,7 @@ class Problem(models.Model):
     approval_status = models.BooleanField(default=0)
     approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)
     comments = models.ManyToManyField(Comment,blank=True)
+    approvals = models.ManyToManyField(ProblemApproval,blank=True)
     def __str__(self):
         return self.label
     def print_tags(self):

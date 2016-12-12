@@ -40,22 +40,20 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
       <tr>
         <th>Test Category</th>
 	<th>View by Tag</th>
-	<th>View Unapproved Problems</th>
+	<th>View Problems</th>
         <th>Number of Untagged Problems</th>
 	<th>Number of Problems with no Solution</th>
-	<th>Number of Unapproved Problems</th>
       </tr>
     </thead>
     <tbody>
-      {% for type,label,untagged,unsolution,num,unapproved in rows2 %}
+      {% for type,label,untagged,unsolution,num in rows2 %}
       
       <tr>
 	<td>{{label}}</td>
         <td><a href="CMbytag/{{type}}">View by Tag</a></td>
-        <td><a href="unapproved/{{type}}">View Unapproved Problems</a></td>
+        <td><a href="CMbytopic/{{type}}">View Problems</a></td>
         <td> {{untagged}}/{{num}}</td>
         <td>{{unsolution}}/{{num}}</td>
-        <td>{{unapproved}}/{{num}}</td>
       </tr>
       {% endfor %}
     </tbody>

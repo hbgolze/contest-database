@@ -1,0 +1,20 @@
+{% extends './base.html' %}
+
+{% block title %}Edit Review: {{readablelabel}}{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemeditor/">Select Type</a></li>
+{% for breadurl,breadlabel in breadcrumbs %}
+  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
+{% endfor %}
+  <li class="active">Edit Review</li>
+</ol>
+    <h2>Edit Review to {{readablelabel}}</h2>
+    <form method="POST" class="post-form">{% csrf_token %}
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
+          <h3>Review</h3>
+{{form.as_p}}
+        <input type="submit" class="save btn btn-default" name="save" value="Save">
+    </form>
+{% endblock %}

@@ -7,7 +7,7 @@
   <li class="active">Select Type</li>
 </ol>
 <h2>Problem Editor</h2>
-Please select a test category or <a href="/problemeditor/newproblem/">add</a> a new problem.
+Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a> a new problem-->.
 <div class="content">
 <table class="table table-striped">
     <thead>
@@ -40,22 +40,20 @@ Please select a test category or <a href="/problemeditor/newproblem/">add</a> a 
       <tr>
         <th>Test Category</th>
 	<th>View by Tag</th>
-	<th>View Unapproved Problems</th>
+	<th>View Problems</th>
         <th>Number of Untagged Problems</th>
 	<th>Number of Problems with no Solution</th>
-	<th>Number of Unapproved Problems</th>
       </tr>
     </thead>
     <tbody>
-      {% for type,label,untagged,unsolution,num,unapproved in rows2 %}
+      {% for type,label,untagged,unsolution,num in rows2 %}
       
       <tr>
 	<td>{{label}}</td>
         <td><a href="CMbytag/{{type}}">View by Tag</a></td>
-        <td><a href="unapproved/{{type}}">View Unapproved Problems</a></td>
+        <td><a href="unapproved/{{type}}">View Problems</a></td>
         <td> {{untagged}}/{{num}}</td>
         <td>{{unsolution}}/{{num}}</td>
-        <td>{{unapproved}}/{{num}}</td>
       </tr>
       {% endfor %}
     </tbody>

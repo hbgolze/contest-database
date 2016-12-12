@@ -51,10 +51,10 @@
 </div>
 
 <div class="form-group">
-  <label for="{{wizard.form.mc_answer.id}}">Correct Answers</label>
-  <p>Multiple Choice Answer: {{wizard.form.mc_answer}}</p>
+  <label for="{{wizard.form.mc_answer.id}}">Correct Answer</label>
+  <p>{{wizard.form.mc_answer}}</p>
   {% if wizard.form.mc_answer.errors %}
-  <p class="help-block">    Please enter both correct answers.</p>
+  <p class="help-block">    Please enter the correct answer.</p>
   {% endif %}
 </div>
 

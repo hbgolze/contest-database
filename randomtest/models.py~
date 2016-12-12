@@ -23,6 +23,16 @@ class Type(models.Model):
     def __str__(self):
         return self.label
 
+class ProblemApproval(models.Model):
+    approval_user = models.ForeignKey(User,blank=True,null=True)
+    APPROVAL_CHOICES = (
+        ('AP', 'Approved'),
+        ('MN', 'Approved Subject to Minor Revision'),
+        ('MJ', 'Needs Major Revision'),
+        ('DE', 'Propose For Deletion'),
+        )
+    approval_status = models.CharField(max_length = 2,choices=APPROVAL_CHOICES,blank=False,default='MJ')
+
 class QuestionType(models.Model):#multiple choice; short answer; proof
     question_type = models.CharField(max_length=20)
     def __str__(self):
@@ -86,6 +96,7 @@ class Problem(models.Model):
     approval_status = models.BooleanField(default=0)
     approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)
     comments = models.ManyToManyField(Comment,blank=True)
+    approvals = models.ManyToManyField(ProblemApproval,blank=True)
     def __str__(self):
         return self.label
     def print_tags(self):
@@ -102,15 +113,15 @@ class Problem(models.Model):
             s+='\\\n\\textbf{(B) }'+self.answer_B
         else:
             s+='\\qquad\\textbf{(B) }'+self.answer_B
-        if len(self.answer_B)>0 and self.answer_B[-1]!='\\':
+        if len(self.answer_B)>0 and self.answer_B[-1]=='\\':
             s+='\\\n\\textbf{(C) }'+self.answer_C
         else:
             s+='\\qquad\\textbf{(C) }'+self.answer_C
-        if len(self.answer_C)>0 and self.answer_C[-1]!='\\':
+        if len(self.answer_C)>0 and self.answer_C[-1]=='\\':
             s+='\\\n\\textbf{(D) }'+self.answer_D
         else:
             s+='\\qquad\\textbf{(D) }'+self.answer_D
-        if len(self.answer_D)>0 and self.answer_D[-1]!='\\':
+        if len(self.answer_D)>0 and self.answer_D[-1]=='\\':
             s+='\\\n\\textbf{(E) }'+self.answer_E
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E

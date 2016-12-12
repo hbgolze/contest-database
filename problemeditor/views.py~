@@ -6,8 +6,8 @@ from django.db.models import Q
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm
 from randomtest.utils import goodtag,goodurl,newtexcode
 
 
@@ -181,6 +181,7 @@ class ChangeQuestionTypeWizard(SessionWizardView):
     def get_context_data(self, **kwargs):
         ctx = super(ChangeQuestionTypeWizard, self).get_context_data(**kwargs)
         ctx['ctx'] = ctx
+        ctx['nbar']= 'problemeditor'
         breadcrumbs=[]
         prob=get_object_or_404(Problem,pk=self.kwargs['pk'])
         if 'tagstatus' in self.kwargs:
@@ -193,7 +194,7 @@ class ChangeQuestionTypeWizard(SessionWizardView):
             else:
                 raise Http404("Bad URL")
         elif 'type' in self.kwargs:
-            breadcrumbs=[('../','Unapproved '+prob.type_new.label+' Problem'),('.',str(prob.readable_label))]
+            breadcrumbs=[('../',prob.type_new.label+' Problems'),('.',str(prob.readable_label))]
         ctx['breadcrumbs']=breadcrumbs
         return ctx
     def get_template_names(self):
@@ -252,9 +253,7 @@ def typeview(request):
         num_untagged = untagged.count()
         nosolutions = P.filter(solutions__isnull=True)
         num_nosolutions = nosolutions.count()
-        notapproved = P.filter(approval_status=False)
-        num_notapproved = notapproved.count()
-        rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems,num_notapproved))
+        rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/typeview.html')
 #    tests=list(UserProfile.objects.get(user=request.user).tests.all())
     context= {'rows': rows, 'nbar': 'problemeditor','rows2':rows2}
@@ -392,7 +391,22 @@ def testlabelview(request,type,testlabel):
     return HttpResponse(template.render(context,request))
 
 @login_required
-def unapprovedview(request,type):
+def CMtypeview(request,type):#unapprovedview
+    typ=get_object_or_404(Type, type=type)
+    rows=[]
+#    problems=list(Problem.objects.filter(types__in=[typ]).filter(approval_status=False))
+#    problems=list(Problem.objects.filter(type_new=typ).filter(approval_status=False))
+    problems=list(Problem.objects.filter(type_new=typ))
+    problems=sorted(problems, key=lambda x:(x.pk))
+    for i in range(0,len(problems)):
+        num_solutions=problems[i].solutions.count()
+        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
+    template=loader.get_template('problemeditor/CMtypeview.html')#unapproved
+    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','typelabel':typ.label}
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def unapprovedview(request,type):#unapprovedview
     typ=get_object_or_404(Type, type=type)
     rows=[]
 #    problems=list(Problem.objects.filter(types__in=[typ]).filter(approval_status=False))
@@ -401,7 +415,7 @@ def unapprovedview(request,type):
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk))
-    template=loader.get_template('problemeditor/unapprovedview.html')
+    template=loader.get_template('problemeditor/unapprovedview.html')#unapproved
     context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
@@ -510,7 +524,7 @@ def editproblemtextpkview(request,**kwargs):
         breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('/problemeditor/','Select Type'),('../../','Unapproved '+typ.label+' Problems'),('../',str(prob.readable_label))]
+        breadcrumbs=[('/problemeditor/','Select Type'),('../../',typ.label+' Problems'),('../',str(prob.readable_label))]
     else:
         breadcrumbs=[('/problemeditor/','Select Type'),('../',str(prob.readable_label)),]
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -667,7 +681,7 @@ def newsolutionpkview(request,**kwargs):
         breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../','Unapproved '+typ.label+' Problems'),('../',prob.readable_label)]
+        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label)]
     else:
         breadcrumbs=[('../',prob.readable_label),]
     sol_num=prob.solutions.count()+1
@@ -724,7 +738,7 @@ def editsolutionpkview(request,**kwargs):
         breadcrumbs=[('../../../../',typ.label),('../../../',kwargs['tag']),('../../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../','Unapproved '+typ.label+' Problems'),('../../',prob.readable_label),]
+        breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
     else:
         breadcrumbs=[('../../','Solutions to '+prob.readable_label),]
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -740,6 +754,40 @@ def editsolutionpkview(request,**kwargs):
     texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
     return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+
+@login_required
+def editreviewpkview(request,**kwargs):
+    pk=kwargs['pk']
+    apk=kwargs['apk']
+    prob=get_object_or_404(Problem, pk=pk)
+    appr=ProblemApproval.objects.get(pk=apk)
+    if 'tag' in kwargs:
+        typ=get_object_or_404(Type, type=kwargs['type'])
+        breadcrumbs=[('../../../../',typ.label),('../../../',kwargs['tag']),('../../',str(prob.readable_label))]
+    elif 'type' in kwargs:
+        typ=get_object_or_404(Type, type=kwargs['type'])
+        breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
+    else:
+        breadcrumbs=[('../../','Solutions to '+prob.readable_label),]
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    if request.method == "POST":
+        if request.POST.get("save"):
+            appr_form = ApprovalForm(request.POST,instance=appr)
+#            print(appr_form)
+            if appr_form.is_valid():
+                appr2 = appr_form.save()
+                appr2.save()
+#                appr.approval_user = request.user
+#                appr.author_name=appr_form.author_name
+#                print(appr_form)
+#                appr.approval_status=request.POST.get('approval_status')#appr_form.approval_status
+#                appr.save()
+            return redirect('../../')#detailedproblemview,pk=pk)
+    form = ApprovalForm(instance=appr)
+    texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+    readablelabel=prob.readable_label.replace('\\#','#')
+    return render(request, 'problemeditor/editappr.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+
 
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
@@ -786,7 +834,7 @@ def newcommentpkview(request,**kwargs):
         breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../','Unapproved '+typ.label+' Problems'),('../',prob.readable_label),]
+        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
     else:
         breadcrumbs=[('../',prob.readable_label),]
 
@@ -809,6 +857,36 @@ def newcommentpkview(request,**kwargs):
 
     return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'breadcrumbs':breadcrumbs,'label':prob.readable_label})
 
+@login_required
+def newreviewpkview(request,**kwargs):
+    pk=kwargs['pk']
+    prob=get_object_or_404(Problem, pk=pk)
+    if 'tag' in kwargs:
+        typ=get_object_or_404(Type, type=kwargs['type'])
+        breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
+    elif 'type' in kwargs:
+        typ=get_object_or_404(Type, type=kwargs['type'])
+        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
+    else:
+        breadcrumbs=[('../',prob.readable_label),]
+
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    if request.method == "POST":
+        appr_form = ApprovalForm(request.POST)
+        if appr_form.is_valid():
+            appr = appr_form.save(commit=False)
+            appr.approval_user = request.user
+#            com.problem_label=prob.label
+            appr.save()
+            prob.approvals.add(appr)
+            prob.save()
+            return redirect('../')
+    else:
+        appr=ProblemApproval()
+        appr_form = ApprovalForm(instance=appr)
+
+    return render(request, 'problemeditor/newappr.html', {'form': appr_form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'breadcrumbs':breadcrumbs,'label':prob.readable_label})
+
 
 @login_required
 def detailedproblemview(request,**kwargs):
@@ -820,19 +898,19 @@ def detailedproblemview(request,**kwargs):
         breadcrumbs=[('../',typ.label),('../',kwargs['tag']),]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../','Unapproved '+typ.label+' Problems'),]
+        breadcrumbs=[('../',typ.label+' Problems'),]
     else:
         breadcrumbs=[]
     dropboxpath=list(Dropboxurl.objects.all())[0].url
-    is_approved=prob.approval_status
+ #   is_approved=prob.approval_status
     if request.method == "POST":#need more (was previously disabled)
         form=DetailedProblemForm(request.POST,instance=prob)
         if form.is_valid():
             problem = form.save()
             problem.save()
-            if is_approved==False and problem.approval_status==True:
-                problem.approval_user=request.user
-                problem.save()
+#            if is_approved==False and problem.approval_status==True:
+#                problem.approval_user=request.user
+#                problem.save()
     else:
         form=DetailedProblemForm(instance=prob)
     #readablelabel
@@ -848,6 +926,12 @@ def detailedproblemview(request,**kwargs):
     crows=[]
     for com in coms:
         crows.append((com.author_name,com.created_date,com.comment_text,com.pk))
+    #approvals
+    apprs=list(prob.approvals.all())
+    arows=[]
+    for a in apprs:
+        arows.append((a.author_name,a.get_approval_status_display,a.pk))
+    #other
     if prob.question_type_new.question_type=='multiple choice':
         mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
         context['mc_prob_latex']=mc_texcode
@@ -876,6 +960,7 @@ def detailedproblemview(request,**kwargs):
     context['readablelabel']=readablelabel
     context['form']=form
     context['crows']=crows
+    context['arows']=arows
     context['breadcrumbs']=breadcrumbs
     return render(request, 'problemeditor/detailedview.html', context)
 

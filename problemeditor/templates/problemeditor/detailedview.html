@@ -82,10 +82,20 @@
   </p>
 </div>
 <div class="form-group">
-  <p>
-  <label>Approval Status:</label>
-    {{form.approval_status}}
-  </p>
+<p>
+  <label>Approvals:</label>
+</p>
+<p>
+{% for aname,app,apk in arows %}
+{{aname}}: {{app}} (<a href="editreview/{{apk}}/">Edit</a>)<br>
+{% endfor %}
+{% if arows|length == 0 %}
+No one has reviewed this problem for approval yet.<br>
+{% endif %}
+</p>
+<p>
+<button type="button" class="save btn btn-default" onclick="location.href='newreview/'">New Review</button>
+</p>
 </div>
     <label>Comments:</label>
 <div class="comments-list">
