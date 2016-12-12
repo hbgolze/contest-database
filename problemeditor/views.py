@@ -381,7 +381,7 @@ def CMtypetagview(request,type,tag):
     problems=sorted(problems, key=lambda x:x.pk)
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk))
+        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
     paginator=Paginator(rows,50)

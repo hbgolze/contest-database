@@ -57,7 +57,7 @@
 
 <label>Current Question Type:</label>
 <p>
-{{form.instance.question_type_new.question_type}} (<a href="change_question_type">change</a>)
+{{form.instance.question_type_new.question_type}} <small>(<a href="change_question_type">Change</a>)</small>
 </p>
 
 <label>Difficulty:</label>
@@ -68,7 +68,7 @@
 <label>Solutions</label><br>
 {% for solution,spk in rows %}
 <label>Solution {{forloop.counter}}:</label>
-  <p>(<a href="editsolution/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="deletesolution/{{spk}}/">Delete</a>){% endif %}</p>
+  <p><small>(<a href="editsolution/{{spk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{spk}}/">Delete</a>)</small>{% endif %}</p>
   {{solution|linebreaks}}
   {% endfor %}
   {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
@@ -86,10 +86,13 @@
   <label>Approvals:</label>
 </p>
 <p>
+{% if arows|length != 0 %}
+<ul>
 {% for aname,app,apk in arows %}
-{{aname}}: {{app}} (<a href="editreview/{{apk}}/">Edit</a>)<br>
+<li>{{aname}}: {{app}} <small>(<a href="editreview/{{apk}}/">Edit</a>)</small></li>
 {% endfor %}
-{% if arows|length == 0 %}
+</ul>
+{% else %}
 No one has reviewed this problem for approval yet.<br>
 {% endif %}
 </p>
