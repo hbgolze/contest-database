@@ -487,12 +487,13 @@ def test_as_pdf(request, pk):
         L=os.listdir(tempdir)
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
-                process = Popen(
+                for j in range(2):
+                    process = Popen(
 #                    ['asy', '-o',os.path.join(tempdir,L[i].replace('.asy','.pdf')),os.path.join(tempdir,L[i])],
-                    ['asy', os.path.join(tempdir,L[i])],
-                    stdin=PIPE,
-                    stdout=PIPE,
-                    )
+                        ['asy', os.path.join(tempdir,L[i])],
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        )
 #                process.communicate()
 #        process.communicate(rendered_tpl)
 #        print(os.listdir(tempdir))
