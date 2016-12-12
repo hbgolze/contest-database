@@ -3,6 +3,7 @@ from django.http import HttpResponse,HttpResponseRedirect,Http404
 from django.template import loader,RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from formtools.wizard.views import SessionWizardView
 
@@ -350,7 +351,19 @@ def typetagview(request,type,tag):
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
+
+    paginator=Paginator(rows,50)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -370,7 +383,19 @@ def CMtypetagview(request,type,tag):
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk))
     template=loader.get_template('problemeditor/CMtypetagview.html')
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
+
+    paginator=Paginator(rows,50)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -402,7 +427,19 @@ def CMtopicview(request,type):#unapprovedview
         num_solutions=problems[i].solutions.count()
         rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor','typelabel':typ.label}
+
+    paginator=Paginator(rows,50)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
 @login_required
