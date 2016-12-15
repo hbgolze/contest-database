@@ -20,10 +20,19 @@ def indexesof(k,target):
     x.sort()
     return x
 
-def tagindexpairs(latextag,s):
-    starts=indexesof('\\begin{'+latextag+'}',s)
-    ends=indexesof('\\end{'+latextag+'}',s)
-    return [(starts[i],ends[i]) for i in range(0,len(starts))]
+#this may need to be modified due to potential user coding errors (in LaTeX)
+def tagindexpairs(latextag,s,optional=''):
+    if optional=='':
+        starts=indexesof('\\begin{'+latextag+'}',s)
+        ends=indexesof('\\end{'+latextag+'}',s)
+        return [(starts[i],ends[i]) for i in range(0,len(starts))]
+    else:
+        starts=indexesof('\\begin{'+latextag+'}['+optional+']',s)
+        ends=[]
+        for i in range(0,len(starts)):
+            if '\\end{'+latextag+'}' in s[starts[i]:]:
+                ends.append(s[starts[i]:].index('\\end{'+latextag+'}')+starts[i])
+        return [(starts[i],ends[i]) for i in range(0,len(ends))]
 
 def asyreplacementindexes(s):
     centers=tagindexpairs('center',s)
@@ -39,6 +48,52 @@ def asyreplacementindexes(s):
         replacementpairs.append((startindex,endindex))
     return replacementpairs
 
+def replaceitemize(s):
+    itemizes=tagindexpairs('itemize',s)
+    if len(itemizes)==0:
+        return s
+    r=s[0:itemizes[0][0]]
+    for i in range(0,len(itemizes)-1):
+        middle=s[itemizes[i][0]:itemizes[i][1]+13]
+        middle=middle.replace('\\begin{itemize}','<ul>').replace('\\end{itemize}','</ul>').replace('\\item','<li>')
+        end=s[itemizes[i][1]+13:itemizes[i+1][0]]
+        r+=middle+end
+    middle=s[itemizes[-1][0]:itemizes[-1][1]+13]
+    middle=middle.replace('\\begin{itemize}','<ul>').replace('\\end{itemize}','</ul>').replace('\\item','<li>')
+    end=s[itemizes[-1][1]+13:]
+    r+=middle+end
+    return r
+
+def replaceenumerate(s,optional=''):
+    enums=tagindexpairs('enumerate',s,optional)
+    if len(enums)==0:
+        return s
+    if optional=='':
+        r=s[0:enums[0][0]]
+        for i in range(0,len(enums)-1):
+            middle=s[enums[i][0]:enums[i][1]+15]
+            middle=middle.replace('\\begin{enumerate}','<ol>').replace('\\end{enumerate}','</ol>').replace('\\item ','<li>').replace('\\item[(a)]','<li type=\"a\">').replace('\\item[(b)]','<li type=\"a\">').replace('\\item[(c)]','<li type=\"a\">').replace('\\item[(d)]','<li type=\"a\">').replace('\\item[(e)]','<li type=\"a\">').replace('\\item[(i)]','<li type=\"i\">').replace('\\item[(ii)]','<li type=\"i\">').replace('\\item[(iii)]','<li type=\"i\">').replace('\\item[(iv)]','<li type=\"i\">').replace('\\item[(v)]','<li type=\"i\">')
+            end=s[enums[i][1]+15:enums[i+1][0]]
+            r+=middle+end
+        middle=s[enums[-1][0]:enums[-1][1]+15]
+        middle=middle.replace('\\begin{enumerate}','<ol>').replace('\\end{enumerate}','</ol>').replace('\\item ','<li>').replace('\\item[(a)]','<li type=\"a\">').replace('\\item[(b)]','<li type=\"a\">').replace('\\item[(c)]','<li type=\"a\">').replace('\\item[(d)]','<li type=\"a\">').replace('\\item[(e)]','<li type=\"a\">').replace('\\item[(i)]','<li type=\"i\">').replace('\\item[(ii)]','<li type=\"i\">').replace('\\item[(iii)]','<li type=\"i\">').replace('\\item[(iv)]','<li type=\"i\">').replace('\\item[(v)]','<li type=\"i\">')
+        end=s[enums[-1][1]+15:]
+        r+=middle+end
+        return r
+    else:
+        token = optional.replace(')','').replace('(','').replace('.','')
+        r=s[0:enums[0][0]]
+        for i in range(0,len(enums)-1):
+            middle=s[enums[i][0]:enums[i][1]+15]
+            middle=middle.replace('\\begin{enumerate}['+optional+']','<ol type=\"'+optional.replace(')','').replace('(','').replace('.','')+'\">').replace('\\end{enumerate}','</ol>').replace('\\item ','<li type=\"'+token+'\">').replace('\\item[(1)]','<li type=\"'+token+'\">').replace('\\item[(2)]','<li type=\"'+token+'\">').replace('\\item[(3)]','<li type=\"'+token+'\">').replace('\\item[(4)]','<li type=\"'+token+'\">').replace('\\item[(5)]','<li type=\"'+token+'\">').replace('\\item[(a)]','<li type=\"'+token+'\">').replace('\\item[(b)]','<li type=\"'+token+'\">').replace('\\item[(c)]','<li type=\"'+token+'\">').replace('\\item[(d)]','<li type=\"'+token+'\">').replace('\\item[(e)]','<li type=\"'+token+'\">').replace('\\item[(i)]','<li type=\"'+token+'\">').replace('\\item[(ii)]','<li type=\"'+token+'\">').replace('\\item[(iii)]','<li type=\"'+token+'\">').replace('\\item[(iv)]','<li type=\"'+token+'\">').replace('\\item[(v)]','<li type=\"'+token+'\">')
+            end=s[enums[i][1]+15:enums[i+1][0]]
+            r+=middle+end
+        middle=s[enums[-1][0]:enums[-1][1]+15]
+        middle=middle.replace('\\begin{enumerate}['+optional+']','<ol type=\"'+optional.replace(')','').replace('(','').replace('.','')+'\">').replace('\\end{enumerate}','</ol>').replace('\\item ','<li type=\"'+token+'\">').replace('\\item[(1)]','<li type=\"'+token+'\">').replace('\\item[(2)]','<li type=\"'+token+'\">').replace('\\item[(3)]','<li type=\"'+token+'\">').replace('\\item[(4)]','<li type=\"'+token+'\">').replace('\\item[(5)]','<li type=\"'+token+'\">').replace('\\item[(a)]','<li type=\"'+token+'\">').replace('\\item[(b)]','<li type=\"'+token+'\">').replace('\\item[(c)]','<li type=\"'+token+'\">').replace('\\item[(d)]','<li type=\"'+token+'\">').replace('\\item[(e)]','<li type=\"'+token+'\">').replace('\\item[(i)]','<li type=\"'+token+'\">').replace('\\item[(ii)]','<li type=\"'+token+'\">').replace('\\item[(iii)]','<li type=\"'+token+'\">').replace('\\item[(iv)]','<li type=\"'+token+'\">').replace('\\item[(v)]','<li type=\"'+token+'\">')
+        end=s[enums[-1][1]+15:]
+        r+=middle+end
+        return r
+
 def newtexcode(texcode,dropboxpath,label,answer_choices):
     repl=asyreplacementindexes(texcode)
     newtexcode=''
@@ -53,6 +108,10 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+='<br><br>'+ansscrape(answer_choices)
     newtexcode=newtexcode.replace('\\ ',' ')
+    newtexcode=replaceitemize(newtexcode)
+    newtexcode=replaceenumerate(newtexcode,'(a)')
+    newtexcode=replaceenumerate(newtexcode,'(i)')
+    newtexcode=replaceenumerate(newtexcode)
     return newtexcode
                 
 def ansscrape(s):
