@@ -34,6 +34,7 @@ def tagindexpairs(latextag,s,optional=''):
                 ends.append(s[starts[i]:].index('\\end{'+latextag+'}')+starts[i])
         return [(starts[i],ends[i]) for i in range(0,len(ends))]
 
+
 def asyreplacementindexes(s):
     centers=tagindexpairs('center',s)
     asys=tagindexpairs('asy',s)
@@ -113,6 +114,10 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     newtexcode=replaceenumerate(newtexcode,'(i)')
     newtexcode=replaceenumerate(newtexcode)
     return newtexcode
+
+def compileasy(s,label):
+    repl = asyreplacementindices(texcode)
+    #create a template for asy code; then compile it in  folder. But it must be able to be cleaned up.
                 
 def ansscrape(s):
     if 'begin{ans}' not in s:
