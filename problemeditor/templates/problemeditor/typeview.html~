@@ -58,6 +58,8 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
       {% endfor %}
     </tbody>
   </table>
+
+<a class = "btn btn-link" href="addproblemform/">Add a problem</a>
 </div>
 
 {% endblock %}
