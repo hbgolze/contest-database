@@ -121,7 +121,7 @@ class AddProblemForm2MC(forms.Form):
 
 class AddProblemForm2SA(forms.Form):
     problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
-    correct_answer = forms.CharField()
+    correct_short_answer_answer = forms.CharField()
     sa = forms.CharField(required=False)
 
 class AddProblemForm2PF(forms.Form):

@@ -34,7 +34,7 @@ class DetailedProblemForm(forms.ModelForm):
     tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     class Meta:
         model = Problem
-        fields = ('tags','mc_answer','sa_answer','difficulty','approvals')#approval_status
+        fields = ('tags','mc_answer','sa_answer','difficulty')#approval_status
         widgets = {
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
         }
