@@ -11,7 +11,7 @@
 </ol>
     <h2>Solutions to {{readablelabel}}</h2>
 <!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
-<div>
+<div class="form-group">
 {% if mc %}
 <label>Problem Text:</label>
 <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>

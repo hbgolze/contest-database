@@ -115,6 +115,24 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     newtexcode=replaceenumerate(newtexcode)
     return newtexcode
 
+def newsoltexcode(texcode,dropboxpath,label):
+    repl=asyreplacementindexes(texcode)
+    newtexcode=''
+    if len(repl)==0:
+        newtexcode+=texcode
+    else:
+        newtexcode+=texcode[0:repl[0][0]]
+        for i in range(0,len(repl)-1):
+            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+=texcode[repl[-1][1]:]
+    newtexcode=replaceitemize(newtexcode)
+    newtexcode=replaceenumerate(newtexcode,'(a)')
+    newtexcode=replaceenumerate(newtexcode,'(i)')
+    newtexcode=replaceenumerate(newtexcode)
+    return newtexcode
+
 def compileasy(s,label):
     repl = asyreplacementindices(texcode)
     #create a template for asy code; then compile it in  folder. But it must be able to be cleaned up.

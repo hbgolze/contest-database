@@ -36,7 +36,7 @@
         {% for solution,spk in rows %}
           <h3>Solution {{forloop.counter}}</h3>
 	  (<a href="edit/{{spk}}/">Edit</a>) {% if request.user.is_superuser %}(<a href="delete/{{spk}}/">Delete</a>){% endif %}<br><br>
-	  {{solution|linebreaks}}<br><br>
+	 {% autoescape off %} {{solution|linebreaks}} {% endautoescape %}<br><br>
         {% endfor %}
 	<button type="button" class="save btn btn-default" onclick="location.href='./new'">New Solution</button>
 {% endblock %}

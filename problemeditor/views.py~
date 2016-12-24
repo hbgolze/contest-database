@@ -9,7 +9,7 @@ from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
 from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm
-from randomtest.utils import goodtag,goodurl,newtexcode
+from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode
 
 
 
@@ -381,7 +381,7 @@ def CMtypetagview(request,type,tag):
     problems=sorted(problems, key=lambda x:x.pk)
     for i in range(0,len(problems)):
         num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk))
+        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
     paginator=Paginator(rows,50)
@@ -599,7 +599,7 @@ def solutionview(request,type,tag,label):
     sollist=[]
     rows=[]
     for sol in sols:
-        rows.append((sol.solution_text,sol.pk))
+        rows.append((newsoltexcode(sol.solution_text,dropboxpath,sol.problem_label+'sol'+str(sol.solution_number)),sol.pk))
 #    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
 
@@ -747,7 +747,7 @@ def editsolutionview(request,type,tag,label,spk):
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
     breadcrumbs=[('../../../../../',typ.label),('../../../../',tag),('../../','Solutions to '+readablelabel),]
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,sol.problem_label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editsolutionpkview(request,**kwargs):
@@ -775,7 +775,7 @@ def editsolutionpkview(request,**kwargs):
 
     texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':sol.solution_text, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,sol.problem_label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editreviewpkview(request,**kwargs):
@@ -942,7 +942,7 @@ def detailedproblemview(request,**kwargs):
     sollist=[]
     rows=[]
     for sol in sols:
-        rows.append((sol.solution_text,sol.pk))
+        rows.append((newsoltexcode(sol.solution_text,dropboxpath,sol.problem_label+'sol'+str(sol.solution_number)),sol.pk))
     #comments
     coms=list(prob.comments.all())
     crows=[]

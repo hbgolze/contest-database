@@ -15,7 +15,7 @@
 {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
       Answer: {{answer}}<br>
           <h3>Solution</h3>
-	  {{solution_text|linebreaks}}
+	  {% autoescape off %}{{solution_text|linebreaks}} {% endautoescape %}
           {{ form.solution_text }} <br>
         <input type="submit" class="save btn btn-default" name="save" value="Save">
     </form>
