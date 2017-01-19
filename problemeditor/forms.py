@@ -236,6 +236,9 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
         self.fields['sa_answer'].required = True
 
 
+
+
+
 '''
 class ProblemForm(forms.Form):
     class Media:

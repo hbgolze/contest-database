@@ -1006,3 +1006,82 @@ def addproblemview(request):
         form = AddProblemForm(instance=prob)
     return render(request, 'problemeditor/addview.html', {'form': form, 'nbar': 'problemeditor'})
 
+@login_required
+def addcontestview(request,type,num):
+    typ=get_object_or_404(Type, type=type)
+    num=int(num)
+    verbtranslate={"AMC8": 'AMC 8', 'AMC10': 'AMC 10', 'AMC12': 'AMC 12', 'AIME':'AIME ','USAMO': 'USAMO','IMO':'IMO','VTRMC':'VTRMC','Putnam':'Putnam','ARMLI':'ARML Individual', 'ARMLT':'ARML Team'}
+    if request.method == "POST":
+        form=request.POST
+        if True:
+            F=form#.cleaned_data
+            label = F['year']+type+F['formletter']
+            readablelabel = F['year']+' '+verbtranslate[type]+F['formletter']
+            if F['type']=='mc':
+                for i in range(1,num+1):
+                    p=Problem(mc_problem_text=F['problem_text'+str(i)],
+                              problem_text=F['problem_text'+str(i)],
+                              answer=F['answer'+str(i)],
+                              mc_answer=F['answer'+str(i)],
+                              answer_choices='$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
+                              answer_A=F['answer_A'+str(i)],
+                              answer_B=F['answer_B'+str(i)],
+                              answer_C=F['answer_C'+str(i)],
+                              answer_D=F['answer_D'+str(i)],
+                              answer_E=F['answer_E'+str(i)],
+                              label=label+str(i),
+                              readable_label=readablelabel+' \#'+str(i),
+                              type_new=typ,
+                              question_type_new=QuestionType.objects.get(question_type='multiple choice'),
+                              problem_number=i,
+                              year=F['year'],
+                              form_letter=F['formletter'],
+                              test_label=label,
+                              )
+                    p.save()
+                    p.types.add(typ)
+                    p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
+                    p.save()
+            if F['type']=='sa':
+                for i in range(1,num+1):
+                    p=Problem(problem_text=F['problem_text'+str(i)],
+                              answer=F['answer'+str(i)],
+                              sa_answer=F['answer'+str(i)],
+                              label=label+str(i),
+                              readable_label=readablelabel+' \#'+str(i),
+                              type_new=typ,
+                              question_type_new=QuestionType.objects.get(question_type='short answer'),
+                              problem_number=i,
+                              year=F['year'],
+                              form_letter=F['formletter'],
+                              test_label=label,
+                              )
+                    p.save()
+                    p.types.add(typ)
+                    p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                    p.save()
+            if F['type']=='pf':
+                for i in range(1,num+1):
+                    p=Problem(problem_text=F['problem_text'+str(i)],
+                              label=label+str(i),
+                              readable_label=readablelabel+' \#'+str(i),
+                              type_new=typ,
+                              question_type_new=QuestionType.objects.get(question_type='proof'),
+                              problem_number=i,
+                              year=F['year'],
+                              form_letter=F['formletter'],
+                              test_label=label,
+                              )
+                    p.save()
+                    p.types.add(typ)
+                    p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                    p.save()
+        return redirect('/problemeditor/')
+    context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
+    if type=='AMC8' or type=='AMC10' or type=='AMC12':
+        context['mc']=True
+    elif type=='AIME':
+        context['sa']=True
+    else:
+        context['pf']=True
+    return render(request, 'problemeditor/addcontestform.html', context=context)

@@ -121,7 +121,7 @@ class AddProblemForm2MC(forms.Form):
 
 class AddProblemForm2SA(forms.Form):
     problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
-    correct_answer = forms.CharField()
+    correct_short_answer_answer = forms.CharField()
     sa = forms.CharField(required=False)
 
 class AddProblemForm2PF(forms.Form):
@@ -234,6 +234,34 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
         self.fields['answer_E'].required = True
         self.fields['mc_answer'].required = True
         self.fields['sa_answer'].required = True
+
+####
+class AddContestForm(forms.Form):
+    type=forms.ModelChoiceField(widget = forms.RadioSelect(),queryset=Type.objects.exclude(type__startswith="CM"),required=True,empty_label=None)
+    year=forms.CharField(max_length=4,required=True)
+    form_letter=forms.CharField(max_length=2,required=False)
+    num_problems=forms.IntegerField()
+
+class AddContestMCProblemForm(forms.Form):
+    mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    answer_A = forms.CharField()
+    answer_B = forms.CharField()
+    answer_C = forms.CharField()
+    answer_D = forms.CharField()
+    answer_E = forms.CharField()
+    correct_multiple_choice_answer = forms.ChoiceField(widget = forms.RadioSelect(),choices=ANSWER_CHOICES)
+    mc = forms.CharField(required=False)
+
+class AddContestSAProblemForm(forms.Form):
+    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    correct_short_answer_answer = forms.CharField()
+    sa = forms.CharField(required=False)
+
+class AddContestPFForm(forms.Form):
+    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    pf = forms.CharField(required=False)
+
+
 
 
 '''

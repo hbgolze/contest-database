@@ -17,7 +17,7 @@ class Tag(models.Model):
         return self.tag
 
 class Type(models.Model):
-    type = models.CharField(max_length=10)
+    type = models.CharField(max_length=20)
     label= models.CharField(max_length=20,blank=True)
     top_index = models.IntegerField(default=0)
     def __str__(self):
@@ -94,8 +94,8 @@ class Problem(models.Model):
     author = models.ForeignKey(User,related_name='author',blank=True,null=True)
     author_name = models.CharField(max_length=50,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
-    approval_status = models.BooleanField(default=0)
-    approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)
+    approval_status = models.BooleanField(default=0)#deprecated
+    approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)#deprecated
     comments = models.ManyToManyField(Comment,blank=True)
     approvals = models.ManyToManyField(ProblemApproval,blank=True)
     def __str__(self):
