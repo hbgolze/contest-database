@@ -11,15 +11,17 @@ from django.urls import reverse_lazy
 from django.db.models import Q
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
 
 from subprocess import Popen,PIPE
 import tempfile
 import os
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
-from .utils import parsebool
+from .utils import parsebool,newtexcode,newsoltexcode
+
 from random import shuffle
 import time
 
@@ -85,9 +87,9 @@ def startform(request):
                 yearend=int(yearend)
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag))
+                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
             else:
-                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
             rows=[]
 
@@ -130,7 +132,7 @@ def startform(request):
             rows.append((types[i].type,types[i].label))
         rows=sorted(rows,key=lambda x:x[1])
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar': 'newtest','rows':rows,'tags':tags}
+        context={'nbar' : 'newtest', 'rows' : rows,'tags' : tags}
         return HttpResponse(template.render(context,request))
 
 #    P=Problem.objects.order_by('-year')
@@ -228,7 +230,7 @@ def tableview(request):
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests'}
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50]}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -254,33 +256,48 @@ def testview(request,pk):
         allresponses=Responses.objects.get(test=test,user_profile=userprofile)
     
     dropboxpath = list(Dropboxurl.objects.all())[0].url
+#test_label = models.CharField(max_length=50,blank=True)
+#    response = models.CharField(max_length=10,blank=True)
+#    problem_label = models.CharField(max_length=30)
+#    modified_date = models.DateTimeField(default = timezone.now)
+#    correct = BooleanField(default = 0)
     if request.method == "POST":
         form=request.POST
         P=list(test.problems.all())
         P=sorted(P,key=lambda x:(x.problem_number,x.year))
         num_correct=0
+        rows=[]
         for i in range(0,len(P)):
             r=allresponses.responses.get(problem_label=P[i].label)
-            r.response = form.get('answer'+P[i].label)
-            if r.response==None:
-                r.response=''
+            tempanswer = form.get('answer'+P[i].label)
+            if tempanswer != None and tempanswer !='':
+                t=timezone.now()
+                r.attempted = 1
+                if r.response != tempanswer:
+                    ur=UserResponse(test_label=test.name,response=tempanswer,problem_label=P[i].readable_label,modified_date=t)
+                    ur.save()
+                    r.modified_date = t
+                    r.response = tempanswer
+                    if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
+                        ur.correct=1
+                        ur.save()
+                    userprofile.responselog.add(ur)
             r.save()
-            if r.response==P[i].answer and P[i].question_type.filter(question_type='proof').count()==0:
+            if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
                 num_correct+=1
+            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date))
         allresponses.num_problems_correct=num_correct
         allresponses.show_answer_marks=1
         allresponses.save()
         R=allresponses.responses
-        rows=[]
-        for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
     else:
         P=list(test.problems.all())
         P=sorted(P,key=lambda x:(x.problem_number,x.year))
         R=allresponses.responses
         rows=[]
         for i in range(0,len(P)):
-            rows.append((P[i].label,str(P[i].answer),R.get(problem_label=P[i].label).response,list(P[i].question_type.all())[0]))
+            r=R.get(problem_label=P[i].label)
+            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date))
     return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
 
@@ -487,12 +504,13 @@ def test_as_pdf(request, pk):
         L=os.listdir(tempdir)
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
-                process = Popen(
+                for j in range(2):
+                    process = Popen(
 #                    ['asy', '-o',os.path.join(tempdir,L[i].replace('.asy','.pdf')),os.path.join(tempdir,L[i])],
-                    ['asy', os.path.join(tempdir,L[i])],
-                    stdin=PIPE,
-                    stdout=PIPE,
-                    )
+                        ['asy', os.path.join(tempdir,L[i])],
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        )
 #                process.communicate()
 #        process.communicate(rendered_tpl)
 #        print(os.listdir(tempdir))
@@ -509,3 +527,25 @@ def test_as_pdf(request, pk):
     #r['Content-Disposition'] = 'attachment; filename=texput.pdf'
     r.write(pdf)
     return r
+
+def solutionview(request,testpk,pk):
+    prob = get_object_or_404(Problem, pk=pk)
+    test = get_object_or_404(Test, pk=testpk)
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    sols=list(prob.solutions.all())
+    sollist=[]
+    rows=[]
+    for sol in sols:
+        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
+    readablelabel=prob.readable_label.replace('\\#','#')
+    texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+    context={}
+    context['prob_latex']=texcode
+    context['rows']=rows
+    context['testpk']=testpk
+    context['testname']=test.name
+    context['nbar']='viewmytests'
+    context['dropboxpath']=dropboxpath
+    context['readablelabel']=readablelabel
+
+    return render(request, 'randomtest/solview.html', context)

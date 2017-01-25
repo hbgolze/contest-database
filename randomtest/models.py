@@ -51,6 +51,8 @@ class Solution(models.Model):
 class Response(models.Model):
     response = models.CharField(max_length=10,blank=True)
     problem_label = models.CharField(max_length=20)
+    modified_date = models.DateTimeField(default = timezone.now)
+    attempted = models.BooleanField(default = 0)
     def __str__(self):
         return self.response
 
@@ -162,17 +164,27 @@ class Responses(models.Model):
     responses = models.ManyToManyField(Response,blank=True)
     num_problems_correct = models.IntegerField(blank=True,null=True)
     show_answer_marks=models.BooleanField(default=0)
+    modified_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return self.test.name
+
+class UserResponse(models.Model):
+    test_label = models.CharField(max_length=50,blank=True)
+    response = models.CharField(max_length=10,blank=True)
+    problem_label = models.CharField(max_length=30)
+    modified_date = models.DateTimeField(default = timezone.now)
+    correct = models.BooleanField(default = 0)
+    test_pk = models.CharField(max_length = 15,blank = True)
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
-
+    responselog = models.ManyToManyField(UserResponse,blank=True)
     def __unicode__(self):
         return self.user.username
+
 
 def get_or_create_up(user):
     userprofile,boolcreated=UserProfile.objects.get_or_create(user=user)

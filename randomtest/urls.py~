@@ -12,4 +12,5 @@ urlpatterns = [
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
     url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
+    url(r'^pdftest/(?P<pk>\d+)/$', views.test_as_pdf,name='test_pdf'),
 ]

@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2>My Tests</h2>
-<div class="content">
+<div class="col-md-9">
 
 {% if testcount == 0 %}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
@@ -43,6 +43,26 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	</td>
 	<td>
 	  <a href="pdftest/{{tpk}}/">View PDF</a>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<div class="col-md-3">
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Recent Responses</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resp in responselog %}
+      <tr>
+        <td><small><a href="test/{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+	<td>
+	  <small>{{resp.modified_date}}</small>
 	</td>
       </tr>
       {% endfor %}

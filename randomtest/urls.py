@@ -8,6 +8,7 @@ urlpatterns = [
     url(r'^createtest/$', views.startform, name='startform'),
     url(r'^createtest/readme$', views.readme, name='readme'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
+    url(r'^test/(?P<testpk>\d+)/(?P<pk>\d+)/$', views.solutionview, name='solutionview'),
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
