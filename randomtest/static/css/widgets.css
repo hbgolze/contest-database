@@ -1,18 +1,18 @@
 /* SELECTOR (FILTER INTERFACE) */
 
 .selector {
-    width: 1000px;
+    width: 1200px;
     float: left;
 }
 
 .selector select {
-    width: 480px;
+    width: 580px;
     height: 17.2em;
 }
 
 .selector-available, .selector-chosen {
     float: left;
-    width: 480px;
+    width: 580px;
     text-align: center;
     margin-bottom: 5px;
 }
@@ -59,7 +59,7 @@
 }
 
 .selector .selector-available input {
-    width: 420px;
+    width: 520px;
     margin-left: 8px;
 }
 
@@ -168,16 +168,16 @@ a.active.selector-clearall:focus, a.active.selector-clearall:hover {
 
 .stacked {
     float: left;
-    width: 490px;
+    width: 590px;
 }
 
 .stacked select {
-    width: 480px;
+    width: 580px;
     height: 10.1em;
 }
 
 .stacked .selector-available, .stacked .selector-chosen {
-    width: 480px;
+    width: 580px;
 }
 
 .stacked .selector-available {
@@ -185,7 +185,7 @@ a.active.selector-clearall:focus, a.active.selector-clearall:hover {
 }
 
 .stacked .selector-available input {
-    width: 422px;
+    width: 522px;
 }
 
 .stacked ul.selector-chooser {
