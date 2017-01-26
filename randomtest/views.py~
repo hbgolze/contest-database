@@ -492,42 +492,52 @@ def test_as_pdf(request, pk):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
+        print('Initial\t',os.listdir(tempdir))
+        context = Context({  
+                'name':test.name,
+                'rows':rows,
+                'pk':pk,
+                'include_problem_labels':include_problem_labels,
+                'tempdirect':tempdir,
+                })
+        template = get_template('randomtest/my_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')  
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
         for i in range(2):
             process = Popen(
-                ['pdflatex', '-output-directory', tempdir],
+                ['pdflatex', 'texput.tex'],
                 stdin=PIPE,
                 stdout=PIPE,
+                cwd = tempdir,##
             )
-            process.communicate(rendered_tpl)
-#        print(os.listdir(tempdir))
-#        os.system('more '+tempdir+'/texput.log')
+            stdout_value = process.communicate()[0]
         L=os.listdir(tempdir)
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
-                for j in range(2):
-                    process = Popen(
-#                    ['asy', '-o',os.path.join(tempdir,L[i].replace('.asy','.pdf')),os.path.join(tempdir,L[i])],
-                        ['asy', os.path.join(tempdir,L[i])],
-                        stdin=PIPE,
-                        stdout=PIPE,
-                        )
-#                process.communicate()
-#        process.communicate(rendered_tpl)
-#        print(os.listdir(tempdir))
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
         for i in range(2):
-            process = Popen(
-                ['pdflatex', '-output-directory', tempdir],
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
                 stdin=PIPE,
                 stdout=PIPE,
+                cwd = tempdir,##
             )
-            process.communicate(rendered_tpl)
+            stdout_value = process2.communicate()[0]
         with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
             pdf = f.read()
     r = HttpResponse(content_type='application/pdf')  
-    #r['Content-Disposition'] = 'attachment; filename=texput.pdf'
     r.write(pdf)
     return r
 
+@login_required
 def solutionview(request,testpk,pk):
     prob = get_object_or_404(Problem, pk=pk)
     test = get_object_or_404(Test, pk=testpk)
