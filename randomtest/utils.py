@@ -1,3 +1,15 @@
+from django.template import Context
+
+from django.template.loader import get_template
+
+from django.db.models import Q
+#from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
+from django.conf import settings
+
+from subprocess import Popen,PIPE
+import subprocess
+import tempfile
+import os,os.path
 
 def parsebool(tags):
     if '|' in tags and '&' not in tags:
@@ -36,17 +48,23 @@ def tagindexpairs(latextag,s,optional=''):
 
 
 def asyreplacementindexes(s):
-    centers=tagindexpairs('center',s)
     asys=tagindexpairs('asy',s)
     replacementpairs=[]
     for i in range(0,len(asys)):
         startindex=asys[i][0]
         endindex=asys[i][1]+9
-        for j in range(0,len(centers)):
-            if asys[i][0]>centers[j][0] and asys[i][1]<centers[j][1]:
-                startindex=centers[j][0]
-                endindex=centers[j][1]+12
         replacementpairs.append((startindex,endindex))
+    return replacementpairs
+
+def centerasyreplacementindexes(s):
+    centers=tagindexpairs('center',s)
+    asys=tagindexpairs('asy',s)
+    replacementpairs=[]
+    for i in range(0,len(centers)):
+        startindex=centers[i][0]
+        endindex=centers[i][1]+12
+        if '\\begin{asy}' in s[startindex:endindex]:
+            replacementpairs.append((startindex,endindex))
     return replacementpairs
 
 def replaceitemize(s):
@@ -103,9 +121,9 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     else:
         newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
-            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
-        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode+='<br><br>'+ansscrape(answer_choices)
     newtexcode=newtexcode.replace('\\ ',' ')
@@ -113,6 +131,8 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     newtexcode=replaceenumerate(newtexcode,'(a)')
     newtexcode=replaceenumerate(newtexcode,'(i)')
     newtexcode=replaceenumerate(newtexcode)
+    newtexcode=newtexcode.replace('\\begin{center}','<center>')
+    newtexcode=newtexcode.replace('\\end{center}','</center>')
     return newtexcode
 
 def newsoltexcode(texcode,dropboxpath,label):
@@ -123,19 +143,18 @@ def newsoltexcode(texcode,dropboxpath,label):
     else:
         newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
-            newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
-        newtexcode+='<img class=\"displayed\" src=\"'+dropboxpath+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode=replaceitemize(newtexcode)
     newtexcode=replaceenumerate(newtexcode,'(a)')
     newtexcode=replaceenumerate(newtexcode,'(i)')
     newtexcode=replaceenumerate(newtexcode)
+    newtexcode=newtexcode.replace('\\begin{center}','<center>')
+    newtexcode=newtexcode.replace('\\end{center}','</center>')
     return newtexcode
 
-def compileasy(s,label):
-    repl = asyreplacementindices(texcode)
-    #create a template for asy code; then compile it in  folder. But it must be able to be cleaned up.
                 
 def ansscrape(s):
     if 'begin{ans}' not in s:
@@ -156,3 +175,39 @@ def goodurl(t):
     return t.replace('>','_').replace(' ','__')
 def goodtag(t):
     return t.replace('__',' ').replace('_','>')
+
+
+def compileasy(texcode,label,sol=''):
+    repl = asyreplacementindexes(texcode)
+    for i in range(0,len(repl)):
+        asy_code = texcode[repl[i][0]:repl[i][1]]
+        asy_code = asy_code.replace('\\begin{asy}','')
+        asy_code = asy_code.replace('\\begin{center}','<center>')
+        asy_code = asy_code.replace('\\end{asy}','')
+        asy_code = asy_code.replace('\\end{center}','</center>')
+        asy_code = asy_code.rstrip().lstrip()
+        filename = label+sol+'-'+str(i+1)
+        context = Context({
+                'asy_code':asy_code,
+                'filename':filename,
+                })
+        template = get_template('asycompile/my_asy_template.asy')
+        rendered_tpl = template.render(context).encode('utf-8')
+        with tempfile.TemporaryDirectory() as tempdir:
+            process = Popen(
+                ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
+                stdin=PIPE,
+                stdout=PIPE,
+                )
+            process.communicate(rendered_tpl)
+            L=os.listdir(tempdir)
+            for j in L:
+                if 'pdf' in j:
+                    command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, j, settings.MEDIA_ROOT, j.replace('.pdf','.png'))
+                    proc = subprocess.Popen(command,
+                                            shell=True,
+                                            stdin=subprocess.PIPE,
+                                            stdout=subprocess.PIPE,
+                                            stderr=subprocess.PIPE,
+                                            )
+                    stdout_value = proc.communicate()[0]

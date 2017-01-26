@@ -1,0 +1,17 @@
+{% extends './base.html' %}
+
+{% block title %}New Asy{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+{% for breadurl,breadlabel in breadcrumbs %}
+  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
+{% endfor %}
+  <li class="active">New Asy</li>
+</ol>
+    <h2>New Asymptote</h2>
+    <form method="POST" class="post-form">{% csrf_token %}
+      {{form}}
+        <input type="submit" class="save btn btn-default" name="save" value="Save">
+    </form>
+{% endblock %}

@@ -528,6 +528,7 @@ def test_as_pdf(request, pk):
     r.write(pdf)
     return r
 
+@login_required
 def solutionview(request,testpk,pk):
     prob = get_object_or_404(Problem, pk=pk)
     test = get_object_or_404(Test, pk=testpk)

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load staticfiles %}
+<head>
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
+
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+ MathJax.Hub.Config({TeX: {Macros: {cis: "\\text{cis}\\,", vb: ["{\\left\\langle#1\\right\\rangle}",1],pop: ["{\\text{pop}\\,(#1,#2)}",2,""]}}});
+</script>
+<script type="text/javascript" async
+  src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <title>{% block title %}Random Contest{% endblock %}</title>
+
+{% block head %} {% endblock %}
+</head>
+
+<body>
+    <div class="page-header">
+{% if user.is_authenticated %}
+<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small></p>
+    {% else %}
+        <p><small><a href="{% url 'login' %}" class="top-menu">Login</a></small></p>
+    {% endif %}
+    <h1>Random Test Creator</h1>
+    </div>
+{% if user.is_authenticated %}
+<div class="navig">
+<ul class="nav nav-tabs">
+  <li role="presentation" class="{% if nbar == 'viewmytests' %}active{% endif %}"><a href="/">View My Tests</a></li>
+  <li role="presentation" class="{% if nbar == 'problemeditor' %}active{% endif %}"><a href="/problemeditor/">Problem Editor</a></li>
+  <li role="presentation" class="{% if nbar == 'newtest' %}active{% endif %}"><a href="/createtest/">New Test</a></li>
+</ul>
+</div>
+{% endif %}
+<div class="content">
+  {% block content %}
+    
+  {% endblock %}
+</div>
+
+</body>
+</html>
+
+
+
+

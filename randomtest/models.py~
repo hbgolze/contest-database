@@ -174,7 +174,7 @@ class UserResponse(models.Model):
     problem_label = models.CharField(max_length=30)
     modified_date = models.DateTimeField(default = timezone.now)
     correct = models.BooleanField(default = 0)
-    test_pk = models.CharField(max_length = 10,blank = True)
+    test_pk = models.CharField(max_length = 15,blank = True)
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.

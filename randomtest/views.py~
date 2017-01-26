@@ -274,7 +274,7 @@ def testview(request,pk):
                 t=timezone.now()
                 r.attempted = 1
                 if r.response != tempanswer:
-                    ur=UserResponse(test_label=test.name,response=tempanswer,problem_label=P[i].readable_label,modified_date=t)
+                    ur=UserResponse(test_label=test.name,test_pk=test.pk,response=tempanswer,problem_label=P[i].label,modified_date=t)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer

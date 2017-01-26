@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.conf.urls import include,url
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 
 import django.contrib.auth.views
 import randomtest.views
@@ -27,4 +29,7 @@ urlpatterns = [
     url(r'^accounts/change-password-done/$', django.contrib.auth.views.password_change_done, name='password_change_done'),
     url(r'', include('randomtest.urls')),
     url(r'problemeditor/', include('problemeditor.urls')),
+    url(r'^asycompile/', include('asycompile.urls')),
 ]
+if settings.DEBUG is True:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

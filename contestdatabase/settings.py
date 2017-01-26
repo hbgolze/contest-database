@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'formtools',
     'randomtest.apps.RandomtestConfig',
     'problemeditor.apps.ProblemeditorConfig',
-#    'tagging',
+    'asycompile.apps.AsycompileConfig',
 ]
 
 MIDDLEWARE = [
@@ -127,6 +127,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 #STATICFILES_DIRS = [
 #    os.path.join(BASE_DIR, "static"),
 #]
+
+MEDIA_URL = 'media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 
 # Added for login
 #LOGIN_URL = '/randomtest/login'
