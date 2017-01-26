@@ -19,7 +19,6 @@ import os
 
 
 import logging
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
