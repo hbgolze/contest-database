@@ -492,7 +492,6 @@ def test_as_pdf(request, pk):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
-        print('Initial\t',os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
                 'rows':rows,
@@ -505,12 +504,12 @@ def test_as_pdf(request, pk):
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
         ftex.close()
-        for i in range(2):
+        for i in range(1):
             process = Popen(
                 ['pdflatex', 'texput.tex'],
                 stdin=PIPE,
                 stdout=PIPE,
-                cwd = tempdir,##
+                cwd = tempdir,
             )
             stdout_value = process.communicate()[0]
         L=os.listdir(tempdir)
@@ -528,7 +527,7 @@ def test_as_pdf(request, pk):
                 ['pdflatex', 'texput.tex'],
                 stdin=PIPE,
                 stdout=PIPE,
-                cwd = tempdir,##
+                cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
         with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:

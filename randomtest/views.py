@@ -17,6 +17,9 @@ from subprocess import Popen,PIPE
 import tempfile
 import os
 
+import logging
+logger = logging.getLogger(__name__)
+
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
@@ -489,6 +492,7 @@ def test_as_pdf(request, pk):
     rendered_tpl = template.render(context).encode('utf-8')  
     # Python3 only. For python2 check out the docs!
     with tempfile.TemporaryDirectory() as tempdir:
+        logger.debug(os.listdir(tempdir))
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
@@ -512,6 +516,7 @@ def test_as_pdf(request, pk):
                 cwd = tempdir,
             )
             stdout_value = process.communicate()[0]
+        logger.debug(os.listdir(tempdir))
         L=os.listdir(tempdir)
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
@@ -522,6 +527,7 @@ def test_as_pdf(request, pk):
                     cwd = tempdir,
                     )
                 stdout_value = process1.communicate()[0]
+        logger.debug(os.listdir(tempdir))
         for i in range(2):
             process2 = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -530,6 +536,7 @@ def test_as_pdf(request, pk):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
+        logger.debug(os.listdir(tempdir))
         with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
             pdf = f.read()
     r = HttpResponse(content_type='application/pdf')  
