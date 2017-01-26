@@ -17,7 +17,9 @@ from subprocess import Popen,PIPE
 import tempfile
 import os
 
+
 import logging
+logging.basicConfig(filename='example.log',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
@@ -492,10 +494,10 @@ def test_as_pdf(request, pk):
     rendered_tpl = template.render(context).encode('utf-8')  
     # Python3 only. For python2 check out the docs!
     with tempfile.TemporaryDirectory() as tempdir:
-        logger.debug(os.listdir(tempdir))
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
+        logger.debug(os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
                 'rows':rows,
@@ -508,6 +510,7 @@ def test_as_pdf(request, pk):
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
         ftex.close()
+        logger.debug(os.listdir(tempdir))
         for i in range(1):
             process = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -516,8 +519,9 @@ def test_as_pdf(request, pk):
                 cwd = tempdir,
             )
             stdout_value = process.communicate()[0]
-        logger.debug(os.listdir(tempdir))
         L=os.listdir(tempdir)
+        logger.debug(os.listdir(tempdir))
+
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
                 process1 = Popen(
