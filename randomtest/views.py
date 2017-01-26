@@ -12,11 +12,11 @@ from django.db.models import Q
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils import timezone
+from django.conf import settings
 
 from subprocess import Popen,PIPE
 import tempfile
 import os
-
 
 import logging
 logger = logging.getLogger(__name__)
@@ -489,6 +489,9 @@ def test_as_pdf(request, pk):
             'pk':pk,
             'include_problem_labels':include_problem_labels,
             })
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
     template = get_template('randomtest/my_latex_template.tex')
     rendered_tpl = template.render(context).encode('utf-8')  
     # Python3 only. For python2 check out the docs!
@@ -496,6 +499,9 @@ def test_as_pdf(request, pk):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
         logger.debug(os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
