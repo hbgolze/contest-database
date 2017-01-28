@@ -114,6 +114,7 @@ def replaceenumerate(s,optional=''):
         return r
 
 def newtexcode(texcode,dropboxpath,label,answer_choices):
+    texcode=texcode.replace('<',' < ')
     repl=asyreplacementindexes(texcode)
     newtexcode=''
     if len(repl)==0:
@@ -136,6 +137,7 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     return newtexcode
 
 def newsoltexcode(texcode,dropboxpath,label):
+    texcode=texcode.replace('<',' < ')
     repl=asyreplacementindexes(texcode)
     newtexcode=''
     if len(repl)==0:
