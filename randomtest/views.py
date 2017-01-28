@@ -583,7 +583,10 @@ def solutionview(request,testpk,pk):
 @login_required
 def studenttableview(request,username):
     template=loader.get_template('randomtest/studenttableview.html')###
+    curruserprof=get_or_create_up(request.user)
     user=get_object_or_404(User,username=username)
+    if user not in curruserprof.students.all():
+        return HttpResponse('Unauthorized', status=401)
     userprof = get_or_create_up(user)
     tests=list(userprof.tests.all())
     rows=[]
@@ -609,7 +612,10 @@ def studenttableview(request,username):
 @login_required
 def studenttestview(request,username,pk):
     test = get_object_or_404(Test, pk=pk)
+    curruserprof=get_or_create_up(request.user)
     user=get_object_or_404(User,username=username)
+    if user not in curruserprof.students.all():
+        return HttpResponse('Unauthorized', status=401)
     userprofile = get_or_create_up(user)
     testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
 #    if testresponses.count()==0:

@@ -583,7 +583,11 @@ def solutionview(request,testpk,pk):
 @login_required
 def studenttableview(request,username):
     template=loader.get_template('randomtest/studenttableview.html')###
+    curruser=User.objects.get(request.user)
+    curruserprof=get_or_create_up(curruser)
     user=get_object_or_404(User,username=username)
+    if user not in curruserprof.students.all():
+        return HttpResponse('Unauthorized', status=401)
     userprof = get_or_create_up(user)
     tests=list(userprof.tests.all())
     rows=[]
@@ -609,7 +613,11 @@ def studenttableview(request,username):
 @login_required
 def studenttestview(request,username,pk):
     test = get_object_or_404(Test, pk=pk)
+    curruser=User.objects.get(request.user)
+    curruserprof=get_or_create_up(curruser)
     user=get_object_or_404(User,username=username)
+    if user not in curruserprof.students.all():
+        return HttpResponse('Unauthorized', status=401)
     userprofile = get_or_create_up(user)
     testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
 #    if testresponses.count()==0:
@@ -634,7 +642,8 @@ def studenttestview(request,username,pk):
     for i in range(0,len(P)):
         r=R.get(problem_label=P[i].label)
         texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
+        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answer_choices)
         readablelabel=P[i].readable_label.replace('\\#','#')
-        rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel))
+        rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode))
     return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
