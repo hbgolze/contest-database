@@ -14,4 +14,6 @@ urlpatterns = [
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
     url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
     url(r'^pdftest/(?P<pk>\d+)/$', views.test_as_pdf,name='test_pdf'),
+    url(r'^student/(?P<username>\w+)/$', views.studenttableview, name='studenttableview'),
+    url(r'^student/(?P<username>\w+)/(?P<pk>\w+)/$', views.studenttestview, name='studenttestview'),
 ]

@@ -1,20 +1,12 @@
 {% extends "./base.html" %}
 
 {% block content %}
-<h2>My Tests</h2>
+<h2>{{username}}'s Tests</h2>
 <div class="col-md-9">
 
 {% if testcount == 0 %}
-You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
+This student has no tests. 
 {% else %}
-{% if studentusernames|length > 0 %}
-<h3>Students</h3>
-<ul>
-{% for student in studentusernames %}
-<li> <a href="student/{{student}}/">{{student}}</a>
-{% endfor %}
-</ul>
-{% endif %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -29,7 +21,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
     <tbody>
       {% for tpk,name,types,num_problems_correct,problems_count,created_date in rows %}
       <tr>
-        <td><a href="test/{{tpk}}/">{{name}}</a></td>
+        <td><a href="{{tpk}}/">{{name}}</a></td>
         <td> {% for type in types %}
 	       {{type}}{% if not forloop.last%},{% endif %}
 	     {% endfor %}
@@ -38,19 +30,19 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
         <td>{{problems_count}}</td>
         <td>{{created_date}}</td>
 	<td>
-	  <form action="edittest/{{tpk}}/" method="post">
+	  <form action="../../edittest/{{tpk}}/" method="post">
 	    {% csrf_token %}
 	    <button type="submit" name="Edit" value="Edit" class="btn-link">Edit</button>
 	  </form>
 	</td>
 	<td>
-	  <a href="viewlatex/{{tpk}}/">View LaTeX</a>
+	  <a href="../../viewlatex/{{tpk}}/">View LaTeX</a>
 	</td>
 	<td>
-	  <a href="delete/{{tpk}}/">Delete</a>
+	  <a href="../../delete/{{tpk}}/">Delete</a>
 	</td>
 	<td>
-	  <a href="pdftest/{{tpk}}/">View PDF</a>
+	  <a href="../../pdftest/{{tpk}}/">View PDF</a>
 	</td>
       </tr>
       {% endfor %}
@@ -68,7 +60,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
     <tbody>
       {% for resp in responselog %}
       <tr>
-        <td><small><a href="test/{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+        <td><small><a href="{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
 	<td>
 	  <small>{{resp.modified_date}}</small>
 	</td>

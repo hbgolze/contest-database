@@ -181,6 +181,7 @@ class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
+    students = models.ManyToManyField(User,blank = True,related_name='students')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)
     def __unicode__(self):

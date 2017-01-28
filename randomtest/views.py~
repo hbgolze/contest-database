@@ -5,6 +5,7 @@ from django.template import loader,RequestContext,Context
 from django.template.loader import get_template
 
 from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.admin import User
 from django.contrib.auth.decorators import login_required
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
@@ -499,7 +500,7 @@ def test_as_pdf(request, pk):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
-        fa=open(os.path.join(tempdir,'asymptote.sty'),'wb')
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
         logger.debug(os.listdir(tempdir))
@@ -574,3 +575,62 @@ def solutionview(request,testpk,pk):
     context['readablelabel']=readablelabel
 
     return render(request, 'randomtest/solview.html', context)
+
+@login_required
+def studenttableview(request,username):
+    template=loader.get_template('randomtest/studenttableview.html')###
+    user=get_object_or_404(User,username=username)
+    userprof = get_or_create_up(user)
+    tests=list(userprof.tests.all())
+    rows=[]
+    for i in range(0,len(tests)):
+        testresponses=userprof.allresponses.filter(test=tests[i])
+        if testresponses.count()==0:
+            allresponses=Responses(test=tests[i],num_problems_correct=0)
+            allresponses.save()
+            P=list(tests[i].problems.all())
+            for j in range(0,len(P)):
+                r=Response(response='',problem_label=P[j].label)
+                r.save()
+                allresponses.responses.add(r)
+            allresponses.save()
+            userprof.allresponses.add(allresponses)
+            userprof.save()
+        else:
+            allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
+        rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username}
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def studenttestview(request,username,pk):
+    test = get_object_or_404(Test, pk=pk)
+    user=get_object_or_404(User,username=username)
+    userprofile = get_or_create_up(user)
+    testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
+#    if testresponses.count()==0:
+#        allresponses=Responses(test=test,num_problems_correct=0)
+#        allresponses.save()
+#        P=list(test.problems.all())
+#        for i in range(0,len(P)):
+#            r=Response(response='',problem_label=P[i].label)
+#            r.save()
+#            allresponses.responses.add(r)
+#        allresponses.save()
+#        userprofile.allresponses.add(allresponses)
+#        userprofile.save()
+#    else:
+    allresponses = get_object_or_404(Responses,test=test,user_profile=userprofile)
+    dropboxpath = list(Dropboxurl.objects.all())[0].url
+    
+    P=list(test.problems.all())
+    P=sorted(P,key=lambda x:(x.problem_number,x.year))
+    R=allresponses.responses
+    rows=[]
+    for i in range(0,len(P)):
+        r=R.get(problem_label=P[i].label)
+        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
+        readablelabel=P[i].readable_label.replace('\\#','#')
+        rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel))
+    return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
+

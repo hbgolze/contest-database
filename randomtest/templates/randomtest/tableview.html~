@@ -7,6 +7,13 @@
 {% if testcount == 0 %}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
+{% if studentusernames|length > 0 %}
+<ul>
+{% for student in studentusernames %}
+<li> <a href="student/{{student}}/">{{student}}</a>
+{% endfor %}
+</ul>
+{% endif %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -60,7 +67,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
     <tbody>
       {% for resp in responselog %}
       <tr>
-        <td><small>{{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+        <td><small><a href="test/{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
 	<td>
 	  <small>{{resp.modified_date}}</small>
 	</td>

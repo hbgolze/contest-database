@@ -93,6 +93,7 @@ class Problem(models.Model):
     test_label = models.CharField(max_length=20,blank=True)
     question_type = models.ManyToManyField(QuestionType)
     solutions = models.ManyToManyField(Solution,blank=True)
+    top_solution_number = models.IntegerField(blank=True,null=True)
     author = models.ForeignKey(User,related_name='author',blank=True,null=True)
     author_name = models.CharField(max_length=50,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
@@ -180,6 +181,7 @@ class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
+    students = models.ManyToManyField(User,blank = True)
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)
     def __unicode__(self):
