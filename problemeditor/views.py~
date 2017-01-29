@@ -228,6 +228,10 @@ class ChangeQuestionTypeWizard(SessionWizardView):
         return form
     def done(self,form_list,**kwargs):
         self.instance.question_type_new = QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type_new', ''))
+        if self.instance.question_type_new.question_type == "multiple choice":
+            self.instance.problem_text = self.instance.mc_problem_text
+        if self.instance.question_type_new.question_type in ["short answer", "proof"]:
+            self.instance.mc_problem_text = self.instance.problem_text
         self.instance.save()
         compileasy(self.instance.mc_problem_text,self.instance.label)
         compileasy(self.instance.problem_text,self.instance.label)

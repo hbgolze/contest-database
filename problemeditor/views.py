@@ -160,7 +160,6 @@ class AddProblemWizard(SessionWizardView):
 
         compileasy(prob.mc_problem_text,prob.label)
         compileasy(prob.problem_text,prob.label)
-        compileasy(sol.solution_text,prob.label,sol="sol1")
 
         sol=Solution(solution_text = D['solution_text'])
         sol.save()
@@ -170,6 +169,8 @@ class AddProblemWizard(SessionWizardView):
         sol.save()
         prob.solutions.add(sol)
         prob.save()
+        compileasy(sol.solution_text,prob.label,sol="sol1")
+
         return redirect('/problemeditor/detailedview/'+str(prob.pk)+'/')
 
 #{'1':show_mc_form_condition2,'2':show_sa_form_condition2,'3':show_pf\
