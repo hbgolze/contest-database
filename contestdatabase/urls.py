@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'', include('randomtest.urls')),
     url(r'problemeditor/', include('problemeditor.urls')),
     url(r'^asycompile/', include('asycompile.urls')),
+    url(r'^search/', include('search.urls')),
 ]
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
