@@ -8,6 +8,7 @@
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
 {% if studentusernames|length > 0 %}
+<h3>Students</h3>
 <ul>
 {% for student in studentusernames %}
 <li> <a href="student/{{student}}/">{{student}}</a>
@@ -57,6 +58,23 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
   </table>
 </div>
 <div class="col-md-3">
+<table class="table table-bordered centered">
+<thead>
+<tr>
+<th>
+Number of Problems Solved Today
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<p style="font-size:40px">{{todaycorrect}}</p>
+</td>
+</tr>
+</tbody>
+</table>
+
 <table class="table table-striped">
     <thead>
       <tr>

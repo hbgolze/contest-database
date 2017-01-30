@@ -29,6 +29,7 @@ from .utils import parsebool,newtexcode,newsoltexcode
 
 from random import shuffle
 import time
+from datetime import datetime
 
 # Create your views here.
 
@@ -237,9 +238,10 @@ def tableview(request):
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
     studentusers=userprof.students.all()
     studentusernames=[]
+    todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
     for i in studentusers:
         studentusernames.append(i.username)
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames}
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -606,7 +608,8 @@ def studenttableview(request,username):
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
-    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username}
+    todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect}
     return HttpResponse(template.render(context,request))
 
 @login_required
