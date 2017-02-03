@@ -78,6 +78,25 @@ Number of Problems Solved Today
 <table class="table table-striped">
     <thead>
       <tr>
+        <th>Stickied Problems</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sticky in stickies %}
+      <tr>
+        <td><small><a href="test/{{sticky.test_pk}}/#{{sticky.problem_label}}">{{sticky.test_label}}</a>: {{sticky.problem_label}}</small></td>
+	<td>
+	  <small>{{sticky.sticky_date}}</small>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<table class="table table-striped">
+    <thead>
+      <tr>
         <th>Recent Responses</th>
         <th>Date</th>
       </tr>
@@ -85,7 +104,7 @@ Number of Problems Solved Today
     <tbody>
       {% for resp in responselog %}
       <tr>
-        <td><small><a href="test/{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+        <td><small><a href="test/{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
 	<td>
 	  <small>{{resp.modified_date}}</small>
 	</td>

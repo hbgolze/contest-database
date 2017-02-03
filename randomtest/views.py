@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,newtexcode,newsoltexcode
@@ -241,7 +241,8 @@ def tableview(request):
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
     for i in studentusers:
         studentusernames.append(i.username)
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect}
+
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date')}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -293,10 +294,25 @@ def testview(request,pk):
                         ur.correct=1
                         ur.save()
                     userprofile.responselog.add(ur)
+            tempsticky = form.get('sticky'+P[i].label)
+            if tempsticky=='on':
+                if r.stickied == False:
+                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=test.pk,test_label=test.name)
+                    s.save()
+                    userprofile.stickies.add(s)
+                r.stickied = True
+            else:
+                if r.stickied == True:
+                    try:
+                        s=Sticky.objects.get(problem_label=P[i].label,test_pk=test.pk)
+                        s.delete()
+                    except Sticky.DoesNotExist:
+                        s=None
+                r.stickied = False
             r.save()
             if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
                 num_correct+=1
-            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date))
+            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied))
         allresponses.num_problems_correct=num_correct
         allresponses.show_answer_marks=1
         allresponses.save()
@@ -308,7 +324,7 @@ def testview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             r=R.get(problem_label=P[i].label)
-            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date))
+            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied))
     return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
 
@@ -609,7 +625,7 @@ def studenttableview(request,username):
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect}
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date')}
     return HttpResponse(template.render(context,request))
 
 @login_required

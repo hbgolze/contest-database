@@ -53,8 +53,17 @@ class Response(models.Model):
     problem_label = models.CharField(max_length=20)
     modified_date = models.DateTimeField(default = timezone.now)
     attempted = models.BooleanField(default = 0)
+    stickied = models.BooleanField(default = 0)
     def __str__(self):
         return self.response
+
+class Sticky(models.Model):
+    problem_label = models.CharField(max_length=20)
+    sticky_date = models.DateTimeField(default = timezone.now)
+    test_pk = models.CharField(max_length = 15)
+    test_label = models.CharField(max_length=50,blank=True)
+    def __str__(self):
+        return self.problem_label
 
 class Comment(models.Model):
     comment_text = models.TextField()
@@ -169,6 +178,7 @@ class Responses(models.Model):
     def __str__(self):
         return self.test.name
 
+#Equivalent to Response, except it is used to hold items for the User Response queue
 class UserResponse(models.Model):
     test_label = models.CharField(max_length=50,blank=True)
     response = models.CharField(max_length=10,blank=True)
@@ -184,6 +194,7 @@ class UserProfile(models.Model):
     students = models.ManyToManyField(User,blank = True,related_name='students')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)
+    stickies = models.ManyToManyField(Sticky,blank=True)
     def __unicode__(self):
         return self.user.username
 

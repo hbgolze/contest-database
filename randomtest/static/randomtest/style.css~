@@ -119,10 +119,13 @@ img.displayed {
     border-radius: 15px;
 }
 
-ul {
-  width: 80%;
+.glyphicon:before {
+ visibility: visible;
 }
-
-ul li {
-  width: auto;
+.glyphicon.glyphicon-star-empty:checked:before {
+   content: "\e006";
+}
+input[type=checkbox].glyphicon{
+    visibility: hidden;
+    
 }

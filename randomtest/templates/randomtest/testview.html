@@ -2,21 +2,36 @@
 
 {% block content %}
 <h2>{{name}}</h2>
+<p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
 <form action="." method="POST">
 {% csrf_token %}
 <input type="hidden" name="startform" value="{{pk}}">
 <table>
-{% for label,answer,response,qt,ppk,solnum,att,moddate in rows %}
+{% for label,answer,response,qt,ppk,solnum,att,moddate,stickied in rows %}
 <tr>
-<td valign="top"><br>
-{{forloop.counter}}.
-</td>
 <td>
+<a name="{{label}}"></a>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Problem {{forloop.counter}}</h3>
+  </div>
+  <div class="panel-body">
+<!--    Panel content-->
 <img src="{{dropboxpath}}{{label}}j.jpg"/>
+
+  </div>
+</div>
 
 <p>
 {% if qt.question_type == 'short answer' %}
-Answer to Problem {{forloop.counter}}: <input type="text" name="answer{{label}}" value="{{response}}"> 
+<!--Answer to Problem {{forloop.counter}}: <input type="text" name="answer{{label}}" value="{{response}}"> -->
+<div class="col-lg-3">
+  <div class="form-group">
+    <label for="usr">Answer to Problem {{forloop.counter}}:</label>
+    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}">
+  </div>
+</div>
 {% if att %}
 {% if answer == response %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}
@@ -47,6 +62,9 @@ Last Attempted: {{moddate}}
 
 
 
+</td>
+<td valign="top"><br>
+&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if stickied == 1 %}checked{% endif %} name="sticky{{label}}" >
 </td>
 </tr>
 {% endfor %}
