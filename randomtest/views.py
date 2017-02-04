@@ -627,8 +627,10 @@ def studenttableview(request,username):
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
         rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
+    weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
+    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date')}
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date'),'weekcorrect': daycorrect}
     return HttpResponse(template.render(context,request))
 
 @login_required

@@ -239,7 +239,7 @@ def tableview(request):
     studentusers=userprof.students.all()
     studentusernames=[]
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %b %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
+    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
 #    days=[datetime.today().date()-timedelta(days=i) for i in range(1,7)]
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
     for i in studentusers:

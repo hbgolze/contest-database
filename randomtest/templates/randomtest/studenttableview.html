@@ -53,17 +53,21 @@ This student has no tests.
 <table class="table table-bordered centered">
 <thead>
 <tr>
-<th>
-Number of Problems Solved Today
+<th colspan="2">
+Number of Problems Solved Today:
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>
+<td colspan="2">
 <p style="text-align:center;font-size:40px">{{todaycorrect}}</p>
 </td>
 </tr>
+<tr>
+<td colspan="2"><b>Previous days:</b></td>
+</tr>
+{% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
 </tbody>
 </table>
 
