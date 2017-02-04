@@ -7,16 +7,22 @@
 <table>
 {% for label,answer,response,qt,ppk,solnum,att,moddate,prob_latex,readablelabel,mc_prob_latex in rows %}
 <tr>
-<td valign="top"><br>
-{{forloop.counter}}.
-</td>
 <td>
-<!--<img src="{{dropboxpath}}{{label}}j.jpg"/>-->
+<a name="{{label}}"></a>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Problem {{forloop.counter}}</h3>
+  </div>
+  <div class="panel-body">
 {% if qt.question_type == 'multiple choice' %}
 {% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
 {% else %}
 {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
 {% endif %}
+  </div>
+</div>
+
 <p>
 {% if qt.question_type == 'short answer' %}
 Answer to Problem {{forloop.counter}}: <input type="text" name="answer{{label}}" value="{{response}}" disabled> 
