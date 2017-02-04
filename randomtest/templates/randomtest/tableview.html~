@@ -61,19 +61,42 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 <table class="table table-bordered centered">
 <thead>
 <tr>
-<th>
+<th colspan="2">
 Number of Problems Solved Today
 </th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>
+<td colspan="2">
 <p style="text-align:center;font-size:40px">{{todaycorrect}}</p>
 </td>
 </tr>
+<tr>
+<td colspan="2"><b>Previous days:</b></td>
+</tr>
+{% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
 </tbody>
 </table>
+
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Stickied Problems</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sticky in stickies %}
+      <tr>
+        <td><small><a href="test/{{sticky.test_pk}}/#{{sticky.problem_label}}">{{sticky.test_label}}</a>: {{sticky.problem_label}}</small></td>
+	<td>
+	  <small>{{sticky.sticky_date}}</small>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
 <table class="table table-striped">
     <thead>
