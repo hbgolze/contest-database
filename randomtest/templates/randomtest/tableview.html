@@ -1,5 +1,16 @@
 {% extends "./base.html" %}
 
+{% block head %}
+<script language="javascript">
+function drawprogressbar(percent,color) {
+var numpixels=50*percent/100;
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: 50px; height=10px;\">");
+document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
+document.write("</div>");
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <h2>My Tests</h2>
 <div class="col-md-9">
@@ -22,6 +33,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
         <th>Types</th>
 	<th>Number of Correct Answers</th>
         <th>Number of Problems</th>
+	<th>Progress</th>
 	<th>Date Created</th>
 	<th>Options</th>
       </tr>
@@ -36,6 +48,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	</td>
 	<td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
+	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{num_problems_correct}}*100/{{problems_count}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
         <td>{{created_date}}</td>
 	<td>
 	  <form action="edittest/{{tpk}}/" method="post">
