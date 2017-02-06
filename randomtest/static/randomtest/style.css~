@@ -34,8 +34,7 @@ textarea#codetext {
 h1 { font-size:1.6em; }
 h2 { font-size:1.4em; }
 h3 { font-size:1.3em; }
-a:link { color:#33c; }
-a:visited { color:#339; }
+
 p { max-width: 60em; }
 
 a img { border:none; }
@@ -58,7 +57,6 @@ code {font-size:1.2em;
   outline:none;
   background:none;
   cursor:pointer;
-  color:#33c;
   padding:0;
   text-decoration:underline;
   font-family:inherit;
@@ -129,3 +127,8 @@ input[type=checkbox].glyphicon{
     visibility: hidden;
     
 }
+
+.glyphicon.glyphicon-star:checked:before {
+   content: "\e006";
+}
+
