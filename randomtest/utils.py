@@ -132,8 +132,8 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     newtexcode=replaceenumerate(newtexcode,'(a)')
     newtexcode=replaceenumerate(newtexcode,'(i)')
     newtexcode=replaceenumerate(newtexcode)
-    newtexcode=newtexcode.replace('\\begin{center}','<center>')
-    newtexcode=newtexcode.replace('\\end{center}','</center>')
+    newtexcode=newtexcode.replace('\\begin{center}','')
+    newtexcode=newtexcode.replace('\\end{center}','\n')
     return newtexcode
 
 def newsoltexcode(texcode,dropboxpath,label):
@@ -153,8 +153,8 @@ def newsoltexcode(texcode,dropboxpath,label):
     newtexcode=replaceenumerate(newtexcode,'(a)')
     newtexcode=replaceenumerate(newtexcode,'(i)')
     newtexcode=replaceenumerate(newtexcode)
-    newtexcode=newtexcode.replace('\\begin{center}','<center>')
-    newtexcode=newtexcode.replace('\\end{center}','</center>')
+    newtexcode=newtexcode.replace('\\begin{center}','')
+    newtexcode=newtexcode.replace('\\end{center}','\n')
     return newtexcode
 
                 
