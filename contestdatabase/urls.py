@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^accounts/change-password-done/$', django.contrib.auth.views.password_change_done, name='password_change_done'),
     url(r'', include('randomtest.urls')),
     url(r'problemeditor/', include('problemeditor.urls')),
+    url(r'^contestcollections/', include('contestcollections.urls')),
     url(r'^asycompile/', include('asycompile.urls')),
     url(r'^search/', include('search.urls')),
 ]

@@ -1,0 +1,42 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="../../">Choose a Contest</a></li>
+  <li class="active">{{name}}</li>
+</ol>
+<h2>{{name}}</h2>
+{% csrf_token %}
+<input type="hidden" name="startform" value="{{pk}}">
+
+<table>
+{% for label,answer,qt,ppk,solnum,prob_latex,readablelabel,mc_prob_latex in rows %}
+<tr>
+<td>
+<a name="{{label}}"></a>
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Problem {{forloop.counter}}</h3>
+  </div>
+  <div class="panel-body">
+{% if qt.question_type == 'multiple choice' %}
+{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{readablelabel}}]</span><br>
+{% else %}
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  <span class="pull-right">[{{readablelabel}}]</span><br>
+{% endif %}
+  </div>
+</div>
+
+<p>
+(<a href="{{ppk}}">Solution</a>)
+</p>
+
+
+
+</td>
+</tr>
+{% endfor %}
+</table>
+
+{% endblock %}

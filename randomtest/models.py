@@ -168,6 +168,11 @@ class Test(models.Model):
                     self.types.add(j)
         self.save()
         
+class TestCollection(models.Model):
+    name=models.CharField(max_length=50)
+    tests=models.ManyToManyField(Test)
+    def __str__(self):
+        return self.name
 
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)

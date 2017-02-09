@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,newtexcode,newsoltexcode
@@ -40,7 +40,12 @@ class TestDelete(DeleteView):
 @login_required
 def deletetestresponses(request,pk):
     test = get_object_or_404(Test, pk=pk)
-    if test.responses_set.count()<=1:
+    isreserved=0
+    TC=TestCollection.objects.all()
+    for i in TC:
+        if test in i.tests.all():
+            isreserved=1
+    if test.responses_set.count()<=1 and isreserved==0:
         test.delete()
     else:
         userprofile = get_or_create_up(request.user)

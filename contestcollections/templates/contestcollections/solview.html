@@ -1,0 +1,24 @@
+{% extends './base.html' %}
+
+{% block title %}Solutions: {{readablelabel}}{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="../../../">Choose a contest</a></li>
+  <li><a href="../">{{testname}}</a></li>
+  <li class="active">Solutions to {{readablelabel}}</li>
+</ol>
+    <h2>Solutions to {{readablelabel}}</h2>
+<div class="form-group">
+<label>Problem Text:</label>
+<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+</div>
+{% if rows|length > 0 %}
+        {% for solution,spk in rows %}
+          <h3>Solution {{forloop.counter}}</h3>
+	 {% autoescape off %} {{solution|linebreaks}} {% endautoescape %}<br><br>
+        {% endfor %}
+{% else %}
+No current solutions.
+{% endif %}
+{% endblock %}

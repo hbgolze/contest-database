@@ -133,3 +133,29 @@ input[type=checkbox].glyphicon{
    content: "\e006";
 }
 
+.panel-default > .panel-heading-custom {
+background: #006699; color: #fff; }
+
+.list-group-horizontal .list-group-item {
+    display: inline-block;
+}
+.list-group-horizontal .list-group-item {
+		       margin-bottom: 0;
+		       margin-left:-4px;
+		       margin-right: 0;
+}
+.list-group-horizontal .list-group-item:first-child {
+		       border-top-right-radius:0;
+		       border-bottom-left-radius:4px;
+}
+.list-group-horizontal .list-group-item:last-child {
+		       border-top-right-radius:4px;
+		       border-bottom-left-radius:0;
+}
+
+.icon-green {
+    color: #00cc00;
+}
+.icon-red {
+    color: #ff0000;
+}

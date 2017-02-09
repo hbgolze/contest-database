@@ -31,13 +31,13 @@ Please select a problem
         <td>
           {% for app in apps %}
           {% if app.approval_status == "AP" %}
-          <span class="glyphicon glyphicon-ok-sign">
+          <span class="glyphicon glyphicon-ok-sign"></span>
           {% elif app.approval_status == "MN" %}
-          <span class="glyphicon glyphicon-edit">
+          <span class="glyphicon glyphicon-edit"></span>
           {% elif app.approval_status == "MJ" %}
-          <span class="glyphicon glyphicon-exclamation-sign">
+          <span class="glyphicon glyphicon-exclamation-sign"></span>
           {% elif app.approval_status == "DE" %}
-          <span class="glyphicon glyphicon-remove-sign">
+          <span class="glyphicon glyphicon-remove-sign"></span>
           {% endif %}
           {% endfor %}
           {% if apps.count == 0 %}
