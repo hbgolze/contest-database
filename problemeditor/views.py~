@@ -491,8 +491,6 @@ def problemview(request,type,tag,label):
         texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
         context['prob_latex']=texcode
         context['mcsa']=True
-    print(texcode)
-
 #    context['rows']=rows
     context['form']=form
     context['nbar']='problemeditor'
@@ -1102,7 +1100,7 @@ def addcontestview(request,type,num):
                     p.types.add(typ)
                     p.question_type.add(QuestionType.objects.get(question_type='proof'))
                     p.save()
-            compileasy(problem.mc_problem_text,p.label)
+            compileasy(p.mc_problem_text,p.label)
             compileasy(p.problem_text,p.label)
         return redirect('/problemeditor/')
     context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}

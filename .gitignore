@@ -5,6 +5,7 @@ db.sqlite3
 /static
 .DS_Store
 media/*.png
+exportimport.py
 
 logfile
 

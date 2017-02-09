@@ -1061,6 +1061,7 @@ def addcontestview(request,type,num):
                               year=F['year'],
                               form_letter=F['formletter'],
                               test_label=label,
+                              top_solution_number=0,
                               )
                     p.save()
                     p.types.add(typ)
@@ -1079,6 +1080,7 @@ def addcontestview(request,type,num):
                               year=F['year'],
                               form_letter=F['formletter'],
                               test_label=label,
+                              top_solution_number=0,
                               )
                     p.save()
                     p.types.add(typ)
@@ -1095,12 +1097,13 @@ def addcontestview(request,type,num):
                               year=F['year'],
                               form_letter=F['formletter'],
                               test_label=label,
+                              top_solution_number=0,
                               )
                     p.save()
                     p.types.add(typ)
                     p.question_type.add(QuestionType.objects.get(question_type='proof'))
                     p.save()
-            compileasy(problem.mc_problem_text,p.label)
+            compileasy(p.mc_problem_text,p.label)
             compileasy(p.problem_text,p.label)
         return redirect('/problemeditor/')
     context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}

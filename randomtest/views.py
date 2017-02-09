@@ -482,9 +482,10 @@ def latexview(request,pk):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
             ptext=P[i].mc_problem_text
+            rows.append((ptext,P[i].readable_label,P[i].answers()))
         else:
             ptext=P[i].problem_text
-        rows.append((ptext,P[i].readable_label,P[i].answer_choices))
+            rows.append((ptext,P[i].readable_label,''))
     if request.method == "GET":
         if request.GET.get('problemlabels')=='no':
             include_problem_labels = False
@@ -494,6 +495,7 @@ def latexview(request,pk):
 def readme(request):
     return render(request,'randomtest/readme.html',{'nbar':'newtest'})
 
+@login_required
 def test_as_pdf(request, pk):
     test = get_object_or_404(Test, pk=pk)
     P=list(test.problems.all())
@@ -503,9 +505,10 @@ def test_as_pdf(request, pk):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
             ptext=P[i].mc_problem_text
+            rows.append((ptext,P[i].readable_label,P[i].answers()))
         else:
             ptext=P[i].problem_text
-        rows.append((ptext,P[i].readable_label,P[i].answer_choices))
+            rows.append((ptext,P[i].readable_label,''))
     if request.method == "GET":
         if request.GET.get('problemlabels')=='no':
             include_problem_labels = False
@@ -537,6 +540,92 @@ def test_as_pdf(request, pk):
                 'tempdirect':tempdir,
                 })
         template = get_template('randomtest/my_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')  
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        logger.debug(os.listdir(tempdir))
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+        logger.debug(os.listdir(tempdir))
+
+        for i in range(0,len(L)):
+            if L[i][-4:]=='.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        logger.debug(os.listdir(tempdir))
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+        logger.debug(os.listdir(tempdir))
+        with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+            pdf = f.read()
+    r = HttpResponse(content_type='application/pdf')  
+    r.write(pdf)
+    return r
+
+@login_required
+def test_sol_as_pdf(request, pk):
+    test = get_object_or_404(Test, pk=pk)
+    P=list(test.problems.all())
+    rows=[]
+    include_problem_labels = True
+    for i in range(0,len(P)):
+        ptext=''
+        if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
+            ptext=P[i].mc_problem_text
+            rows.append((ptext,P[i].readable_label,P[i].answers(),P[i].solutions.all()))
+        else:
+            ptext=P[i].problem_text
+            rows.append((ptext,P[i].readable_label,'',P[i].solutions.all()))
+    if request.method == "GET":
+        if request.GET.get('problemlabels')=='no':
+            include_problem_labels = False
+    context = Context({  
+            'name':test.name,
+            'rows':rows,
+            'pk':pk,
+            'include_problem_labels':include_problem_labels,
+            })
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('randomtest/my_latex_sol_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')  
+    # Python3 only. For python2 check out the docs!
+    with tempfile.TemporaryDirectory() as tempdir:
+        # Create subprocess, supress output with PIPE and
+        # run latex twice to generate the TOC properly.
+        # Finally read the generated pdf.
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        logger.debug(os.listdir(tempdir))
+        context = Context({  
+                'name':test.name,
+                'rows':rows,
+                'pk':pk,
+                'include_problem_labels':include_problem_labels,
+                'tempdirect':tempdir,
+                })
+        template = get_template('randomtest/my_latex_sol_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')  
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
