@@ -39,7 +39,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
       </tr>
     </thead>
     <tbody>
-      {% for tpk,name,types,num_problems_correct,problems_count,created_date in rows %}
+      {% for tpk,name,types,num_problems_correct,problems_count,created_date,progress in rows %}
       <tr>
         <td><a href="test/{{tpk}}/">{{name}}</a></td>
         <td> {% for type in types %}

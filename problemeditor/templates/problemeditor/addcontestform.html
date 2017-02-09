@@ -9,23 +9,22 @@
   <br> Form (if applicable, i.e, AMC 12 <b>A</b>):<br>
   <input type="text" name="formletter"> <br><br>
 {% for counter in nums %}
-  {{counter}}. <textarea name="problem_text{{counter}}" rows="4" cols="50"></textarea>
+  {{counter}}. <textarea name="problem_text{{counter}}" rows="8" cols="100"></textarea>
   <br>
   {% if mc %}
   <input type="hidden" name="type" value="mc">
     Answer Choices:<br>
-    Answer A:<input type="text" name="answer_A{{counter}}"><br>
-    Answer B:<input type="text" name="answer_B{{counter}}"><br>
-    Answer C:<input type="text" name="answer_C{{counter}}"><br>
-    Answer D:<input type="text" name="answer_D{{counter}}"><br>
-    Answer E:<input type="text" name="answer_E{{counter}}"><br>
-  Correct Answer: <select name="answer{{counter}}">
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-    <option value="D">D</option>
-    <option value="E">E</option>
-    </select><br><br>
+    Answer A:<input type="text" name="answer_A{{counter}}" style="width: 300px;"><br>
+    Answer B:<input type="text" name="answer_B{{counter}}" style="width: 300px;"><br>
+    Answer C:<input type="text" name="answer_C{{counter}}" style="width: 300px;"><br>
+    Answer D:<input type="text" name="answer_D{{counter}}" style="width: 300px;"><br>
+    Answer E:<input type="text" name="answer_E{{counter}}" style="width: 300px;"><br>
+  Correct Answer: 
+  <input type="radio" name="answer{{counter}}" value="A"> A
+  <input type="radio" name="answer{{counter}}" value="B"> B
+  <input type="radio" name="answer{{counter}}" value="C"> C
+  <input type="radio" name="answer{{counter}}" value="D"> D
+  <input type="radio" name="answer{{counter}}" value="E"> E
   {% else %}
   {% if sa %}
   <input type="hidden" name="type" value="sa">

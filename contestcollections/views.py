@@ -34,11 +34,18 @@ def tableview(request):
     rows=[]
     for i in TC:
         T=list(i.tests.order_by('name'))
-#        T=sorted(T,key=lambda x:(x.name[0:4],x.name[-1]))
-        T1=T[0:int(len(T)/4)]
-        T2=T[int(len(T)/4):int(2*len(T)/4)]
-        T3=T[int(2*len(T)/4):int(3*len(T)/4)]
-        T4=T[int(3*len(T)/4):]
+        q=int(len(T)/4)
+        leftover=len(T)%4
+        lim=[0]
+        for j in range(0,4):
+            if j<leftover:
+                lim.append(lim[-1]+q+1)
+            else:
+                lim.append(lim[-1]+q)
+        T1=T[0:lim[1]]
+        T2=T[lim[1]:lim[2]]
+        T3=T[lim[2]:lim[3]]
+        T4=T[lim[3]:]
         rows.append((i.name,T1,T2,T3,T4))
     return render(request, 'contestcollections/tableview.html',{'rows': rows,'nbar': 'contestcollection'})
 

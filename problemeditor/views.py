@@ -7,7 +7,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval,TestCollection
 from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
@@ -1105,6 +1105,17 @@ def addcontestview(request,type,num):
                     p.save()
             compileasy(p.mc_problem_text,p.label)
             compileasy(p.problem_text,p.label)
+        P=Problem.objects.filter(test_label=label)
+        if len(P)>0:
+            t=Test(name=readablelabel)
+            t.save()
+            for i in P:
+                t.problems.add(i)
+                t.types.add(i.type_new)
+            t.save()
+        tc=TestCollection.objects.get(name=verbtranslate[type])
+        tc.tests.add(t)
+        tc.save()
         return redirect('/problemeditor/')
     context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
     if type=='AMC8' or type=='AMC10' or type=='AMC12':

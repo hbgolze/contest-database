@@ -240,7 +240,7 @@ def tableview(request):
             userprof.save()
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
-        rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
+        rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date,int(allresponses.num_problems_correct*100/max(1,tests[i].problems.count()))))
     studentusers=userprof.students.all()
     studentusernames=[]
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
