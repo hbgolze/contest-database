@@ -56,6 +56,25 @@ def deletetestresponses(request,pk):
     return redirect('/')
 
 @login_required
+def deletestudenttestresponses(request,username,pk):
+    test = get_object_or_404(Test, pk=pk)
+    user = get_object_or_404(User,username=username)
+    isreserved=0
+    TC=TestCollection.objects.all()
+    for i in TC:
+        if test in i.tests.all():
+            isreserved=1
+    if test.responses_set.count()<=1 and isreserved==0:
+        test.delete()
+    else:
+        userprofile = get_or_create_up(user)
+        testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
+        if testresponses.count()>=1:
+            testresponses.delete()
+        userprofile.tests.remove(test)
+    return redirect('../../')
+
+@login_required
 def startform(request):
     if request.method=='POST':
         form=request.POST
@@ -740,7 +759,9 @@ def studenttableview(request,username):
         return HttpResponse('Unauthorized', status=401)
     userprof = get_or_create_up(user)
     tests=list(userprof.tests.all())
+    atests=list(userprof.archived_tests.all())
     rows=[]
+    arows=[]
     for i in range(0,len(tests)):
         testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
@@ -756,11 +777,43 @@ def studenttableview(request,username):
             userprof.save()
         else:
             allresponses=Responses.objects.get(test=tests[i],user_profile=userprof)
-        rows.append((tests[i].pk,tests[i].name,tests[i].types.all(),allresponses.num_problems_correct,tests[i].problems.count(),tests[i].created_date))
+        rows.append((tests[i].pk,
+                     tests[i].name,
+                     tests[i].types.all(),
+                     allresponses.num_problems_correct,
+                     tests[i].problems.count(),
+                     userprof.timestamps.get(test_pk=tests[i].pk).date_added,#tests[i].created_date,
+                     int(allresponses.num_problems_correct*100/max(1,tests[i].problems.count()))
+                     ))
+    rows=sorted(rows,key=lambda x:x[5])#
+    for i in range(0,len(atests)):
+        testresponses=userprof.allresponses.filter(test=atests[i])
+        if testresponses.count()==0:
+            allresponses=Responses(test=atests[i],num_problems_correct=0)
+            allresponses.save()
+            P=list(atests[i].problems.all())
+            for j in range(0,len(P)):
+                r=Response(response='',problem_label=P[j].label)
+                r.save()
+                allresponses.responses.add(r)
+            allresponses.save()
+            userprof.allresponses.add(allresponses)
+            userprof.save()
+        else:
+            allresponses=Responses.objects.get(test=atests[i],user_profile=userprof)
+        arows.append((atests[i].pk,
+                     atests[i].name,
+                     atests[i].types.all(),
+                     allresponses.num_problems_correct,
+                     atests[i].problems.count(),
+                     userprof.timestamps.get(test_pk=atests[i].pk).date_added,#atests[i].created_date,
+                     int(allresponses.num_problems_correct*100/max(1,atests[i].problems.count()))
+                     ))
+    arows=sorted(arows,key=lambda x:x[5])#
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
     daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date'),'weekcorrect': daycorrect}
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date'),'weekcorrect': daycorrect, 'atestcount' : len(atests), 'arows' : arows,}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -805,8 +858,28 @@ def archiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.add(test)
     userprof.tests.remove(test)
-    ti,created=TestTimeStamp.objects.get_or_create(test_pk=test.pk)
-    if created==False:
+    tists=userprof.timestamps.filter(test_pk=test.pk)
+    if tists.count()==0:
+        ti=TestTimeStamp(test_pk=test.pk)
+    else:
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
+        ti.date_added=timezone.now()
+    ti.save()
+    userprof.timestamps.add(ti)
+    return redirect('../../')
+
+@login_required
+def archivestudentview(request,username,tpk):
+    user = get_object_or_404(User,username=username)
+    userprof=get_or_create_up(user)
+    test = get_object_or_404(Test, pk=tpk) 
+    userprof.archived_tests.add(test)
+    userprof.tests.remove(test)
+    tists=userprof.timestamps.filter(test_pk=test.pk)
+    if tists.count()==0:
+        ti=TestTimeStamp(test_pk=test.pk)
+    else:
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)
@@ -818,8 +891,28 @@ def unarchiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.remove(test)
     userprof.tests.add(test)
-    ti,created=TestTimeStamp.objects.get_or_create(test_pk=test.pk)
-    if created==False:
+    tists=userprof.timestamps.filter(test_pk=test.pk)
+    if tists.count()==0:
+        ti=TestTimeStamp(test_pk=test.pk)
+    else:
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
+        ti.date_added=timezone.now()
+    ti.save()
+    userprof.timestamps.add(ti)
+    return redirect('../../')
+
+@login_required
+def unarchivestudentview(request,username,tpk):
+    user = get_object_or_404(User,username=username)
+    userprof=get_or_create_up(user)
+    test = get_object_or_404(Test, pk=tpk) 
+    userprof.archived_tests.remove(test)
+    userprof.tests.add(test)
+    tists=userprof.timestamps.filter(test_pk=test.pk)
+    if tists.count()==0:
+        ti=TestTimeStamp(test_pk=test.pk)
+    else:
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)

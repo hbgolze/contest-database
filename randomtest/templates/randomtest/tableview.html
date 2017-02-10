@@ -15,7 +15,7 @@ document.write("</div>");
 <h2>My Tests</h2>
 <div class="col-md-9">
 
-{% if testcount == 0 %}
+{% if testcount == 0 and atestcount == 0%}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
 {% if studentusernames|length > 0 %}
