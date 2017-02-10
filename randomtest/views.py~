@@ -862,7 +862,7 @@ def archiveview(request,tpk):
     if tists.count()==0:
         ti=TestTimeStamp(test_pk=test.pk)
     else:
-        ti.TestTimeStamp.objects.get(test_pk=test.pk)
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)
@@ -879,7 +879,7 @@ def archivestudentview(request,username,tpk):
     if tists.count()==0:
         ti=TestTimeStamp(test_pk=test.pk)
     else:
-        ti.TestTimeStamp.objects.get(test_pk=test.pk)
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)
@@ -895,7 +895,7 @@ def unarchiveview(request,tpk):
     if tists.count()==0:
         ti=TestTimeStamp(test_pk=test.pk)
     else:
-        ti.TestTimeStamp.objects.get(test_pk=test.pk)
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)
@@ -912,7 +912,7 @@ def unarchivestudentview(request,username,tpk):
     if tists.count()==0:
         ti=TestTimeStamp(test_pk=test.pk)
     else:
-        ti.TestTimeStamp.objects.get(test_pk=test.pk)
+        ti=TestTimeStamp.objects.get(test_pk=test.pk)
         ti.date_added=timezone.now()
     ti.save()
     userprof.timestamps.add(ti)
