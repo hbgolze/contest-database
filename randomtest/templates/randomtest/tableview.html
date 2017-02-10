@@ -48,7 +48,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	</td>
 	<td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{num_problems_correct}}*100/{{problems_count}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
+	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
         <td>{{created_date}}</td>
 	<td>
 	  <form action="edittest/{{tpk}}/" method="post">

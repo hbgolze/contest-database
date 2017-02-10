@@ -45,14 +45,14 @@ class DetailedProblemForm(forms.ModelForm):
 class ProblemTextForm(forms.ModelForm):
     class Meta:
         model = Problem
-        fields = ('problem_text','answer_choices','mc_problem_text','answer_A','answer_B','answer_C','answer_D','answer_E')
+        fields = ('problem_text','mc_problem_text','answer_A','answer_B','answer_C','answer_D','answer_E')
         widgets = {
             'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             'mc_problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
             }
     def __init__(self, *args, **kwargs):
         super(ProblemTextForm, self).__init__(*args, **kwargs)   
-        self.fields['answer_choices'].help_text = '<br/><div class="tex2jax_ignore">Should be in the form<br/>$\\textbf{(A) } Ans A\\qquad \\textbf{(B) } Ans B\\qquad \\textbf{(C) } Ans C\\qquad \\textbf{(D) } Ans D\\qquad \\textbf{(E) } Ans E$</div>'
+#        self.fields['answer_choices'].help_text = '<br/><div class="tex2jax_ignore">Should be in the form<br/>$\\textbf{(A) } Ans A\\qquad \\textbf{(B) } Ans B\\qquad \\textbf{(C) } Ans C\\qquad \\textbf{(D) } Ans D\\qquad \\textbf{(E) } Ans E$</div>'
 
 class SolutionForm(forms.ModelForm):
     class Meta:
