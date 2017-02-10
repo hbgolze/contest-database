@@ -34,7 +34,7 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	<th>Number of Correct Answers</th>
         <th>Number of Problems</th>
 	<th>Progress</th>
-	<th>Date Created</th>
+	<th>Date Added</th>
 	<th>Options</th>
       </tr>
     </thead>
@@ -64,6 +64,57 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	</td>
 	<td>
 	  <a href="pdftest/{{tpk}}/">View PDF</a>
+	</td>
+	<td>
+	  <a href="archive/{{tpk}}/">Archive</a>
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+<h2>Archived Tests</h2>
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Test Name</th>
+        <th>Types</th>
+	<th>Number of Correct Answers</th>
+        <th>Number of Problems</th>
+	<th>Progress</th>
+	<th>Date Created</th>
+	<th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tpk,name,types,num_problems_correct,problems_count,created_date,progress in arows %}
+      <tr>
+        <td><a href="test/{{tpk}}/">{{name}}</a></td>
+        <td> {% for type in types %}
+	       {{type}}{% if not forloop.last%},{% endif %}
+	     {% endfor %}
+	</td>
+	<td>{{num_problems_correct}}</td>
+        <td>{{problems_count}}</td>
+	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
+        <td>{{created_date}}</td>
+	<td>
+	  <form action="edittest/{{tpk}}/" method="post">
+	    {% csrf_token %}
+	    <button type="submit" name="Edit" value="Edit" class="btn-link">Edit</button>
+	  </form>
+	</td>
+	<td>
+	  <a href="viewlatex/{{tpk}}/">View LaTeX</a>
+	</td>
+	<td>
+	  <a href="delete/{{tpk}}/">Delete</a>
+	</td>
+	<td>
+	  <a href="pdftest/{{tpk}}/">View PDF</a>
+	</td>
+	<td>
+	  <a href="unarchive/{{tpk}}/">Unarchive</a>
 	</td>
       </tr>
       {% endfor %}

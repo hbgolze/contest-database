@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,newtexcode,newsoltexcode
@@ -116,6 +116,9 @@ def startform(request):
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
             U.save()
+            ti=TestTimeStamp(test_pk=T.pk)
+            ti.save()
+            U.timestamps.add(ti)
             R=Responses(test=T,num_problems_correct=0)
             R.save()
             for i in range(0,len(P)):
@@ -220,12 +223,10 @@ def tableview(request):
     template=loader.get_template('randomtest/tableview.html')
     userprof = get_or_create_up(request.user)
     tests=list(userprof.tests.all())
+    atests=list(userprof.archived_tests.all())
     rows=[]
+    arows=[]
     for i in range(0,len(tests)):
-#        if userprof.tests.filter(pk=tests[i].pk).count()==0:
-#        userprof.tests.add(tests[i])#this line was indented
-#        userprof.save()
-#        testresponses = Responses.objects.filter(test=tests[i]).filter(user_profile=userprof)
         testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
             allresponses=Responses(test=tests[i],num_problems_correct=0)
@@ -245,9 +246,34 @@ def tableview(request):
                      tests[i].types.all(),
                      allresponses.num_problems_correct,
                      tests[i].problems.count(),
-                     tests[i].created_date,
+                     userprof.timestamps.get(test_pk=tests[i].pk).date_added,#tests[i].created_date,
                      int(allresponses.num_problems_correct*100/max(1,tests[i].problems.count()))
                      ))
+    rows=sorted(rows,key=lambda x:x[5])#
+    for i in range(0,len(atests)):
+        testresponses=userprof.allresponses.filter(test=atests[i])
+        if testresponses.count()==0:
+            allresponses=Responses(test=atests[i],num_problems_correct=0)
+            allresponses.save()
+            P=list(atests[i].problems.all())
+            for j in range(0,len(P)):
+                r=Response(response='',problem_label=P[j].label)
+                r.save()
+                allresponses.responses.add(r)
+            allresponses.save()
+            userprof.allresponses.add(allresponses)
+            userprof.save()
+        else:
+            allresponses=Responses.objects.get(test=atests[i],user_profile=userprof)
+        arows.append((atests[i].pk,
+                     atests[i].name,
+                     atests[i].types.all(),
+                     allresponses.num_problems_correct,
+                     atests[i].problems.count(),
+                     userprof.timestamps.get(test_pk=atests[i].pk).date_added,#atests[i].created_date,
+                     int(allresponses.num_problems_correct*100/max(1,atests[i].problems.count()))
+                     ))
+    arows=sorted(arows,key=lambda x:x[5])#
     studentusers=userprof.students.all()
     studentusernames=[]
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
@@ -257,7 +283,7 @@ def tableview(request):
     for i in studentusers:
         studentusernames.append(i.username)
 
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date')}
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date'), 'atestcount': len(atests),'arows': arows}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -266,6 +292,9 @@ def testview(request,pk):
     userprofile = get_or_create_up(request.user)
     if userprofile.tests.filter(pk=pk).count()==0:
         userprofile.tests.add(test)
+        ti=TestTimeStamp(test_pk=test.pk)
+        ti.save()
+        userprofile.timestamps.add(ti)
     userprofile.save()
     testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
     if testresponses.count()==0:
@@ -770,3 +799,28 @@ def studenttestview(request,username,pk):
         rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode))
     return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
+@login_required
+def archiveview(request,tpk):
+    userprof=get_or_create_up(request.user)
+    test = get_object_or_404(Test, pk=tpk) 
+    userprof.archived_tests.add(test)
+    userprof.tests.remove(test)
+    ti,created=TestTimeStamp.objects.get_or_create(test_pk=test.pk)
+    if created==False:
+        ti.date_added=timezone.now()
+    ti.save()
+    userprof.timestamps.add(ti)
+    return redirect('../../')
+
+@login_required
+def unarchiveview(request,tpk):
+    userprof=get_or_create_up(request.user)
+    test = get_object_or_404(Test, pk=tpk) 
+    userprof.archived_tests.remove(test)
+    userprof.tests.add(test)
+    ti,created=TestTimeStamp.objects.get_or_create(test_pk=test.pk)
+    if created==False:
+        ti.date_added=timezone.now()
+    ti.save()
+    userprof.timestamps.add(ti)
+    return redirect('../../')

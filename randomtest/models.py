@@ -174,6 +174,10 @@ class TestCollection(models.Model):
     def __str__(self):
         return self.name
 
+class TestTimeStamp(models.Model):
+    date_added=models.DateTimeField(default = timezone.now)
+    test_pk=models.CharField(max_length=15)
+
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
     responses = models.ManyToManyField(Response,blank=True)
@@ -196,6 +200,8 @@ class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
+    timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
+    archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
     students = models.ManyToManyField(User,blank = True,related_name='students')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)

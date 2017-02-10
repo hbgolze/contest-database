@@ -112,7 +112,7 @@ Number of Problems Solved Today:
     <tbody>
       {% for resp in responselog %}
       <tr>
-        <td><small><a href="{{resp.test_pk}}/">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+        <td><small><a href="{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
 	<td>
 	  <small>{{resp.modified_date}}</small>
 	</td>

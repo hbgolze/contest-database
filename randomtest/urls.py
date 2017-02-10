@@ -17,4 +17,6 @@ urlpatterns = [
     url(r'^pdfsoltest/(?P<pk>\d+)/$', views.test_sol_as_pdf,name='test_sol_pdf'),
     url(r'^student/(?P<username>\w+)/$', views.studenttableview, name='studenttableview'),
     url(r'^student/(?P<username>\w+)/(?P<pk>\w+)/$', views.studenttestview, name='studenttestview'),
+    url(r'^archive/(?P<tpk>\d+)/$', views.archiveview, name='archiveview'),
+    url(r'^unarchive/(?P<tpk>\d+)/$', views.unarchiveview, name='unarchiveview'),
 ]
