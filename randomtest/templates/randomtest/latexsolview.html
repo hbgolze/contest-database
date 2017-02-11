@@ -1,0 +1,66 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<h2>LaTeX Code for "{{name}}"</h2>
+<input type="hidden" name="startform" value="{{pk}}">
+
+<h3>Options</h3>
+<form action="." method="get">
+Include Problem Labels?<br>
+{% if include_problem_labels %}
+<input type="radio" name="problemlabels" value="yes" checked="checked"> Yes
+<input type="radio" name="problemlabels" value="no"> No
+{% else %}
+<input type="radio" name="problemlabels" value="yes"> Yes
+<input type="radio" name="problemlabels" value="no" checked="checked"> No
+{% endif %}
+<br><br>
+<input type="submit" value="Refresh Code">
+</form>
+
+
+<pre><code>
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
+\begin{document}
+\begin{enumerate}
+{% for problemcode,problemlabel,answerchoices,solutions in rows %}
+\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel}}]{% endif %}
+
+{{answerchoices}}
+
+{% for solution in solutions %}
+\textbf{Solution{% if solutions|length > 1 %} {{forloop.counter}}{% endif %}:}
+{{solution.solution_text}}
+
+
+{% endfor %}
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+</pre>
+</code>
+{% endblock %}

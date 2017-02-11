@@ -552,6 +552,25 @@ def latexview(request,pk):
     return render(request, 'randomtest/latexview.html',{'name': test.name,'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'include_problem_labels' : include_problem_labels})
 
 @login_required
+def latexsolview(request,pk):
+    test = get_object_or_404(Test, pk=pk)
+    P=list(test.problems.all())
+    rows=[]
+    include_problem_labels = True
+    for i in range(0,len(P)):
+        ptext=''
+        if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
+            ptext=P[i].mc_problem_text
+            rows.append((ptext,P[i].readable_label,P[i].answers(),P[i].solutions.all()))
+        else:
+            ptext=P[i].problem_text
+            rows.append((ptext,P[i].readable_label,'',P[i].solutions.all()))
+    if request.method == "GET":
+        if request.GET.get('problemlabels')=='no':
+            include_problem_labels = False
+    return render(request, 'randomtest/latexsolview.html',{'name': test.name,'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'include_problem_labels' : include_problem_labels})
+
+@login_required
 def readme(request):
     return render(request,'randomtest/readme.html',{'nbar':'newtest'})
 
