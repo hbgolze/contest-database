@@ -42,17 +42,20 @@ def deletetestresponses(request,pk):
     test = get_object_or_404(Test, pk=pk)
     isreserved=0
     TC=TestCollection.objects.all()
+    userprofile = get_or_create_up(request.user)
     for i in TC:
         if test in i.tests.all():
             isreserved=1
     if test.responses_set.count()<=1 and isreserved==0:
         test.delete()
     else:
-        userprofile = get_or_create_up(request.user)
         testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
+    a= userprofile.timestamps.filter(test_pk=pk)
+    if a.count() >0:
+        a.delete()        
     return redirect('/')
 
 @login_required
@@ -61,17 +64,20 @@ def deletestudenttestresponses(request,username,pk):
     user = get_object_or_404(User,username=username)
     isreserved=0
     TC=TestCollection.objects.all()
+    userprofile = get_or_create_up(user)
     for i in TC:
         if test in i.tests.all():
             isreserved=1
     if test.responses_set.count()<=1 and isreserved==0:
         test.delete()
     else:
-        userprofile = get_or_create_up(user)
         testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
+    a= userprofile.timestamps.filter(test_pk=pk)
+    if a.count() >0:
+        a.delete()        
     return redirect('../../')
 
 @login_required
@@ -561,10 +567,10 @@ def latexsolview(request,pk):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
             ptext=P[i].mc_problem_text
-            rows.append((ptext,P[i].readable_label,P[i].answers(),P[i].solutions))
+            rows.append((ptext,P[i].readable_label,P[i].answers(),P[i].solutions.all()))
         else:
             ptext=P[i].problem_text
-            rows.append((ptext,P[i].readable_label,'',P[i].solutions))
+            rows.append((ptext,P[i].readable_label,'',P[i].solutions.all()))
     if request.method == "GET":
         if request.GET.get('problemlabels')=='no':
             include_problem_labels = False
@@ -757,7 +763,11 @@ def solutionview(request,testpk,pk):
     for sol in sols:
         rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
     readablelabel=prob.readable_label.replace('\\#','#')
-    texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+    if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
+        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answer_choices)
+    else:
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+#    print(texcode)
     context={}
     context['prob_latex']=texcode
     context['rows']=rows

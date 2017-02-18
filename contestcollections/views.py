@@ -57,8 +57,8 @@ def testview(request,pk):
     P=sorted(P,key=lambda x:(x.problem_number,x.year))
     rows=[]
     for i in range(0,len(P)):
-        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
-        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answer_choices)
+        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
         readablelabel=P[i].readable_label.replace('\\#','#')
         rows.append((P[i].label,str(P[i].answer),P[i].question_type_new,P[i].pk,P[i].solutions.count(),texcode,readablelabel,mc_texcode))
     return render(request, 'contestcollections/testview.html',{'rows': rows,'pk' : pk,'nbar': 'contestcollection', 'name':test.name})
@@ -74,7 +74,10 @@ def solutionview(request,testpk,pk):
     for sol in sols:
         rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
     readablelabel=prob.readable_label.replace('\\#','#')
-    texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
+    if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
+        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+    else:
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
     context={}
     context['prob_latex']=texcode
     context['rows']=rows

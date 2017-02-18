@@ -16,21 +16,24 @@
 
 <!--      {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %} [{{readablelabel}}]-->
 <div class="form-group">
-{% if mc %}
-<label>Problem Text:</label>
-{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
-{% endif %}
-{% if sa or pf %}
-<label>Problem Text:</label>
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
-{% endif %}
-{% if mcsa %}
-<label>Problem Text (Multiple Choice):</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<label>Problem Text (Short Answer):</label>
-<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-{% endif %}
+  {% if mc %}
+  <label>Problem Text:</label>
+  {% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+  {% endif %}
+
+  {% if sa or pf %}
+  <label>Problem Text:</label>
+  {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
+  {% endif %}
+
+  {% if mcsa %}
+  <label>Problem Text (Multiple Choice):</label>
+  <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+  <label>Problem Text (Short Answer):</label>
+  <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+  {% endif %}
 </div>
+
 {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
 
 <!--        {{ form.as_p }}-->
