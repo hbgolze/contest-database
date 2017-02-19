@@ -151,8 +151,14 @@ def newsoltexcode(texcode,dropboxpath,label):
     else:
         newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
+            three=''
+            if 'import three' in texcode[repl[i][0]:repl[i][1]]:
+                three='+0_0'
             newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
+        three=''
+        if 'import three' in texcode[repl[-1][0]:repl[-1][1]]:
+            three='+0_0'
         newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
     newtexcode=replaceitemize(newtexcode)

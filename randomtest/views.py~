@@ -381,7 +381,12 @@ def testview(request,pk):
             r.save()
             if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
                 num_correct+=1
-            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied))
+            if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
+                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
+            else:
+                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+            readablelabel=P[i].readable_label.replace('\\#','#')
+            rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
         allresponses.num_problems_correct=num_correct
         allresponses.show_answer_marks=1
         allresponses.save()
@@ -393,7 +398,12 @@ def testview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             r=R.get(problem_label=P[i].label)
-            rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied))
+            if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
+                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
+            else:
+                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+            readablelabel=prob.readable_label.replace('\\#','#')
+            rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
     return render(request, 'randomtest/testview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
 
@@ -764,10 +774,9 @@ def solutionview(request,testpk,pk):
         rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
     readablelabel=prob.readable_label.replace('\\#','#')
     if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
-        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answer_choices)
+        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
     else:
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
-#    print(texcode)
+        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
     context={}
     context['prob_latex']=texcode
     context['rows']=rows
@@ -875,8 +884,8 @@ def studenttestview(request,username,pk):
     rows=[]
     for i in range(0,len(P)):
         r=R.get(problem_label=P[i].label)
-        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
-        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answer_choices)
+        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
         readablelabel=P[i].readable_label.replace('\\#','#')
         rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode))
     return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})

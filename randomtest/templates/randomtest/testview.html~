@@ -2,7 +2,7 @@
 
 {% block content %}
 <h2>{{name}}</h2>
-<b>Note:</b> To save starred problems, please click "Submit Answers."
+<p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
 <form action="." method="POST">
 {% csrf_token %}
 <input type="hidden" name="startform" value="{{pk}}">
@@ -18,8 +18,8 @@
   </div>
   <div class="panel-body">
 <!--    Panel content-->
-<img src="{{dropboxpath}}{{label}}j.jpg"/>
-
+<!--<img src="{{dropboxpath}}{{label}}j.jpg"/>-->
+{% autoescape off %}{{texcode|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{readablelabel}}]</span><br>
   </div>
 </div>
 
