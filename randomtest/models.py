@@ -174,6 +174,12 @@ class TestCollection(models.Model):
     def __str__(self):
         return self.name
 
+class Folder(models.Model):
+    name=models.CharField(max_length=50)
+    tests=models.ManyToManyField(Test)
+    def __str__(self):
+        return self.name
+
 class TestTimeStamp(models.Model):
     date_added=models.DateTimeField(default = timezone.now)
     test_pk=models.CharField(max_length=15)
@@ -202,6 +208,7 @@ class UserProfile(models.Model):
     tests = models.ManyToManyField(Test, blank=True)
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
+    folders = models.ManyToManyField(Folder,blank = True,related_name='folders')
     students = models.ManyToManyField(User,blank = True,related_name='students')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)

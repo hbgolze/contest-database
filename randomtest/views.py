@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,newtexcode,newsoltexcode
@@ -249,8 +249,10 @@ def tableview(request):
     userprof = get_or_create_up(request.user)
     tests=list(userprof.tests.all())
     atests=list(userprof.archived_tests.all())
+    folders=list(userprof.folders.all())
     rows=[]
     arows=[]
+    frows=[]
     for i in range(0,len(tests)):
         testresponses=userprof.allresponses.filter(test=tests[i])
         if testresponses.count()==0:
@@ -275,6 +277,32 @@ def tableview(request):
                      int(allresponses.num_problems_correct*100/max(1,tests[i].problems.count()))
                      ))
     rows=sorted(rows,key=lambda x:x[5])#
+
+    for k in range(0,len(folders)):
+        ftests=list(folders[k].tests.all())
+        total_probs=0
+        for i in ftests:
+            total_probs+=i.problems.count()
+        correct_probs=0
+        for i in range(0,len(ftests)):
+            testresponses=userprof.allresponses.filter(test=ftests[i])
+            if testresponses.count()==0:
+                allresponses=Responses(test=ftests[i],num_problems_correct=0)
+                allresponses.save()
+                P=list(ftests[i].problems.all())
+                for j in range(0,len(P)):
+                    r=Response(response='',problem_label=P[j].label)
+                    r.save()
+                    allresponses.responses.add(r)
+                allresponses.save()
+                userprof.allresponses.add(allresponses)
+                userprof.save()
+            else:
+                allresponses=Responses.objects.get(test=ftests[i],user_profile=userprof)
+            correct_probs+=allresponses.num_problems_correct
+        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
+
+
     for i in range(0,len(atests)):
         testresponses=userprof.allresponses.filter(test=atests[i])
         if testresponses.count()==0:
@@ -308,7 +336,7 @@ def tableview(request):
     for i in studentusers:
         studentusernames.append(i.username)
 
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date'), 'atestcount': len(atests),'arows': arows}
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date'), 'atestcount': len(atests),'arows': arows, 'frows' : frows}
     return HttpResponse(template.render(context,request))
 
 @login_required

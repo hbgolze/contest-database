@@ -201,7 +201,7 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
-    archived_tests = models.ManyToManyField(Test,blank = True)
+    archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
     students = models.ManyToManyField(User,blank = True,related_name='students')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)

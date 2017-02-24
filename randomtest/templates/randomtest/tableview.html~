@@ -15,7 +15,7 @@ document.write("</div>");
 <h2>My Tests</h2>
 <div class="col-md-9">
 
-{% if testcount == 0 %}
+{% if testcount == 0 and atestcount == 0%}
 You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
 {% else %}
 {% if studentusernames|length > 0 %}
@@ -26,6 +26,8 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 {% endfor %}
 </ul>
 {% endif %}
+
+
 <table class="table table-striped">
     <thead>
       <tr>
@@ -142,6 +144,30 @@ Number of Problems Solved Today:
 {% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
 </tbody>
 </table>
+
+{% if frows|length > 0 %}
+<table class="table">
+<thead>
+<tr>
+<th>Section</th>
+<th>Progress</th>
+</tr>
+</thead>
+<tbody>
+{% for section,prog in frows %}
+<tr>
+<td>
+{{section}}
+</td>
+<td>
+div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
+
 
 <table class="table table-striped">
     <thead>
