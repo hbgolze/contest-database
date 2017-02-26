@@ -50,7 +50,8 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
 	</td>
 	<td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
+	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %})</script></div></td>
+<!--'#C1E0D1'-->
         <td>{{created_date}}</td>
 	<td>
 	  <form action="edittest/{{tpk}}/" method="post">
@@ -160,7 +161,7 @@ Number of Problems Solved Today:
 {{section}}
 </td>
 <td>
-div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div>
+<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div>
 </td>
 </tr>
 {% endfor %}

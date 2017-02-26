@@ -39,7 +39,7 @@ This student has no tests.
 	</td>
 	<td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
+        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %})</script></div></td>
         <td>{{created_date}}</td>
 	<td>
 	  <form action="../../edittest/{{tpk}}/" method="post">
@@ -87,7 +87,7 @@ This student has no tests.
         </td>
         <td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#C1E0D1'{% endif %})</script></div></td>
+        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %})</script></div></td>
         <td>{{created_date}}</td>
         <td>
           <form action="edittest/{{tpk}}/" method="post">
@@ -133,6 +133,29 @@ Number of Problems Solved Today:
 {% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
 </tbody>
 </table>
+
+{% if frows|length > 0 %}
+<table class="table">
+<thead>
+<tr>
+<th>Section</th>
+<th>Progress</th>
+</tr>
+</thead>
+<tbody>
+{% for section,prog in frows %}
+<tr>
+<td>
+{{section}}
+</td>
+<td>
+<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %})</script></div>
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+{% endif %}
 
 <table class="table table-striped">
     <thead>

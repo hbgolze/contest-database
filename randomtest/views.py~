@@ -280,7 +280,10 @@ def tableview(request):
 
     for k in range(0,len(folders)):
         ftests=list(folders[k].tests.all())
-        temprows=[]
+        total_probs=0
+        for i in ftests:
+            total_probs+=i.problems.count()
+        correct_probs=0
         for i in range(0,len(ftests)):
             testresponses=userprof.allresponses.filter(test=ftests[i])
             if testresponses.count()==0:
@@ -296,16 +299,8 @@ def tableview(request):
                 userprof.save()
             else:
                 allresponses=Responses.objects.get(test=ftests[i],user_profile=userprof)
-            temprows.append((ftests[i].pk,
-                         ftests[i].name,
-                         ftests[i].types.all(),
-                         allresponses.num_problems_correct,
-                         ftests[i].problems.count(),
-                         userprof.timestamps.get(test_pk=ftests[i].pk).date_added,
-                         int(allresponses.num_problems_correct*100/max(1,ftests[i].problems.count()))
-                         ))
-        temprows=sorted(temprows,key=lambda x:x[5])#
-        frows.append((folders[k].name,temprows))
+            correct_probs+=allresponses.num_problems_correct
+        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
 
 
     for i in range(0,len(atests)):
