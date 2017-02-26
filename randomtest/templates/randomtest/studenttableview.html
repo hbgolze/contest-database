@@ -2,9 +2,9 @@
 
 {% block head %}
 <script language="javascript">
-function drawprogressbar(percent,color) {
-var numpixels=50*percent/100;
-document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: 50px; height=10px;\">");
+function drawprogressbar(percent,color,barwidth) {
+var numpixels=barwidth*percent/100;
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+barwidth.toString()+"px; height=10px;\">");
 document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
 document.write("</div>");
 }
@@ -39,7 +39,7 @@ This student has no tests.
 	</td>
 	<td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %})</script></div></td>
+        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %},50)</script></div></td>
         <td>{{created_date}}</td>
 	<td>
 	  <form action="../../edittest/{{tpk}}/" method="post">
@@ -87,7 +87,7 @@ This student has no tests.
         </td>
         <td>{{num_problems_correct}}</td>
         <td>{{problems_count}}</td>
-        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %})</script></div></td>
+        <td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %},50)</script></div></td>
         <td>{{created_date}}</td>
         <td>
           <form action="edittest/{{tpk}}/" method="post">
@@ -149,7 +149,7 @@ Number of Problems Solved Today:
 {{section}}
 </td>
 <td>
-<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %})</script></div>
+<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
 </td>
 </tr>
 {% endfor %}
