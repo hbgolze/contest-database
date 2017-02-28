@@ -136,13 +136,13 @@ Number of Problems Solved Today:
 <tbody>
 <tr>
 <td colspan="2">
-<p style="text-align:center;font-size:40px">{{todaycorrect}}</p>
+<p style="text-align:center;font-size:40px">{{todaycorrect}};{{pointtoday}}</p>
 </td>
 </tr>
 <tr>
 <td colspan="2"><b>Previous days:</b></td>
 </tr>
-{% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
+{% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
 </tbody>
 </table>
 
@@ -161,7 +161,7 @@ Number of Problems Solved Today:
 {{section}}
 </td>
 <td>
-<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></div>
+<div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
 </td>
 </tr>
 {% endfor %}

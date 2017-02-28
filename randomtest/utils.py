@@ -225,3 +225,9 @@ def compileasy(texcode,label,sol=''):
                                             stderr=subprocess.PIPE,
                                             )
                     stdout_value = proc.communicate()[0]
+
+def pointsum(user_responses):
+    tot=0
+    for i in user_responses:
+        tot+=i.point_value
+    return tot

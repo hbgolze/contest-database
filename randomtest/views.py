@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
-from .utils import parsebool,newtexcode,newsoltexcode
+from .utils import parsebool,newtexcode,newsoltexcode,pointsum
 
 from random import shuffle
 import time
@@ -329,14 +329,16 @@ def tableview(request):
     arows=sorted(arows,key=lambda x:x[5])#
     studentusers=userprof.students.all()
     studentusernames=[]
+
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
+    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(1,7)]
 #    days=[datetime.today().date()-timedelta(days=i) for i in range(1,7)]
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
+    pointtoday=str(pointsum(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1)))
     for i in studentusers:
         studentusernames.append(i.username)
 
-    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date'), 'atestcount': len(atests),'arows': arows, 'frows' : frows}
+    context= {'testcount':len(tests),'rows': rows, 'nbar': 'viewmytests', 'responselog':userprof.responselog.all().order_by('-modified_date')[0:50],'studentusernames' : studentusernames,'todaycorrect': todaycorrect, 'weekcorrect': daycorrect,  'stickies': userprof.stickies.all().order_by('-sticky_date'), 'atestcount': len(atests),'arows': arows, 'frows' : frows,'pointtoday':pointtoday}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -383,7 +385,15 @@ def testview(request,pk):
                 t=timezone.now()
                 r.attempted = 1
                 if r.response != tempanswer:
-                    ur=UserResponse(test_label=test.name,test_pk=test.pk,response=tempanswer,problem_label=P[i].label,modified_date=t)
+                    pv=0
+                    if P[i].type_new.type=='AIME':
+                        if P[i].problem_number<=5:
+                            pv=1
+                        elif P[i].problem_number<=10:
+                            pv=3
+                        else:
+                            pv=5
+                    ur=UserResponse(test_label=test.name,test_pk=test.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer

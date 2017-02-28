@@ -201,6 +201,7 @@ class UserResponse(models.Model):
     modified_date = models.DateTimeField(default = timezone.now)
     correct = models.BooleanField(default = 0)
     test_pk = models.CharField(max_length = 15,blank = True)
+    point_value = models.IntegerField(default=0)
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
