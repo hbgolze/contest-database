@@ -914,9 +914,12 @@ def studenttableview(request,username):
                      ))
     arows=sorted(arows,key=lambda x:x[5])#
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count())) for i in range(1,7)]
+    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(1,7)]
     todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date'),'weekcorrect': daycorrect, 'atestcount' : len(atests), 'arows' : arows,'frows': frows}
+    pointtoday=str(pointsum(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1)))
+
+
+    context= {'testcount' : len(tests), 'rows' : rows, 'nbar' : 'viewmytests', 'responselog' : userprof.responselog.all().order_by('-modified_date')[0:50], 'username' : username, 'todaycorrect':todaycorrect, 'stickies': userprof.stickies.all().order_by('-sticky_date'),'weekcorrect': daycorrect, 'atestcount' : len(atests), 'arows' : arows,'frows': frows,'pointtoday':pointtoday}
     return HttpResponse(template.render(context,request))
 
 @login_required
