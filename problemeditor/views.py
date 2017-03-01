@@ -1034,7 +1034,7 @@ def addproblemview(request):
 def addcontestview(request,type,num):
     typ=get_object_or_404(Type, type=type)
     num=int(num)
-    verbtranslate={"AMC8": 'AMC 8', 'AMC10': 'AMC 10', 'AMC12': 'AMC 12', 'AIME':'AIME ','USAMO': 'USAMO','IMO':'IMO','VTRMC':'VTRMC','Putnam':'Putnam','ARMLI':'ARML Individual', 'ARMLT':'ARML Team'}
+    verbtranslate={"AMC8": 'AMC 8', 'AMC10': 'AMC 10', 'AMC12': 'AMC 12', 'AIME':'AIME ','USAMO': 'USAMO','IMO':'IMO','VTRMC':'VTRMC','Putnam':'Putnam','ARMLI':'ARML Individual', 'ARMLT':'ARML Team','HMMTA':'HMMT Algebra','HMMTG':'HMMT Geometry'}
     if request.method == "POST":
         form=request.POST
         if True:

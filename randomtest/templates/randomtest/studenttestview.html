@@ -58,6 +58,9 @@ Last Attempted: {{moddate}}
 
 
 </td>
+<td valign="top"><br>
+&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if stickied == 1 %}checked{% endif %} name="sticky{{label}}" disabled>
+</td>
 </tr>
 {% endfor %}
 </table>

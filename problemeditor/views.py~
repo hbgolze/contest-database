@@ -510,7 +510,6 @@ def editproblemtextview(request,type,tag,label):
     dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         form = ProblemTextForm(request.POST, instance=prob)
-        print(form)
         if form.is_valid():
             problem = form.save()
             problem.save()
