@@ -1113,7 +1113,7 @@ def addcontestview(request,type,num):
                 t.problems.add(i)
                 t.types.add(i.type_new)
             t.save()
-        tc=TestCollection.objects.get(name=verbtranslate[type])
+        tc=TestCollection.objects.get_or_create(name=verbtranslate[type])
         tc.tests.add(t)
         tc.save()
         return redirect('/problemeditor/')
