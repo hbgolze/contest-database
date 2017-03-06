@@ -3,8 +3,12 @@
 {% load staticfiles %}
 
 <head>
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<!--  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
   <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
     <title>{% block title %}Random Contest{% endblock %}</title>
 
@@ -17,6 +21,7 @@
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
 </script>
 
+
 {% block head %} {% endblock %}
 
 </head>
@@ -24,7 +29,21 @@
 <body>
     <div class="page-header">
 {% if user.is_authenticated %}
-<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small></p>
+<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small> 
+{% if studentusernames|length > 0 %}
+<div class="dropdown">
+  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Students
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+{% for student in studentusernames %}
+    <li><a href="student/{{student}}/">{{student}}</a></li>
+{% endfor %}
+  </ul>
+</div>
+{% endif %}
+</p>
     {% else %}
         <p><small><a href="{% url 'login' %}" class="top-menu">Login</a></small></p>
     {% endif %}
@@ -37,7 +56,7 @@
   <li role="presentation" class="{% if nbar == 'problemeditor' %}active{% endif %}"><a href="/problemeditor/">Problem Editor</a></li>
   <li role="presentation" class="{% if nbar == 'newtest' %}active{% endif %}"><a href="/createtest/">New Test</a></li>
   <li role="presentation" class="{% if nbar == 'search' %}active{% endif %}"><a href="/search/">Search</a></li>
-  <li role="presentation" class="{% if nbar == 'contestcollection' %}active{% endif %}"><a href="/contestcollection/">Contest Collection</a></li>
+  <li role="presentation" class="{% if nbar == 'contestcollection' %}active{% endif %}"><a href="/contestcollections/">Contest Collection</a></li>
 </ul>
 </div>
 {% endif %}

@@ -3,8 +3,12 @@
 {% load staticfiles %}
 
 <head>
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+<!--  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">-->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
   <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
     <title>{% block title %}Random Contest{% endblock %}</title>
 
@@ -17,6 +21,7 @@
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
 </script>
 
+
 {% block head %} {% endblock %}
 
 </head>
@@ -24,7 +29,8 @@
 <body>
     <div class="page-header">
 {% if user.is_authenticated %}
-<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small></p>
+<p class="top-menu">Hello, {{ user.username }}! <small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small> 
+</p>
     {% else %}
         <p><small><a href="{% url 'login' %}" class="top-menu">Login</a></small></p>
     {% endif %}
