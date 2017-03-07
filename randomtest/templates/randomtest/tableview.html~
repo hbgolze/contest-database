@@ -141,22 +141,13 @@ Number of Problems Solved Today:
 </td>
 </tr>
 <tr>
-<th colspan="3">
-Number of Points Earned Today:
-</th>
-</tr>
-<tr>
-<td colspan="3">
-<p style="text-align:center;font-size:40px">{{pointtoday}}</p>
-</td>
-</tr>
-<tr>
 <td colspan="3"><b>Previous days:</b></td>
 </tr>
-{% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
+{% for day,num in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td></tr>{% endfor %}
 </tbody>
 </table>
 
+<!--
 {% if frows|length > 0 %}
 <table class="table">
 <thead>
@@ -179,7 +170,7 @@ Number of Points Earned Today:
 </tbody>
 </table>
 {% endif %}
-
+-->
 
 <table class="table table-striped">
     <thead>
