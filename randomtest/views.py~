@@ -285,8 +285,9 @@ def tableview(request):
             total_probs+=i.problems.count()
         correct_probs=0
         for i in range(0,ftests.count()):
-            testresponses=userprof.allresponses.filter(test=ftests[i])
-            if testresponses.count()==0:
+#            testresponses=userprof.allresponses.filter(test=ftests[i])
+            if Responses.objects.filter(test=ftests[i],user_profile=userprof).exists() == False:
+#            if testresponses.count()==0:
                 allresponses=Responses(test=ftests[i],num_problems_correct=0)
                 allresponses.save()
                 P=ftests[i].problems.all()
@@ -303,8 +304,9 @@ def tableview(request):
         frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
 
     for i in range(0,atests.count()):
-        testresponses=userprof.allresponses.filter(test=atests[i])
-        if testresponses.count()==0:
+#        testresponses=userprof.allresponses.filter(test=atests[i])
+#        if testresponses.count()==0:
+        if Responses.objects.filter(test=atests[i],user_profile=userprof).exists() == False:
             allresponses=Responses(test=atests[i],num_problems_correct=0)
             allresponses.save()
             P=atests[i].problems.all()
@@ -844,8 +846,9 @@ def studenttableview(request,username):
     arows=[]
     frows=[]
     for i in range(0,len(tests)):
-        testresponses=userprof.allresponses.filter(test=tests[i])
-        if testresponses.count()==0:
+#        testresponses=userprof.allresponses.filter(test=tests[i])
+#        if testresponses.count()==0:
+        if Responses.objects.filter(test=tests[i],user_profile=userprof).exists() == False:
             allresponses=Responses(test=tests[i],num_problems_correct=0)
             allresponses.save()
             P=list(tests[i].problems.all())
@@ -875,8 +878,9 @@ def studenttableview(request,username):
             total_probs+=i.problems.count()
         correct_probs=0
         for i in range(0,len(ftests)):
-            testresponses=userprof.allresponses.filter(test=ftests[i])
-            if testresponses.count()==0:
+#            testresponses=userprof.allresponses.filter(test=ftests[i])
+#            if testresponses.count()==0:
+            if Responses.objects.filter(test=ftests[i],user_profile=userprof).exists() == False:
                 allresponses=Responses(test=ftests[i],num_problems_correct=0)
                 allresponses.save()
                 P=list(ftests[i].problems.all())
@@ -893,8 +897,9 @@ def studenttableview(request,username):
         frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
 
     for i in range(0,len(atests)):
-        testresponses=userprof.allresponses.filter(test=atests[i])
-        if testresponses.count()==0:
+#        testresponses=userprof.allresponses.filter(test=atests[i])
+#        if testresponses.count()==0:
+        if Responses.objects.filter(test=atests[i],user_profile=userprof).exists() == False:
             allresponses=Responses(test=atests[i],num_problems_correct=0)
             allresponses.save()
             P=list(atests[i].problems.all())

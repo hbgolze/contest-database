@@ -968,7 +968,7 @@ def studenttestview(request,username,pk):
         texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
         mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
         readablelabel=P[i].readable_label.replace('\\#','#')
-        rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode))
+        rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode,r.stickied))
     return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
 
 @login_required
