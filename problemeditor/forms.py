@@ -34,7 +34,7 @@ class DetailedProblemForm(forms.ModelForm):
     tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     class Meta:
         model = Problem
-        fields = ('tags','mc_answer','sa_answer','difficulty')#approval_status
+        fields = ('tags','mc_answer','sa_answer','difficulty')
         widgets = {
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
         }
@@ -73,7 +73,6 @@ class CommentForm(forms.ModelForm):
         self.fields['author_name'].required = True
 
 class ApprovalForm(forms.ModelForm):
-#    approval_status=forms.ChoiceField(widget = forms.RadioSelect())#,queryset=APPROVAL_CHOICES,label="Type")#,empty_label=None)
     class Meta:
         model = ProblemApproval
         fields = ('author_name','approval_status',)
