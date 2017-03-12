@@ -392,7 +392,9 @@ def testview(request,pk):
                 if r.response != tempanswer:
                     pv=0
                     if P[i].type_new.type=='AIME':
-                        if P[i].problem_number<=5:
+                        if P[i].problem_number<=1:
+                            pv=-3
+                        elif P[i].problem_number<=5:
                             pv=1
                         elif P[i].problem_number<=10:
                             pv=3
