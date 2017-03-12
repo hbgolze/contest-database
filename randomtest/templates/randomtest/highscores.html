@@ -1,0 +1,24 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+<h2>High Scores</h2>
+<div class="col-md-9">
+<table class="table table-striped">
+    <thead>
+      <tr>
+	<th>Place</th><th>Date</th><th>Number Solved</th><th>Points Earned</th>
+      </tr>
+     </thead>
+    <tbody>
+      {% for date,num,point in daycorrect %}
+      <tr>
+	<td>{{forloop.counter}}</td><td>{{date}}</td><td>{{num}}</td><td>{{point}}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+	  
+
+</div>
+{% endblock %}

@@ -13,6 +13,7 @@ urlpatterns = [
     url(r'^student/(?P<username>\w+)/delete/(?P<pk>\d+)/$', views.deletestudenttestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
     url(r'^viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
+    url(r'^viewlatexsol/(?P<pk>\d+)/$', views.latexsolview, name='view_latex_sol'),
     url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
     url(r'^pdftest/(?P<pk>\d+)/$', views.test_as_pdf,name='test_pdf'),
     url(r'^pdfsoltest/(?P<pk>\d+)/$', views.test_sol_as_pdf,name='test_sol_pdf'),

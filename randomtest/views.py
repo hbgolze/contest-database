@@ -347,6 +347,16 @@ def tableview(request):
     return HttpResponse(template.render(context,request))
 
 @login_required
+def highscore(request):
+    userprof = get_or_create_up(request.user)
+    weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=50)).filter(correct=1)
+    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(1,50)]
+    daycorrect=sorted(daycorrect,key=lambda x:-x[2])[0:10]
+    template=loader.get_template('randomtest/highscores.html')
+    context = {'daycorrect' : daycorrect, 'nbar': 'viewmytests'}
+    return HttpResponse(template.render(context,request))
+
+@login_required
 def testview(request,pk):
     test = get_object_or_404(Test, pk=pk)
     userprofile = get_or_create_up(request.user)
