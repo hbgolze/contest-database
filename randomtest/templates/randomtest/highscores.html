@@ -2,6 +2,19 @@
 
 
 {% block content %}
+{% if username %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests & Students</a></li>
+  <li><a href="/student/{{username}}/">{{username}}'s Tests</a></li>
+  <li class="active">High Scores</li>
+</ol>
+{% else %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests</a></li>
+  <li class="active">High Scores</li>
+</ol>
+{% endif %}
+
 <h2>High Scores</h2>
 <div class="col-md-9">
 <table class="table table-striped">

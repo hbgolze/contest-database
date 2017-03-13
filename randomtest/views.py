@@ -349,19 +349,22 @@ def tableview(request):
 @login_required
 def highscore(request,**kwargs):
 #    pk=kwargs['pk']
+    context={}
     if 'username' in kwargs:
         curruserprof=get_or_create_up(request.user)
         user=get_object_or_404(User,username=kwargs['username'])
         if  user not in curruserprof.students.all():
             return HttpResponse('Unauthorized', status=401)
         userprof = get_or_create_up(user)
+        context['username']=kwargs['username']
     else:
         userprof = get_or_create_up(request.user)
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=50)).filter(correct=1)
     daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(0,50)]
     daycorrect=sorted(daycorrect,key=lambda x:-x[2])[0:10]
     template=loader.get_template('randomtest/highscores.html')
-    context = {'daycorrect' : daycorrect, 'nbar': 'viewmytests'}
+    context['daycorrect'] = daycorrect
+    context['nbar'] = 'viewmytests'
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -826,7 +829,12 @@ def test_sol_as_pdf(request, pk):
     return r
 
 @login_required
-def solutionview(request,testpk,pk):
+def solutionview(request,**kwargs):
+    context={}
+    if 'username' in kwargs:
+        context['username'] = kwargs['username']
+    testpk = kwargs['testpk']
+    pk = kwargs['pk']
     prob = get_object_or_404(Problem, pk=pk)
     test = get_object_or_404(Test, pk=testpk)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
@@ -840,7 +848,6 @@ def solutionview(request,testpk,pk):
         texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
     else:
         texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
-    context={}
     context['prob_latex']=texcode
     context['rows']=rows
     context['testpk']=testpk
@@ -989,7 +996,7 @@ def studenttestview(request,username,pk):
         mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
         readablelabel=P[i].readable_label.replace('\\#','#')
         rows.append((P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,texcode,readablelabel,mc_texcode,r.stickied))
-    return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks})
+    return render(request, 'randomtest/studenttestview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'dropboxpath': dropboxpath,'name':test.name,'show_marks':allresponses.show_answer_marks, 'username': username})
 
 @login_required
 def archiveview(request,tpk):

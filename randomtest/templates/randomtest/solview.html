@@ -3,10 +3,20 @@
 {% block title %}Solutions: {{readablelabel}}{% endblock %}
 
 {% block content %}
+{% if username %}
 <ol class="breadcrumb">
+  <li><a href="/">My Tests & Students</a></li>
+  <li><a href="../../">{{username}}'s Tests</a></li>
+  <li><a href="../">{{testname}}</a></li>
+  <li class="active">Solutions to {{readablelabel}}</li>
+</ol>
+{% else %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests</a></li>
   <li><a href="/test/{{testpk}}/">{{testname}}</a></li>
   <li class="active">Solutions to {{readablelabel}}</li>
 </ol>
+{% endif %}
     <h2>Solutions to {{readablelabel}}</h2>
 <div class="form-group">
 <label>Problem Text:</label>

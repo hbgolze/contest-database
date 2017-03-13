@@ -7,7 +7,7 @@
 {% csrf_token %}
 <input type="hidden" name="startform" value="{{pk}}">
 <table>
-{% for label,answer,response,qt,ppk,solnum,att,moddate,stickied in rows %}
+{% for texcode,label,answer,response,qt,ppk,solnum,att,moddate,stickied,readablelabel in rows %}
 <tr>
 <td>
 <a name="{{label}}"></a>

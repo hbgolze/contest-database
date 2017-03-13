@@ -1,6 +1,10 @@
 {% extends "./base.html" %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests</a></li>
+  <li class="active">{{name}}</li>
+</ol>
 <h2>{{name}}</h2>
 <p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
 <form action="." method="POST">
