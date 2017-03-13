@@ -301,7 +301,7 @@ def tableview(request):
             else:
                 allresponses=Responses.objects.get(test=ftests[i],user_profile=userprof)
             correct_probs+=allresponses.num_problems_correct
-        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
+        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs)),correct_probs,total_probs))
 
     for i in range(0,atests.count()):
 #        testresponses=userprof.allresponses.filter(test=atests[i])
@@ -347,8 +347,16 @@ def tableview(request):
     return HttpResponse(template.render(context,request))
 
 @login_required
-def highscore(request):
-    userprof = get_or_create_up(request.user)
+def highscore(request,**kwargs):
+#    pk=kwargs['pk']
+    if 'username' in kwargs:
+        curruserprof=get_or_create_up(request.user)
+        user=get_object_or_404(User,username=kwargs['username'])
+        if  user not in curruserprof.students.all():
+            return HttpResponse('Unauthorized', status=401)
+        userprof = get_or_create_up(user)
+    else:
+        userprof = get_or_create_up(request.user)
     weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=50)).filter(correct=1)
     daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(0,50)]
     daycorrect=sorted(daycorrect,key=lambda x:-x[2])[0:10]
@@ -906,7 +914,7 @@ def studenttableview(request,username):
             else:
                 allresponses=Responses.objects.get(test=ftests[i],user_profile=userprof)
             correct_probs+=allresponses.num_problems_correct
-        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs))))
+        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs)),correct_probs,total_probs))
 
     for i in range(0,len(atests)):
 #        testresponses=userprof.allresponses.filter(test=atests[i])

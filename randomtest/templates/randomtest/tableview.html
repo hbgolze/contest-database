@@ -169,13 +169,14 @@ Number of Points Earned Today:
 </tr>
 </thead>
 <tbody>
-{% for section,prog in frows %}
+{% for section,prog,cor,tot in frows %}
 <tr>
 <td>
 {{section}}
 </td>
 <td>
 <div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
+{{cor}}/{{tot}} ({{prog}}%)
 </td>
 </tr>
 {% endfor %}

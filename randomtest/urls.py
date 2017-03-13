@@ -24,4 +24,5 @@ urlpatterns = [
     url(r'^student/(?P<username>\w+)/archive/(?P<tpk>\d+)/$', views.archivestudentview, name='archivestudentview'),
     url(r'^student/(?P<username>\w+)/unarchive/(?P<tpk>\d+)/$', views.unarchivestudentview, name='unarchivestudentview'),
     url(r'^highscores/$', views.highscore, name='highscoreview'),
+    url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
 ]

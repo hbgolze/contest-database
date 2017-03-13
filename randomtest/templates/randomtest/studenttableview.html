@@ -142,6 +142,8 @@ Number of Points Earned Today:
 <td colspan="3"><b>Previous days:</b></td>
 </tr>
 {% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
+<tr>
+<td colspan="3"><a href="/highscores/{{username}}/">High Scores</a></td></tr>
 </tbody>
 </table>
 
@@ -154,13 +156,14 @@ Number of Points Earned Today:
 </tr>
 </thead>
 <tbody>
-{% for section,prog in frows %}
+{% for section,prog,corr,tot in frows %}
 <tr>
 <td>
 {{section}}
 </td>
 <td>
 <div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
+{{corr}}/{{tot}} ({{prog}}%)
 </td>
 </tr>
 {% endfor %}
