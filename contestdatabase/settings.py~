@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'problemeditor.apps.ProblemeditorConfig',
     'asycompile.apps.AsycompileConfig',
     'search.apps.SearchConfig',
+    'contestcollections.apps.ContestcollectionsConfig',
 ]
 
 MIDDLEWARE = [
