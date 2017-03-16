@@ -16,8 +16,8 @@ urlpatterns = [
     url(r'^tagcounts/$', views.tagcounts, name='tag_counts'),
     url(r'^pdftest/(?P<pk>\d+)/$', views.test_as_pdf,name='test_pdf'),
     url(r'^pdfsoltest/(?P<pk>\d+)/$', views.test_sol_as_pdf,name='test_sol_pdf'),
-    url(r'^student/(?P<username>\w+)/$', views.studenttableview, name='studenttableview'),
-    url(r'^student/(?P<username>\w+)/(?P<pk>\w+)/$', views.studenttestview, name='studenttestview'),
+    url(r'^student/(?P<username>\w+)/$', views.tableview, name='studenttableview'),
+    url(r'^student/(?P<username>\w+)/(?P<pk>\w+)/$', views.testview, name='studenttestview'),
     url(r'^student/(?P<username>\w+)/archive/(?P<tpk>\d+)/$', views.archivestudentview, name='archivestudentview'),
     url(r'^student/(?P<username>\w+)/unarchive/(?P<tpk>\d+)/$', views.unarchivestudentview, name='unarchivestudentview'),
     url(r'^student/(?P<username>\w+)/delete/(?P<pk>\d+)/$', views.deletestudenttestresponses,name='test_delete'),
@@ -26,4 +26,5 @@ urlpatterns = [
     url(r'^unarchive/(?P<tpk>\d+)/$', views.unarchiveview, name='unarchiveview'),
     url(r'^highscores/$', views.highscore, name='highscoreview'),
     url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
+    url(r'^addtest/(?P<pk>\w+)/$',views.addtestview,name='addtestview'),
 ]

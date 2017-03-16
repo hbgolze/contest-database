@@ -203,10 +203,19 @@ class UserResponse(models.Model):
     test_pk = models.CharField(max_length = 15,blank = True)
     point_value = models.IntegerField(default=0)
 
+class UserTest(models.Model):
+    test = models.ForeignKey(Test)
+    responses = models.ForeignKey(Responses,related_name='usertestresponses')
+    num_probs = models.IntegerField()
+    num_correct = models.IntegerField(default=0)
+    def __str__(self):
+        return self.test.name
+
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
+    usertests = models.ManyToManyField(UserTest, blank=True)
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
     folders = models.ManyToManyField(Folder,blank = True,related_name='folders')

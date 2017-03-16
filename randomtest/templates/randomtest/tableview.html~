@@ -12,23 +12,41 @@ document.write("</div>");
 {% endblock %}
 
 {% block content %}
-<h2>My Tests</h2>
-<div class="col-md-9">
 
-{% if testcount == 0 and atestcount == 0%}
-You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
+
+{% if username %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests & Students</a></li>
+  <li class="active">{{username}}'s Tests</li>
+</ol>
+  <h2>{{username}}'s Tests</h2>
+  <div class="col-md-9">
+    {% if testcount == 0 %}
+    {{username}} has no tests.
+    {% endif %}
 {% else %}
-{% if studentusernames|length > 0 %}
-<h3>Students</h3>
-<ul>
-{% for student in studentusernames %}
-<li> <a href="student/{{student}}/">{{student}}</a>
-{% endfor %}
-</ul>
+  <h2>My Tests</h2>
+  <div class="col-md-9">
+    {% if testcount == 0 %}
+    You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
+    {% endif  %}
+    {% if studentusernames|length > 0 %}
+    <div class="dropdown">
+      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+	Students
+	<span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+	{% for student in studentusernames %}
+        <li> <a href="student/{{student}}/">{{student}}</a></li>
+	{% endfor %}
+      </ul>
+    </div>
 
+    {% endif %}
 {% endif %}
 
-
+{% if testcount > 0 %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -42,41 +60,41 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
       </tr>
     </thead>
     <tbody>
-      {% for tpk,name,types,num_problems_correct,problems_count,created_date,progress in rows %}
+      {% for ut in usertests %}
       <tr>
-        <td><a href="test/{{tpk}}/">{{name}}</a></td>
-        <td> {% for type in types %}
+        <td><a href="{% if username %}{% else %}test/{% endif %}{{ut.pk}}/">{{ut.test.name}}</a></td>
+        <td> {% for type in ut.test.types.all %}
 	       {{type}}{% if not forloop.last%},{% endif %}
 	     {% endfor %}
 	</td>
-	<td>{{num_problems_correct}}</td>
-        <td>{{problems_count}}</td>
-	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{progress}},{% if num_problems_correct == problems_count %} '#339966'{% else %}'#63cb97'{% endif %},50)</script></div></td>
+	<td>{{ut.num_correct}}</td>
+        <td>{{ut.num_probs}}</td>
+	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{ut.num_correct}}*100/{{ut.num_probs}},{% if ut.num_correct == ut.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},50)</script></div></td>
 <!--'#C1E0D1'-->
-        <td>{{created_date}}</td>
-	<td>
+        <td>{{ut.test.created_date}}</td>
+<!--	<td>
 	  <form action="edittest/{{tpk}}/" method="post">
 	    {% csrf_token %}
 	    <button type="submit" name="Edit" value="Edit" class="btn-link">Edit</button>
 	  </form>
-	</td>
+	</td>-->
 	<td>
-	  <a href="viewlatex/{{tpk}}/">View LaTeX</a>
+	  <a href="{% if username %}../../{% else %}{% endif %}viewlatex/{{ut.test.pk}}/">View LaTeX</a>
 	</td>
-	<td>
+<!--	<td>
 	  <a href="delete/{{tpk}}/">Delete</a>
-	</td>
+	</td>-->
 	<td>
-	  <a href="pdftest/{{tpk}}/">View PDF</a>
+	  <a href="{% if username %}../../{% else %}{% endif %}pdftest/{{ut.test.pk}}/">View PDF</a>
 	</td>
-	<td>
+<!--	<td>
 	  <a href="archive/{{tpk}}/">Archive</a>
-	</td>
+	</td>-->
       </tr>
       {% endfor %}
     </tbody>
   </table>
-
+<!--
 <h2>Archived Tests</h2>
 <table class="table table-striped">
     <thead>
@@ -124,7 +142,9 @@ You don't have any tests. Start by creating a new test <a href="/createtest/">he
       {% endfor %}
     </tbody>
   </table>
+-->
 </div>
+
 <div class="col-md-3">
 <table class="table table-bordered centered">
 <thead>
@@ -155,7 +175,7 @@ Number of Points Earned Today:
 <td colspan="3"><b>Previous days:</b></td>
 </tr>
 {% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
-<tr><td colspan="3"><a href="highscores">High Scores</a></td></tr>
+<tr><td colspan="3"><a href="/highscores{% if username %}/{{username}}/{% endif %}">High Scores</a></td></tr>
 </tbody>
 </table>
 
@@ -169,13 +189,14 @@ Number of Points Earned Today:
 </tr>
 </thead>
 <tbody>
-{% for section,prog in frows %}
+{% for section,prog,cor,tot in frows %}
 <tr>
 <td>
 {{section}}
 </td>
 <td>
 <div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
+{{cor}}/{{tot}} ({{prog}}%)
 </td>
 </tr>
 {% endfor %}
@@ -194,7 +215,7 @@ Number of Points Earned Today:
     <tbody>
       {% for sticky in stickies %}
       <tr>
-        <td><small><a href="test/{{sticky.test_pk}}/#{{sticky.problem_label}}">{{sticky.test_label}}</a>: {{sticky.problem_label}}</small></td>
+        <td><small><a href="{% if username %}{% else %}test/{% endif %}{{sticky.test_pk}}/#{{sticky.problem_label}}">{{sticky.test_label}}</a>: {{sticky.problem_label}}</small></td>
 	<td>
 	  <small>{{sticky.sticky_date}}</small>
 	</td>
@@ -213,7 +234,7 @@ Number of Points Earned Today:
     <tbody>
       {% for resp in responselog %}
       <tr>
-        <td><small><a href="test/{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+        <td><small><a href="{% if username %}{% else %}test/{% endif %}{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
 	<td>
 	  <small>{{resp.modified_date}}</small>
 	</td>

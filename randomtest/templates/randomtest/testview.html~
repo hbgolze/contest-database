@@ -1,11 +1,27 @@
 {% extends "./base.html" %}
 
 {% block content %}
+<ol class="breadcrumb">
+{% if username %}
+  <li><a href="/">My Tests & Students</a></li>
+  <li><a href="../">{{username}}'s Tests</a></li>
+{% else %}
+  <li><a href="/">My Tests</a></li>
+{% endif %}
+  <li class="active">{{name}}</li>
+</ol>
 <h2>{{name}}</h2>
+
+{% if username %}
+{% else %}
 <p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
+{% endif %}
+
+{% if username %}{% else %}
 <form action="." method="POST">
 {% csrf_token %}
 <input type="hidden" name="startform" value="{{pk}}">
+{% endif %}
 <table>
 {% for texcode,label,answer,response,qt,ppk,solnum,att,moddate,stickied,readablelabel in rows %}
 <tr>
@@ -17,24 +33,21 @@
     <h3 class="panel-title">Problem {{forloop.counter}}</h3>
   </div>
   <div class="panel-body">
-<!--    Panel content-->
-<!--<img src="{{dropboxpath}}{{label}}j.jpg"/>-->
 {% autoescape off %}{{texcode|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{readablelabel}}]</span><br>
   </div>
 </div>
 
 <p>
 {% if qt.question_type == 'short answer' %}
-<!--Answer to Problem {{forloop.counter}}: <input type="text" name="answer{{label}}" value="{{response}}"> -->
 <div class="col-lg-3">
   <div class="form-group">
     <label for="usr">Answer to Problem {{forloop.counter}}:</label>
-    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}">
+    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}" {% if username %}disabled{% else %}{% if answer == response %}disabled{% endif %}{% endif %}>
   </div>
 </div>
 {% if att %}
 {% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
@@ -44,20 +57,22 @@ Last Attempted: {{moddate}}
 
 {% if qt.question_type == 'multiple choice' %}
 Answer to Problem {{forloop.counter}}: 
-<input type="radio" name="answer{{label}}" value="A" {% if response == "A" %}checked="checked"{% endif %}> A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="B" {% if response == "B" %}checked="checked"{% endif %}> B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="C" {% if response == "C" %}checked="checked"{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="D" {% if response == "D" %}checked="checked"{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="A" {% if response == "A" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="B" {% if response == "B" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="C" {% if response == "C" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="D" {% if response == "D" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 {% if att %}
 {% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
 Last Attempted: {{moddate}}
 {% endif %}
 {% endif %}
+
+{% if username %}(<a href="{{ppk}}">Solution</a>){% endif %}
 </p>
 
 
@@ -69,6 +84,7 @@ Last Attempted: {{moddate}}
 </tr>
 {% endfor %}
 </table>
-<input type="submit" value="Submit Answers" />
+{% if username %}{% else %}<input type="submit" value="Submit Answers" />
 </form>
+{% endif %}
 {% endblock %}
