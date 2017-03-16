@@ -8,7 +8,7 @@
 <script type="text/javascript" src="/static/js/SelectBox.js"></script>
 <script type="text/javascript" src="/static/js/SelectFilter2.js"></script>
 <script type="text/javascript" src="/static/js/jsi18n.js"></script>
-<link href="/static/css/widgets.css" type="text/css" media="all" rel="stylesheet" />
+<link href="/static/css/widgets2.css" type="text/css" media="all" rel="stylesheet" />
 <!--{{ form.media }}-->
 
 
@@ -45,7 +45,7 @@
 </div>
 {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
 
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
+<!--{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>-->
       {% if request.user.is_superuser %}<a href="edittext/">Edit LaTeX Code</a><br>{% endif %}<br>
         {{ form.as_p }}
 <p>
