@@ -256,7 +256,7 @@ def tableview(request,**kwargs):
             return HttpResponse('Unauthorized', status=401)
         userprof = get_or_create_up(user)
         context['username'] = username
-        studentusers=currentuserprof.students.all()
+        studentusers=curruserprof.students.all()
         studentusernames=[]
         for i in studentusers:
             studentusernames.append(i.username)
@@ -400,7 +400,7 @@ def testview(request,**kwargs):#switching to UserTest
                             pv=3
                         else:
                             pv=5
-                    ur=UserResponse(test_label=test.name,test_pk=test.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv)
+                    ur=UserResponse(test_label=test.name,test_pk=usertest.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
@@ -411,14 +411,14 @@ def testview(request,**kwargs):#switching to UserTest
             tempsticky = form.get('sticky'+P[i].label)
             if tempsticky=='on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=test.pk,test_label=test.name)
+                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=test.name)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
             else:
                 if r.stickied == True:
                     try:
-                        s=Sticky.objects.get(problem_label=P[i].label,test_pk=test.pk)
+                        s=Sticky.objects.get(problem_label=P[i].label,test_pk=usertest.pk)
                         s.delete()
                     except Sticky.DoesNotExist:
                         s=None
@@ -452,7 +452,8 @@ def testview(request,**kwargs):#switching to UserTest
             readablelabel=P[i].readable_label.replace('\\#','#')
             rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
     context['rows'] = rows
-    context['pk'] = pk
+    context['pk'] = str(pk)
+    print(pk)
     context['nbar'] = 'viewmytests'
     context['dropboxpath'] = dropboxpath
     context['name'] = test.name
@@ -823,7 +824,7 @@ def solutionview(request,**kwargs):
     testpk = kwargs['testpk']
     pk = kwargs['pk']
     prob = get_object_or_404(Problem, pk=pk)
-    test = get_object_or_404(Test, pk=testpk)
+    usertest = get_object_or_404(UserTest, pk=testpk)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
     sols=list(prob.solutions.all())
     sollist=[]
@@ -838,7 +839,7 @@ def solutionview(request,**kwargs):
     context['prob_latex']=texcode
     context['rows']=rows
     context['testpk']=testpk
-    context['testname']=test.name
+    context['testname']=usertest.test.name
     context['nbar']='viewmytests'
     context['dropboxpath']=dropboxpath
     context['readablelabel']=readablelabel

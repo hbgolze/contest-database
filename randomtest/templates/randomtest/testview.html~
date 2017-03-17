@@ -47,7 +47,7 @@
 </div>
 {% if att %}
 {% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{pk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
@@ -64,7 +64,7 @@ Answer to Problem {{forloop.counter}}:
 <input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 {% if att %}
 {% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
+<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{pk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
@@ -72,14 +72,14 @@ Last Attempted: {{moddate}}
 {% endif %}
 {% endif %}
 
-{% if username %}(<a href="{{ppk}}">Solution</a>){% endif %}
+{% if username %}(<a href="../{}/{{pk}}">Solution</a>){% endif %}
 </p>
 
 
 
 </td>
 <td valign="top"><br>
-&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if stickied == 1 %}checked{% endif %} name="sticky{{label}}" >
+&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if stickied == 1 %}checked{% endif %} name="sticky{{label}}" {% if username %}disabled{% endif %}>
 </td>
 </tr>
 {% endfor %}
