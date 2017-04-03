@@ -76,14 +76,6 @@
 
 
     <div class="page-header">
-
-      {% if user.is_authenticated %}
-      <p class="top-menu pull-right"><small>Hello, {{ user.username }}!</small> <!--<small>(<a href="{% url 'logout' %}">Log out</a>) (<a href="{% url 'change_password' %}">Change Password</a>)</small> -->
-      </p>
-      {% else %}
-<!--      <p><small><a href="{% url 'login' %}" class="top-menu">Login</a></small></p>-->
-      {% endif %}
-
       <h1>Random Test Creator</h1>
     </div>
 

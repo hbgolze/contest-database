@@ -1040,7 +1040,10 @@ def addcontestview(request,type,num):
         if True:
             F=form#.cleaned_data
             label = F['year']+type+F['formletter']
-            readablelabel = F['year']+' '+verbtranslate[type]+F['formletter']
+            if type in verbtranslate:
+                readablelabel = F['year']+' '+verbtranslate[type]+F['formletter']
+            else:
+                readablelabel = F['year']+' '+typ.label+F['formletter']
             if F['type']=='mc':
                 for i in range(1,num+1):
                     p=Problem(mc_problem_text=F['problem_text'+str(i)],
@@ -1113,7 +1116,10 @@ def addcontestview(request,type,num):
                 t.problems.add(i)
                 t.types.add(i.type_new)
             t.save()
-        tc,boolcreated=TestCollection.objects.get_or_create(name=verbtranslate[type].rstrip())
+        if type in verbtranslate:
+            tc,boolcreated=TestCollection.objects.get_or_create(name=verbtranslate[type].rstrip())
+        else:
+            tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
         tc.tests.add(t)
         tc.save()
         return redirect('/problemeditor/')

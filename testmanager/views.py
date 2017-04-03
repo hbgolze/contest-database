@@ -22,8 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
-from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
 
 from .utils import parsebool,newtexcode,newsoltexcode,pointsum
 
@@ -33,52 +32,6 @@ from datetime import datetime,timedelta
 
 # Create your views here.
 
-class TestDelete(DeleteView):
-    model = Test
-    success_url = reverse_lazy('tableview')
-
-@login_required
-def deletetestresponses(request,pk):
-    test = get_object_or_404(Test, pk=pk)
-    isreserved=0
-    TC=TestCollection.objects.all()
-    userprofile = get_or_create_up(request.user)
-    for i in TC:
-        if test in i.tests.all():
-            isreserved=1
-    if test.responses_set.count()<=1 and isreserved==0:
-        test.delete()
-    else:
-        testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
-        if testresponses.count()>=1:
-            testresponses.delete()
-        userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
-    return redirect('/')
-
-@login_required
-def deletestudenttestresponses(request,username,pk):
-    test = get_object_or_404(Test, pk=pk)
-    user = get_object_or_404(User,username=username)
-    isreserved=0
-    TC=TestCollection.objects.all()
-    userprofile = get_or_create_up(user)
-    for i in TC:
-        if test in i.tests.all():
-            isreserved=1
-    if test.responses_set.count()<=1 and isreserved==0:
-        test.delete()
-    else:
-        testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
-        if testresponses.count()>=1:
-            testresponses.delete()
-        userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
-    return redirect('../../')
 
 @login_required
 def startform(request):
@@ -178,182 +131,25 @@ def startform(request):
         context={'nbar' : 'newtest', 'rows' : rows,'tags' : tags}
         return HttpResponse(template.render(context,request))
 
-#    P=Problem.objects.order_by('-year')
-
-@login_required
-def tagcounts(request):
-    types=list(Type.objects.all())
-    tags=list(Tag.objects.all())
-    tags=sorted(tags,key=lambda x:x.tag)
-    tagcounts=[]
-    typeheaders=[]
-    for i in range(0,len(types)):
-        tagcounts.append([])
-        typeheaders.append(types[i].type)
-    for i in range(0,len(tags)):
-        t=Problem.objects.filter(tags__in=[tags[i]])
-        for j in range(0,len(types)):
-            c=t.filter(types__in=[types[j]]).count()
-            if c>0:
-                tagcounts[j].append((tags[i].tag,c))
-    tagrows=[]
-    maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
-    for i in range(0,maxicounts):
-        t=[[]]*len(tagcounts)
-        for j in range(0,len(tagcounts)):
-            if i<len(tagcounts[j]):
-                ent=tagcounts[j][i]
-            else:
-                ent=('','')
-            t[j]=ent
-        tagrows.append(t)
-    template = loader.get_template('randomtest/taglist.html')
-    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
-    return HttpResponse(template.render(context,request))
-
-def tagcounts2(request):
-    types=list(Type.objects.all())
-    tags=list(Tag.objects.all())
-    tags=sorted(tags,key=lambda x:x.tag)
-    tagcounts=[]# will be a #types x #tags array
-    typeheaders=[]
-    for i in range(0,len(types)):
-        tagcounts.append([])
-        Dcounts={}
-        typeheaders.append(types[i].type)
-        p=Problem.objects.filter(types__type=types[i].type)
-        for j in p:
-            for k in j.tags.all():
-                if k.tag in Dcounts:
-                    Dcounts[k.tag]+=1
-                else:
-                    Dcounts[k.tag]=1
-        for j in Dcounts:
-            tagcounts[i].append((j,Dcounts[j]))
-    tagrows=[]
-    maxicounts=max([len(tagcounts[i]) for i in range(0,len(tagcounts))])
-    for i in range(0,maxicounts):
-        t=[[]]*len(tagcounts)
-        for j in range(0,len(tagcounts)):
-            if i<len(tagcounts[j]):
-                ent=tagcounts[j][i]
-            else:
-                ent=('','')
-            t[j]=ent
-        tagrows.append(t)
-    template = loader.get_template('randomtest/taglist.html')
-    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
-    return HttpResponse(template.render(context,request))
 
 @login_required
 def tableview(request,**kwargs):
     context={}
-    curruserprof = get_or_create_up(request.user)
-    if 'username' in kwargs:
-        username = kwargs['username']
-        user=get_object_or_404(User,username=username)
-        if user not in curruserprof.students.all():
-            return HttpResponse('Unauthorized', status=401)
-        userprof = get_or_create_up(user)
-        context['username'] = username
-        studentusers=curruserprof.students.all()
-        studentusernames=[]
-        for i in studentusers:
-            studentusernames.append(i.username)
-        context['studentusernames'] = studentusernames
-    else:
-        userprof = get_or_create_up(request.user)
-        studentusers=userprof.students.all()
-        studentusernames=[]
-        for i in studentusers:
-            studentusernames.append(i.username)
-        context['studentusernames'] = studentusernames
-
-    template=loader.get_template('randomtest/tableview.html')
-    usertests=userprof.usertests.all()
-    folders=userprof.folders.all()
-    frows=[]
-    for k in range(0,folders.count()):
-        ftests=folders[k].tests.all()
-        total_probs=0
-        for i in ftests:
-            total_probs+=i.problems.count()
-        correct_probs=0
-        for i in range(0,ftests.count()):
-            if Responses.objects.filter(test=ftests[i],user_profile=userprof).exists() == False:
-                allresponses=Responses(test=ftests[i],num_problems_correct=0)
-                allresponses.save()
-                P=ftests[i].problems.all()
-                for j in range(0,P.count()):
-                    r=Response(response='',problem_label=P[j].label)
-                    r.save()
-                    allresponses.responses.add(r)
-                allresponses.save()
-                userprof.allresponses.add(allresponses)
-                userprof.save()
-            else:
-                allresponses=Responses.objects.get(test=ftests[i],user_profile=userprof)
-            correct_probs+=allresponses.num_problems_correct
-        frows.append((folders[k].name,int(correct_probs*100/max(1,total_probs)),correct_probs,total_probs))
-
-
-    weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(1,7)]
-
-    todaycorrect=str(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    pointtoday=str(pointsum(userprof.responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1)))
-
-    context['nbar'] = 'viewmytests'
-    context['usertests'] =  usertests
-    context['testcount'] = len(usertests)
-    context['frows'] = frows
-    context['todaycorrect'] = todaycorrect
-    context['weekcorrect'] = daycorrect
-    context['pointtoday'] = pointtoday
-    context['stickies'] = userprof.stickies.all().order_by('-sticky_date')
-    context['responselog'] = userprof.responselog.all().order_by('-modified_date')[0:50]
-    return HttpResponse(template.render(context,request))
-
-@login_required
-def addtestview(request,pk):
     userprof = get_or_create_up(request.user)
-    test = get_object_or_404(Test,pk=pk)
-    allresponses=Responses(test = test,num_problems_correct=0)
-    allresponses.save()
-    P=test.problems.all()
-    for j in P:
-        r=Response(response='',problem_label=j.label)
-        r.save()
-        allresponses.responses.add(r)
-    allresponses.save()
-    userprof.allresponses.add(allresponses)
-    ut=UserTest(test = test,responses = allresponses,num_probs = P.count(),num_correct = 0)
-    ut.save()
-    userprof.usertests.add(ut)
-    userprof.save()
-    return redirect('/test/'+str(ut.pk))
-    
+    studentusers=userprof.students.all()
+    studentusernames=[]
+    for i in studentusers:
+        studentusernames.append(i.username)
+    context['studentusernames'] = studentusernames
 
-@login_required
-def highscore(request,**kwargs):
-#    pk=kwargs['pk']
-    context={}
-    if 'username' in kwargs:
-        curruserprof=get_or_create_up(request.user)
-        user=get_object_or_404(User,username=kwargs['username'])
-        if  user not in curruserprof.students.all():
-            return HttpResponse('Unauthorized', status=401)
-        userprof = get_or_create_up(user)
-        context['username']=kwargs['username']
-    else:
-        userprof = get_or_create_up(request.user)
-    weekofresponses = userprof.responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=50)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(0,50)]
-    daycorrect=sorted(daycorrect,key=lambda x:-x[2])[0:10]
-    template=loader.get_template('randomtest/highscores.html')
-    context['daycorrect'] = daycorrect
-    context['nbar'] = 'viewmytests'
+    template=loader.get_template('testmanager/tableview.html')
+
+    folders=userprof.folders.all()
+
+    context['nbar'] = 'testmanager'
+    context['folders'] = folders
     return HttpResponse(template.render(context,request))
+
 
 @login_required
 def testview(request,**kwargs):#switching to UserTest
@@ -586,20 +382,6 @@ def testeditview(request,pk):
         for i in range(0,len(P)):
             rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
     return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows,'taglist':taglist})
-
-@login_required
-def UpdatePassword(request):
-    form = PasswordChangeForm(user=request.user)
-
-    if request.method == 'POST':
-        form = PasswordChangeForm(user=request.user, data=request.POST)
-        if form.is_valid():
-            form.save()
-            update_session_auth_hash(request, form.user)
-            return redirect('/')
-    return render(request, 'registration/change-password.html', {
-        'form': form,
-    })
 
 @login_required
 def latexview(request,pk):
@@ -845,68 +627,3 @@ def solutionview(request,**kwargs):
 
     return render(request, 'randomtest/solview.html', context)
 
-@login_required
-def archiveview(request,tpk):
-    userprof=get_or_create_up(request.user)
-    test = get_object_or_404(Test, pk=tpk) 
-    userprof.archived_tests.add(test)
-    userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
-    return redirect('../../')
-
-@login_required
-def archivestudentview(request,username,tpk):
-    user = get_object_or_404(User,username=username)
-    userprof=get_or_create_up(user)
-    test = get_object_or_404(Test, pk=tpk) 
-    userprof.archived_tests.add(test)
-    userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
-    return redirect('../../')
-
-@login_required
-def unarchiveview(request,tpk):
-    userprof=get_or_create_up(request.user)
-    test = get_object_or_404(Test, pk=tpk) 
-    userprof.archived_tests.remove(test)
-    userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
-    return redirect('../../')
-
-@login_required
-def unarchivestudentview(request,username,tpk):
-    user = get_object_or_404(User,username=username)
-    userprof=get_or_create_up(user)
-    test = get_object_or_404(Test, pk=tpk) 
-    userprof.archived_tests.remove(test)
-    userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
-    return redirect('../../')

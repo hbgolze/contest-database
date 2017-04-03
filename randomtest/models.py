@@ -193,7 +193,7 @@ class Responses(models.Model):
     def __str__(self):
         return self.test.name
 
-#Equivalent to Response, except it is used to hold items for the User Response queue
+#Equivalent to Response, except it is used to hold items for the User Response queue (also point value added)
 class UserResponse(models.Model):
     test_label = models.CharField(max_length=50,blank=True)
     response = models.CharField(max_length=10,blank=True)
@@ -210,6 +210,33 @@ class UserTest(models.Model):
     num_correct = models.IntegerField(default=0)
     def __str__(self):
         return self.test.name
+
+#class UserTest(models.Model):
+#    test = models.ForeignKey(Test)
+#    responses = models.ForeignKey(Responses,related_name='usertestresponses')
+#    num_probs = models.IntegerField()
+#    num_correct = models.IntegerField(default=0)
+#    def __str__(self):
+#        return self.test.name
+
+class SortableProblem(models.Model):
+    newtest_pk = models.CharField(max_length = 15)
+    order = models.IntegerField(default = 0)
+    problem_pk = models.CharField(max_length = 15)
+#    def __str__(self):
+#        return 
+#problem_pk may not be appropriate...
+#in general, we would want this to be deleted if Problem is deleted, but not the other way around.
+
+class NewTest(models.Model):
+    name = models.CharField(max_length=50)
+    problems = models.ManyToManyField(SortableProblem)
+    types = models.ManyToManyField(Type,blank=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    last_attempted_date = models.DateTimeField(default = timezone.now)
+    num_problems = models.IntegerField(default=0)
+    def __str__(self):
+        return self.name
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
