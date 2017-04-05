@@ -18,8 +18,10 @@ class Tag(models.Model):
 
 class Type(models.Model):
     type = models.CharField(max_length=20)
-    label= models.CharField(max_length=20,blank=True)
+    label = models.CharField(max_length=20,blank=True)
     top_index = models.IntegerField(default=0)
+    default_question_type = models.CharField(max_length=4,default = 'pf')
+    form_space = models.CharField(max_length=1,default = ' ')
     def __str__(self):
         return self.label
 

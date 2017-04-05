@@ -234,10 +234,31 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
         self.fields['mc_answer'].required = True
         self.fields['sa_answer'].required = True
 
+class AddContestForm(forms.Form):
+#    type = forms.ModelChoiceField( queryset = Type.objects.exclude(type__startswith='CM'),required=True)
+    year = forms.CharField(max_length=4,label='Year',required=True)
+    formletter = forms.CharField(max_length=2,label='Form',required=False)
+    def __init__(self, *args, **kwargs):
+        num_probs = kwargs.pop('num_probs')
+        typ = Type.objects.get(type=kwargs.pop('type'))
+        super(AddContestForm,self).__init__(*args,**kwargs)
+        for i in range(1,num_probs+1):
+            self.fields['problem_text%s' % i] = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),label='Problem %s' % i)
+            if typ.default_question_type=='mc':
+                self.fields['answer_A%s' % i] = forms.CharField(max_length=255,label='Answer A')
+                self.fields['answer_B%s' % i] = forms.CharField(max_length=255,label='Answer B')
+                self.fields['answer_C%s' % i] = forms.CharField(max_length=255,label='Answer C')
+                self.fields['answer_D%s' % i] = forms.CharField(max_length=255,label='Answer D')
+                self.fields['answer_E%s' % i] = forms.CharField(max_length=255,label='Answer E')
+                self.fields['answer%s' % i] = forms.ChoiceField(label='Answer',widget =forms.RadioSelect, choices=(('A','A'),('B','B'),('C','C'),('D','D'),('E','E')))
+            elif typ.default_question_type=='sa':
+                self.fields['answer%s' % i] = forms.CharField(max_length=50,label = 'Answer')
 
 
-
-
+#forms.Textarea(
+#                attrs={'cols': 120, 'rows': 15,'id' : 'codetext'},
+#                label='problem_%s' %i,
+#                )
 '''
 class ProblemForm(forms.Form):
     class Media:

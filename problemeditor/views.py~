@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 
@@ -1031,92 +1031,92 @@ def addproblemview(request):
     return render(request, 'problemeditor/addview.html', {'form': form, 'nbar': 'problemeditor'})
 
 @login_required
-def addcontestview(request,type,num):
+def addcontestviewnew(request,type,num):
     typ=get_object_or_404(Type, type=type)
     num=int(num)
-    verbtranslate={"AMC8": 'AMC 8', 'AMC10': 'AMC 10', 'AMC12': 'AMC 12', 'AIME':'AIME ','USAMO': 'USAMO','IMO':'IMO','VTRMC':'VTRMC','Putnam':'Putnam','ARMLI':'ARML Individual', 'ARMLT':'ARML Team','HMMTA':'HMMT Algebra','HMMTG':'HMMT Geometry','UMO':'Utah Math Olympiad'}
     if request.method == "POST":
         form=request.POST
-        if True:
-            F=form#.cleaned_data
-            label = F['year']+type+F['formletter']
-            readablelabel = F['year']+' '+verbtranslate[type]+F['formletter']
-            if F['type']=='mc':
-                for i in range(1,num+1):
-                    p=Problem(mc_problem_text=F['problem_text'+str(i)],
-                              problem_text=F['problem_text'+str(i)],
-                              answer=F['answer'+str(i)],
-                              mc_answer=F['answer'+str(i)],
-                              answer_choices='$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
-                              answer_A=F['answer_A'+str(i)],
-                              answer_B=F['answer_B'+str(i)],
-                              answer_C=F['answer_C'+str(i)],
-                              answer_D=F['answer_D'+str(i)],
-                              answer_E=F['answer_E'+str(i)],
-                              label=label+str(i),
-                              readable_label=readablelabel+' \#'+str(i),
-                              type_new=typ,
-                              question_type_new=QuestionType.objects.get(question_type='multiple choice'),
-                              problem_number=i,
-                              year=F['year'],
-                              form_letter=F['formletter'],
-                              test_label=label,
-                              top_solution_number=0,
-                              )
-                    p.save()
-                    p.types.add(typ)
-                    p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
-                    p.save()
-            if F['type']=='sa':
-                for i in range(1,num+1):
-                    p=Problem(problem_text=F['problem_text'+str(i)],
-                              answer=F['answer'+str(i)],
-                              sa_answer=F['answer'+str(i)],
-                              label=label+str(i),
-                              readable_label=readablelabel+' \#'+str(i),
-                              type_new=typ,
-                              question_type_new=QuestionType.objects.get(question_type='short answer'),
-                              problem_number=i,
-                              year=F['year'],
-                              form_letter=F['formletter'],
-                              test_label=label,
-                              top_solution_number=0,
-                              )
-                    p.save()
-                    p.types.add(typ)
-                    p.question_type.add(QuestionType.objects.get(question_type='short answer'))
-                    p.save()
-            if F['type']=='pf':
-                for i in range(1,num+1):
-                    p=Problem(problem_text=F['problem_text'+str(i)],
-                              label=label+str(i),
-                              readable_label=readablelabel+' \#'+str(i),
-                              type_new=typ,
-                              question_type_new=QuestionType.objects.get(question_type='proof'),
-                              problem_number=i,
-                              year=F['year'],
-                              form_letter=F['formletter'],
-                              test_label=label,
-                              top_solution_number=0,
-                              )
-                    p.save()
-                    p.types.add(typ)
-                    p.question_type.add(QuestionType.objects.get(question_type='proof'))
-                    p.save()
-            compileasy(p.mc_problem_text,p.label)
-            compileasy(p.problem_text,p.label)
+        F=form#.cleaned_data
+        label = F['year']+type+F['formletter']
+        readablelabel = F['year']+' '+typ.label+typ.form_space+F['formletter']
+        readablelabel = readablelabel.rstrip()
+        if typ.default_question_type=='mc':
+            for i in range(1,num+1):
+                p=Problem(mc_problem_text = F['problem_text'+str(i)],
+                          problem_text = F['problem_text'+str(i)],
+                          answer = F['answer'+str(i)],
+                          mc_answer = F['answer'+str(i)],
+                          answer_choices = '$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
+                          answer_A = F['answer_A'+str(i)],
+                          answer_B = F['answer_B'+str(i)],
+                          answer_C = F['answer_C'+str(i)],
+                          answer_D = F['answer_D'+str(i)],
+                          answer_E = F['answer_E'+str(i)],
+                          label = label+str(i),
+                          readable_label = readablelabel+' \#'+str(i),
+                          type_new = typ,
+                          question_type_new = QuestionType.objects.get(question_type='multiple choice'),
+                          problem_number = i,
+                          year = F['year'],
+                          form_letter=F['formletter'],
+                          test_label=label,
+                          top_solution_number=0,
+                          )
+                p.save()
+                p.types.add(typ)
+                p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
+                p.save()
+        if typ.default_question_type=='sa':
+            for i in range(1,num+1):
+                p=Problem(problem_text=F['problem_text'+str(i)],
+                          answer=F['answer'+str(i)],
+                          sa_answer=F['answer'+str(i)],
+                          label=label+str(i),
+                          readable_label=readablelabel+' \#'+str(i),
+                          type_new=typ,
+                          question_type_new=QuestionType.objects.get(question_type='short answer'),
+                          problem_number=i,
+                          year=F['year'],
+                          form_letter=F['formletter'],
+                          test_label=label,
+                          top_solution_number=0,
+                          )
+                p.save()
+                p.types.add(typ)
+                p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                p.save()
+        if typ.default_question_type=='pf':
+            for i in range(1,num+1):
+                p=Problem(problem_text=F['problem_text'+str(i)],
+                          label=label+str(i),
+                          readable_label=readablelabel+' \#'+str(i),
+                          type_new=typ,
+                          question_type_new=QuestionType.objects.get(question_type='proof'),
+                          problem_number=i,
+                          year=F['year'],
+                          form_letter=F['formletter'],
+                          test_label=label,
+                          top_solution_number=0,
+                          )
+                p.save()
+                p.types.add(typ)
+                p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                p.save()
+        compileasy(p.mc_problem_text,p.label)
+        compileasy(p.problem_text,p.label)
         P=Problem.objects.filter(test_label=label)
         if len(P)>0:
             t=Test(name=readablelabel)
             t.save()
-            for i in P:
-                t.problems.add(i)
-                t.types.add(i.type_new)
-            t.save()
-        tc,boolcreated=TestCollection.objects.get_or_create(name=verbtranslate[type].rstrip())
+        for i in P:
+            t.problems.add(i)
+            t.types.add(i.type_new)
+        t.save()
+        tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
         tc.tests.add(t)
         tc.save()
         return redirect('/problemeditor/')
+    form=AddContestForm(request.POST or None,num_probs=num,type=type)
     context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
     if type=='AMC8' or type=='AMC10' or type=='AMC12':
         context['mc']=True
@@ -1124,4 +1124,5 @@ def addcontestview(request,type,num):
         context['sa']=True
     else:
         context['pf']=True
+    context['form']=form
     return render(request, 'problemeditor/addcontestform.html', context=context)

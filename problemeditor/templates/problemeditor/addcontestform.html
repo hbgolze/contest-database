@@ -4,38 +4,7 @@
 <h2>New {{typ}} Contest</h2>
 <form action="." method="post">
 {% csrf_token %}
-  <br> Year:<br>
-  <input type="text" name="year" value="2016"> <br><br>
-  <br> Form (if applicable, i.e, AMC 12 <b>A</b>):<br>
-  <input type="text" name="formletter"> <br><br>
-{% for counter in nums %}
-  {{counter}}. <textarea name="problem_text{{counter}}" rows="8" cols="100"></textarea>
-  <br>
-  {% if mc %}
-  <input type="hidden" name="type" value="mc">
-    Answer Choices:<br>
-    Answer A:<input type="text" name="answer_A{{counter}}" style="width: 300px;"><br>
-    Answer B:<input type="text" name="answer_B{{counter}}" style="width: 300px;"><br>
-    Answer C:<input type="text" name="answer_C{{counter}}" style="width: 300px;"><br>
-    Answer D:<input type="text" name="answer_D{{counter}}" style="width: 300px;"><br>
-    Answer E:<input type="text" name="answer_E{{counter}}" style="width: 300px;"><br>
-  Correct Answer: 
-  <input type="radio" name="answer{{counter}}" value="A"> A
-  <input type="radio" name="answer{{counter}}" value="B"> B
-  <input type="radio" name="answer{{counter}}" value="C"> C
-  <input type="radio" name="answer{{counter}}" value="D"> D
-  <input type="radio" name="answer{{counter}}" value="E"> E
-  {% else %}
-  {% if sa %}
-  <input type="hidden" name="type" value="sa">
-  Correct Answer: <input type="text" name="answer{{counter}}"><br>
-  {% else %}
-  <input type="hidden" name="type" value="pf">
-  {% endif %}
-  {% endif %}
-{% endfor %}
-<br>
-
+{{form.as_p}}
   <input type="submit" value="Save Contest">
 </form>
 

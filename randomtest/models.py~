@@ -211,13 +211,13 @@ class UserTest(models.Model):
     def __str__(self):
         return self.test.name
 
-class UserTest(models.Model):
-    test = models.ForeignKey(Test)
-    responses = models.ForeignKey(Responses,related_name='usertestresponses')
-    num_probs = models.IntegerField()
-    num_correct = models.IntegerField(default=0)
-    def __str__(self):
-        return self.test.name
+#class UserTest(models.Model):
+#    test = models.ForeignKey(Test)
+#    responses = models.ForeignKey(Responses,related_name='usertestresponses')
+#    num_probs = models.IntegerField()
+#    num_correct = models.IntegerField(default=0)
+#    def __str__(self):
+#        return self.test.name
 
 class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)
