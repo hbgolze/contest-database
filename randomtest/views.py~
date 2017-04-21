@@ -168,14 +168,20 @@ def startform(request):
         else:
             return testview(request,int(form.get('startform','')))
     else:
-        types=list(Type.objects.all())
+        up,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+        if up.user_type == 'super':
+            types = Type.objects.order_by('label')
+        elif up.user_type == 'manager':
+            types = Type.objects.filter(type__starts_with='CM').order_by('label')
+        else:
+            types = Type.objects.exclude(type__starts_with='CM').order_by('label')
         tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
-        rows=[]
-        for i in range(0,len(types)):
-            rows.append((types[i].type,types[i].label))
-        rows=sorted(rows,key=lambda x:x[1])
+#        rows=[]
+#        for i in range(0,len(types)):
+#            rows.append((types[i].type,types[i].label))
+#        rows=sorted(rows,key=lambda x:x[1])
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar' : 'newtest', 'rows' : rows,'tags' : tags}
+        context={'nbar' : 'newtest', 'types' : types,'tags' : tags}
         return HttpResponse(template.render(context,request))
 
 #    P=Problem.objects.order_by('-year')

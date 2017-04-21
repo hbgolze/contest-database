@@ -83,7 +83,7 @@ def solutionview(request,testpk,pk):
     context['rows']=rows
     context['testpk']=testpk
     context['testname']=test.name
-    context['nbar']='viewmytests'
+    context['nbar']='contestcollection'
     context['dropboxpath']=dropboxpath
     context['readablelabel']=readablelabel
 

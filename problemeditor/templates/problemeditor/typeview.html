@@ -9,6 +9,7 @@
 <h2>Problem Editor</h2>
 Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a> a new problem-->.
 <div class="content">
+{% if rows|length > 0 %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -34,7 +35,9 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
       {% endfor %}
     </tbody>
   </table>
+{% endif %}
 
+{% if rows2|length > 0 %}
 <table class="table table-striped">
     <thead>
       <tr>
@@ -60,6 +63,7 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
   </table>
 
 <a class="btn btn-primary" href="addproblemform/">Add a problem</a>
+{% endif %}
 </div>
 
 {% endblock %}

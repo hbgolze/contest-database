@@ -22,6 +22,7 @@
 <!--  Desired Tag (<a href="/tagcounts/">Tag List</a>):<br> <input type="text" name="tag"><br><br>-->
 
   Desired Tag (<a href="/tagcounts/">Tag Counts</a>):<br> <select name="tag">
+<option value="">Unspecified</option>
 {% for t in tags %}
 <option value="{{t.tag}}">{{t.tag}}</option>
 {% endfor %}

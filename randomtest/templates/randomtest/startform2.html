@@ -11,11 +11,11 @@
   <input type="hidden" name="startform" value="start">
   <br> Test Name:<br>
   <input type="text" name="testname" value="New Test"> <br><br>
-{% for test,testlabel in rows %}
+{% for typ in types %}
  {% if forloop.counter == 1 %}
-  <input type="radio" name="testtype" value="{{test}}" checked="checked"> {{testlabel}} Problems<br>
+  <input type="radio" name="testtype" value="{{typ.type}}" checked="checked"> {{typ.label}} Problems<br>
  {% else %}
-  <input type="radio" name="testtype" value="{{test}}"> {{testlabel}} Problems<br>
+  <input type="radio" name="testtype" value="{{typ.type}}"> {{typ.label}} Problems<br>
  {% endif %}
 {% endfor %}
 <br>

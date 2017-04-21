@@ -244,33 +244,36 @@ class ChangeQuestionTypeWizard(SessionWizardView):
 # Create your views here.
 @login_required
 def typeview(request):
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     obj=list(Type.objects.all().exclude(type__startswith="CM"))
     obj=sorted(obj,key=lambda x:x.type)
     rows=[]
-    for i in range(0,len(obj)):
+    if userprofile.user_type == 'member' or userprofile.user_type == 'super':
+        for i in range(0,len(obj)):
 #        P = Problem.objects.filter(types__in=[obj[i]])
-        P = Problem.objects.filter(type_new=obj[i])
-        num_problems = P.count()
-        untagged = P.filter(tags__isnull=True)
-        num_untagged = untagged.count()
-        nosolutions = P.filter(solutions__isnull=True)
-        num_nosolutions = nosolutions.count()
-        rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
+            P = Problem.objects.filter(type_new=obj[i])
+            num_problems = P.count()
+            untagged = P.filter(tags__isnull=True)
+            num_untagged = untagged.count()
+            nosolutions = P.filter(solutions__isnull=True)
+            num_nosolutions = nosolutions.count()
+            rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
     obj2=list(Type.objects.filter(type__startswith="CM"))
     obj2=sorted(obj2,key=lambda x:x.type)
     rows2=[]
-    for i in range(0,len(obj2)):
+    if userprofile.user_type == 'manager' or userprofile.user_type == 'super':
+        for i in range(0,len(obj2)):
 #        P = Problem.objects.filter(types__in=[obj2[i]])
-        P = Problem.objects.filter(type_new=obj2[i])
-        num_problems = P.count()
-        untagged = P.filter(tags__isnull=True)
-        num_untagged = untagged.count()
-        nosolutions = P.filter(solutions__isnull=True)
-        num_nosolutions = nosolutions.count()
-        rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems))
+            P = Problem.objects.filter(type_new=obj2[i])
+            num_problems = P.count()
+            untagged = P.filter(tags__isnull=True)
+            num_untagged = untagged.count()
+            nosolutions = P.filter(solutions__isnull=True)
+            num_nosolutions = nosolutions.count()
+            rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/typeview.html')
 #    tests=list(UserProfile.objects.get(user=request.user).tests.all())
-    context= {'rows': rows, 'nbar': 'problemeditor','rows2':rows2}
+    context= {'rows': rows, 'nbar': 'problemeditor','rows2':rows2,'user_type' : userprofile.user_type}
     return HttpResponse(template.render(context,request))
 
 @login_required
