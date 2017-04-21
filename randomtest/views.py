@@ -338,6 +338,29 @@ def addtestview(request,pk):
     userprof.usertests.add(ut)
     userprof.save()
     return redirect('/test/'+str(ut.pk))
+
+@login_required
+def addfolderview(request,pk):
+    userprof = get_or_create_up(request.user)
+    fold = Folder.objects.get(pk=pk)
+    for t in fold.tests.all():
+        test = get_object_or_404(Test,pk=t.pk)
+        allresponses=Responses(test = test,num_problems_correct=0)
+        allresponses.save()
+        P=test.problems.all()
+        for j in P:
+            r=Response(response='',problem_label=j.label)
+            r.save()
+            allresponses.responses.add(r)
+        allresponses.save()
+        userprof.allresponses.add(allresponses)
+        ut=UserTest(test = test,responses = allresponses,num_probs = P.count(),num_correct = 0)
+        ut.save()
+        userprof.usertests.add(ut)
+        userprof.save()
+    userprof.folders.add(fold)
+    userprof.save()
+    return redirect('/')
     
 
 @login_required

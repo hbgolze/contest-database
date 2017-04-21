@@ -26,5 +26,5 @@ urlpatterns = [
     url(r'^unarchive/(?P<tpk>\d+)/$', views.unarchiveview, name='unarchiveview'),
     url(r'^highscores/$', views.highscore, name='highscoreview'),
     url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
-    url(r'^addtest/(?P<pk>\w+)/$',views.addtestview,name='addtestview'),
+    url(r'^addfolder/(?P<pk>\w+)/$',views.addfolderview,name='addfolderview'),
 ]
