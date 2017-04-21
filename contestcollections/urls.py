@@ -6,5 +6,6 @@ from . import views
 urlpatterns = [
     url(r'^$', views.tableview, name='tableview'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
+    url(r'^test/(?P<pk>\d+)/pdf$', views.test_as_pdf, name='pdfview'),
     url(r'^test/(?P<testpk>\d+)/(?P<pk>\d+)/$', views.solutionview, name='solutionview'),
 ]
