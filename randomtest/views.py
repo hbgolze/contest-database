@@ -127,6 +127,13 @@ def startform(request):
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
+            excludetestpks = form.getlist('excludetests')
+            excludetests = Test.objects.filter(pk__in=excludetestpks)
+#            excludeprobs = Problem.objects.filter(test_list__in=excludetests)
+#            print(excludeprobs)
+            for extest in excludetests:
+                P=P.exclude(pk__in=extest.problems.all())
+            
             rows=[]
 
             P=list(P)
@@ -176,12 +183,13 @@ def startform(request):
         else:
             types = Type.objects.exclude(type__startswith='CM').order_by('label')
         tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+        usertests=up.usertests.all()
 #        rows=[]
 #        for i in range(0,len(types)):
 #            rows.append((types[i].type,types[i].label))
 #        rows=sorted(rows,key=lambda x:x[1])
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar' : 'newtest', 'types' : types,'tags' : tags}
+        context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
         return HttpResponse(template.render(context,request))
 
 #    P=Problem.objects.order_by('-year')

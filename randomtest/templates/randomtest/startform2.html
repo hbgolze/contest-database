@@ -1,5 +1,20 @@
 {% extends "./base.html" %}
 
+{% block head %}
+<script type="text/javascript" language="JavaScript">
+function HideContent(d) {
+document.getElementById(d).style.display = "none";
+}
+function ShowContent(d) {
+document.getElementById(d).style.display = "block";
+}
+function ReverseDisplay(d) {
+if(document.getElementById(d).style.display == "none") { document.getElementById(d).style.display = "block"; }
+else { document.getElementById(d).style.display = "none"; }
+}
+</script>
+{% endblock %}
+
 {% block content %}
 <h2>New Test</h2>
 <p>Enter a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). Tags like 2000AIMEI or 2009AMC10A will give you the problems from that particular test. To get uncategorized problems, simply leave the tag field blank. Submit your answers when you are ready.</p>
@@ -21,19 +36,36 @@
 <br>
 <!--  Desired Tag (<a href="/tagcounts/">Tag List</a>):<br> <input type="text" name="tag"><br><br>-->
 
-  Desired Tag (<a href="/tagcounts/">Tag Counts</a>):<br> <select name="tag">
-<option value="">Unspecified</option>
-{% for t in tags %}
-<option value="{{t.tag}}">{{t.tag}}</option>
-{% endfor %}
-</select>
-<br><br>
-
+<p>Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</p>
+<p>
+  <select name="tag">
+    <option value="">Unspecified</option>
+    {% for t in tags %}
+    <option value="{{t.tag}}">{{t.tag}}</option>
+    {% endfor %}
+  </select>
+</p>
 
   Number of Problems:<br><input type="number" name="numproblems"> <br><br>
   Range of Problem Numbers (for all problems, leave this blank):<br><input type="number" name="probbegin" style="width: 45px;"> to <input type="number" name="probend" style="width: 45px;"><br><br>
   Year Range (for all years, leave this blank):<br><input type="number" name="yearbegin" style="width: 75px;"> to <input type="number" name="yearend" style="width: 75px;"><br><br>
-  <input type="submit" value="New Test">
+
+{% if usertests|length > 0 %}
+<div>
+<a href="javascript:ReverseDisplay('excludetestlist')">
+  Exclude Tests (Click to Show):
+</a>
+
+<div id="excludetestlist" style="display:none">
+  <p>
+    {% for ut in usertests %}
+    <input type="checkbox" name="excludetests" value="{{ut.test.pk}}">{{ut.test.name}}<br>
+    {% endfor %}
+  </p>
+</div>
+</div>
+{% endif %}
+<p><input type="submit" value="New Test"></p>
 </form>
 
 {% endblock %}
