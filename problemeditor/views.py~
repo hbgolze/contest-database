@@ -248,8 +248,7 @@ def typeview(request):
     obj=list(Type.objects.all().exclude(type__startswith="CM"))
     obj=sorted(obj,key=lambda x:x.type)
     rows=[]
-    print(userprofile.user_type)
-    if userprofile.user_type == 'member' or 'super':
+    if userprofile.user_type == 'member' or userprofile.user_type == 'super':
         for i in range(0,len(obj)):
 #        P = Problem.objects.filter(types__in=[obj[i]])
             P = Problem.objects.filter(type_new=obj[i])
@@ -259,11 +258,10 @@ def typeview(request):
             nosolutions = P.filter(solutions__isnull=True)
             num_nosolutions = nosolutions.count()
             rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
-    print(rows)
     obj2=list(Type.objects.filter(type__startswith="CM"))
     obj2=sorted(obj2,key=lambda x:x.type)
     rows2=[]
-    if userprofile.user_type == 'manager' or 'super':
+    if userprofile.user_type == 'manager' or userprofile.user_type == 'super':
         for i in range(0,len(obj2)):
 #        P = Problem.objects.filter(types__in=[obj2[i]])
             P = Problem.objects.filter(type_new=obj2[i])
@@ -775,6 +773,13 @@ def editsolutionview(request,type,tag,label,spk):
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
     breadcrumbs=[('../../../../../',typ.label),('../../../../',tag),('../../','Solutions to '+readablelabel),]
+    ans=''
+    if prob.question_type_new.question_type=='multiple choice':
+        ans=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        ans=prob.sa_answer
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        ans=prob.mc_answer+' and '+prob.sa_answer
     return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
@@ -804,6 +809,13 @@ def editsolutionpkview(request,**kwargs):
 
     texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
+    ans=''
+    if prob.question_type_new.question_type=='multiple choice':
+        ans=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        ans=prob.sa_answer
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        ans=prob.mc_answer+' and '+prob.sa_answer
     return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required

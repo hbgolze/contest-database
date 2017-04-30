@@ -773,7 +773,14 @@ def editsolutionview(request,type,tag,label,spk):
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
     breadcrumbs=[('../../../../../',typ.label),('../../../../',tag),('../../','Solutions to '+readablelabel),]
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    ans=''
+    if prob.question_type_new.question_type=='multiple choice':
+        ans=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        ans=prob.sa_answer
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        ans=prob.mc_answer+' and '+prob.sa_answer
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':ans, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editsolutionpkview(request,**kwargs):
@@ -802,7 +809,14 @@ def editsolutionpkview(request,**kwargs):
 
     texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    ans=''
+    if prob.question_type_new.question_type=='multiple choice':
+        ans=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        ans=prob.sa_answer
+    elif prob.question_type_new.question_type=='multiple choice short answer':
+        ans=prob.mc_answer+' and '+prob.sa_answer
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':ans, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editreviewpkview(request,**kwargs):
