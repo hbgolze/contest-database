@@ -27,4 +27,5 @@ urlpatterns = [
     url(r'^highscores/$', views.highscore, name='highscoreview'),
     url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
     url(r'^addfolder/(?P<pk>\w+)/$',views.addfolderview,name='addfolderview'),
+    url(r'^addtest/(?P<pk>\w+)/$',views.addtestview,name='addtestview'),
 ]
