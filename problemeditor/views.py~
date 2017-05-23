@@ -652,7 +652,9 @@ def solutionview(request,type,tag,label):
     context['typelabel']= typ.label
     context['tag'] = tag
     context['readablelabel']=readablelabel
-
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+    context['user_type'] =  userprofile.user_type
+    print(context['user_type'])
     return render(request, 'problemeditor/solview.html', context)
 
 @login_required
@@ -780,7 +782,7 @@ def editsolutionview(request,type,tag,label,spk):
         ans=prob.sa_answer
     elif prob.question_type_new.question_type=='multiple choice short answer':
         ans=prob.mc_answer+' and '+prob.sa_answer
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':ans, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editsolutionpkview(request,**kwargs):
@@ -816,7 +818,7 @@ def editsolutionpkview(request,**kwargs):
         ans=prob.sa_answer
     elif prob.question_type_new.question_type=='multiple choice short answer':
         ans=prob.mc_answer+' and '+prob.sa_answer
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':prob.answer, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':ans, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
 
 @login_required
 def editreviewpkview(request,**kwargs):
@@ -1055,7 +1057,7 @@ def addcontestview(request,type,num):
         form=request.POST
         F=form#.cleaned_data
         label = F['year']+type+F['formletter']
-        readablelabel = F['year']+' '+typ.label+typ.form_space+F['formletter']
+        readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
         readablelabel = readablelabel.rstrip()
         if typ.default_question_type=='mc':
             for i in range(1,num+1):
@@ -1070,7 +1072,7 @@ def addcontestview(request,type,num):
                           answer_D = F['answer_D'+str(i)],
                           answer_E = F['answer_E'+str(i)],
                           label = label+str(i),
-                          readable_label = readablelabel+' \#'+str(i),
+                          readable_label = readablelabel+typ.readable_label_post_form+str(i),
                           type_new = typ,
                           question_type_new = QuestionType.objects.get(question_type='multiple choice'),
                           problem_number = i,
@@ -1089,7 +1091,7 @@ def addcontestview(request,type,num):
                           answer=F['answer'+str(i)],
                           sa_answer=F['answer'+str(i)],
                           label=label+str(i),
-                          readable_label=readablelabel+' \#'+str(i),
+                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
                           type_new=typ,
                           question_type_new=QuestionType.objects.get(question_type='short answer'),
                           problem_number=i,
@@ -1106,7 +1108,7 @@ def addcontestview(request,type,num):
             for i in range(1,num+1):
                 p=Problem(problem_text=F['problem_text'+str(i)],
                           label=label+str(i),
-                          readable_label=readablelabel+' \#'+str(i),
+                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
                           type_new=typ,
                           question_type_new=QuestionType.objects.get(question_type='proof'),
                           problem_number=i,

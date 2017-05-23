@@ -21,7 +21,8 @@ class Type(models.Model):
     label = models.CharField(max_length=20,blank=True)
     top_index = models.IntegerField(default=0)
     default_question_type = models.CharField(max_length=4,default = 'pf')
-    form_space = models.CharField(max_length=1,default = ' ')
+    readable_label_pre_form = models.CharField(max_length=20,default = '')
+    readable_label_post_form = models.CharField(max_length=20,default = '')
     def __str__(self):
         return self.label
 

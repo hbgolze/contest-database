@@ -652,7 +652,8 @@ def solutionview(request,type,tag,label):
     context['typelabel']= typ.label
     context['tag'] = tag
     context['readablelabel']=readablelabel
-
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+    context['user_type'] =  userprofile.user_type
     return render(request, 'problemeditor/solview.html', context)
 
 @login_required
@@ -1055,7 +1056,7 @@ def addcontestview(request,type,num):
         form=request.POST
         F=form#.cleaned_data
         label = F['year']+type+F['formletter']
-        readablelabel = F['year']+' '+typ.label+typ.form_space+F['formletter']
+        readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
         readablelabel = readablelabel.rstrip()
         if typ.default_question_type=='mc':
             for i in range(1,num+1):
@@ -1070,7 +1071,7 @@ def addcontestview(request,type,num):
                           answer_D = F['answer_D'+str(i)],
                           answer_E = F['answer_E'+str(i)],
                           label = label+str(i),
-                          readable_label = readablelabel+' \#'+str(i),
+                          readable_label = readablelabel+typ.readable_label_post_form+str(i),
                           type_new = typ,
                           question_type_new = QuestionType.objects.get(question_type='multiple choice'),
                           problem_number = i,
@@ -1089,7 +1090,7 @@ def addcontestview(request,type,num):
                           answer=F['answer'+str(i)],
                           sa_answer=F['answer'+str(i)],
                           label=label+str(i),
-                          readable_label=readablelabel+' \#'+str(i),
+                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
                           type_new=typ,
                           question_type_new=QuestionType.objects.get(question_type='short answer'),
                           problem_number=i,
@@ -1106,7 +1107,7 @@ def addcontestview(request,type,num):
             for i in range(1,num+1):
                 p=Problem(problem_text=F['problem_text'+str(i)],
                           label=label+str(i),
-                          readable_label=readablelabel+' \#'+str(i),
+                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
                           type_new=typ,
                           question_type_new=QuestionType.objects.get(question_type='proof'),
                           problem_number=i,

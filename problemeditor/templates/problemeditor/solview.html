@@ -9,26 +9,28 @@
   <li><a href="../../">{{tag}}</a></li>
   <li class="active">Solutions to {{readablelabel}}</li>
 </ol>
-    <h2>Solutions to {{readablelabel}}</h2>
+<h2>Solutions to {{readablelabel}}</h2>
 <!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
 <div class="form-group">
-{% if mc %}
-<label>Problem Text:</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}</p>
-{% endif %}
-{% if sa or pf %}
-<label>Problem Text:</label>
-<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-{% if sa %}<p>Answer: {{sa_answer}}</p>{% endif %}
-{% endif %}
-{% if mcsa %}
-<label>Problem Text (Multiple Choice):</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}</p>
+  {% if mc %}
+    <label>Problem Text:</label>
+    <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+    <p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}
+    </p>
+  {% endif %}
+  {% if sa or pf %}
+    <label>Problem Text:</label>
+    <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+    {% if sa %}<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+    {% endif %}
+  {% endif %}
+  {% if mcsa %}
+  <label>Problem Text (Multiple Choice):</label>
+  <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
 <label>Problem Text (Short Answer):</label>
 <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{sa_answer}}</p>
+<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
 {% endif %}
 </div>
 
