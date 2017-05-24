@@ -42,7 +42,7 @@
 <div class="col-lg-3">
   <div class="form-group">
     <label for="usr">Answer to Problem {{forloop.counter}}:</label>
-    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}" {% if username %}disabled{% else %}{% if answer == response %}disabled{% endif %}{% endif %}>
+    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}" {% if username %}disabled{% else %}{% if answer == response %}disabled{% endif %}{% endif %}>{% if username %} (Correct answer: {{answer}}){% endif %}
   </div>
 </div>
 {% if att %}
@@ -62,6 +62,7 @@ Answer to Problem {{forloop.counter}}:
 <input type="radio" name="answer{{label}}" value="C" {% if response == "C" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="radio" name="answer{{label}}" value="D" {% if response == "D" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{% if username %} (Correct answer: {{answer}}){% endif %}
 {% if att %}
 {% if answer == response %}
 <img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}

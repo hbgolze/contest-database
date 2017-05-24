@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 
@@ -818,6 +818,43 @@ def editsolutionpkview(request,**kwargs):
     elif prob.question_type_new.question_type=='multiple choice short answer':
         ans=prob.mc_answer+' and '+prob.sa_answer
     return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'answer':ans, 'solution_text':newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)), 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs})
+
+@login_required
+def editanswerview(request,type,tag,label):
+    tag=goodtag(tag)
+    typ=get_object_or_404(Type, type=type)
+    prob=get_object_or_404(Problem, label=label)
+    dropboxpath=list(Dropboxurl.objects.all())[0].url
+    if request.method == "POST":
+        if request.POST.get("save"):
+            if request.POST.get("qt")=='multiple choice':
+                ans_form = MCAnswerForm(request.POST,instance=prob)
+                if ans_form.is_valid():
+                    prob2 = ans_form.save()
+                    prob2.save()
+                    prob.answer=prob.mc_answer
+                    prob.save()
+            else:
+                ans_form = SAAnswerForm(request.POST,instance=prob)
+                if ans_form.is_valid():
+                    prob2 = ans_form.save()
+                    prob2.save()
+                    prob.answer=prob.sa_answer
+                    prob.save()
+            return redirect('../')
+    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
+    readablelabel=prob.readable_label.replace('\\#','#')
+    breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../','Solutions to '+readablelabel),]
+    ans=''
+    if prob.question_type_new.question_type=='multiple choice':
+        form = MCAnswerForm(instance=prob)
+        ans=prob.mc_answer
+    elif prob.question_type_new.question_type=='short answer':
+        form = SAAnswerForm(instance=prob)
+        ans=prob.sa_answer
+#    elif prob.question_type_new.question_type=='multiple choice short answer':
+#        ans=prob.mc_answer+' and '+prob.sa_answer
+    return render(request, 'problemeditor/editanswer.html', {'form': form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'typelabel':typ.label,'tag':tag,'label':label,'answer':ans, 'prob_latex':texcode,'readablelabel':readablelabel,'breadcrumbs':breadcrumbs,'qt':prob.question_type_new.question_type})
 
 @login_required
 def editreviewpkview(request,**kwargs):

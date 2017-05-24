@@ -81,6 +81,20 @@ class ApprovalForm(forms.ModelForm):
         self.fields['author_name'].required = True
         self.fields['approval_status'].required = True
 
+class MCAnswerForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('mc_answer',)
+        widgets = {
+            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
+        }
+
+class SAAnswerForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('sa_answer',)
+
+
 class AddProblemForm(forms.ModelForm):
     tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
     question_type=forms.ModelMultipleChoiceField(widget = forms.CheckboxSelectMultiple(), queryset = QuestionType.objects.all(),required=True)

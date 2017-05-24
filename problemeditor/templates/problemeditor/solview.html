@@ -27,10 +27,10 @@
   {% if mcsa %}
   <label>Problem Text (Multiple Choice):</label>
   <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+<p>Answer: {{mc_answer}}</p>
 <label>Problem Text (Short Answer):</label>
 <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+<p>Answer: {{sa_answer}}</p>
 {% endif %}
 </div>
 
