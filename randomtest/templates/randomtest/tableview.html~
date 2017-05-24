@@ -24,26 +24,27 @@ document.write("</div>");
     {% if testcount == 0 %}
     {{username}} has no tests.
     {% endif %}
+    {% if currusertests|length > 0 %}
+
+<!-- Single button -->
+<div class="btn-group">
+  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+    Add test from my library <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu">
+    {% for cut in currusertests %}
+    <li><a href="addtest/{{cut.test}}">{{cut.name}}</a></li>
+    {% endfor %}
+
+  </ul>
+</div>
+    {% endif %}
 {% else %}
   <h2>My Tests</h2>
   <div class="col-md-9">
     {% if testcount == 0 %}
     You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
     {% endif  %}
-    {% if studentusernames|length > 0 %}
-    <div class="dropdown">
-      <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-	Students
-	<span class="caret"></span>
-      </button>
-      <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-	{% for student in studentusernames %}
-        <li> <a href="student/{{student}}/">{{student}}</a></li>
-	{% endfor %}
-      </ul>
-    </div>
-
-    {% endif %}
 {% endif %}
 
 {% if testcount > 0 %}

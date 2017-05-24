@@ -132,7 +132,7 @@ def startform(request):
 #            excludeprobs = Problem.objects.filter(test_list__in=excludetests)
 #            print(excludeprobs)
             for extest in excludetests:
-                P=P.exclude(pk__in=extest.problems)
+                P=P.exclude(pk__in=extest.problems.all())
             
             rows=[]
 
@@ -263,7 +263,7 @@ def tagcounts2(request):
 def tableview(request,**kwargs):
     context={}
     curruserprof = get_or_create_up(request.user)
-    if 'username' in kwargs:
+    if 'username' in kwargs:#if looking at a student
         username = kwargs['username']
         user=get_object_or_404(User,username=username)
         if user not in curruserprof.students.all():
@@ -275,6 +275,10 @@ def tableview(request,**kwargs):
         for i in studentusers:
             studentusernames.append(i.username)
         context['studentusernames'] = studentusernames
+        currusertests = curruserprof.usertests.all()
+        usertests = userprof.usertests.all()
+        currtests = Test.objects.filter(id__in=currusertests.values('test_id'))
+        context['currusertests'] = currtests.exclude(id__in=usertests.values('test_id'))
     else:
         userprof = get_or_create_up(request.user)
         studentusers=userprof.students.all()
@@ -329,8 +333,17 @@ def tableview(request,**kwargs):
     return HttpResponse(template.render(context,request))
 
 @login_required
-def addtestview(request,pk):
-    userprof = get_or_create_up(request.user)
+def addtestview(request,**kwargs):#pk
+    pk=kwargs['pk']
+    if 'username' in kwargs:#if looking at a student
+        username = kwargs['username']
+        user=get_object_or_404(User,username=username)
+        if user not in curruserprof.students.all():
+            return HttpResponse('Unauthorized', status=401)
+        userprof = get_or_create_up(user)
+        context['username'] = username
+    else:
+        userprof = get_or_create_up(request.user)
     test = get_object_or_404(Test,pk=pk)
     allresponses=Responses(test = test,num_problems_correct=0)
     allresponses.save()
@@ -345,7 +358,10 @@ def addtestview(request,pk):
     ut.save()
     userprof.usertests.add(ut)
     userprof.save()
-    return redirect('/test/'+str(ut.pk))
+    if 'username' in kwargs:
+        return redirect('../../')
+    else:
+        return redirect('/test/'+str(ut.pk))
 
 @login_required
 def addfolderview(request,pk):
