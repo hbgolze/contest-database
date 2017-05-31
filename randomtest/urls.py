@@ -29,4 +29,9 @@ urlpatterns = [
     url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
     url(r'^addfolder/(?P<pk>\w+)/$',views.addfolderview,name='addfolderview'),
     url(r'^addtest/(?P<pk>\w+)/$',views.addtestview,name='addtestview'),
+    url(r'^urltest/$',views.urltemptest,name='urltemptest'),
+    url(r'^urltest/test$',views.urltest,name='urltestview'),
+    url(r'^urltest/latex$', views.urllatexview, name='urlview_latex'),
+    url(r'^urltest/latexsol$', views.urllatexsolview, name='urlview_latex'),
+
 ]

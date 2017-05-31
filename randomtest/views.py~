@@ -335,13 +335,13 @@ def tableview(request,**kwargs):
 @login_required
 def addtestview(request,**kwargs):#pk
     pk=kwargs['pk']
+    curruserprof = get_or_create_up(request.user)
     if 'username' in kwargs:#if looking at a student
         username = kwargs['username']
         user=get_object_or_404(User,username=username)
         if user not in curruserprof.students.all():
             return HttpResponse('Unauthorized', status=401)
         userprof = get_or_create_up(user)
-        context['username'] = username
     else:
         userprof = get_or_create_up(request.user)
     test = get_object_or_404(Test,pk=pk)
@@ -963,3 +963,84 @@ def unarchivestudentview(request,username,tpk):
     ti.save()
     userprof.timestamps.add(ti)
     return redirect('../../')
+
+@login_required
+def urltest(request):
+    context={}
+    dropboxpath = list(Dropboxurl.objects.all())[0].url
+    if request.method=='GET':
+        form=request.GET
+        L=form.getlist('p')
+        rows=[]
+        for i in range(0,len(L)):
+            if Problem.objects.filter(pk=L[i]).exists():
+                p=Problem.objects.get(pk=L[i])
+                if p.question_type_new.question_type=='multiple choice' or p.question_type_new.question_type=='multiple choice short answer':
+                    texcode=newtexcode(p.mc_problem_text,dropboxpath,p.label,p.answers())
+                else:
+                    texcode=newtexcode(p.problem_text,dropboxpath,p.label,'')
+                readablelabel=p.readable_label.replace('\\#','#')
+                rows.append((texcode,readablelabel))
+    context['rows'] = rows
+    context['nbar'] = 'viewmytests'
+    context['dropboxpath'] = dropboxpath
+#    context['name'] = test.name
+    return render(request, 'randomtest/urltest.html',context)
+
+
+@login_required
+def urllatexview(request):
+    if request.method=='GET':
+        form=request.GET
+        L=form.getlist('p')
+        rows=[]
+        for i in range(0,len(L)):
+            if Problem.objects.filter(pk=L[i]).exists():
+                p=Problem.objects.get(pk=L[i])
+                ptext=''
+                if p.question_type_new.question_type=='multiple choice' or p.question_type_new.question_type=='multiple choice short answer':
+                    ptext=p.mc_problem_text
+                    rows.append((ptext,p.readable_label,p.answers()))
+                else:
+                    ptext=p.problem_text
+                    rows.append((ptext,p.readable_label,''))
+    return render(request, 'randomtest/latexview.html',{'rows': rows,'nbar': 'viewmytests', 'include_problem_labels' : True})
+
+@login_required
+def urllatexsolview(request):
+    if request.method=='GET':
+        form=request.GET
+        L=form.getlist('p')
+        rows=[]
+        for i in range(0,len(L)):
+            if Problem.objects.filter(pk=L[i]).exists():
+                p=Problem.objects.get(pk=L[i])
+                ptext=''
+                if p.question_type_new.question_type=='multiple choice' or p.question_type_new.question_type=='multiple choice short answer':
+                    ptext=p.mc_problem_text
+                    rows.append((ptext,p.readable_label,p.answers(),p.solutions.all()))
+                else:
+                    ptext=p.problem_text
+                    rows.append((ptext,p.readable_label,'',p.solutions.all()))
+    return render(request, 'randomtest/latexsolview.html',{'rows': rows,'nbar': 'viewmytests', 'include_problem_labels' : True})
+
+@login_required
+def urltemptest(request):
+    proburl=''
+    latexurl=''
+    sollatexurl=''
+    labeltext=''
+    if request.method=='POST':
+        form=request.POST
+        labeltext = form.get('labels','')
+        labels = labeltext.split(',')
+        labels = [labels[i].rstrip().lstrip().upper() for i in range(0,len(labels))]
+        s='?'
+        for i in range(0,len(labels)):
+            if Problem.objects.filter(label=labels[i]).exists():
+                p=Problem.objects.get(label=labels[i])
+                s+='&p='+str(p.pk)
+        proburl='test'+s
+        latexurl='latex'+s
+        sollatexurl='latexsol'+s
+    return render(request,'randomtest/temptest.html',{'proburl' : proburl, 'latexurl' : latexurl, 'sollatexurl' : sollatexurl,'labeltext' : labeltext})

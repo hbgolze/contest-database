@@ -1,0 +1,22 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+<h2>New Temporary Test</h2>
+<p>Enter labels like 2002AIMEI9 onto the lines in the below text area, then select an option.</p>
+</p>
+
+<form action="." method="post">
+{% csrf_token %}
+  <br> Test Name:<br>
+  <input type="text" name="testname" value="New Test"> <br><br>
+<p>Labels</p>
+<textarea cols="50" rows="10" name="labels">{{labeltext}}</textarea>
+
+{% if proburl != '' %}<p><a href='{{proburl}}' target="_blank">View Problems (New Tab)</a></p>{% endif %}
+{% if latexurl != '' %}<p><a href='{{latexurl}}' target="_blank">View LaTeX (New Tab)</a></p>{% endif %}
+{% if sollatexurl != '' %}<p><a href='{{sollatexurl}}'target="_blank">View Solution LaTeX (New Tab)</a></p>{% endif %}
+<p><button type='submit'>Get Started</button></p>
+</form>
+
+{% endblock %}
