@@ -103,10 +103,13 @@ def searchresults(request):
 
             rows=[]
             for i in range(0,len(P)):
+                url=''
                 texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
                 mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
                 readablelabel=P[i].readable_label.replace('\\#','#')
-                rows.append((P[i].label,P[i].question_type_new,P[i].pk,texcode,readablelabel,mc_texcode,i+1))
+                if P[i].type_new.type[0:2]!='CM':
+                    url='/problemeditor/bytest/'+P[i].type_new.type+'/'+P[i].test_label+'/'+P[i].label+'/'
+                rows.append((P[i].label,P[i].question_type_new,P[i].pk,texcode,readablelabel,mc_texcode,i+1,url))
             paginator=Paginator(rows,25)
             page = request.GET.get('page')
             try:

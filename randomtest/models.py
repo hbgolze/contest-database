@@ -113,6 +113,7 @@ class Problem(models.Model):
     approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)#deprecated
     comments = models.ManyToManyField(Comment,blank=True)
     approvals = models.ManyToManyField(ProblemApproval,blank=True)
+    duplicate_problems = models.ManyToManyField("self",blank=True)
     def __str__(self):
         return self.label
     def print_tags(self):

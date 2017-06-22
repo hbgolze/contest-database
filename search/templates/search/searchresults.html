@@ -5,16 +5,16 @@
 There are {{matchnums}} matching problems in the database.
 <br>
 <table class="table">
-{% for label,qt,pk,prob_latex,readablelabel,mc_prob_latex,num in rows %}
+{% for label,qt,pk,prob_latex,readablelabel,mc_prob_latex,num,url in rows %}
 <tr>
 <td valign="top"><br>
 {{num}}.
 </td>
 <td>
 {% if qt.question_type == 'multiple choice' %}
-{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
+{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Tags</a>) (<a href="{{url}}/solutions/">Solutions</a>){% endif %}<br>
 {% else %}
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Tags</a>) (<a href="{{url}}/solutions/">Solutions</a>){% endif %}<br>
 {% endif %}
 
 </td>
