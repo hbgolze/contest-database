@@ -652,6 +652,7 @@ def solutionview(request,type,tag,label):
     context['typelabel']= typ.label
     context['tag'] = tag
     context['readablelabel']=readablelabel
+    context['duplicate_problems']=prob.duplicate_problems
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     context['user_type'] =  userprofile.user_type
     return render(request, 'problemeditor/solview.html', context)

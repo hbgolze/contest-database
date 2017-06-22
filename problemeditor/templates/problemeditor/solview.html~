@@ -27,11 +27,22 @@
   {% if mcsa %}
   <label>Problem Text (Multiple Choice):</label>
   <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+<p>Answer: {{mc_answer}}</p>
 <label>Problem Text (Short Answer):</label>
 <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+<p>Answer: {{sa_answer}}</p>
 {% endif %}
+
+{{form.instance.duplicate_problems.count}}
+{% if form.instance.duplicate_problems.count > 0 %}
+<label>Duplicate Problems:</label>
+<ul>
+{% for dp in form.instance.duplicate_problems.all %}
+<li>{{dp.label}}: (<a href="/problemeditor/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags</a>) (<a href="/problemeditor/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/solutions/">Solutions</a>)</li>
+{% endfor %}
+</ul>
+{% endif %}
+
 </div>
 
 <!--{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>-->

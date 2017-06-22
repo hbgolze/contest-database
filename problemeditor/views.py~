@@ -832,15 +832,15 @@ def editanswerview(request,type,tag,label):
                 if ans_form.is_valid():
                     prob2 = ans_form.save()
                     prob2.save()
-                    print(prob,prob.sa_answer)
+                    prob.answer=prob.mc_answer
+                    prob.save()
             else:
                 ans_form = SAAnswerForm(request.POST,instance=prob)
                 if ans_form.is_valid():
                     prob2 = ans_form.save()
                     prob2.save()
-                    print(prob2)
-                    print(prob,prob.answer)
-
+                    prob.answer=prob.sa_answer
+                    prob.save()
             return redirect('../')
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
