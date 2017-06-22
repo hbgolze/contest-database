@@ -26,7 +26,13 @@ from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
 @login_required
 def searchform(request):
-    types=list(Type.objects.all())
+    userprofile = get_or_create_up(request.user)
+    if userprofile.user_type == 'member':
+        types=list(Type.objects.exclude(type__startswith="CM"))
+    elif userprofile.user_type == 'manager':
+        types=list(Type.objects.filter(type__startswith="CM"))
+    elif userprofile.user_type == 'super':
+        types=list(Type.objects.all())
     tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
     rows=[]
     for i in range(0,len(types)):

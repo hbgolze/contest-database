@@ -253,7 +253,7 @@ class UserProfile(models.Model):
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
-    user_type = models.CharField(max_length=15,default='manager')
+    user_type = models.CharField(max_length=15,default='member')
     def __unicode__(self):
         return self.user.username
 

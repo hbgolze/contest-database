@@ -3,7 +3,7 @@
 
 {% block content %}
 <h2>New Temporary Test</h2>
-<p>Enter labels like 2002AIMEI9 onto the lines in the below text area, then select an option.</p>
+<p>Enter labels like 2002AIMEI9 (seperated by commas) into the below text area, then submit to get links to problems and LaTeX.</p>
 </p>
 
 <form action="." method="post">
@@ -16,7 +16,7 @@
 {% if proburl != '' %}<p><a href='{{proburl}}' target="_blank">View Problems (New Tab)</a></p>{% endif %}
 {% if latexurl != '' %}<p><a href='{{latexurl}}' target="_blank">View LaTeX (New Tab)</a></p>{% endif %}
 {% if sollatexurl != '' %}<p><a href='{{sollatexurl}}'target="_blank">View Solution LaTeX (New Tab)</a></p>{% endif %}
-<p><button type='submit'>Get Started</button></p>
+<p><button type='submit'>Submit</button></p>
 </form>
 
 {% endblock %}
