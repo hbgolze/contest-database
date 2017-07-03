@@ -17,6 +17,21 @@ There are {{matchnums}} matching problems in the database.
 {% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Tags</a>) (<a href="{{url}}/solutions/">Solutions</a>){% endif %}<br>
 {% endif %}
 
+<p>Add to Problem Group:</p>
+  <p>
+    <form action="." method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request}}">
+      <select name="problemgroup_{{pk}}" onchange="this.form.submit()">
+	<option value="" disabled selected>Select a Group</option>
+	{% for pg in probgroups.all %}
+        <option value="{{pg.pk}}">{{pg.name}}
+        </option>
+	{% endfor %}
+      </select>
+    </form>
+  </p>
+
 </td>
 </tr>
 {% endfor %}

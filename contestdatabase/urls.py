@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'', include('randomtest.urls')),
     url(r'problemeditor/', include('problemeditor.urls')),
     url(r'^contestcollections/', include('contestcollections.urls')),
+    url(r'^problemgroups/', include('groups.urls')),
     url(r'^asycompile/', include('asycompile.urls')),
     url(r'^search/', include('search.urls')),
 ]

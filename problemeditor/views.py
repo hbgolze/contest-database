@@ -679,7 +679,7 @@ def newsolutionview(request,type,tag,label):
             prob.save()
         return redirect('../')#solutionview,type=type,tag=tag,label=label)
     else:
-        sol=Solution(solution_text='', solution_number=sol_num, problem_label=label)
+        sol = Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
     readablelabel=prob.readable_label.replace('\\#','#')
     breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../','Solutions to '+readablelabel),]

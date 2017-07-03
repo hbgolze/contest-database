@@ -1,0 +1,72 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<script type="text/javascript">
+function togglemarked() {
+    var y=document.getElementById("problems");
+    lang=y.elements.length;
+
+    check=0;
+    for (i=0;i<lang;i++) {
+        if (y.elements[i].type == "checkbox" && y.elements[i].checked==false) {
+            check=1;
+        }
+    }
+    if (check==1) {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=true;
+        }
+    } else {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=false;
+        }
+    }
+}
+</script>
+
+<ol class="breadcrumb">
+  <li><a href="/problemgroups/">My Problem Groups</a></li>
+  <li class="active">{{name}}</li>
+</ol>
+
+<h2>{{name}}</h2>
+{% if rows|length > 0 %}
+
+<button id="toggler" onclick="togglemarked();">Select/Deselect All</button>
+<form action="." method="POST" id="problems">
+{% csrf_token %}
+<input type="hidden" name="startform" value="{{pk}}">
+<table>
+<tr>
+<th>
+
+</th>
+<th>
+Problem
+</th>
+</tr>
+
+{% for texcode,label,answer,pk,numsols,readablelabel in rows %} 
+<tr>
+<td valign="top"><br>
+{{forloop.counter}}.<br>
+<input type="checkbox" name="chk{{label}}" checked/>
+</td>
+<td>
+
+{% autoescape off %}{{texcode|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
+</td>
+</tr>
+{% endfor %}
+</table>
+<p><input type="submit" name="remove" value="Remove Unselected Problems" /></p>
+
+<p>
+Name of test: <input type="text" name="testname" value="New Test" /><br>
+<input type="submit" name="newtest" value="Create Test with Selected Problems" /></p>
+</form>
+{% else %}
+There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.
+{% endif %}
+
+{% endblock %}

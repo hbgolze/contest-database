@@ -1,0 +1,143 @@
+from django.shortcuts import render,render_to_response, get_object_or_404,redirect
+from django.http import HttpResponse,HttpResponseRedirect
+from django.template import loader,RequestContext,Context
+
+from django.template.loader import get_template
+
+from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.admin import User
+from django.contrib.auth.decorators import login_required
+from django.views.generic import DeleteView
+from django.urls import reverse_lazy
+from django.db.models import Q
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.utils import timezone
+from django.conf import settings
+
+from subprocess import Popen,PIPE
+import tempfile
+import os
+
+import logging
+logger = logging.getLogger(__name__)
+
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup
+from randomtest.utils import newtexcode
+from .forms import GroupModelForm
+
+from random import shuffle
+import time
+from datetime import datetime,timedelta
+
+# Create your views here.
+
+@login_required
+def tableview(request):
+    userprofile = get_or_create_up(request.user)
+    if request.method=='POST':
+        group_form = GroupModelForm(request.POST)
+        if group_form.is_valid():
+            group = group_form.save()
+            userprofile.problem_groups.add(group)
+            userprofile.save()
+    prob_groups = userprofile.problem_groups.all()
+    template=loader.get_template('groups/tableview.html')    
+    group_inst = ProblemGroup(name='')
+    form = GroupModelForm(instance=group_inst)
+    context = {}
+    context['form'] = form
+    context['nbar'] = 'groups'
+    context['probgroups'] =  prob_groups
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def viewproblemgroup(request,pk):
+    userprofile = get_or_create_up(request.user)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if prob_group not in userprofile.problem_groups.all():
+        return HttpResponse('Unauthorized', status=401)
+    if request.method=='POST':
+        rows=[]
+        if request.POST.get("remove"):
+            form=request.POST
+            P=prob_group.problems.all()
+            for i in P:
+                if "chk"+i.label not in form:
+                    prob_group.problems.remove(i)
+#            for i in range(0,len(P)):
+#                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
+        elif request.POST.get("newtest"):
+            form = request.POST
+            P = prob_group.problems.all()
+            testname = form.get('testname','')
+
+            t = Test(name = testname)
+            t.save()
+            for i in P:
+                if "chk"+i.label in form:
+                    t.problems.add(i)
+            t.save()
+            userprofile.tests.add(t)
+            ti=TestTimeStamp(test_pk=t.pk)
+            ti.save()
+            userprofile.timestamps.add(ti)
+            R=Responses(test=t,num_problems_correct=0)
+            R.save()
+            for i in P:
+                r=Response(response='',problem_label=i.label)
+                r.response=form.get('answer'+i.label)
+                if r.response==None:
+                    r.response=''
+                r.save()
+                R.responses.add(r)
+                rows.append((i.label, str(i.answer), ''))
+            R.save()
+            userprofile.allresponses.add(R)
+#            t.types.add(Type.objects.get(type=testtype))
+            t.save()
+            ut=UserTest(test = t,responses = R,num_probs = P.count(),num_correct = 0)
+            ut.save()
+            userprofile.usertests.add(ut)
+            userprofile.save()            
+            return redirect('/test/'+str(ut.pk)+'/')
+
+    P = prob_group.problems.all()
+    rows=[]
+    dropboxpath = list(Dropboxurl.objects.all())[0].url
+    for i in P:
+        if i.question_type_new.question_type=='multiple choice' or i.question_type_new.question_type=='multiple choice short answer':
+            texcode=newtexcode(i.mc_problem_text,dropboxpath,i.label,i.answers())
+        else:
+            texcode=newtexcode(i.problem_text,dropboxpath,i.label,'')
+        readablelabel=i.readable_label.replace('\\#','#')
+        rows.append((texcode,i.label,str(i.answer),i.pk,i.solutions.count(),readablelabel))
+
+
+    name = prob_group.name
+    context = {}
+    context['rows'] = rows
+    context['name'] = name
+    context['nbar'] = 'groups'
+    context['pk'] = pk
+    template=loader.get_template('groups/probgroupview.html')
+    return HttpResponse(template.render(context,request))
+
+
+@login_required
+def deletegroup(request,pk):
+    pg = get_object_or_404(ProblemGroup, pk=pk)
+    userprofile = get_or_create_up(request.user)
+    if pg in userprofile.problem_groups.all():
+        if pg.is_shared==0:
+            pg.delete()
+        else:
+            userprofile.problem_groups.remove(pg)
+    return redirect('/problemgroups/')
+        
+#use post to select problems for test...
+#also edit search and 'contest collection' to allow adding to problemgroup...
+#get templates and urls ready
+#add to installed apps
+#migrations
+

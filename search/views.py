@@ -19,7 +19,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,ProblemGroup
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -44,7 +44,21 @@ def searchform(request):
 
 @login_required
 def searchresults(request):
+    userprofile = get_or_create_up(request.user)
     dropboxpath = list(Dropboxurl.objects.all())[0].url
+    if request.method=='POST':
+        form=request.POST
+        next = form.get('next', '')
+        next = next[next.index('?'):next.index('\'>')]
+        for i in form:
+            if 'problemgroup' in i:
+                pk = i.split('_')[1]
+                prob = Problem.objects.get(pk=pk)
+                gpk = form[i]
+                probgroup = ProblemGroup.objects.get(pk=gpk)
+                probgroup.problems.add(prob)
+                probgroup.save()
+        return HttpResponseRedirect(next)
     if request.method=='GET':
         page = request.GET.get('page')
         z=request.GET.copy()
@@ -110,6 +124,7 @@ def searchresults(request):
                 if P[i].type_new.type[0:2]!='CM':
                     url='/problemeditor/bytest/'+P[i].type_new.type+'/'+P[i].test_label+'/'+P[i].label+'/'
                 rows.append((P[i].label,P[i].question_type_new,P[i].pk,texcode,readablelabel,mc_texcode,i+1,url))
+            probgroups = userprofile.problem_groups
             paginator=Paginator(rows,25)
             page = request.GET.get('page')
             try:
@@ -121,5 +136,7 @@ def searchresults(request):
                 # If page is out of range (e.g. 9999), deliver last page of results.
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
-            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P)}
+            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,
+                     'request' : request
+                     }
             return HttpResponse(template.render(context,request))

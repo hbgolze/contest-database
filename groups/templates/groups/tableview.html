@@ -1,0 +1,43 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+<h2>My Problem Groups</h2>
+<div class="col-md-9">
+  {% if probgroups.count == 0 %}
+  You don't have any problem groups yet.
+  {% endif  %}
+
+{% if probgroups.count > 0 %}
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Group Name</th>
+        <th>Number of Problems</th>
+	<th>Date Added</th>
+	<th>Remove</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for pg in probgroups %}
+      <tr>
+        <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
+        <td>{{pg.problems.count}}</td>
+        <td>{{pg.created_date}}</td>
+	<td><a href="{{pg.pk}}/delete/"><span class="glyphicon glyphicon-remove" style="color:#ff0000"></span></a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% endif %}
+<p>Start a new problem group.</p>
+<form action="." method="post">
+{% csrf_token %}
+<p>{{form}}</p>
+<p><input type="submit" value="New Group"></p>
+</form>
+
+
+{% endblock %}

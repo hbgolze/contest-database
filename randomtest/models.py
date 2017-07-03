@@ -178,6 +178,14 @@ class TestCollection(models.Model):
     def __str__(self):
         return self.name
 
+class ProblemGroup(models.Model):
+    name = models.CharField(max_length=50)#Perhaps use a default naming scheme
+    problems = models.ManyToManyField(Problem)
+    created_date = models.DateTimeField(default = timezone.now)
+    is_shared = models.BooleanField(default = 0)
+    def __str__(self):
+        return self.name
+
 class Folder(models.Model):
     name=models.CharField(max_length=50)
     tests=models.ManyToManyField(Test)
@@ -255,6 +263,7 @@ class UserProfile(models.Model):
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
+    problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name='problem_groups')
     def __unicode__(self):
         return self.user.username
 
