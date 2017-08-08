@@ -11,7 +11,7 @@
 <input type="hidden" name="startform" value="{{pk}}">
 
 <table>
-{% for label,answer,qt,ppk,solnum,prob_latex,readablelabel,mc_prob_latex in rows %}
+{% for label,answer,qt,ppk,solnum,prob_latex,readablelabel,mc_prob_latex, prob in rows %}
 <tr>
 <td>
 <a name="{{label}}"></a>
@@ -30,7 +30,7 @@
 </div>
 
 <p>
-(<a href="{{ppk}}">Solution</a>)
+(<a href="{{ppk}}">Solution</a>) {% if user_type == "super" %}(<a href="/problemeditor/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags</a>) (<a href="/problemeditor/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/solutions/">Edit Solutions</a>){% endif %}
 </p>
 
 

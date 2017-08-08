@@ -51,6 +51,7 @@ def tableview(request):
 
 @login_required
 def testview(request,pk):
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     test = get_object_or_404(Test, pk=pk)
     dropboxpath=list(Dropboxurl.objects.all())[0].url
     P=list(test.problems.all())
@@ -60,8 +61,8 @@ def testview(request,pk):
         texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
         mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
         readablelabel=P[i].readable_label.replace('\\#','#')
-        rows.append((P[i].label,str(P[i].answer),P[i].question_type_new,P[i].pk,P[i].solutions.count(),texcode,readablelabel,mc_texcode))
-    return render(request, 'contestcollections/testview.html',{'rows': rows,'pk' : pk,'nbar': 'contestcollection', 'name':test.name})
+        rows.append((P[i].label,str(P[i].answer),P[i].question_type_new,P[i].pk,P[i].solutions.count(),texcode,readablelabel,mc_texcode,P[i]))
+    return render(request, 'contestcollections/testview.html',{'rows': rows,'pk' : pk,'nbar': 'contestcollection', 'name':test.name,'user_type': userprofile.user_type})
 
 @login_required
 def solutionview(request,testpk,pk):

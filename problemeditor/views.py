@@ -1174,9 +1174,12 @@ def addcontestview(request,type,num):
         return redirect('/problemeditor/')
     form=AddContestForm(request.POST or None,num_probs=num,type=type)
     context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
-    if type=='AMC8' or type=='AMC10' or type=='AMC12':
+    if typ.default_question_type=='mc':#type=='AMC8' or type=='AMC10' or type=='AMC12':
         context['mc']=True
-    elif type=='AIME':
+    elif typ.default_question_type=='sa':#type=='AIME':
+        context['sa']=True
+    elif typ.default_question_type=='mcsa':
+        context['mc']=True
         context['sa']=True
     else:
         context['pf']=True
