@@ -12,9 +12,9 @@ There are {{matchnums}} matching problems in the database.
 </td>
 <td>
 {% if qt.question_type == 'multiple choice' %}
-{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Tags</a>) (<a href="{{url}}/solutions/">Solutions</a>){% endif %}<br>
+{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Edit Tags/Solutions</a>){% endif %}<br>
 {% else %}
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Tags</a>) (<a href="{{url}}/solutions/">Solutions</a>){% endif %}<br>
+{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}] {% if url != "" %}(<a href="{{url}}">Edit Tags/Solutions</a>){% endif %}<br>
 {% endif %}
 
 <p>Add to Problem Group:</p>

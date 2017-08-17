@@ -122,7 +122,7 @@ def searchresults(request):
                 mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
                 readablelabel=P[i].readable_label.replace('\\#','#')
                 if P[i].type_new.type[0:2]!='CM':
-                    url='/problemeditor/bytest/'+P[i].type_new.type+'/'+P[i].test_label+'/'+P[i].label+'/'
+                    url='/problemeditor/contest/bytest/'+P[i].type_new.type+'/'+P[i].test_label+'/'+P[i].label+'/'
                 rows.append((P[i].label,P[i].question_type_new,P[i].pk,texcode,readablelabel,mc_texcode,i+1,url))
             probgroups = userprofile.problem_groups
             paginator=Paginator(rows,25)

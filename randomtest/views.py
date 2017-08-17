@@ -1043,4 +1043,5 @@ def urltemptest(request):
         proburl='test'+s
         latexurl='latex'+s
         sollatexurl='latexsol'+s
-    return render(request,'randomtest/temptest.html',{'proburl' : proburl, 'latexurl' : latexurl, 'sollatexurl' : sollatexurl,'labeltext' : labeltext})
+    return render(request,'randomtest/temptest.html',{'proburl' : proburl, 'latexurl' : latexurl, 'sollatexurl' : sollatexurl,'labeltext' : labeltext,'nbar':'viewmytests'})
+

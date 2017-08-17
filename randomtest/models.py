@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.contrib.admin.models import LogEntry
 
 # Create your models here.
 
@@ -20,6 +21,7 @@ class Type(models.Model):
     type = models.CharField(max_length=20)
     label = models.CharField(max_length=20,blank=True)
     top_index = models.IntegerField(default=0)
+    is_contest = models.BooleanField(default=1)
     default_question_type = models.CharField(max_length=4,default = 'pf')
     readable_label_pre_form = models.CharField(max_length=20,default = '')
     readable_label_post_form = models.CharField(max_length=20,default = '')
@@ -48,6 +50,8 @@ class Solution(models.Model):
     problem_label = models.CharField(max_length=20,blank=True)
     tags = models.ManyToManyField(Tag,blank=True)
     authors = models.ManyToManyField(User,blank=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    modified_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
@@ -249,6 +253,7 @@ class NewTest(models.Model):
     num_problems = models.IntegerField(default=0)
     def __str__(self):
         return self.name
+
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.

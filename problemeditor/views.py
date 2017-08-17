@@ -4,6 +4,9 @@ from django.template import loader,RequestContext
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.utils import timezone
+from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
+from django.contrib.contenttypes.models import ContentType
 
 from formtools.wizard.views import SessionWizardView
 
@@ -154,7 +157,7 @@ class AddProblemWizard(SessionWizardView):
         t.top_index+=1
         t.save()
         prob.label = t.type+str(t.top_index)
-        prob.readable_label = t.type+' '+str(t.top_index)
+        prob.readable_label = t.label+' '+str(t.top_index)
         prob.top_solution_number = 1
         prob.save()
 
@@ -170,11 +173,16 @@ class AddProblemWizard(SessionWizardView):
         prob.solutions.add(sol)
         prob.save()
         compileasy(sol.solution_text,prob.label,sol="sol1")
-
-        return redirect('/problemeditor/detailedview/'+str(prob.pk)+'/')
-
-#{'1':show_mc_form_condition2,'2':show_sa_form_condition2,'3':show_pf\
-#_form_condition2,'4':show_mcsa_form_condition2,})),
+        LogEntry.objects.log_action(
+            user_id = request.user.id,
+            content_type_id = ContentType.objects.get_for_model(prob).pk,
+            object_id = prob.id,
+            object_repr = prob.label,
+            action_flag = ADDITION,
+            change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
+            )
+        return redirectproblem(self.request,prob.pk)
+#        return redirect('/problemeditor/detailedview/'+str(prob.pk)+'/')
 
 CQTTEMPLATES = {
     "0": "problemeditor/changequestiontypewizard.html",
@@ -245,7 +253,7 @@ class ChangeQuestionTypeWizard(SessionWizardView):
 @login_required
 def typeview(request):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
-    obj=list(Type.objects.all().exclude(type__startswith="CM"))
+    obj=list(Type.objects.all().exclude(is_contest=False))
     obj=sorted(obj,key=lambda x:x.type)
     rows=[]
     if userprofile.user_type == 'member' or userprofile.user_type == 'super':
@@ -258,7 +266,7 @@ def typeview(request):
             nosolutions = P.filter(solutions__isnull=True)
             num_nosolutions = nosolutions.count()
             rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
-    obj2=list(Type.objects.filter(type__startswith="CM"))
+    obj2=list(Type.objects.filter(is_contest=False))
     obj2=sorted(obj2,key=lambda x:x.type)
     rows2=[]
     if userprofile.user_type == 'manager' or userprofile.user_type == 'super':
@@ -357,10 +365,8 @@ def typetagview(request,type,tag):
     rows=[]
     if tag!='untagged':
         ttag=get_object_or_404(Tag, tag=tag)
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
     else:
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     for i in range(0,len(problems)):
@@ -378,7 +384,6 @@ def typetagview(request,type,tag):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         prows = paginator.page(paginator.num_pages)
-
     context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
@@ -389,10 +394,8 @@ def CMtypetagview(request,type,tag):
     rows=[]
     if tag!='untagged':
         ttag=get_object_or_404(Tag, tag=tag)
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__in=[ttag]))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
     else:
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
     for i in range(0,len(problems)):
@@ -435,8 +438,6 @@ def testlabelview(request,type,testlabel):
 def CMtopicview(request,type):#unapprovedview
     typ=get_object_or_404(Type, type=type)
     rows=[]
-#    problems=list(Problem.objects.filter(types__in=[typ]).filter(approval_status=False))
-#    problems=list(Problem.objects.filter(type_new=typ).filter(approval_status=False))
     problems=list(Problem.objects.filter(type_new=typ))
     problems=sorted(problems, key=lambda x:(x.pk))
     for i in range(0,len(problems)):
@@ -470,20 +471,32 @@ def problemview(request,type,tag,label):
         if form.is_valid():
             problem = form.save()
             problem.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(problem).pk,
+                object_id = problem.id,
+                object_repr = problem.label,
+                action_flag = CHANGE,
+                change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
+                )
+
     else:
         form = ProblemForm(instance=prob)
     texcode=newtexcode(form.instance.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=form.instance.readable_label.replace('\\#','#')
 
     context={}
+
     if prob.question_type_new.question_type=='multiple choice':
         mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
         context['mc_prob_latex']=mc_texcode
         context['mc']=True
+        context['mc_answer']=prob.mc_answer
     elif prob.question_type_new.question_type=='short answer':
         texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
         context['prob_latex']=texcode
         context['sa']=True
+        context['sa_answer']=prob.sa_answer
     elif prob.question_type_new.question_type=='proof':
         texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
         context['prob_latex']=texcode
@@ -494,7 +507,14 @@ def problemview(request,type,tag,label):
         texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
         context['prob_latex']=texcode
         context['mcsa']=True
-#    context['rows']=rows
+        context['mc_answer']=prob.mc_answer
+        context['sa_answer']=prob.sa_answer
+    sols=list(prob.solutions.all())
+    sollist=[]
+    rows=[]
+    for sol in sols:
+        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
+    context['rows']=rows
     context['form']=form
     context['nbar']='problemeditor'
     context['dropboxpath']=dropboxpath
@@ -502,7 +522,8 @@ def problemview(request,type,tag,label):
     context['label'] = label
     context['tag'] = tag
     context['readablelabel']=readablelabel
-
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+    context['user_type'] =  userprofile.user_type
     return render(request, 'problemeditor/view.html', context)
 
 @login_required
@@ -518,6 +539,14 @@ def editproblemtextview(request,type,tag,label):
             problem.save()
             compileasy(problem.mc_problem_text,problem.label)
             compileasy(problem.problem_text,problem.label)
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(problem).pk,
+                object_id = problem.id,
+                object_repr = problem.label,
+                action_flag = CHANGE,
+                change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
+                )
         return redirect('../')
     else:
         form = ProblemTextForm(instance=prob)
@@ -561,7 +590,7 @@ def editproblemtextpkview(request,**kwargs):
     prob=get_object_or_404(Problem, pk=pk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
+        breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('/problemeditor/','Select Type'),('../../',typ.label+' Problems'),('../',str(prob.readable_label))]
@@ -575,6 +604,15 @@ def editproblemtextpkview(request,**kwargs):
             problem.save()
             compileasy(problem.mc_problem_text,problem.label)
             compileasy(problem.problem_text,problem.label)
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(problem).pk,
+                object_id = problem.id,
+                object_repr = problem.label,
+                action_flag = CHANGE,
+                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
+                )
+
         return redirect('../')
     else:
         form = ProblemTextForm(instance=prob)
@@ -677,12 +715,20 @@ def newsolutionview(request,type,tag,label):
             compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
             prob.solutions.add(sol)
             prob.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag=ADDITION,
+                change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
+                )
         return redirect('../')#solutionview,type=type,tag=tag,label=label)
     else:
         sol = Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
     readablelabel=prob.readable_label.replace('\\#','#')
-    breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../','Solutions to '+readablelabel),]
+    breadcrumbs=[('../../../',typ.label),('../../',tag),('../',readablelabel),]
 
     context={}
     if prob.question_type_new.question_type=='multiple choice':
@@ -724,7 +770,7 @@ def newsolutionpkview(request,**kwargs):
     prob=get_object_or_404(Problem, pk=pk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
+        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label)]
@@ -745,6 +791,15 @@ def newsolutionpkview(request,**kwargs):
             compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
             prob.solutions.add(sol)
             prob.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag=ADDITION,
+                change_message="problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk)+'/',
+                )
+
         return redirect('../')#detailedproblemview,pk=pk)
     else:
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=prob.label)
@@ -765,16 +820,25 @@ def editsolutionview(request,type,tag,label,spk):
     if request.method == "POST":
         if request.POST.get("save"):
             sollist=request.POST.getlist('solution_text')
-            sol.solution_text=sollist[0]
+            sol.solution_text = sollist[0]
+            sol.modified_date = timezone.now()
             sol.authors.add(request.user)
             sol.save()
             compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
-            return redirect(solutionview,type=type,tag=tag,label=label)
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag = CHANGE,
+                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
+                )
+            return redirect(problemview,type=type,tag=tag,label=label)
     form = SolutionForm(instance=sol)
 
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
-    breadcrumbs=[('../../../../../',typ.label),('../../../../',tag),('../../','Solutions to '+readablelabel),]
+    breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../../',readablelabel),]
     ans=''
     if prob.question_type_new.question_type=='multiple choice':
         ans=prob.mc_answer
@@ -792,7 +856,7 @@ def editsolutionpkview(request,**kwargs):
     sol=Solution.objects.get(pk=spk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../../',typ.label),('../../../',kwargs['tag']),('../../',str(prob.readable_label))]
+        breadcrumbs=[('../../../../',typ.label),('../../../',goodtag(kwargs['tag'])),('../../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
@@ -803,9 +867,18 @@ def editsolutionpkview(request,**kwargs):
         if request.POST.get("save"):
             sollist=request.POST.getlist('solution_text')
             sol.solution_text=sollist[0]
+            sol.modified_date = timezone.now()
             sol.authors.add(request.user)
             sol.save()
             compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag = CHANGE,
+                change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk),
+                )
             return redirect('../../')#detailedproblemview,pk=pk)
     form = SolutionForm(instance=sol)
 
@@ -845,7 +918,7 @@ def editanswerview(request,type,tag,label):
             return redirect('../')
     texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
     readablelabel=prob.readable_label.replace('\\#','#')
-    breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../','Solutions to '+readablelabel),]
+    breadcrumbs=[('../../../',typ.label),('../../',tag),('../',readablelabel),]
     ans=''
     if prob.question_type_new.question_type=='multiple choice':
         form = MCAnswerForm(instance=prob)
@@ -865,7 +938,7 @@ def editreviewpkview(request,**kwargs):
     appr=ProblemApproval.objects.get(pk=apk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../../',typ.label),('../../../',kwargs['tag']),('../../',str(prob.readable_label))]
+        breadcrumbs=[('../../../../',typ.label),('../../../',goodtag(kwargs['tag'])),('../../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
@@ -875,15 +948,21 @@ def editreviewpkview(request,**kwargs):
     if request.method == "POST":
         if request.POST.get("save"):
             appr_form = ApprovalForm(request.POST,instance=appr)
-#            print(appr_form)
             if appr_form.is_valid():
                 appr2 = appr_form.save()
                 appr2.save()
 #                appr.approval_user = request.user
 #                appr.author_name=appr_form.author_name
-#                print(appr_form)
 #                appr.approval_status=request.POST.get('approval_status')#appr_form.approval_status
 #                appr.save()
+                LogEntry.objects.log_action(
+                    user_id = request.user.id,
+                    content_type_id = ContentType.objects.get_for_model(appr2).pk,
+                    object_id = appr2.id,
+                    object_repr = prob.label,
+                    action_flag = CHANGE,
+                    change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
+                    )
             return redirect('../../')#detailedproblemview,pk=pk)
     form = ApprovalForm(instance=appr)
     texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
@@ -894,6 +973,15 @@ def editreviewpkview(request,**kwargs):
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
     sol = get_object_or_404(Solution, pk=spk)
+    prob = get_object_or_404(Problem,label=label)
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(sol).pk,
+        object_id = sol.id,
+        object_repr = prob.label+' sol '+str(sol.solution_number),
+        action_flag = DELETION,
+        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
+        )
     sol.delete()
     return redirect('../../')
 
@@ -902,6 +990,15 @@ def deletesolutionpkview(request,**kwargs):#If solution_number is kept, this mus
     pk=kwargs['pk']
     spk=kwargs['spk']
     sol = get_object_or_404(Solution, pk=spk)
+    prob = get_object_or_404(Problem,pk=pk)
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(sol).pk,
+        object_id = sol.id,
+        object_repr = prob.label+' sol '+str(sol.solution_number),
+        action_flag = DELETION,
+        change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk),
+        )
     sol.delete()
     return redirect('../../')
 
@@ -933,7 +1030,7 @@ def newcommentpkview(request,**kwargs):
     prob=get_object_or_404(Problem, pk=pk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
+        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
@@ -965,7 +1062,7 @@ def newreviewpkview(request,**kwargs):
     prob=get_object_or_404(Problem, pk=pk)
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',kwargs['tag']),('../',str(prob.readable_label))]
+        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
@@ -982,6 +1079,16 @@ def newreviewpkview(request,**kwargs):
             appr.save()
             prob.approvals.add(appr)
             prob.save()
+
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(appr).pk,
+                object_id = appr.id,
+                object_repr = prob.label,
+                action_flag = ADDITION,
+                change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
+                )
+
             return redirect('../')
     else:
         appr=ProblemApproval()
@@ -997,7 +1104,7 @@ def detailedproblemview(request,**kwargs):
     context={}
     if 'tag' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../',typ.label),('../',kwargs['tag']),]
+        breadcrumbs=[('../../',typ.label),('../',goodtag(kwargs['tag'])),]
     elif 'type' in kwargs:
         typ=get_object_or_404(Type, type=kwargs['type'])
         breadcrumbs=[('../',typ.label+' Problems'),]
@@ -1010,6 +1117,15 @@ def detailedproblemview(request,**kwargs):
         if form.is_valid():
             problem = form.save()
             problem.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(problem).pk,
+                object_id = problem.id,
+                object_repr = problem.label,
+                action_flag = CHANGE,
+                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+problem.pk+'/',
+                )
+
 #            if is_approved==False and problem.approval_status==True:
 #                problem.approval_user=request.user
 #                problem.save()
@@ -1066,25 +1182,25 @@ def detailedproblemview(request,**kwargs):
     context['breadcrumbs']=breadcrumbs
     return render(request, 'problemeditor/detailedview.html', context)
 
-@login_required
-def addproblemview(request):
-    prob=Problem()
-    if request.method == "POST":
-        form = AddProblemForm(request.POST, instance=prob)
-        if form.is_valid():
-            problem = form.save()
-            problem.save()
-            problem.author=request.user
-            t=list(problem.types.all())[0]
-            t.top_index+=1
-            t.save()
-            problem.label = t.type+str(t.top_index)
-            problem.readable_label = t.type+' '+str(t.top_index)
-            problem.save()
-            return redirect('../detailedview/'+str(problem.pk)+'/')
-    else:
-        form = AddProblemForm(instance=prob)
-    return render(request, 'problemeditor/addview.html', {'form': form, 'nbar': 'problemeditor'})
+#@login_required
+#def addproblemview(request):
+#    prob=Problem()
+#    if request.method == "POST":
+#        form = AddProblemForm(request.POST, instance=prob)
+#        if form.is_valid():
+#            problem = form.save()
+#            problem.save()
+#            problem.author=request.user
+#            t=list(problem.types.all())[0]
+#            t.top_index+=1
+#            t.save()
+#            problem.label = t.type+str(t.top_index)
+#            problem.readable_label = t.type+' '+str(t.top_index)
+#            problem.save()
+#            return redirectproblem(request,problem.pk)
+#    else:
+#        form = AddProblemForm(instance=prob)
+#    return render(request, 'problemeditor/addview.html', {'form': form, 'nbar': 'problemeditor'})
 
 @login_required
 def addcontestview(request,type,num):
@@ -1185,3 +1301,49 @@ def addcontestview(request,type,num):
         context['pf']=True
     context['form']=form
     return render(request, 'problemeditor/addcontestform.html', context=context)
+
+
+@login_required
+def my_activity(request):
+    log = LogEntry.objects.filter(user_id = request.user.id).filter(change_message__contains="problemeditor")
+    linkedlog=[]
+    for i in log:
+        if i.content_type.name=='problem':
+            if Problem.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+        if i.content_type.name=='solution':
+            if Solution.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+        if i.content_type.name=='problem approval':
+            if ProblemApproval.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+
+
+    paginator=Paginator(linkedlog,50)
+    page = request.GET.get('page')
+    try:
+        plog=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        plog = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        plog = paginator.page(paginator.num_pages)
+#    context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
+
+
+    return render(request,'problemeditor/activity_log.html',{'log':plog,'nbar':'problemeditor'})
+
+@login_required
+def redirectproblem(request,pk):
+    p=get_object_or_404(Problem,pk=pk)
+    if p.type_new.is_contest==True:
+        return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
+    else:
+        return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')

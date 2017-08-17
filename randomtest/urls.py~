@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.tableview, name='tableview'),
+    url(r'^myactivity/$', views.my_activity, name='my_activity'),
     url(r'^createtest/$', views.startform, name='startform'),
     url(r'^createtest/readme$', views.readme, name='readme'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
@@ -29,7 +30,9 @@ urlpatterns = [
     url(r'^highscores/(?P<username>\w+)/$', views.highscore, name='highscoreview'),
     url(r'^addfolder/(?P<pk>\w+)/$',views.addfolderview,name='addfolderview'),
     url(r'^addtest/(?P<pk>\w+)/$',views.addtestview,name='addtestview'),
-    url(r'^urltest/$',views.urltest,name='urltestview'),
-    url(r'^urllatex/$', views.urllatexview, name='urlview_latex'),
+    url(r'^urltest/$',views.urltemptest,name='urltemptest'),
+    url(r'^urltest/test$',views.urltest,name='urltestview'),
+    url(r'^urltest/latex$', views.urllatexview, name='urlview_latex'),
+    url(r'^urltest/latexsol$', views.urllatexsolview, name='urlview_latex'),
 
 ]

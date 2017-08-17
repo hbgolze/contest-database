@@ -81,8 +81,7 @@
   <li role="presentation" class="{% if nbar == 'newtest' %}active{% endif %}"><a href="/createtest/">New Test</a></li>
   <li role="presentation" class="{% if nbar == 'search' %}active{% endif %}"><a href="/search/">Search</a></li>
  <li role="presentation" class="{% if nbar == 'contestcollection' %}active{% endif %}"><a href="/contestcollections/">Contest Collection</a></li>
-<li role="presentation" class="{% if nbar == 'groups' %}active{% endif %}"><a href="/problemgroups/\
-">Problem Groups</a></li>
+<li role="presentation" class="{% if nbar == 'groups' %}active{% endif %}"><a href="/problemgroups/">Problem Groups</a></li>
 </ul>
 </div>
 {% endif %}

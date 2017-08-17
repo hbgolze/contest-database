@@ -28,6 +28,30 @@
 <!--      <img src="{{dropboxpath}}{{ form.instance.label }}j.jpg" /> <br>-->
 
 <div class="form-group">
+
+{% if mc %}
+    <label>Problem Text:</label>
+    <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+    <p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}
+    </p>
+  {% endif %}
+  {% if sa or pf %}
+    <label>Problem Text:</label>
+    <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+    {% if sa %}<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+    {% endif %}
+  {% endif %}
+  {% if mcsa %}
+  <label>Problem Text (Multiple Choice):</label>
+  <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{mc_answer}}</p>
+<label>Problem Text (Short Answer):</label>
+<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
+<p>Answer: {{sa_answer}}</p>
+{% endif %}
+
+
+<!--
 {% if mc %}
 <label>Problem Text:</label>
 {% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
@@ -42,6 +66,7 @@
 <label>Problem Text (Short Answer):</label>
 <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
 {% endif %}
+-->
 </div>
 {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
 
@@ -55,6 +80,18 @@
 {% endfor %}
 </ul>
 {% endif %}
+
+
+<label>Solutions</label><br>
+{% for solution,spk in rows %}
+  <label>Solution {{forloop.counter}}:</label>
+      <p><small>(<a href="editsolution/{{spk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{spk}}/">Delete</a>)</small>{% endif %}</p>
+      {% autoescape off %}  {{solution|linebreaks}} {% endautoescape %}
+{% endfor %}
+{% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
+<button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
+<br><br>
+      
 
         {{ form.as_p }}
 <p>
