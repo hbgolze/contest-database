@@ -76,7 +76,7 @@
 <label>Duplicate Problems:</label>
 <ul>
 {% for dp in form.instance.duplicate_problems.all %}
-<li>{{dp.label}}: (<a href="/problemeditor/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>)</li>
+<li>{{dp.label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>)</li>
 {% endfor %}
 </ul>
 {% endif %}
