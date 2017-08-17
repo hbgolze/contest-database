@@ -9,6 +9,10 @@
 <h2>My Activity</h2>
 
 <div class="content">
+{% if log|length == 0 %}
+No actions yet.
+{% else %}
+
   <div class="list-group">
     {% for entry,islinked in log %}
       {% if islinked == True %}
@@ -54,7 +58,7 @@
         {% endif %}
 </ul>
 {% endif %}
-
+{% endif %}
 </div>
 
 {% endblock %}
