@@ -980,7 +980,7 @@ def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, 
         object_id = sol.id,
         object_repr = prob.label+' sol '+str(sol.solution_number),
         action_flag = DELETION,
-        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.testlabel+'/'+prob.label+'/editsolution/'+str(sol.pk),
+        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
         )
     sol.delete()
     return redirect('../../')
@@ -1344,6 +1344,6 @@ def my_activity(request):
 def redirectproblem(request,pk):
     p=get_object_or_404(Problem,pk=pk)
     if p.type_new.is_contest==True:
-        return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.testlabel+'/'+p.label+'/')
+        return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
     else:
         return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')

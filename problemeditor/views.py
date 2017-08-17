@@ -646,54 +646,6 @@ def editproblemtextpkview(request,**kwargs):
     return render(request, 'problemeditor/editproblemtext.html', context)
 
 
-@login_required
-def solutionview(request,type,tag,label):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
-    sols=list(prob.solutions.all())
-    sollist=[]
-    rows=[]
-    for sol in sols:
-        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
-#    texcode=newtexcode(prob.problem_text,dropboxpath,label,prob.answer_choices)
-    readablelabel=prob.readable_label.replace('\\#','#')
-
-    context={}
-    if prob.question_type_new.question_type=='multiple choice':
-        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
-        context['mc_prob_latex']=mc_texcode
-        context['mc']=True
-        context['mc_answer']=prob.mc_answer
-    elif prob.question_type_new.question_type=='short answer':
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
-        context['prob_latex']=texcode
-        context['sa']=True
-        context['sa_answer']=prob.sa_answer
-    elif prob.question_type_new.question_type=='proof':
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
-        context['prob_latex']=texcode
-        context['pf']=True
-    elif prob.question_type_new.question_type=='multiple choice short answer':
-        mc_texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
-        context['mc_prob_latex']=mc_texcode
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,prob.answer_choices)
-        context['prob_latex']=texcode
-        context['mcsa']=True
-        context['mc_answer']=prob.mc_answer
-        context['sa_answer']=prob.sa_answer
-    context['rows']=rows
-    context['label'] = label
-    context['nbar']='problemeditor'
-    context['dropboxpath']=dropboxpath
-    context['typelabel']= typ.label
-    context['tag'] = tag
-    context['readablelabel']=readablelabel
-    context['duplicate_problems']=prob.duplicate_problems
-    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
-    context['user_type'] =  userprofile.user_type
-    return render(request, 'problemeditor/solview.html', context)
 
 @login_required
 def newsolutionview(request,type,tag,label):
