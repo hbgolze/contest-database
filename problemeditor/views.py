@@ -1075,7 +1075,7 @@ def detailedproblemview(request,**kwargs):
                 object_id = problem.id,
                 object_repr = problem.label,
                 action_flag = CHANGE,
-                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+problem.pk+'/',
+                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
                 )
 
 #            if is_approved==False and problem.approval_status==True:
