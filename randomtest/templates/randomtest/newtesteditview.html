@@ -1,0 +1,56 @@
+{% extends "./base.html" %}
+
+
+{% block content %}
+
+<script src="//rubaxa.github.io/Sortable/Sortable.js"></script>
+
+<h2>Edit Test: {{test.name}}</h2>
+<p>
+Drag around problems to reorder them, and then click "Save" to save changes.
+</p>
+<div class="container">
+<div class="row">
+<div class="col-sm-9 col-md-9 col-lg-9">
+<form action="." method="POST" id="problems">
+{% csrf_token %}
+<div id="probList" class="list-group">
+{% for p in sortableproblems %}
+<div class="list-group-item">
+<input type="hidden" name="probleminput" value="problem_{{p.pk}}">
+<div class="row">
+<div class="col-sm-1 col-md-1 col-lg-1">
+{{forloop.counter}}.
+</div>
+<div class="col-sm-10 col-md-10 col-lg-10">
+{% if p.problem.question_type_new.question_type == "multiple choice" %}
+<p>{% autoescape off %}{{p.problem.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{p.problem.readable_label}}]</p>
+{% else %}
+<p>{% autoescape off %}{{p.problem.display_problem_text|linebreaks}} {% endautoescape %}  [{{p.problem.readable_label}}]</p>
+{% endif %}
+</div>
+<div class="col-sm-1 col-md-1 col-lg-1">
+<div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+</div>
+</div>
+</div>
+{% endfor %}
+</div>
+
+<button type="submit" class="save btn btn-primary" name="save">Save</button>
+</form>
+</div>
+</div>
+</div>
+
+<script type="text/javascript">
+var editableList = Sortable.create(probList, {
+  filter: '.js-remove',
+  onFilter: function (evt) {
+    var el = editableList.closest(evt.item); // get dragged item
+    el && el.parentNode.removeChild(el);
+  }
+});
+
+</script>
+{% endblock %}

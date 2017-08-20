@@ -19,7 +19,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,ProblemGroup
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,ProblemGroup
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -45,7 +45,6 @@ def searchform(request):
 @login_required
 def searchresults(request):
     userprofile = get_or_create_up(request.user)
-    dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method=='POST':
         form=request.POST
         next = form.get('next', '')
@@ -111,21 +110,10 @@ def searchresults(request):
 
             for i in keywords:
                 P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i))
-            rows=[]
             P=list(P)
             P=sorted(P,key=lambda x:(x.problem_number,x.year))
-
-            rows=[]
-            for i in range(0,len(P)):
-                url=''
-                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,P[i].answer_choices)
-                mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
-                readablelabel=P[i].readable_label.replace('\\#','#')
-                if P[i].type_new.type[0:2]!='CM':
-                    url='/problemeditor/contest/bytest/'+P[i].type_new.type+'/'+P[i].test_label+'/'+P[i].label+'/'
-                rows.append((P[i].label,P[i].question_type_new,P[i].pk,texcode,readablelabel,mc_texcode,i+1,url))
             probgroups = userprofile.problem_groups
-            paginator=Paginator(rows,25)
+            paginator=Paginator(P,25)
             page = request.GET.get('page')
             try:
                 prows=paginator.page(page)
@@ -136,7 +124,6 @@ def searchresults(request):
                 # If page is out of range (e.g. 9999), deliver last page of results.
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
-            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,
-                     'request' : request
+            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request,
                      }
             return HttpResponse(template.render(context,request))

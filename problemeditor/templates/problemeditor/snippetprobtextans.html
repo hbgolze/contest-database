@@ -1,18 +1,5 @@
-{% extends 'randomtest/base.html' %}
-
-{% block title %}Solutions: {{readablelabel}}{% endblock %}
-
-{% block content %}
-<ol class="breadcrumb">
-  <li><a href="/problemeditor/">Select Type</a></li>
-{% for breadurl,breadlabel in breadcrumbs %}
-  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
-{% endfor %}
-  <li class="active">New Solution</li>
-</ol>
-    <h2>New Solution to {{readablelabel}}</h2>
-    <form method="POST" class="post-form">{% csrf_token %}
 <div class="form-group">
+
 {% if prob.question_type_new.question_type == 'multiple choice' %}
     <label>Problem Text:</label>
     <p>{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
@@ -36,8 +23,3 @@
 
 
 </div>
-          <h3>Solution</h3>
-          {{ form.solution_text }} <br>
-        <button type="submit" class="save btn btn-default">Save</button>
-    </form>
-{% endblock %}

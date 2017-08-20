@@ -19,10 +19,10 @@ Please select a tag.
       </tr>
     </thead>
     <tbody>
-      {% for tag,unsolution,num in rows %}
+      {% for urltag,tag,unsolution,num in rows %}
       
       <tr>
-        <td><a href="{{tag}}">{{tag}}</a></td>
+        <td><a href="{{urltag}}">{{tag}}</a></td>
         <td>{{unsolution}}</td>
         <td>{{num}}</td>
       </tr>

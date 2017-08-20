@@ -14,6 +14,8 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.admin.models import LogEntry
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from subprocess import Popen,PIPE
 import tempfile
@@ -22,10 +24,10 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
-from .utils import parsebool,newtexcode,newsoltexcode,pointsum
+from .utils import parsebool,pointsum
 
 from random import shuffle
 import time
@@ -80,6 +82,7 @@ def deletestudenttestresponses(request,username,pk):
         a.delete()        
     return redirect('../../')
 
+
 @login_required
 def startform(request):
     if request.method=='POST':
@@ -133,9 +136,6 @@ def startform(request):
 #            print(excludeprobs)
             for extest in excludetests:
                 P=P.exclude(pk__in=extest.problems.all())
-            
-            rows=[]
-
             P=list(P)
             shuffle(P)
             P=P[0:num]
@@ -159,7 +159,6 @@ def startform(request):
                     r.response=''
                 r.save()
                 R.responses.add(r)
-                rows.append((P[i].label, str(P[i].answer), ''))
             R.save()
             U.allresponses.add(R)
             T.types.add(Type.objects.get(type=testtype))
@@ -168,9 +167,6 @@ def startform(request):
             ut.save()
             U.usertests.add(ut)
             U.save()
-
-
-#            return testview(request,T.pk)
             return redirect('/test/'+str(ut.pk)+'/')
         else:
             return testview(request,int(form.get('startform','')))
@@ -184,15 +180,116 @@ def startform(request):
             types = Type.objects.exclude(type__startswith='CM').order_by('label')
         tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
         usertests=up.usertests.all()
-#        rows=[]
-#        for i in range(0,len(types)):
-#            rows.append((types[i].type,types[i].label))
-#        rows=sorted(rows,key=lambda x:x[1])
         template = loader.get_template('randomtest/startform2.html')
         context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
         return HttpResponse(template.render(context,request))
 
-#    P=Problem.objects.order_by('-year')
+
+@login_required
+def newstartform(request):
+    if request.method=='POST':
+        form=request.POST
+        if form.get('startform','')=="start":
+            testname=form.get('testname','')
+            testtype=form.get('testtype','')
+            tag=form.get('tag','')
+            if tag=="Unspecified":
+                tag=''
+
+            num=form.get('numproblems','')
+            if num is None or num==u'':
+                num=10
+            else:
+                num=int(num)
+                
+            
+            probbegin=form.get('probbegin','')
+            if probbegin is None or probbegin==u'':
+                probbegin=0
+            else:
+                probbegin=int(probbegin)
+
+            probend=form.get('probend','')
+            if probend is None or probend==u'':
+                probend=10000
+            else:
+                probend=int(probend)
+
+            yearbegin=form.get('yearbegin','')
+            if yearbegin is None or yearbegin==u'':
+                yearbegin=0
+            else:
+                yearbegin=int(yearbegin)
+
+            yearend=form.get('yearend','')
+            if yearend is None or yearend==u'':
+                yearend=10000
+            else:
+                yearend=int(yearend)
+            if len(tag)>0:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+            else:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
+
+            excludetestpks = form.getlist('excludetests')
+            excludetests = Test.objects.filter(pk__in=excludetestpks)
+#            excludeprobs = Problem.objects.filter(test_list__in=excludetests)
+#            print(excludeprobs)
+            for extest in excludetests:
+                P=P.exclude(pk__in=extest.problems.all())
+            
+            P=list(P)
+            shuffle(P)
+            P=P[0:num]
+            P=sorted(P,key=lambda x:(x.problem_number,x.year))
+            T=NewTest(name=testname,num_problems=num)
+            T.save()
+            for i in range(0,len(P)):
+                sp=SortableProblem(problem=P[i],order=i+1,newtest_pk=T.pk)
+                sp.save()
+                T.problems.add(sp)
+            T.types.add(Type.objects.get(type=testtype))
+            T.save()
+            return redirect('/newtest/'+str(T.pk)+'/')
+        else:
+            return testview(request,int(form.get('startform','')))
+    else:
+        up,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+        if up.user_type == 'super':
+            types = Type.objects.order_by('label')
+        elif up.user_type == 'manager':
+            types = Type.objects.filter(type__startswith='CM').order_by('label')
+        else:
+            types = Type.objects.exclude(type__startswith='CM').order_by('label')
+        tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+        usertests=up.usertests.all()
+        template = loader.get_template('randomtest/startform2.html')
+        context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
+        return HttpResponse(template.render(context,request))
+
+@login_required
+def editnewtestview(request,pk):
+    T=get_object_or_404(NewTest,pk=pk)
+    if request.method == "POST":
+        if 'save' in request.POST:
+            form=request.POST
+            if 'probleminput' in form:
+                P=list(T.problems.all())
+                P=sorted(P,key=lambda x:x.order)
+                probinputs=form.getlist('probleminput')#could be an issue if no problems
+                for prob in P:
+                    if 'problem_'+str(prob.pk) not in probinputs:
+                        prob.delete()
+                for i in range(0,len(probinputs)):
+                    prob=T.problems.get(pk=probinputs[i].split('_')[1])
+                    prob.order=i+1
+                    prob.save()
+    P=list(T.problems.all())
+    P=sorted(P,key=lambda x:x.order)
+    return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T})
+
+
 
 @login_required
 def tagcounts(request):
@@ -427,8 +524,6 @@ def testview(request,**kwargs):#switching to UserTest
         return HttpResponse('Unauthorized', status=401)
     test = get_object_or_404(Test, pk=usertest.test.pk)
     allresponses = usertest.responses
-    
-    
     dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method == "POST" and 'username' not in kwargs:
         form=request.POST
@@ -479,12 +574,7 @@ def testview(request,**kwargs):#switching to UserTest
             r.save()
             if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
                 num_correct+=1
-            if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
-            else:
-                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
-            readablelabel=P[i].readable_label.replace('\\#','#')
-            rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
+            rows.append(r)
         allresponses.num_problems_correct=num_correct
         allresponses.show_answer_marks=1
         allresponses.save()
@@ -492,18 +582,8 @@ def testview(request,**kwargs):#switching to UserTest
         usertest.save()
         R=allresponses.responses
     else:
-        P=list(test.problems.all())
-        P=sorted(P,key=lambda x:(x.problem_number,x.year))
         R=allresponses.responses
-        rows=[]
-        for i in range(0,len(P)):
-            r=R.get(problem_label=P[i].label)
-            if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
-            else:
-                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
-            readablelabel=P[i].readable_label.replace('\\#','#')
-            rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
+        rows=R.all()
     context['rows'] = rows
     context['pk'] = pk
     context['nbar'] = 'viewmytests'
@@ -877,25 +957,10 @@ def solutionview(request,**kwargs):
     pk = kwargs['pk']
     prob = get_object_or_404(Problem, pk=pk)
     usertest = get_object_or_404(UserTest, pk=testpk)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
-    sols=list(prob.solutions.all())
-    sollist=[]
-    rows=[]
-    for sol in sols:
-        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
-    readablelabel=prob.readable_label.replace('\\#','#')
-    if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
-        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
-    else:
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
-    context['prob_latex']=texcode
-    context['rows']=rows
+    context['problem']=prob
     context['testpk']=testpk
     context['testname']=usertest.test.name
     context['nbar']='viewmytests'
-    context['dropboxpath']=dropboxpath
-    context['readablelabel']=readablelabel
-
     return render(request, 'randomtest/solview.html', context)
 
 @login_required
@@ -967,7 +1032,6 @@ def unarchivestudentview(request,username,tpk):
 @login_required
 def urltest(request):
     context={}
-    dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method=='GET':
         form=request.GET
         L=form.getlist('p')
@@ -976,14 +1040,11 @@ def urltest(request):
             if Problem.objects.filter(pk=L[i]).exists():
                 p=Problem.objects.get(pk=L[i])
                 if p.question_type_new.question_type=='multiple choice' or p.question_type_new.question_type=='multiple choice short answer':
-                    texcode=newtexcode(p.mc_problem_text,dropboxpath,p.label,p.answers())
+                    rows.append((p.display_problem_text,p.readable_label))
                 else:
-                    texcode=newtexcode(p.problem_text,dropboxpath,p.label,'')
-                readablelabel=p.readable_label.replace('\\#','#')
-                rows.append((texcode,readablelabel))
+                    rows.append((p.display_problem_text,p.readable_label))
     context['rows'] = rows
     context['nbar'] = 'viewmytests'
-    context['dropboxpath'] = dropboxpath
 #    context['name'] = test.name
     return render(request, 'randomtest/urltest.html',context)
 
@@ -1045,3 +1106,37 @@ def urltemptest(request):
         sollatexurl='latexsol'+s
     return render(request,'randomtest/temptest.html',{'proburl' : proburl, 'latexurl' : latexurl, 'sollatexurl' : sollatexurl,'labeltext' : labeltext,'nbar':'viewmytests'})
 
+@login_required
+def profileview(request,username):
+    user = get_object_or_404(User, username=username)
+    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor")
+    linkedlog=[]
+    for i in log:
+        if i.content_type.name=='problem':
+            if Problem.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+        if i.content_type.name=='solution':
+            if Solution.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+        if i.content_type.name=='problem approval':
+            if ProblemApproval.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+
+
+    paginator=Paginator(linkedlog,50)
+    page = request.GET.get('page')
+    try:
+        plog=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.                                             
+        plog = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.                         
+        plog = paginator.page(paginator.num_pages)
+    return render(request,'randomtest/activity_log.html',{'log':plog,'nbar':'viewmytests','username':username})

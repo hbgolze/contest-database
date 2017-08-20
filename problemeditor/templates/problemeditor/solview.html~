@@ -33,11 +33,10 @@
 <p>Answer: {{sa_answer}}</p>
 {% endif %}
 
-{{form.instance.duplicate_problems.count}}
-{% if form.instance.duplicate_problems.count > 0 %}
+{% if duplicate_problems.count > 0 %}
 <label>Duplicate Problems:</label>
 <ul>
-{% for dp in form.instance.duplicate_problems.all %}
+{% for dp in duplicate_problems.all %}
 <li>{{dp.label}}: (<a href="/problemeditor/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags</a>) (<a href="/problemeditor/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/solutions/">Solutions</a>)</li>
 {% endfor %}
 </ul>

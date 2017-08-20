@@ -26,8 +26,7 @@ Please select a problem
         <td>{{label}}</td>
         <td>{{tags}}</td>
         <td>{{num}}</td>
-	<td><a href="{{label}}">Edit Tags</a></td>
-	<td><a href="{{label}}/solutions/">Edit Solutions</a></td>
+	<td><a href="{{label}}">Edit Tags/Solutions</a></td>
       </tr>
       {% endfor %}
     </tbody>

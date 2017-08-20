@@ -46,6 +46,7 @@ class QuestionType(models.Model):#multiple choice; short answer; proof
 
 class Solution(models.Model):
     solution_text = models.TextField()
+    display_solution_text = models.TextField(blank=True)
     solution_number = models.IntegerField(default=1)
     problem_label = models.CharField(max_length=20,blank=True)
     tags = models.ManyToManyField(Tag,blank=True)
@@ -55,14 +56,6 @@ class Solution(models.Model):
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
-class Response(models.Model):
-    response = models.CharField(max_length=10,blank=True)
-    problem_label = models.CharField(max_length=20)
-    modified_date = models.DateTimeField(default = timezone.now)
-    attempted = models.BooleanField(default = 0)
-    stickied = models.BooleanField(default = 0)
-    def __str__(self):
-        return self.response
 
 class Sticky(models.Model):
     problem_label = models.CharField(max_length=20)
@@ -97,6 +90,8 @@ class Problem(models.Model):
     readable_label = models.CharField(max_length=20,blank=True)
     problem_text = models.TextField(blank=True)
     mc_problem_text = models.TextField(blank=True)
+    display_problem_text = models.TextField(blank=True)
+    display_mc_problem_text = models.TextField(blank=True)
     answer_choices = models.TextField(blank=True)#should be replaced
     answer_A = models.CharField(max_length=500,blank=True)
     answer_B = models.CharField(max_length=500,blank=True)
@@ -147,6 +142,17 @@ class Problem(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
+
+class Response(models.Model):
+    problem = models.ForeignKey(Problem,blank=True, null=True)
+    response = models.CharField(max_length=10,blank=True)
+    problem_label = models.CharField(max_length=20)
+    modified_date = models.DateTimeField(default = timezone.now)
+    attempted = models.BooleanField(default = 0)
+    stickied = models.BooleanField(default = 0)
+    def __str__(self):
+        return self.response
+
 
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
@@ -227,43 +233,23 @@ class UserTest(models.Model):
     def __str__(self):
         return self.test.name
 
-#class UserTest(models.Model):
-#    test = models.ForeignKey(Test)
-#    responses = models.ForeignKey(Responses,related_name='usertestresponses')
-#    num_probs = models.IntegerField()
-#    num_correct = models.IntegerField(default=0)
-#    def __str__(self):
-#        return self.test.name
-
 class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)
     order = models.IntegerField(default = 0)
-    problem_pk = models.CharField(max_length = 15)
+    problem = models.ForeignKey(Problem, blank=True,null=True)
 #    def __str__(self):
 #        return 
-#problem_pk may not be appropriate...
 #in general, we would want this to be deleted if Problem is deleted, but not the other way around.
 
 class NewTest(models.Model):
     name = models.CharField(max_length=50)
-    problems = models.ManyToManyField(SortableProblem)
-    types = models.ManyToManyField(Type,blank=True)
+    problems = models.ManyToManyField(SortableProblem,blank=True)
+    types = models.ManyToManyField(Type,blank=True, related_name='types')
     created_date = models.DateTimeField(default = timezone.now)
-    last_attempted_date = models.DateTimeField(default = timezone.now)
     num_problems = models.IntegerField(default=0)
     def __str__(self):
         return self.name
 
-#class UserActivity(models.Model):
-#    type = models.CharField(max_length=10)
-#    problem = models.ForeignKey(Problem,blank=True)
-#    solution = models.ForeignKey(Solution,blank=True)
-#    action = models.CharField(max_length=10)
-#    def __str__(self):
-#        if self.type == 'problem':
-#            return self.type + ' ' +self.action+self.problem.label
-#        else:
-#            return self.type + ' ' +self.action+ self.solution.problem_label+' sol '+str(self.solution.solution_number)
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
@@ -279,8 +265,6 @@ class UserProfile(models.Model):
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name='problem_groups')
-#    activity_log = models.ManyToManyField(UserActivity,blank = True,related_name='activity_log')
-    activity_log = models.ManyToManyField(LogEntry,blank = True, related_name='activity_log')
     def __unicode__(self):
         return self.user.username
 

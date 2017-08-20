@@ -26,8 +26,8 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
       
       <tr>
 	<td>{{label}}</td>
-        <td><a href="bytag/{{type}}">View by Tag</a></td>
-        <td><a href="bytest/{{type}}">View by Test</a></td>
+        <td><a href="contest/bytag/{{type}}">View by Tag</a></td>
+        <td><a href="contest/bytest/{{type}}">View by Test</a></td>
         <td> {{untagged}}</td>
         <td>{{unsolution}}</td>
         <td>{{num}}</td>
@@ -53,8 +53,8 @@ Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a
       
       <tr>
 	<td>{{label}}</td>
-        <td><a href="CMbytag/{{type}}">View by Tag</a></td>
-        <td><a href="CMbytopic/{{type}}">View Problems</a></td>
+        <td><a href="CM/bytag/{{type}}">View by Tag</a></td>
+        <td><a href="CM/bytopic/{{type}}">View Problems</a></td>
         <td> {{untagged}}/{{num}}</td>
         <td>{{unsolution}}/{{num}}</td>
       </tr>

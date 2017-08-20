@@ -1,6 +1,6 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
-{% block title %}Solutions: {{readablelabel}}{% endblock %}
+{% block title %}Solutions: {{prob.readable_label}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -10,12 +10,12 @@
 {% endfor %}
   <li class="active">Edit Solution</li>
 </ol>
-    <h2>Edit Solution to {{readablelabel}}</h2>
+    <h2>Edit Solution to {{prob.readable_label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
-      Answer: {{answer}}<br>
+
+{% include "problemeditor/snippetprobtextans.html" %}
           <h3>Solution</h3>
-	  {% autoescape off %}{{solution_text|linebreaks}} {% endautoescape %}
+	  {% autoescape off %}{{form.instance.display_solution_text|linebreaks}} {% endautoescape %}
           {{ form.solution_text }} <br>
         <input type="submit" class="save btn btn-default" name="save" value="Save">
     </form>

@@ -103,20 +103,20 @@ def viewproblemgroup(request,pk):
             return redirect('/test/'+str(ut.pk)+'/')
 
     P = prob_group.problems.all()
-    rows=[]
-    dropboxpath = list(Dropboxurl.objects.all())[0].url
-    for i in P:
-        if i.question_type_new.question_type=='multiple choice' or i.question_type_new.question_type=='multiple choice short answer':
-            texcode=newtexcode(i.mc_problem_text,dropboxpath,i.label,i.answers())
-        else:
-            texcode=newtexcode(i.problem_text,dropboxpath,i.label,'')
-        readablelabel=i.readable_label.replace('\\#','#')
-        rows.append((texcode,i.label,str(i.answer),i.pk,i.solutions.count(),readablelabel))
+#    rows=[]
+#    dropboxpath = list(Dropboxurl.objects.all())[0].url
+#    for i in P:
+#        if i.question_type_new.question_type=='multiple choice' or i.question_type_new.question_type=='multiple choice short answer':
+#            texcode=newtexcode(i.mc_problem_text,dropboxpath,i.label,i.answers())
+#        else:
+#            texcode=newtexcode(i.problem_text,dropboxpath,i.label,'')
+#        readablelabel=i.readable_label.replace('\\#','#')
+#        rows.append((texcode,i.label,str(i.answer),i.pk,i.solutions.count(),readablelabel))
 
 
     name = prob_group.name
     context = {}
-    context['rows'] = rows
+    context['rows'] = P
     context['name'] = name
     context['nbar'] = 'groups'
     context['pk'] = pk

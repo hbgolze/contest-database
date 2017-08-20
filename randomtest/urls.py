@@ -33,5 +33,7 @@ urlpatterns = [
     url(r'^urltest/test$',views.urltest,name='urltestview'),
     url(r'^urltest/latex$', views.urllatexview, name='urlview_latex'),
     url(r'^urltest/latexsol$', views.urllatexsolview, name='urlview_latex'),
-
+    url(r'^profiles/(?P<username>\w+)/',views.profileview,name='profileview'),
+    url(r'^newcreatetest/$', views.newstartform, name='startform2'),
+    url(r'^newtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
 ]

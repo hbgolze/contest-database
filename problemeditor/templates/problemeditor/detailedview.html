@@ -1,7 +1,7 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
 
-{% block title %}Problem: {{readablelabel}}{% endblock %}
+{% block title %}Problem: {{prob.readable_label}}{% endblock %}
 {% block head %}
 <script type="text/javascript" src="/static/js/custjquery.init.js"></script>
 <script type="text/javascript" src="/static/js/custcore.js"></script>
@@ -16,38 +16,29 @@
 {% for breadurl,breadlabel in breadcrumbs %}
   <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
 {% endfor %}
-  <li class="active">{{readablelabel}}</li>
+  <li class="active">{{prob.readable_label}}</li>
 </ol>
-    <h1>{{readablelabel}}</h1>
+    <h1>{{prob.readable_label}}</h1>
 <form method="POST" class="post-form">{% csrf_token %}
+
+
+
+{% include "problemeditor/snippetprobtext.html" %}
+
 <div class="form-group">
-{% if mc %}
-<label>Problem Text:</label>
-{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
-{% endif %}
-{% if sa or pf %}
-<label>Problem Text:</label>
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]
-{% endif %}
-{% if mcsa %}
-<label>Problem Text (Multiple Choice):</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<label>Problem Text (Short Answer):</label>
-<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-{% endif %}
-{% if request.user.is_superuser %}<p><a href="edittext/">Edit LaTeX Code{% if mc%} (including answer choices){% endif %}</a></p>{% endif %}
+{% if request.user.is_superuser %}<p><a href="edittext/">Edit LaTeX Code{% if prob.question_type_new.question_type == "multiple choice" %} (including answer choices){% endif %}</a></p>{% endif %}
 </div>
 {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
 
-{% if mc %}
+{% if prob.question_type_new.question_type == "multiple choice" %}
 <label>Answer:</label>
 <p>{{form.mc_answer}}</p>
 {% endif %}
-{% if sa %}
+{% if prob.question_type_new.question_type == "short answer" %}
 <label>Answer:</label>
 <p>{{form.sa_answer}}</p>
 {% endif %}
-{% if mcsa %}
+{% if prob.question_type_new.question_type == "multiple choice short answer" %}
 <p><label>Answer (Multiple Choice):</label>
 {{form.mc_answer}}</p>
 <p><label>Answer (Short Answer):</label></p>
@@ -57,7 +48,7 @@
 
 <label>Current Question Type:</label>
 <p>
-{{form.instance.question_type_new.question_type}} <small>(<a href="change_question_type">Change</a>)</small>
+{{prob.question_type_new.question_type}} <small>(<a href="change_question_type">Change</a>)</small>
 </p>
 
 <label>Difficulty:</label>
@@ -66,12 +57,12 @@
 </p>
 
 <label>Solutions</label><br>
-{% for solution,spk in rows %}
+{% for solution in prob.solutions.all %}
 <label>Solution {{forloop.counter}}:</label>
-  <p><small>(<a href="editsolution/{{spk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{spk}}/">Delete</a>)</small>{% endif %}</p>
-{% autoescape off %}  {{solution|linebreaks}} {% endautoescape %}
+  <p><small>(<a href="editsolution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
+{% autoescape off %}  {{solution.display_solution_text|linebreaks}} {% endautoescape %}
   {% endfor %}
-  {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
+  {% if prob.solutions.count == 0 %}<p>No Solutions Yet</p>{% endif %}
   <button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
   <br><br>
 
@@ -82,14 +73,15 @@
   </p>
 </div>
 <div class="form-group">
+
 <p>
   <label>Approvals:</label>
 </p>
 <p>
-{% if arows|length != 0 %}
+{% if prob.approvals.count != 0 %}
 <ul>
-{% for aname,app,apk in arows %}
-<li>{{aname}}: {{app}} <small>(<a href="editreview/{{apk}}/">Edit</a>)</small></li>
+{% for appr in prob.approvals.all %}
+<li>{{appr.author_name}}: {{appr.get_approval_status_display}} <small>(<a href="editreview/{{appr.pk}}/">Edit</a>)</small></li>
 {% endfor %}
 </ul>
 {% else %}
@@ -102,19 +94,19 @@ No one has reviewed this problem for approval yet.<br>
 </div>
     <label>Comments:</label>
 <div class="comments-list">
-        {% for name,date,comment,cpk in crows %}
+        {% for com in prob.comments.all %}
 <div class="media">
-<p class="pull-right"><small>{{date}}</small></p>
+<p class="pull-right"><small>{{com.created_date}}</small></p>
 <div class="media-body">
-<h3 class="media-heading user_name">{{name}}</h3>
-	  <p>{{comment|linebreaks}}</p>
-{% if request.user.is_superuser %}<p><small>(<a href="deletecomment/{{cpk}}/">Delete</a>)</small></p>{% endif %}
+<h3 class="media-heading user_name">{{com.author_name}}</h3>
+	  <p>{{com.comment_text|linebreaks}}</p>
+{% if request.user.is_superuser %}<p><small>(<a href="deletecomment/{{com.pk}}/">Delete</a>)</small></p>{% endif %}
 
 </div>
 </div>
         {% endfor %}
 </div>
-	{% if crows|length == 0 %}<p>No Comments Yet</p>{% endif %}
+	{% if prob.comments.count == 0 %}<p>No Comments Yet</p>{% endif %}
 
 	<button type="button" class="save btn btn-default" onclick="location.href='newcomment'">New Comment</button>
 	<br><br>

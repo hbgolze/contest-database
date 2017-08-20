@@ -1,9 +1,6 @@
 from django.template import Context
-
 from django.template.loader import get_template
-
 from django.db.models import Q
-#from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
 from django.conf import settings
 
 from subprocess import Popen,PIPE
@@ -113,7 +110,7 @@ def replaceenumerate(s,optional=''):
         r+=middle+'\n'+end
         return r
 
-def newtexcode(texcode,dropboxpath,label,answer_choices):
+def newtexcode(texcode,label,answer_choices):
     texcode=texcode.replace('<',' < ')
     repl=asyreplacementindexes(texcode)
     newtexcode=''
@@ -142,7 +139,7 @@ def newtexcode(texcode,dropboxpath,label,answer_choices):
     newtexcode=newtexcode.replace('\\end{center}','\n')
     return newtexcode
 
-def newsoltexcode(texcode,dropboxpath,label):
+def newsoltexcode(texcode,label):
     texcode=texcode.replace('<',' < ')
     repl=asyreplacementindexes(texcode)
     newtexcode=''

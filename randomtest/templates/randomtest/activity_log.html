@@ -1,12 +1,12 @@
-{% extends "randomtest/base.html" %}
+{% extends "./base.html" %}
 
-{% block title %}My Activity{% endblock %}
+{% block title %}{{username}}'s Activity{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
-  <li class="active">My Activity</li>
+  <li class="active">{{username}}'s Activity</li>
 </ol>
-<h2>My Activity</h2>
+<h2>{{username}}'s Activity</h2>
 
 <div class="content">
 {% if log|length == 0 %}

@@ -46,6 +46,7 @@ class QuestionType(models.Model):#multiple choice; short answer; proof
 
 class Solution(models.Model):
     solution_text = models.TextField()
+    display_solution_text = models.TextField(blank=True)
     solution_number = models.IntegerField(default=1)
     problem_label = models.CharField(max_length=20,blank=True)
     tags = models.ManyToManyField(Tag,blank=True)
@@ -55,14 +56,6 @@ class Solution(models.Model):
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
-class Response(models.Model):
-    response = models.CharField(max_length=10,blank=True)
-    problem_label = models.CharField(max_length=20)
-    modified_date = models.DateTimeField(default = timezone.now)
-    attempted = models.BooleanField(default = 0)
-    stickied = models.BooleanField(default = 0)
-    def __str__(self):
-        return self.response
 
 class Sticky(models.Model):
     problem_label = models.CharField(max_length=20)
@@ -95,8 +88,11 @@ class Problem(models.Model):
     latexanswer = models.CharField(max_length=100,blank=True)#should be replaced
     label = models.CharField(max_length=20)
     readable_label = models.CharField(max_length=20,blank=True)
+    latex_label = models.CharField(max_length=20,blank=True)
     problem_text = models.TextField(blank=True)
     mc_problem_text = models.TextField(blank=True)
+    display_problem_text = models.TextField(blank=True)
+    display_mc_problem_text = models.TextField(blank=True)
     answer_choices = models.TextField(blank=True)#should be replaced
     answer_A = models.CharField(max_length=500,blank=True)
     answer_B = models.CharField(max_length=500,blank=True)
@@ -147,6 +143,17 @@ class Problem(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
+
+class Response(models.Model):
+    problem = models.ForeignKey(Problem,blank=True, null=True)
+    response = models.CharField(max_length=10,blank=True)
+    problem_label = models.CharField(max_length=20)
+    modified_date = models.DateTimeField(default = timezone.now)
+    attempted = models.BooleanField(default = 0)
+    stickied = models.BooleanField(default = 0)
+    def __str__(self):
+        return self.response
+
 
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
@@ -227,29 +234,19 @@ class UserTest(models.Model):
     def __str__(self):
         return self.test.name
 
-#class UserTest(models.Model):
-#    test = models.ForeignKey(Test)
-#    responses = models.ForeignKey(Responses,related_name='usertestresponses')
-#    num_probs = models.IntegerField()
-#    num_correct = models.IntegerField(default=0)
-#    def __str__(self):
-#        return self.test.name
-
 class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)
     order = models.IntegerField(default = 0)
-    problem_pk = models.CharField(max_length = 15)
+    problem = models.ForeignKey(Problem, blank=True,null=True)
 #    def __str__(self):
 #        return 
-#problem_pk may not be appropriate...
 #in general, we would want this to be deleted if Problem is deleted, but not the other way around.
 
 class NewTest(models.Model):
     name = models.CharField(max_length=50)
-    problems = models.ManyToManyField(SortableProblem)
-    types = models.ManyToManyField(Type,blank=True)
+    problems = models.ManyToManyField(SortableProblem,blank=True)
+    types = models.ManyToManyField(Type,blank=True, related_name='types')
     created_date = models.DateTimeField(default = timezone.now)
-    last_attempted_date = models.DateTimeField(default = timezone.now)
     num_problems = models.IntegerField(default=0)
     def __str__(self):
         return self.name

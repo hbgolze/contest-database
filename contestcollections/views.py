@@ -53,41 +53,19 @@ def tableview(request):
 def testview(request,pk):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     test = get_object_or_404(Test, pk=pk)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     P=list(test.problems.all())
     P=sorted(P,key=lambda x:(x.problem_number,x.year))
-    rows=[]
-    for i in range(0,len(P)):
-        texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
-        mc_texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
-        readablelabel=P[i].readable_label.replace('\\#','#')
-        rows.append((P[i].label,str(P[i].answer),P[i].question_type_new,P[i].pk,P[i].solutions.count(),texcode,readablelabel,mc_texcode,P[i]))
-    return render(request, 'contestcollections/testview.html',{'rows': rows,'pk' : pk,'nbar': 'contestcollection', 'name':test.name,'user_type': userprofile.user_type})
+    return render(request, 'contestcollections/testview.html',{'rows': P,'pk' : pk,'nbar': 'contestcollection', 'name':test.name,'user_type': userprofile.user_type})
 
 @login_required
 def solutionview(request,testpk,pk):
     prob = get_object_or_404(Problem, pk=pk)
     test = get_object_or_404(Test, pk=testpk)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
-    sols=list(prob.solutions.all())
-    sollist=[]
-    rows=[]
-    for sol in sols:
-        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
-    readablelabel=prob.readable_label.replace('\\#','#')
-    if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
-        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
-    else:
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
     context={}
-    context['prob_latex']=texcode
-    context['rows']=rows
+    context['prob']=prob
     context['testpk']=testpk
     context['testname']=test.name
     context['nbar']='contestcollection'
-    context['dropboxpath']=dropboxpath
-    context['readablelabel']=readablelabel
-
     return render(request, 'contestcollections/solview.html', context)
 
 @login_required

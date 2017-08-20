@@ -1,4 +1,4 @@
-{% extends "./base.html" %}
+{% extends "randomtest/base.html" %}
 
 {% block content %}
 <script type="text/javascript">
@@ -46,15 +46,18 @@ Problem
 </th>
 </tr>
 
-{% for texcode,label,answer,pk,numsols,readablelabel in rows %} 
+{% for prob in rows %}
 <tr>
 <td valign="top"><br>
 {{forloop.counter}}.<br>
-<input type="checkbox" name="chk{{label}}" checked/>
+<input type="checkbox" name="chk{{prob.label}}" checked/>
 </td>
 <td>
-
-{% autoescape off %}{{texcode|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br>
+{% if prob.question_type_new.question_type == 'multiple choice' %}
+{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+{% else %}
+{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+{% endif %}
 </td>
 </tr>
 {% endfor %}

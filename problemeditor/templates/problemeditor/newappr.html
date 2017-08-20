@@ -1,6 +1,6 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
-{% block title %}Review: {{label}}{% endblock %}
+{% block title %}Review: {{prob.readable_label}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -10,7 +10,8 @@
 {% endfor %}
   <li class="active">New Review</li>
 </ol>
-    <h2>New Review to {{label}}</h2>
+    <h2>New Review to {{prob.readable_label}}</h2>
+{% include "problemeditor/snippetprobtext.html" %}
     <form method="POST" class="post-form">{% csrf_token %}
           {{ form.as_p}} <br>
         <button type="submit" class="save btn btn-default">Save</button>

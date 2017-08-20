@@ -23,64 +23,70 @@
 <input type="hidden" name="startform" value="{{pk}}">
 {% endif %}
 <table>
-{% for texcode,label,answer,response,qt,ppk,solnum,att,moddate,stickied,readablelabel in rows %}
+{% for resp in rows %}
+texcode,label,answer,response,qt,ppk,solnum,att,moddate,stickied,readablelabel
 <tr>
 <td>
-<a name="{{label}}"></a>
+<a name="{{resp.problem.label}}"></a>
 
 <div class="panel panel-default">
   <div class="panel-heading">
     <h3 class="panel-title">Problem {{forloop.counter}}</h3>
   </div>
   <div class="panel-body">
-{% autoescape off %}{{texcode|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{readablelabel}}]</span><br>
+{% if resp.problem.question_type_new.question_type == 'short answer' or resp.problem.question_type_new.question_type == 'proof' or resp.problem.question_type_new.question_type == 'multiple choice short answer' %}
+{% autoescape off %}{{resp.problem.display_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
+{% else %}
+{% autoescape off %}{{resp.problem.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
+{% endif %}
+
   </div>
 </div>
 
 <p>
-{% if qt.question_type == 'short answer' %}
+{% if resp.problem.question_type_new.question_type == 'short answer' %}
 <div class="col-lg-3">
   <div class="form-group">
     <label for="usr">Answer to Problem {{forloop.counter}}:</label>
-    <input type="text" class="form-control" name="answer{{label}}" value="{{response}}" {% if username %}disabled{% else %}{% if answer == response %}disabled{% endif %}{% endif %}> (Correct answer: {{answer}})
+    <input type="text" class="form-control" name="answer{{resp.problem.label}}" value="{{resp.response}}" {% if username %}disabled{% else %}{% if resp.problem.answer == resp.response %}disabled{% endif %}{% endif %}>{% if username %} (Correct answer: {{resp.problem.answer}}){% endif %}
   </div>
 </div>
-{% if att %}
-{% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
+{% if resp.attempted %}
+{% if resp.problem.answer == resp.response %}
+<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if resp.problem.solutions.count > 0 %}(<a href="{{resp.problem.pk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
+<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
-Last Attempted: {{moddate}}
+Last Attempted: {{resp.modified_date}}
 {% endif %}
 {% endif %}
 
-{% if qt.question_type == 'multiple choice' %}
+{% if resp.problem.question_type_new.question_type == 'multiple choice' %}
 Answer to Problem {{forloop.counter}}: 
-<input type="radio" name="answer{{label}}" value="A" {% if response == "A" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="B" {% if response == "B" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="C" {% if response == "C" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="D" {% if response == "D" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-<input type="radio" name="answer{{label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-(Correct answer: {{answer}})
-{% if att %}
-{% if answer == response %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if solnum > 0 %}(<a href="{{ppk}}">Solution</a>){% endif %}{% endif %}
+<input type="radio" name="answer{{resp.problem.label}}" value="A" {% if resp.response == "A" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> A&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{resp.problem.label}}" value="B" {% if resp.response == "B" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> B&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{resp.problem.label}}" value="C" {% if resp.response == "C" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> C&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{resp.problem.label}}" value="D" {% if resp.response == "D" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> D&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<input type="radio" name="answer{{resp.problem.label}}" value="E" {% if resp.response == "E" %}checked="checked"{% endif %} {% if username %}disabled{% endif %}> E&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+{% if username %} (Correct answer: {{resp.problem.answer}}){% endif %}
+{% if resp.attempted  %}
+{% if resp.problem.answer == resp.response %}
+<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if resp.problem.solutions.count > 0 %}(<a href="{{resp.problem.pk}}">Solution</a>){% endif %}{% endif %}
 {% else %}
-<img id="cuteAnswer{{label}}" src="{{dropboxpath}}Red.png"/>
+<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Red.png"/>
 {% endif %}
-Last Attempted: {{moddate}}
+Last Attempted: {{resp.modified_date}}
 {% endif %}
 {% endif %}
 
-{% if username %}(<a href="../{{pk}}/{{ppk}}">Solution</a>){% endif %}
+{% if username %}(<a href="../{{pk}}/{{resp.problem.pk}}">Solution</a>){% endif %}
 </p>
 
 
 
 </td>
 <td valign="top"><br>
-&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if stickied == 1 %}checked{% endif %} name="sticky{{label}}" {% if username %}disabled{% endif %}>
+&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if resp.stickied == 1 %}checked{% endif %} name="sticky{{resp.problem.label}}" {% if username %}disabled{% endif %}>
 </td>
 </tr>
 {% endfor %}

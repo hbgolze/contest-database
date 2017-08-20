@@ -1,6 +1,6 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
-{% block title %}Edit Answer: {{readablelabel}}{% endblock %}
+{% block title %}Edit Answer: {{prob.readable_label}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -10,10 +10,10 @@
 {% endfor %}
   <li class="active">Edit Answer</li>
 </ol>
-    <h2>Edit Answer to {{readablelabel}}</h2>
+    <h2>Edit Answer to {{prob.readable_label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-      <input type="hidden" name="qt" value="{{qt}}">
-{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]<br><br>
+      <input type="hidden" name="qt" value="{{prob.question_type_new.question_type}}">
+{% include "problemeditor/snippetprobtext.html" %}
       Current Answer: {{answer}}<br>
           <h3>New Answer</h3>
           {{ form }} <br>

@@ -1,6 +1,6 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
-{% block title %}Solutions: {{readablelabel}}{% endblock %}
+{% block title %}Solutions: {{prob.readable_label}}{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -10,28 +10,10 @@
 {% endfor %}
   <li class="active">New Solution</li>
 </ol>
-    <h2>New Solution to {{readablelabel}}</h2>
+    <h2>New Solution to {{prob.readable_label}}</h2>
     <form method="POST" class="post-form">{% csrf_token %}
-<div class="form-group">
-{% if mc %}
-<label>Problem Text:</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}</p>
-{% endif %}
-{% if sa or pf %}
-<label>Problem Text:</label>
-<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-{% if sa %}<p>Answer: {{sa_answer}}</p>{% endif %}
-{% endif %}
-{% if mcsa %}
-<label>Problem Text (Multiple Choice):</label>
-<p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{mc_answer}}</p>
-<label>Problem Text (Short Answer):</label>
-<p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-<p>Answer: {{sa_answer}}</p>
-{% endif %}
-</div>
+
+{% include "problemeditor/snippetprobtextans.html" %}
           <h3>Solution</h3>
           {{ form.solution_text }} <br>
         <button type="submit" class="save btn btn-default">Save</button>
