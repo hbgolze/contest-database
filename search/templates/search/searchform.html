@@ -1,36 +1,63 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
+
+<div class="container">
+<div class="row">
 <h2>Search</h2>
-<p>
-Enter a search term, and select more specific options if desired. This will search for problems with text matching the keywords.
-</p>
+<p>Enter a search term, and select more specific options if desired. This will search for problems with text matching the keywords.</p>
+</div>
 
-<form action="results/" method="get">
-<input type="hidden" name="searchform" value="start">
-Keywords: <input type="text" name="keywords">
-<br><br>
 
-<select name="testtype">
-{% for test,testlabel in rows %}
-  <option value="{{test}}"> {{testlabel}} Problems</option>
-{% endfor %}
-</select>
-<br><br>
-
-Desired Tag (<a href="/tagcounts/">Tag Counts</a>):<br>
-<select name="tag">
- <option value="">Unspecified</option>
-{% for t in tags %}
- <option value="{{t.tag}}">{{t.tag}}</option>
-{% endfor %}
-</select>
-<br><br>
-
-Range of Problem Numbers (for all problems, leave this blank):<br><input type="number" name="probbegin" style="width: 45px;"> to <input type="number" name="probend" style="width: 45px;"><br><br>
-
-Year Range (for all years, leave this blank):<br><input type="number" name="yearbegin" style="width: 75px;"> to <input type="number" name="yearend" style="width: 75px;"><br><br>
-  <input type="submit" value="Search">
-</form>
-
+<div class="row">
+  <form action="results/" method="get">
+    <input type="hidden" name="searchform" value="start">
+    <div class="row">
+      <div class="form-group col-lg-3">
+	<label for="keywords">Keywords:</label>
+	<input type="text" name="keywords" class="form-control">
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-lg-3">
+	<label for="testtype" class="control-label">Problem Type:</label>
+	<select name="testtype" class="form-control">
+	  {% for test,testlabel in rows %}
+	  <option value="{{test}}">{{testlabel}} Problems</option>
+	  {% endfor %}
+	</select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-lg-5">
+	<label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
+	
+	<select name="tag" class="form-control">
+	  <option value="">Unspecified</option>
+	  {% for t in tags %}
+	  <option value="{{t.tag}}">{{t.tag}}</option>
+	  {% endfor %}
+	</select>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-lg-5">
+	<label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+	<div class="form-inline">
+	  <input type="number" name="probbegin" style="width: 75px;" class="form-control"> to <input type="number" name="probend" style="width: 75px;" class="form-control">
+	</div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="form-group col-lg-5 form-inline">
+	<label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+	<div class="form-inline">
+	  <input type="number" name="yearbegin" style="width: 105px;" class="form-control"> to <input type="number" name="yearend" style="width: 105px;" class="form-control">
+	</div>
+      </div>
+    </div>
+    <button type="submit" value="Search" class="btn btn-primary">Search</button>
+  </form>
+</div>
+</div>
 {% endblock %}

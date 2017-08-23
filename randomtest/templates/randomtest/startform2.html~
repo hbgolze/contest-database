@@ -12,61 +12,126 @@ function ReverseDisplay(d) {
 if(document.getElementById(d).style.display == "none") { document.getElementById(d).style.display = "block"; }
 else { document.getElementById(d).style.display = "none"; }
 }
+
+function addInput(divName) {
+    var newDiv = document.createElement('div');
+    var selectHTML = "<div class=\"form-inline\">";
+    selectHTML="<select name=\"tag\" class=\"form-control\">";
+    selectHTML += "<option value=''>Unspecified</option>";
+    {% for t in tags %}
+    selectHTML += "<option value='{{t.tag}}'>{{t.tag}}</option>";
+    {% endfor %}
+    selectHTML += "</select>";
+    selectHTML += "<button type=\"button\" onclick=\"addInput('taglist')\" class=\"btn btn-default\">or</button>";
+    selectHTML += "</div>";
+    newDiv.innerHTML = selectHTML;
+    document.getElementById(divName).appendChild(newDiv);
+}
+
 </script>
 {% endblock %}
 
 {% block content %}
+<div class="container">
+<div class="row">
 <h2>New Test</h2>
 <p>Enter a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). Tags like 2000AIMEI or 2009AMC10A will give you the problems from that particular test. To get uncategorized problems, simply leave the tag field blank. Submit your answers when you are ready.</p>
 <p>For more information, see the <a href="readme">Readme</a>.</p>
-</p>
-
+</div>
+<div class="row">
 <form action="." method="post">
-{% csrf_token %}
+  {% csrf_token %}
   <input type="hidden" name="startform" value="start">
-  <br> Test Name:<br>
-  <input type="text" name="testname" value="New Test"> <br><br>
-{% for typ in types %}
- {% if forloop.counter == 1 %}
-  <input type="radio" name="testtype" value="{{typ.type}}" checked="checked"> {{typ.label}} Problems<br>
- {% else %}
-  <input type="radio" name="testtype" value="{{typ.type}}"> {{typ.label}} Problems<br>
- {% endif %}
-{% endfor %}
-<br>
-<!--  Desired Tag (<a href="/tagcounts/">Tag List</a>):<br> <input type="text" name="tag"><br><br>-->
-
-<p>Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</p>
-<p>
-  <select name="tag">
-    <option value="">Unspecified</option>
-    {% for t in tags %}
-    <option value="{{t.tag}}">{{t.tag}}</option>
-    {% endfor %}
-  </select>
-</p>
-
-  Number of Problems:<br><input type="number" name="numproblems"> <br><br>
-  Range of Problem Numbers (for all problems, leave this blank):<br><input type="number" name="probbegin" style="width: 45px;"> to <input type="number" name="probend" style="width: 45px;"><br><br>
-  Year Range (for all years, leave this blank):<br><input type="number" name="yearbegin" style="width: 75px;"> to <input type="number" name="yearend" style="width: 75px;"><br><br>
-
-{% if usertests|length > 0 %}
-<div>
-<a href="javascript:ReverseDisplay('excludetestlist')">
-  Exclude Tests (Click to Show)
-</a>
-
-<div id="excludetestlist" style="display:none">
-  <p>
-    Exclude Problems from the following tests:<br>
-    {% for ut in usertests %}
-    <input type="checkbox" name="excludetests" value="{{ut.test.pk}}">{{ut.test.name}}<br>
-    {% endfor %}
-  </p>
-</div>
-</div>
-{% endif %}
-<p><input type="submit" value="New Test"></p>
+  <div class="row">
+    <div class="form-group col-lg-3">
+      <label for="testname" class="control-label"> Test Name:</label>
+      <input type="text" class="form-control" id="testname" name="testname" value="New Test">
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col-lg-3">
+      <label for="testtype" class="control-label">Problem Type:</label>
+      {% for typ in types %}
+      {% if forloop.counter == 1 %}
+      <div class="radio">
+	<label>
+	  <input type="radio" id="testtype{{forloop.counter}}" name="testtype" value="{{typ.type}}" checked="checked">
+	  {{typ.label}} Problems
+	</label>
+      </div>
+      {% else %}
+      <div class="radio">
+	<label>
+	  <input type="radio" id="testtype{{forloop.counter}}" name="testtype" value="{{typ.type}}">
+	  {{typ.label}} Problems
+	</label>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  
+  <div class="row">
+    <div class="form-group col-lg-5" id="taglist">
+      <label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
+      <div class="form-inline">
+	<select name="tag" class="form-control">
+	  <option value="">Unspecified</option>
+	  {% for t in tags %}
+	  <option value="{{t.tag}}">{{t.tag}}</option>
+	  {% endfor %}
+	</select>
+	<button type="button" onclick="addInput('taglist')" class="btn btn-default">
+	  or
+	</button>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col-lg-5">
+      <label for="numproblems" class="control-label">Number of Problems:</label>
+      <input type="number" name="numproblems" id="numproblems" class="form-control" style="width:75px;"> 
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col-lg-5">
+      <label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+      <div class="form-inline">
+	<input type="number" name="probbegin" style="width: 75px;" class="form-control"> to <input type="number" name="probend" style="width: 75px;" class="form-control">
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="form-group col-lg-5 form-inline">
+      <label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+      <div class="form-inline">
+	<input type="number" name="yearbegin" style="width: 105px;" class="form-control"> to <input type="number" name="yearend" style="width: 105px;" class="form-control">
+      </div>
+    </div>
+  </div>
+  {% if usertests|length > 0 %}
+  <div class="row">
+    <div class="form-group">
+      <a href="javascript:ReverseDisplay('excludetestlist')">
+	Exclude Tests (Click to Show):
+      </a>
+    
+      <div id="excludetestlist" style="display:none">
+	
+	{% for ut in usertests %}
+	<div class="checkbox">
+	  <label>
+	    <input type="checkbox" name="excludetests" value="{{ut.test.pk}}">{{ut.test.name}}<br>
+	  </label>
+	</div>
+	{% endfor %}
+	
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  <button type="submit" class="btn btn-primary" value="New Test">New Test</button>
 </form>
-
+</div>
+</div>
 {% endblock %}

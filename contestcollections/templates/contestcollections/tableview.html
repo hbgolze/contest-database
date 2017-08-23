@@ -5,6 +5,8 @@
 <ol class="breadcrumb">
   <li class="active">Choose a Contest</li>
 </ol>
+<div class="container">
+<div class="row">
 <h2>Collections</h2>
 
 <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
@@ -14,7 +16,8 @@
     {% endfor %}
   </div>
 </div>
-
+</div>
+<div class="row">
 <div class="col-md-9">
   {% for name,T1,T2,T3,T4 in rows %}
   <a name="{{name}}"></a>
@@ -50,4 +53,6 @@
     </table>
   </div>
 {% endfor %}
+</div>
+</div>
 {% endblock %}

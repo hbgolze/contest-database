@@ -55,6 +55,10 @@ class Solution(models.Model):
     modified_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
+    def delete(self):
+        p=Problem.objects.get(label=self.problem_label)
+        p.update_solution_numbers(self.pk)
+        super(Solution, self).delete()
 
 
 class Sticky(models.Model):
@@ -88,6 +92,7 @@ class Problem(models.Model):
     latexanswer = models.CharField(max_length=100,blank=True)#should be replaced
     label = models.CharField(max_length=20)
     readable_label = models.CharField(max_length=20,blank=True)
+    latex_label = models.CharField(max_length=20,blank=True)
     problem_text = models.TextField(blank=True)
     mc_problem_text = models.TextField(blank=True)
     display_problem_text = models.TextField(blank=True)
@@ -142,6 +147,16 @@ class Problem(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
+    def update_solution_numbers(self,pk):
+        sols = self.solutions.exclude(pk=pk).order_by('solution_number')
+        i=1
+        print(sols)
+        for sol in sols:
+            sol.solution_number=i
+            i+=1
+            sol.save()
+            print(sol.solution_number)
+        self.top_solution_number = sols.count()
 
 class Response(models.Model):
     problem = models.ForeignKey(Problem,blank=True, null=True)

@@ -10,7 +10,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval,TestCollection
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection
 from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
@@ -472,7 +472,6 @@ def problemview(request,type,tag,label):
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
     tags=Tag.objects.all()
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         form = ProblemForm(request.POST, instance=prob)
         if form.is_valid():
@@ -506,7 +505,6 @@ def editproblemtextview(request,type,tag,label):
     tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         form = ProblemTextForm(request.POST, instance=prob)
         if form.is_valid():
@@ -550,7 +548,6 @@ def editproblemtextpkview(request,**kwargs):
         breadcrumbs=[('/problemeditor/','Select Type'),('../../',typ.label+' Problems'),('../',str(prob.readable_label))]
     else:
         breadcrumbs=[('/problemeditor/','Select Type'),('../',str(prob.readable_label)),]
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         form = ProblemTextForm(request.POST, instance=prob)
         if form.is_valid():
@@ -584,13 +581,12 @@ def newsolutionview(request,type,tag,label):
     tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
-    sol_num=prob.top_solution_number+1
-    prob.top_solution_number=sol_num
-    prob.save()
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         sol_form = SolutionForm(request.POST)
         if sol_form.is_valid():
+            sol_num=prob.top_solution_number+1
+            prob.top_solution_number=sol_num
+            prob.save()
             sol = sol_form.save()
             sol.solution_number=sol_num
             sol.authors.add(request.user)
@@ -611,6 +607,7 @@ def newsolutionview(request,type,tag,label):
                 )
         return redirect('../')
     else:
+        sol_num=prob.top_solution_number+1
         sol = Solution(solution_text='', solution_number=sol_num, problem_label=label)
         form = SolutionForm(instance=sol)
     breadcrumbs=[('../../../',typ.label),('../../',tag),('../',prob.readable_label),]
@@ -638,13 +635,12 @@ def newsolutionpkview(request,**kwargs):
         breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label)]
     else:
         breadcrumbs=[('../',prob.readable_label),]
-    sol_num=prob.top_solution_number+1
-    prob.top_solution_number=sol_num
-    prob.save()
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         sol_form = SolutionForm(request.POST)
         if sol_form.is_valid():
+            sol_num=prob.top_solution_number+1
+            prob.top_solution_number=sol_num
+            prob.save()
             sol = sol_form.save()
             sol.solution_number=sol_num
             sol.authors.add(request.user)
@@ -666,6 +662,7 @@ def newsolutionpkview(request,**kwargs):
 
         return redirect('../')#detailedproblemview,pk=pk)
     else:
+        sol_num=prob.top_solution_number+1
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=prob.label)
         form = SolutionForm(instance=sol)
 
@@ -786,7 +783,6 @@ def editreviewpkview(request,**kwargs):
         breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
     else:
         breadcrumbs=[('../../','Solutions to '+prob.readable_label),]
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         if request.POST.get("save"):
             appr_form = ApprovalForm(request.POST,instance=appr)
@@ -878,7 +874,6 @@ def newcommentpkview(request,**kwargs):
         breadcrumbs=[('../',prob.readable_label),]
 
     com_num=prob.comments.count()+1
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         com_form = CommentForm(request.POST)
         if com_form.is_valid():
@@ -894,7 +889,7 @@ def newcommentpkview(request,**kwargs):
         com=Comment(comment_text='', comment_number=com_num, problem_label=prob.label)
         com_form = CommentForm(instance=com)
 
-    return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','dropboxpath':dropboxpath,'breadcrumbs':breadcrumbs,'label':prob.readable_label})
+    return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','breadcrumbs':breadcrumbs,'label':prob.readable_label})
 
 @login_required
 def newreviewpkview(request,**kwargs):
