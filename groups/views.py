@@ -62,56 +62,46 @@ def viewproblemgroup(request,pk):
         if request.POST.get("remove"):
             form=request.POST
             P=prob_group.problems.all()
-            for i in P:
-                if "chk"+i.label not in form:
-                    prob_group.problems.remove(i)
-#            for i in range(0,len(P)):
-#                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
+            if "chk" in form:
+                checked=form.getlist("chk")
+                for i in P:
+                    if i.label not in checked:
+                        prob_group.problems.remove(i)
         elif request.POST.get("newtest"):
             form = request.POST
-            P = prob_group.problems.all()
-            testname = form.get('testname','')
-
-            t = Test(name = testname)
-            t.save()
-            for i in P:
-                if "chk"+i.label in form:
-                    t.problems.add(i)
-            t.save()
-            userprofile.tests.add(t)
-            ti=TestTimeStamp(test_pk=t.pk)
-            ti.save()
-            userprofile.timestamps.add(ti)
-            R=Responses(test=t,num_problems_correct=0)
-            R.save()
-            for i in P:
-                r=Response(response='',problem_label=i.label)
-                r.response=form.get('answer'+i.label)
-                if r.response==None:
-                    r.response=''
-                r.save()
-                R.responses.add(r)
-                rows.append((i.label, str(i.answer), ''))
-            R.save()
-            userprofile.allresponses.add(R)
-#            t.types.add(Type.objects.get(type=testtype))
-            t.save()
-            ut=UserTest(test = t,responses = R,num_probs = P.count(),num_correct = 0)
-            ut.save()
-            userprofile.usertests.add(ut)
-            userprofile.save()            
-            return redirect('/test/'+str(ut.pk)+'/')
+            if "chk" in form:
+                checked=form.getlist("chk")
+                if len(checked)>0:
+#                P = prob_group.problems.all()
+                    testname = form.get('testname','')
+                
+                    t = Test(name = testname)
+                    t.save()
+                    for i in checked:
+                        p=Problem.objects.get(label=i)
+                        t.problems.add(p)
+                    t.save()
+                    userprofile.tests.add(t)
+                    ti=TestTimeStamp(test_pk=t.pk)
+                    ti.save()
+                    userprofile.timestamps.add(ti)
+                    R=Responses(test=t,num_problems_correct=0)
+                    R.save()
+                    for i in t.problems.all():
+                        r=Response(response='',problem_label=i.label,problem=i)
+                        r.save()
+                        R.responses.add(r)
+                    R.save()
+                    userprofile.allresponses.add(R)
+                #            t.types.add(Type.objects.get(type=testtype))
+                    t.save()
+                    ut=UserTest(test = t,responses = R,num_probs = t.problems.count(),num_correct = 0)
+                    ut.save()
+                    userprofile.usertests.add(ut)
+                    userprofile.save()            
+                    return redirect('/test/'+str(ut.pk)+'/')
 
     P = prob_group.problems.all()
-#    rows=[]
-#    dropboxpath = list(Dropboxurl.objects.all())[0].url
-#    for i in P:
-#        if i.question_type_new.question_type=='multiple choice' or i.question_type_new.question_type=='multiple choice short answer':
-#            texcode=newtexcode(i.mc_problem_text,dropboxpath,i.label,i.answers())
-#        else:
-#            texcode=newtexcode(i.problem_text,dropboxpath,i.label,'')
-#        readablelabel=i.readable_label.replace('\\#','#')
-#        rows.append((texcode,i.label,str(i.answer),i.pk,i.solutions.count(),readablelabel))
 
 
     name = prob_group.name

@@ -153,10 +153,7 @@ def startform(request):
             R=Responses(test=T,num_problems_correct=0)
             R.save()
             for i in range(0,len(P)):
-                r=Response(response='',problem_label=P[i].label)
-                r.response=form.get('answer'+P[i].label)
-                if r.response==None:
-                    r.response=''
+                r=Response(response='',problem_label=P[i].label,problem=P[i])
                 r.save()
                 R.responses.add(r)
             R.save()
@@ -400,7 +397,7 @@ def tableview(request,**kwargs):
                 allresponses.save()
                 P=ftests[i].problems.all()
                 for j in range(0,P.count()):
-                    r=Response(response='',problem_label=P[j].label)
+                    r=Response(response='',problem_label=P[j].label,problem=P[j])
                     r.save()
                     allresponses.responses.add(r)
                 allresponses.save()
@@ -446,7 +443,7 @@ def addtestview(request,**kwargs):#pk
     allresponses.save()
     P=test.problems.all()
     for j in P:
-        r=Response(response='',problem_label=j.label)
+        r=Response(response='',problem_label=j.label,problem=P[j])
         r.save()
         allresponses.responses.add(r)
     allresponses.save()
@@ -470,7 +467,7 @@ def addfolderview(request,pk):
         allresponses.save()
         P=test.problems.all()
         for j in P:
-            r=Response(response='',problem_label=j.label)
+            r=Response(response='',problem_label=j.label,problem=j)
             r.save()
             allresponses.responses.add(r)
         allresponses.save()
@@ -604,7 +601,7 @@ def testeditview(request,pk):
         allresponses.save()
         P=list(test.problems.all())
         for i in range(0,len(P)):
-            r=Response(response='',problem_label=P[i].label)
+            r=Response(response='',problem_label=P[i].label,problem=P[i])
             r.save()
             allresponses.reponses.add(r)
         allresponses.save()
@@ -697,7 +694,7 @@ def testeditview(request,pk):
                 test.problems.add(matches[i])
                 A=list(Responses.objects.filter(test=test))
                 for j in range(0,len(A)):
-                    r=Response(response='',problem_label=matches[i].label)
+                    r=Response(response='',problem_label=matches[i].label,problem=matches[i])
                     r.save()
                     A[j].responses.add(r)
                     A[j].save()

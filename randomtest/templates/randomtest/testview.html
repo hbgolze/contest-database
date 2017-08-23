@@ -90,7 +90,7 @@ Last Attempted: {{resp.modified_date}}
 </tr>
 {% endfor %}
 </table>
-{% if username %}{% else %}<input type="submit" value="Submit Answers" />
+{% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
 {% endblock %}

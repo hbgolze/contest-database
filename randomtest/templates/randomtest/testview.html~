@@ -24,7 +24,6 @@
 {% endif %}
 <table>
 {% for resp in rows %}
-texcode,label,answer,response,qt,ppk,solnum,att,moddate,stickied,readablelabel
 <tr>
 <td>
 <a name="{{resp.problem.label}}"></a>
