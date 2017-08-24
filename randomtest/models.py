@@ -251,7 +251,6 @@ class NewTest(models.Model):
     def __str__(self):
         return self.name
 
-
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)

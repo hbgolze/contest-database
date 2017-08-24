@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'search.apps.SearchConfig',
     'groups.apps.GroupsConfig',
     'contestcollections.apps.ContestcollectionsConfig',
+    'handouts.apps.HandoutsConfig',
 ]
 
 MIDDLEWARE = [

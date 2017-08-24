@@ -4,6 +4,8 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 
 # Create your models here.
 
@@ -55,10 +57,6 @@ class Solution(models.Model):
     modified_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
-    def delete(self):
-        p=Problem.objects.get(label=self.problem_label)
-        p.update_solution_numbers(self.pk)
-        super(Solution, self).delete()
 
 
 class Sticky(models.Model):
@@ -147,16 +145,6 @@ class Problem(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
-    def update_solution_numbers(self,pk):
-        sols = self.solutions.exclude(pk=pk).order_by('solution_number')
-        i=1
-        print(sols)
-        for sol in sols:
-            sol.solution_number=i
-            i+=1
-            sol.save()
-            print(sol.solution_number)
-        self.top_solution_number = sols.count()
 
 class Response(models.Model):
     problem = models.ForeignKey(Problem,blank=True, null=True)
@@ -264,7 +252,6 @@ class NewTest(models.Model):
     num_problems = models.IntegerField(default=0)
     def __str__(self):
         return self.name
-
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.

@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'problemeditor.apps.ProblemeditorConfig',
     'asycompile.apps.AsycompileConfig',
     'search.apps.SearchConfig',
+    'groups.apps.GroupsConfig',
     'contestcollections.apps.ContestcollectionsConfig',
+    'handoutss.apps.HandoutsConfig',
 ]
 
 MIDDLEWARE = [
