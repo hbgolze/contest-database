@@ -34,6 +34,7 @@ def handouteditview(request,pk):
             h.top_section_number=h.top_section_number+1
             h.top_subsection_number=0
             h.top_order_number = h.top_order_number+1
+            h.top_theorem_number = 0
             h.document_elements.add(d)
             h.save()
         if "addsubsection" in form:
@@ -43,6 +44,7 @@ def handouteditview(request,pk):
             d.save()
             h.top_subsection_number=h.top_subsection_number+1
             h.top_order_number = h.top_order_number+1
+            h.top_theorem_number = 0
             h.document_elements.add(d)
             h.save()
         if "addtextblock" in form:
