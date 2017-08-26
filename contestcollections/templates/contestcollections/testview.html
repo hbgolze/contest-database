@@ -30,11 +30,14 @@
 </div>
 
 <p>
-({% if prob.solutions.count > 0 %}<a href="{{prob.pk}}">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %}) 
+({% if prob.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{prob.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %}) 
 (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Problem Tags/Solutions</a>) 
 {% if user_type == "super" %}
 (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/edittext/">Edit LaTeX</a>) 
+<!--<a href="{{prob.pk}}">Solution</a>-->
 {% endif %}
+
+
 </p>
 
 
@@ -43,5 +46,21 @@
 </tr>
 {% endfor %}
 </table>
+
+<div id="solution-placeholder" class="modal fade" role="dialog">
+
+</div>
+<script>
+$(".solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+         $("#solution-placeholder").modal("show");
+    });
+});
+</script>
 
 {% endblock %}

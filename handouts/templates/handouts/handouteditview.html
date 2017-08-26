@@ -1,15 +1,25 @@
-{% extends "./base.html" %}
+{% extends "randomtest/base.html" %}
 
 
 {% block content %}
 
 <script src="//rubaxa.github.io/Sortable/Sortable.js"></script>
+<script src="http://malsup.github.com/jquery.form.js"></script>
 
-<h2>Edit Test: {{h.name}}</h2>
-<p>
-Drag around elements to reorder them, and then click "Save" to save changes.
-</p>
+<ol class="breadcrumb">
+  <li><a href="/handouts/">Handouts</a></li>
+  <li class="active">Edit Handout</li>
+</ol>
+
 <div class="container">
+  <h2>Edit Handout: {{handout.name}} <a data-target="#edit-handout-placeholder"  class="edit-handout-link" href="edit_handout/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a></h2>
+  <p>
+    {% if doc_elements|length == 0 %}
+    You don't have anything in your handout yet. Click "Add" to get started.
+    {% else %}
+    Drag around elements to reorder them, and then click "Save" to save changes.
+    {% endif %}
+  </p>
   <div class="row">
     <div class="col-sm-9 col-md-9 col-lg-9">
       <form action="." method="POST" id="problems">
@@ -21,52 +31,313 @@ Drag around elements to reorder them, and then click "Save" to save changes.
 	    <div class="row">
 	      <div class="col-sm-11 col-md-11 col-lg-11">
 		{% if d.content_type.model == "section" %}
-		{{d.content_object.name}}
+		<h2>{{d.section_number}} {{d.content_object.name}}</h2>
 		{% endif %}
 		{% if d.content_type.model == "subsection" %}
-		{{d.content_object.name}}
+		<h3>{{d.section_number}}.{{d.subsection_number}} {{d.content_object.name}}</h3>
 		{% endif %}
 		{% if d.content_type.model == "textblock" %}
 		{% autoescape off %}{{d.content_object.text_display|linebreaks}}{% endautoescape %}
 		{% endif %}
 		{% if d.content_type.model == "proof" %}
-		<span "font:bold">{{d.content_object.prefix}}: </span>
+		<span style="font-weight:bold">{{d.content_object.prefix}}: </span>
 		{% autoescape off %}{{d.content_object.proof_display|linebreaks}}{% endautoescape %}
 		{% endif %}
 		{% if d.content_type.model == "theorem" %}
-		<span "font:bold">{{d.content_object.prefix}}{% if d.content_object.name != "" %}({{d.content_object.name}}){% endif %}: </span>
+		<span style="font-weight:bold">{{d.content_object.prefix}} {{d.section_number}}.{{d.subsection_number}}.{{d.content_object.theorem_number}}{% if d.content_object.name != "" %} ({{d.content_object.name}}){% endif %}: </span>
 		{% autoescape off %}{{d.content_object.theorem_display|linebreaks}}{% endautoescape %}
 		{% endif %}
 	      </div>
 	      <div class="col-sm-1 col-md-1 col-lg-1">
+		{% if d.content_type.model == "section" %}
+		<a data-target="#edit-section-placeholder"  class="edit-section-link" href="edit_section/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
+		{% endif %}
+		{% if d.content_type.model == "subsection" %}
+		<a data-target="#edit-subsection-placeholder"  class="edit-subsection-link" href="edit_subsection/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
+		{% endif %}
+		{% if d.content_type.model == "textblock" %}
+		<a data-target="#edit-textblock-placeholder"  class="edit-textblock-link" href="edit_textblock/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
+		{% endif %}
+		{% if d.content_type.model == "theorem" %}
+		<a data-target="#edit-theorem-placeholder"  class="edit-theorem-link" href="edit_theorem/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
+		{% endif %}
+		{% if d.content_type.model == "proof" %}
+		<a data-target="#edit-proof-placeholder"  class="edit-proof-link" href="edit_proof/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
+		{% endif %}
 		<div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
 	      </div>
 	    </div>
 	  </div>
 	  {% endfor %}
 	</div>	
-
-	<div class="dropdown">
-	  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-	    Add <span class="caret"></span>
-	  </button>
-	  <ul class="dropdown-menu" role="menu">
-	    <li><a href="#textblock" data-toggle="modal">Text Block</a></li>
-	    <li><a href="#theorem" data-toggle="modal">Theorem/Example Environment</a></li>
-	    <li><a href="#proof" data-toggle="modal">Proof/Solution Environment</a></li>
-	    <li><a href="#section" data-toggle="modal">Section</a></li>
-	    <li><a href="#subsection" data-toggle="modal">Subsection</a></li>
-	  </ul>
-	</div>
-
-	<button type="submit" class="save btn btn-primary" name="save">Save</button>
+	<table width="100%">
+	  <tr>
+	    <td>
+	      <div class="dropup">
+		<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		  Add <span class="caret"></span>
+		</button>
+		<ul class="dropdown-menu" role="menu">
+		  <li><a href="#textblock" data-toggle="modal">Text Block</a></li>
+		  <li><a href="#theorem" data-toggle="modal">Theorem/Example Environment</a></li>
+		  <li><a href="#proof" data-toggle="modal">Proof/Solution Environment</a></li>
+		  <li><a href="#section" data-toggle="modal">Section</a></li>
+		  <li><a href="#subsection" data-toggle="modal">Subsection</a></li>
+		</ul>
+	      </div>
+	    </td>
+	    <td>
+	      <button type="submit" class="save btn btn-primary pull-right" name="save">Save</button>
+	    </td>
+	  </tr>
+	</table>
       </form>
     </div>
   </div>
+
+  
+  <div class="modal fade" id="section" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Section</h4>
+        </div>
+        <div class="modal-body">
+	  <form method="post" action="{% url 'handouteditview' handout.pk %}">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <label for="section-name" class="control-label">Section Name</label>
+	      <input type="text" class="form-control" id="section-name" name="section-name">
+	    </div>
+	  <button type="submit" name="addsection" class="btn btn-primary">Add Section</button>
+	  </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="modal fade" id="subsection" role="dialog">
+    <div class="modal-dialog" role="document">
+    
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Subsection</h4>
+        </div>
+        <div class="modal-body">
+	  <form method="post" action=".">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <label for="subsection-name" class="control-label">Subsection Name</label>
+	      <input type="text" class="form-control" id="subsection-name" name="subsection-name">
+	    </div>
+	  <button type="submit" name="addsubsection" class="btn btn-primary">Add Subsection</button>
+	  </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  
+  <div class="modal fade" id="textblock" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Text Block</h4>
+        </div>
+        <div class="modal-body">
+	  <form method="post" action=".">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <label for="textblock-text" class="control-label">Text Block</label>
+	      <textarea class="form-control" id="codetext" name="codetextblock" rows="10"></textarea>
+	    </div>
+	  <button type="submit" name="addtextblock" class="btn btn-primary">Add Text Block</button>
+	  </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <div class="modal fade" id="theorem" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Theorem/Example</h4>
+        </div>
+        <div class="modal-body">
+	  <form method="post" action=".">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <label for="theorem-prefix">Type</label>
+	      <select class="form-control" id="theorem-prefix" name="theorem-prefix">
+		<option value="Theorem">Theorem</option>
+		<option value="Corollary">Corollary</option>
+		<option value="Proposition">Proposition</option>
+		<option value="Lemma">Lemma</option>
+		<option value="Definition">Definition</option>
+		<option value="Example">Example</option>
+		<option value="Exercise">Exercise</option>
+	      </select>
+	    </div>
+	    <div class="form-group">
+	      <label for="theorem-name" class="control-label">Name</label>
+	      <input type="text" class="form-control" id="theorem-name" name="theorem-name">
+	    </div>
+	    <div class="form-group">
+	      <label for="codetheoremblock" class="control-label">Statement</label>
+	      <textarea class="form-control" id="codetext" name="codetheoremblock" rows="10"></textarea>
+	    </div>
+	  <button type="submit" name="addtheorem" class="btn btn-primary">Add Theorem</button>
+	  </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+  <div class="modal fade" id="proof" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Proof/Solution</h4>
+        </div>
+        <div class="modal-body">
+	  <form method="post" action=".">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <label for="proof-prefix">Type</label>
+	      <select class="form-control" id="proof-prefix" name="proof-prefix">
+		<option value="Proof">Proof</option>
+		<option value="Solution">Solution</option>
+	      </select>
+	    </div>
+
+	    <div class="form-group">
+	      <label for="codeproofblock" class="control-label">Text</label>
+	      <textarea class="form-control" id="codetext" name="codeproofblock" rows="10"></textarea>
+	    </div>
+	  <button type="submit" name="addproof" class="btn btn-primary">Add Proof</button>
+	  </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="edit-section-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+  <div class="modal fade" id="edit-subsection-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+  <div class="modal fade" id="edit-textblock-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+  <div class="modal fade" id="edit-theorem-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+  <div class="modal fade" id="edit-proof-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+  <div class="modal fade" id="edit-handout-placeholder" tabindex="-1" role="dialog">
+    
+  </div>
+
 </div>
 
+
+<script>
+$(".edit-section-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-section-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-section-placeholder"]);
+         $("#edit-section-placeholder").modal("show");
+    });
+});
+$(".edit-subsection-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-subsection-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-subsection-placeholder"]);
+         $("#edit-subsection-placeholder").modal("show");
+    });
+});
+$(".edit-textblock-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-textblock-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-textblock-placeholder"]);
+         $("#edit-textblock-placeholder").modal("show");
+    });
+});
+$(".edit-theorem-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-theorem-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-theorem-placeholder"]);
+         $("#edit-theorem-placeholder").modal("show");
+    });
+});
+$(".edit-proof-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-proof-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-proof-placeholder"]);
+         $("#edit-proof-placeholder").modal("show");
+    });
+});
+$(".edit-handout-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-handout-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-handout-placeholder"]);
+         $("#edit-handout-placeholder").modal("show");
+    });
+});
+</script>
+
+
+
+
 <script type="text/javascript">
-var editableList = Sortable.create(probList, {
+var editableList = Sortable.create(doc_element_List, {
   filter: '.js-remove',
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item

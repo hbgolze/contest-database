@@ -242,6 +242,3 @@ background: #006699; color: #fff; }
     box-shadow: none;
 }
 
-.redish {
-    color: #FF0000;
-}

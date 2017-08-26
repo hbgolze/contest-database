@@ -242,3 +242,6 @@ background: #006699; color: #fff; }
     box-shadow: none;
 }
 
+.div-inline{
+    display:inline-block;
+}

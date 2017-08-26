@@ -5,6 +5,7 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
 
+
 # Create your models here.
 
 class Dropboxurl(models.Model):
@@ -264,7 +265,8 @@ class UserProfile(models.Model):
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
-    problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name='problem_groups')
+    problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
+    handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
     def __unicode__(self):
         return self.user.username
 

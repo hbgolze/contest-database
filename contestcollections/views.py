@@ -1,4 +1,5 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
+from django.template.loader import render_to_string
 from django.http import HttpResponse,HttpResponseRedirect
 from django.template import loader,RequestContext,Context
 
@@ -14,6 +15,8 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.utils import timezone
 from django.conf import settings
+
+from django.views.generic import DetailView
 
 from subprocess import Popen,PIPE
 import tempfile
@@ -67,6 +70,26 @@ def solutionview(request,testpk,pk):
     context['testname']=test.name
     context['nbar']='contestcollection'
     return render(request, 'contestcollections/solview.html', context)
+
+#@login_required
+#def load_solution(request,testpk,pk):
+#    prob = get_object_or_404(Problem, pk=pk)
+#    test = get_object_or_404(Test, pk=testpk)
+#    context={}
+#    context['prob']=prob
+#    return HttpResponse(render_to_string('contestcollections/load_sol.html', context))
+
+class SolutionView(DetailView):
+    model = Problem
+    template_name = 'contestcollections/load_sol.html'
+
+    def dispatch(self, *args, **kwargs):
+        self.item_id = kwargs['pk']
+        return super(SolutionView, self).dispatch(*args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Problem, pk=self.item_id)
+
 
 @login_required
 def test_as_pdf(request,pk):

@@ -1,0 +1,63 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+<h2>Handouts</h2>
+<div class="col-md-9">
+  {% if object_list.count == 0 %}
+  You don't have any handouts. Start by creating a new handout <a href="#create-handout" data-toggle="modal">here</a>.
+  {% endif  %}
+
+{% if object_list.count > 0 %}
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>Hantout Name</th>
+      <th>Date Created</th>
+      <th>Edit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for handout in object_list %}
+    <tr>
+      <td>{{handout.name}}</td>
+      <td>{{handout.created_date}}</td>
+      <td>
+        <a class="create-handout-link" href="edit/{{handout.pk}}">Edit Handout</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+Create a <a href="#create-handout" data-toggle="modal">new handout</a>.
+{% endif %}
+
+
+
+  <div class="modal fade" id="create-handout" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Create Handout</h4>
+        </div>
+        <div class="modal-body">
+          <form method="post" action=".">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="handout-name" class="control-label">Name</label>
+              <input type="text" class="form-control" id="handout-name" name="handout-name">
+            </div>
+          <button type="submit" name="addhandout" class="btn btn-primary">Create Handout</button>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+{% endblock %}
