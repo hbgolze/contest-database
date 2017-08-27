@@ -109,7 +109,7 @@ def searchresults(request):
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
             for i in keywords:
-                P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i))
+                P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i)|Q(label=i)|Q(test_label=i))
             P=list(P)
             P=sorted(P,key=lambda x:(x.problem_number,x.year))
             probgroups = userprofile.problem_groups
