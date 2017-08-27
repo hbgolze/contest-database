@@ -20,12 +20,11 @@ Please select a problem
       </tr>
     </thead>
     <tbody>
-      {% for label,tags,num in rows %}
-      
+      {% for prob in rows %}
       <tr>
-        <td>{{label}}</td>
-        <td>{{tags}}</td>
-        <td>{{num}}</td>
+        <td>{{prob.label}}</td>
+        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span> {% endfor %}</td>
+        <td>{{prob.solutions.count}}</td>
 	<td><a href="{{label}}">Edit Tags/Solutions</a></td>
       </tr>
       {% endfor %}

@@ -377,12 +377,8 @@ def typetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -406,12 +402,9 @@ def CMtypetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -432,14 +425,10 @@ def testlabelview(request,type,testlabel):
     if testlabel!='untagged':
         problems=list(Problem.objects.filter(test_label=testlabel))
     else:
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
+    context= {'rows' : problems, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -448,12 +437,9 @@ def CMtopicview(request,type):#unapprovedview
     rows=[]
     problems=list(Problem.objects.filter(type_new=typ))
     problems=sorted(problems, key=lambda x:(x.pk))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
 
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -876,14 +862,10 @@ def deletecommentpkview(request,**kwargs):#If solution_number is kept, this must
 def untaggedview(request,type):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-#    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
     problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor'}
+    context= {'rows' : problems, 'type' : typ.type, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
 
 @login_required

@@ -1,3 +1,4 @@
+
 {% extends "randomtest/base.html" %}
 {% block title %}Choose a Problem{% endblock %}
 
@@ -21,15 +22,14 @@ Please select a problem
       </tr>
     </thead>
     <tbody>
-      {% for label,tags,num,pk,apps in rows %}
-      
+      {% for prob in rows %}
       <tr>
-        <td>{{label}}</td>
-        <td>{{tags}}</td>
-        <td>{{num}}</td>
-	<td><a href="{{pk}}">Edit</a></td>
+        <td>{{prob}}</td>
+        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span> {% endfor %}</td>
+        <td>{{prob.solutions.count}}</td>
+	<td><a href="{{prob.pk}}">Edit</a></td>
         <td>
-          {% for app in apps %}
+          {% for app in prob.approvals.all %}
           {% if app.approval_status == "AP" %}
           <span class="glyphicon glyphicon-ok-sign"></span>
           {% elif app.approval_status == "MN" %}

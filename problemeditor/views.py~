@@ -179,7 +179,7 @@ class AddProblemWizard(SessionWizardView):
         prob.save()
         compileasy(sol.solution_text,prob.label,sol="sol1")
         LogEntry.objects.log_action(
-            user_id = request.user.id,
+            user_id = self.request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
             object_id = prob.id,
             object_repr = prob.label,
@@ -377,9 +377,11 @@ def typetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+    rows=problems
+#    for i in range(0,len(problems)):
+#        num_solutions=problems[i].solutions.count()
+#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+
     template=loader.get_template('problemeditor/typetagview.html')
 
     paginator=Paginator(rows,50)
@@ -406,9 +408,10 @@ def CMtypetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
+    rows=problems
+#    for i in range(0,len(problems)):
+#        num_solutions=problems[i].solutions.count()
+#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
     paginator=Paginator(rows,50)
@@ -435,9 +438,10 @@ def testlabelview(request,type,testlabel):
 #        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+#    for i in range(0,len(problems)):
+#        num_solutions=problems[i].solutions.count()
+#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+    rows=problems
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
     return HttpResponse(template.render(context,request))
@@ -448,9 +452,10 @@ def CMtopicview(request,type):#unapprovedview
     rows=[]
     problems=list(Problem.objects.filter(type_new=typ))
     problems=sorted(problems, key=lambda x:(x.pk))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
+    rows=problems
+#    for i in range(0,len(problems)):
+#        num_solutions=problems[i].solutions.count()
+#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
 
     paginator=Paginator(rows,50)
@@ -879,9 +884,10 @@ def untaggedview(request,type):
 #    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
     problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    for i in range(0,len(problems)):
-        num_solutions=problems[i].solutions.count()
-        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+#    for i in range(0,len(problems)):
+#        num_solutions=problems[i].solutions.count()
+#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
+    rows=problems
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))

@@ -23,17 +23,23 @@ class HandoutForm(forms.ModelForm):
     class Meta:
         model = Handout
         fields = ('name',)
-
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
 class SectionForm(forms.ModelForm):
     class Meta:
         model = Section
         fields = ('name',)
-
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
 class SubsectionForm(forms.ModelForm):
     class Meta:
         model = SubSection
         fields = ('name',)
-
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
 class TextBlockForm(forms.ModelForm):
     class Meta:
         model = TextBlock
@@ -55,8 +61,9 @@ class TheoremForm(forms.ModelForm):
         model = Theorem
         fields = ('prefix','name','theorem_code',)
         widgets = {
-            'theorem_code': forms.Textarea(attrs={'cols':100, 'rows': 15,'id' : 'codetext'}),
-            'prefix': forms.Select(choices=THEOREMS)
+            'theorem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'prefix': forms.Select(choices=THEOREMS, attrs={'class':'form-control'}),
+            'name': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(TheoremForm, self).__init__(*args, **kwargs)
@@ -73,8 +80,8 @@ class ProofForm(forms.ModelForm):
         model = Proof
         fields = ('prefix','proof_code',)
         widgets = {
-            'proof_code': forms.Textarea(attrs={'cols':100, 'rows': 15,'id' : 'codetext'}),
-            'prefix': forms.Select(choices=PROOFS)
+            'proof_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'prefix': forms.Select(choices=PROOFS,attrs={'class':'form-control'})
             }
     def __init__(self, *args, **kwargs):
         super(ProofForm, self).__init__(*args, **kwargs)
