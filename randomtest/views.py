@@ -334,7 +334,9 @@ def editnewtestview(request,pk):
             blocked_probs = Tprobs.values('problem_id')
             P=P.exclude(id__in=blocked_probs)
             P=list(P)
-            P=sorted(P,key=lambda x:(x.problem_number,x.year))[0:min(50,num)]
+            shuf
+            shuffle(P)
+            P=P[0:min(50,num)]
             t=Tprobs.count()
             for i in range(t,t+len(P)):
                 sp=SortableProblem(problem=P[i-t],order=i+1,newtest_pk=T.pk)

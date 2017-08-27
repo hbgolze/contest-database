@@ -356,7 +356,8 @@ def editnewtestview(request,pk):
     rows=sorted(rows,key=lambda x:x[1])
     P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
-    return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows})
+    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags})
 
 
 

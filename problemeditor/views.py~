@@ -1209,9 +1209,7 @@ class SolutionUpdateView(UpdateView):
         context['tag'] = self.tag
         context['label'] = self.problem_label
         context['suffix'] = ''
-        print(Tag.objects.filter(tag=goodtag(self.tag)).exists())
         if Tag.objects.filter(tag=goodtag(self.tag)).exists() == True:
-            print('hi')
             context['suffix'] = '_bytag'
         return context
 

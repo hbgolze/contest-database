@@ -179,7 +179,7 @@ class AddProblemWizard(SessionWizardView):
         prob.save()
         compileasy(sol.solution_text,prob.label,sol="sol1")
         LogEntry.objects.log_action(
-            user_id = request.user.id,
+            user_id = self.request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
             object_id = prob.id,
             object_repr = prob.label,
