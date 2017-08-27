@@ -231,8 +231,6 @@ def newstartform(request):
 
             excludetestpks = form.getlist('excludetests')
             excludetests = Test.objects.filter(pk__in=excludetestpks)
-#            excludeprobs = Problem.objects.filter(test_list__in=excludetests)
-#            print(excludeprobs)
             for extest in excludetests:
                 P=P.exclude(pk__in=extest.problems.all())
             
@@ -268,6 +266,7 @@ def newstartform(request):
 @login_required
 def editnewtestview(request,pk):
     T=get_object_or_404(NewTest,pk=pk)
+    Tprobs=T.problems.all()
     if request.method == "POST":
         if 'save' in request.POST:
             form=request.POST
@@ -282,9 +281,83 @@ def editnewtestview(request,pk):
                     prob=T.problems.get(pk=probinputs[i].split('_')[1])
                     prob.order=i+1
                     prob.save()
-    P=list(T.problems.all())
+        if 'addproblems' in request.POST:
+            form=request.POST
+            testtype = form.get('testtype','')
+            searchterm = form.get('keywords','')
+            if searchterm is None or searchterm==u'':
+                keywords=[]
+            else:
+                keywords=searchterm.split(' ')
+
+            num=form.get('numproblems','')
+            if num is None or num==u'':
+                num=10
+            else:
+                num=int(num)
+
+            tag=form.get('tag','')
+            if tag=="Unspecified":
+                tag=''
+
+            probbegin=form.get('probbegin','')
+            if probbegin is None or probbegin==u'':
+                probbegin=0
+            else:
+                probbegin=int(probbegin)
+
+            probend=form.get('probend','')
+            if probend is None or probend==u'':
+                probend=10000
+            else:
+                probend=int(probend)
+
+            yearbegin=form.get('yearbegin','')
+            if yearbegin is None or yearbegin==u'':
+                yearbegin=0
+            else:
+                yearbegin=int(yearbegin)
+
+            yearend=form.get('yearend','')
+            if yearend is None or yearend==u'':
+                yearend=10000
+            else:
+                yearend=int(yearend)
+
+            if len(tag)>0:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+            else:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
+            for i in keywords:
+                P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i)|Q(label=i)|Q(test_label=i))
+            blocked_probs = Tprobs.values('problem_id')
+            P=P.exclude(id__in=blocked_probs)
+            P=list(P)
+            P=sorted(P,key=lambda x:(x.problem_number,x.year))[0:min(50,num)]
+            t=Tprobs.count()
+            for i in range(t,t+len(P)):
+                sp=SortableProblem(problem=P[i-t],order=i+1,newtest_pk=T.pk)
+                sp.save()
+                T.problems.add(sp)
+            T.num_problems=T.problems.count()
+            T.save()
+    userprofile = get_or_create_up(request.user)
+    if userprofile.user_type == 'member':
+        types=list(Type.objects.exclude(type__startswith="CM"))
+    elif userprofile.user_type == 'manager':
+        types=list(Type.objects.filter(type__startswith="CM"))
+    elif userprofile.user_type == 'super':
+        types=list(Type.objects.all())
+    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    rows=[]
+    for i in range(0,len(types)):
+        rows.append((types[i].type,types[i].label))
+    rows=sorted(rows,key=lambda x:x[1])
+    P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
-    return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T})
+    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags})
 
 
 

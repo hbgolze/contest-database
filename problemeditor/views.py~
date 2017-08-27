@@ -7,6 +7,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
 from django.contrib.contenttypes.models import ContentType
+from django.views.generic import UpdateView
 
 from formtools.wizard.views import SessionWizardView
 
@@ -473,18 +474,43 @@ def problemview(request,type,tag,label):
     prob=get_object_or_404(Problem, label=label)
     tags=Tag.objects.all()
     if request.method == "POST":
-        form = ProblemForm(request.POST, instance=prob)
-        if form.is_valid():
-            problem = form.save()
-            problem.save()
+        formpost=request.POST
+        if "addsolution" in formpost:
+            sol_text=formpost.get("new_solution_text","")
+            sol_num=prob.top_solution_number+1
+            prob.top_solution_number=sol_num
+            prob.save()
+            sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
+            sol.save()
+            sol.authors.add(request.user)
+            sol.save()
+            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
+            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+            sol.save()
+            prob.solutions.add(sol)
+            prob.save()
             LogEntry.objects.log_action(
                 user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(problem).pk,
-                object_id = problem.id,
-                object_repr = problem.label,
-                action_flag = CHANGE,
-                change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag=ADDITION,
+                change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
                 )
+            form = ProblemForm(instance=prob)
+        else:
+            form = ProblemForm(request.POST, instance=prob)
+            if form.is_valid():
+                problem = form.save()
+                problem.save()
+                LogEntry.objects.log_action(
+                    user_id = request.user.id,
+                    content_type_id = ContentType.objects.get_for_model(problem).pk,
+                    object_id = problem.id,
+                    object_repr = problem.label,
+                    action_flag = CHANGE,
+                    change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
+                    )
 
     else:
         form = ProblemForm(instance=prob)
@@ -635,12 +661,12 @@ def newsolutionpkview(request,**kwargs):
         breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label)]
     else:
         breadcrumbs=[('../',prob.readable_label),]
-    sol_num=prob.top_solution_number+1
-    prob.top_solution_number=sol_num
-    prob.save()
     if request.method == "POST":
         sol_form = SolutionForm(request.POST)
         if sol_form.is_valid():
+            sol_num=prob.top_solution_number+1
+            prob.top_solution_number=sol_num
+            prob.save()
             sol = sol_form.save()
             sol.solution_number=sol_num
             sol.authors.add(request.user)
@@ -662,6 +688,7 @@ def newsolutionpkview(request,**kwargs):
 
         return redirect('../')#detailedproblemview,pk=pk)
     else:
+        sol_num=prob.top_solution_number+1
         sol=Solution(solution_text='', solution_number=sol_num, problem_label=prob.label)
         form = SolutionForm(instance=sol)
 
@@ -943,20 +970,54 @@ def detailedproblemview(request,**kwargs):
     else:
         breadcrumbs=[]
     if request.method == "POST":#need more (was previously disabled)
-        form=DetailedProblemForm(request.POST,instance=prob)
-        if form.is_valid():
-            problem = form.save()
-            problem.display_problem_text = newtexcode(problem.problem_text,problem.label,'')
-            problem.display_mc_problem_text = newtexcode(problem.mc_problem_text,problem.label,problem.answers())
-            problem.save()
+        formpost=request.POST
+        if "addsolution" in formpost:
+            sol_text=formpost.get("new_solution_text","")
+            sol_num=prob.top_solution_number+1
+            prob.top_solution_number=sol_num
+            prob.save()
+            sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
+            sol.save()
+            sol.authors.add(request.user)
+            sol.save()
+            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
+            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+            sol.save()
+            prob.solutions.add(sol)
+            prob.save()
             LogEntry.objects.log_action(
                 user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(problem).pk,
-                object_id = problem.id,
-                object_repr = problem.label,
-                action_flag = CHANGE,
-                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag=ADDITION,
+                change_message="problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
                 )
+            form = DetailedProblemForm(instance=prob)
+        elif "addcomment" in formpost:
+            com_num = prob.comments.count()+1
+            com_text = formpost.get("new_comment_text","")
+            author_name = formpost.get("author_name","")
+            com = Comment(comment_text=com_text,comment_number=com_num,author_name=author_name,author=request.user,problem_label=prob.label)
+            com.save()
+            prob.comments.add(com)
+            prob.save()
+            form = DetailedProblemForm(instance=prob)
+        else:
+            form=DetailedProblemForm(request.POST,instance=prob)
+            if form.is_valid():
+                problem = form.save()
+                problem.display_problem_text = newtexcode(problem.problem_text,problem.label,'')
+                problem.display_mc_problem_text = newtexcode(problem.mc_problem_text,problem.label,problem.answers())
+                problem.save()
+                LogEntry.objects.log_action(
+                    user_id = request.user.id,
+                    content_type_id = ContentType.objects.get_for_model(problem).pk,
+                    object_id = problem.id,
+                    object_repr = problem.label,
+                    action_flag = CHANGE,
+                    change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
+                    )
     else:
         form=DetailedProblemForm(instance=prob)
     context['prob']=prob
@@ -1119,3 +1180,69 @@ def redirectproblem(request,pk):
         return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
     else:
         return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
+
+
+class SolutionUpdateView(UpdateView):
+    model = Solution
+    form_class = SolutionForm
+    template_name = 'problemeditor/solution_edit_form.html'
+    def dispatch(self, *args, **kwargs):
+        self.solution_id = kwargs['spk']
+        self.problem_label = kwargs['label']
+        self.type = kwargs['type']
+        self.tag = kwargs['tag']
+        return super(SolutionUpdateView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        solution = Solution.objects.get(id=self.solution_id)
+        return redirect('../../')
+
+
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Solution, pk=self.solution_id)
+    def get_context_data(self, *args, **kwargs):
+        context = super(SolutionUpdateView, self).get_context_data(*args, **kwargs)
+        context['prob'] = get_object_or_404(Problem,label=self.problem_label)
+        context['type'] = self.type
+        context['tag'] = self.tag
+        context['label'] = self.problem_label
+        context['suffix'] = ''
+        print(Tag.objects.filter(tag=goodtag(self.tag)).exists())
+        if Tag.objects.filter(tag=goodtag(self.tag)).exists() == True:
+            print('hi')
+            context['suffix'] = '_bytag'
+        return context
+
+class CMSolutionUpdateView(UpdateView):
+    model = Solution
+    form_class = SolutionForm
+    template_name = 'problemeditor/solution_edit_form.html'
+    def dispatch(self, *args, **kwargs):
+        self.solution_id = kwargs['spk']
+        self.type = kwargs['type']
+        if 'tag' in kwargs:
+            self.tag = kwargs['tag']
+        self.prob_pk = kwargs['pk']
+        return super(CMSolutionUpdateView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        solution = Solution.objects.get(id=self.solution_id)
+        return redirect('../../')
+
+
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Solution, pk=self.solution_id)
+    def get_context_data(self, *args, **kwargs):
+        context = super(CMSolutionUpdateView, self).get_context_data(*args, **kwargs)
+        context['prob'] = get_object_or_404(Problem,pk=self.prob_pk)
+        context['type'] = self.type
+        context['suffix'] = ''
+        if hasattr(self,'tag'):
+            context['tag'] = self.tag
+            context['suffix'] = '_bytag'
+        context['prefix'] = 'CM_'
+        return context

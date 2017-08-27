@@ -59,11 +59,11 @@
 <label>Solutions</label><br>
 {% for solution in prob.solutions.all %}
 <label>Solution {{forloop.counter}}:</label>
-  <p><small>(<a href="editsolution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
+  <p><small>(<a data-target="#edit-solution-placeholder"  class="edit-solution-link" href="edit_solution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
 {% autoescape off %}  {{solution.display_solution_text|linebreaks}} {% endautoescape %}
   {% endfor %}
   {% if prob.solutions.count == 0 %}<p>No Solutions Yet</p>{% endif %}
-  <button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
+  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#solution-mod">New Solution</button>
   <br><br>
 
 <div class="form-group">
@@ -108,8 +108,85 @@ No one has reviewed this problem for approval yet.<br>
 </div>
 	{% if prob.comments.count == 0 %}<p>No Comments Yet</p>{% endif %}
 
-	<button type="button" class="save btn btn-default" onclick="location.href='newcomment'">New Comment</button>
+<button type="button" class="btn btn-default" data-toggle="modal" data-target="#comment-mod">New Comment</button>
 	<br><br>
 <button type="submit" class="save btn btn-primary">Save</button>
 </form>
+
+<div class="modal fade" id="solution-mod" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="post" action=".">
+
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">New Solution</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            {% include "problemeditor/snippetprobtextans.html" %}
+          </div>
+          <div class="form-group">
+            <label for="new_solution_text" class="control-label">Solution Text</label>
+            <textarea class="form-control" min-width="100%" id="codetext" name="new_solution_text" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addsolution" class="btn btn-primary">Add Solution</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="comment-mod" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="post" action=".">
+
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">New Comment</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+	    <label for="author_name" class="control-label">Author Name</label>
+	    <input type="text" name="author_name" maxlength="50" class="form-control" required>
+            <label for="new_comment_text" class="control-label">Comment Text</label>
+            <textarea class="form-control" min-width="100%" id="codetext" name="new_comment_text" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addcomment" class="btn btn-primary">Add Comment</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="edit-solution-placeholder" tabindex="-1" role="dialog">
+
+</div>
+<script type="text/javascript">
+
+
+(function($) {
+$(".edit-solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+    $("#edit-solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-solution-placeholder"]);
+         $("#edit-solution-placeholder").modal("show");
+    });
+});
+})(django.jQuery);
+</script>
 {% endblock %}

@@ -2,6 +2,7 @@ from django import forms
 #from django.contrib.auth.models import User
 from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval
 from django.contrib.admin.widgets import FilteredSelectMultiple
+from randomtest.utils import newsoltexcode
 
 ANSWER_CHOICES = (
     ('A','Answer A'),
@@ -59,8 +60,15 @@ class SolutionForm(forms.ModelForm):
         model = Solution
         fields = ('solution_text',)
         widgets = {
-            'solution_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'})
+            'solution_text': forms.Textarea(attrs={'cols':100, 'rows': 15,'id' : 'codetext'})
         }
+    def save(self,commit=True):
+        instance = super(SolutionForm, self).save(commit=False)
+        instance.display_solution_text = newsoltexcode(instance.solution_text,instance.problem_label+str(instance.solution_number))
+        if commit:
+            instance.save()
+        return instance
+
 class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
@@ -84,7 +92,7 @@ class ApprovalForm(forms.ModelForm):
 class MCAnswerForm(forms.ModelForm):
     class Meta:
         model = Problem
-        fields = ('mc_answer')
+        fields = ('mc_answer',)
         widgets = {
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
         }
@@ -92,7 +100,7 @@ class MCAnswerForm(forms.ModelForm):
 class SAAnswerForm(forms.ModelForm):
     class Meta:
         model = Problem
-        fields = ('sa_answer')
+        fields = ('sa_answer',)
 
 
 class AddProblemForm(forms.ModelForm):

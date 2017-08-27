@@ -3,6 +3,8 @@
 {% block title %}Problem: {{form.instance.label}}{% endblock %}
 
 {% block head %}
+
+
 <script type="text/javascript" src="/static/js/custjquery.init.js"></script>
 <script type="text/javascript" src="/static/js/custcore.js"></script>
 <script type="text/javascript" src="/static/js/custSelectBox.js"></script>
@@ -22,41 +24,90 @@
   <li><a href="../">{{tag}}</a></li>
   <li class="active">{{form.instance.readable_label}}</li>
 </ol>
-    <h2>Edit Problem</h2>
-    <form method="POST" class="post-form">{% csrf_token %}
-
-{% include "problemeditor/snippetprobtextans.html" %}
-
-
-
-{% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
-
-      {% if request.user.is_superuser %}<a href="edittext/">Edit LaTeX Code</a><br>{% endif %}<br>
-{% if form.instance.duplicate_problems.count > 0 %}
-<label>Duplicate Problems:</label>
-<ul>
-{% for dp in form.instance.duplicate_problems.all %}
-<li>{{dp.label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>)</li>
-{% endfor %}
-</ul>
-{% endif %}
+<h2>Edit Problem</h2>
+<form method="POST" class="post-form">{% csrf_token %}
+  
+  {% include "problemeditor/snippetprobtextans.html" %}
+  
 
 
-<label>Solutions</label><br>
-{% for solution in rows %}
+  {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
+  
+  {% if request.user.is_superuser %}<a href="edittext/">Edit LaTeX Code</a><br>{% endif %}<br>
+  {% if form.instance.duplicate_problems.count > 0 %}
+  <label>Duplicate Problems:</label>
+  <ul>
+    {% for dp in form.instance.duplicate_problems.all %}
+    <li>{{dp.label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>)</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  
+  
+  <label>Solutions</label><br>
+  {% for solution in rows %}
   <label>Solution {{forloop.counter}}:</label>
-      <p><small>(<a href="editsolution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
-      {% autoescape off %}  {{solution.display_solution_text|linebreaks}} {% endautoescape %}
-{% endfor %}
-{% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
-<button type="button" class="save btn btn-default" onclick="location.href='newsolution/'">New Solution</button>
-<br><br>
-      
+  <p><small>(<a data-target="#edit-solution-placeholder"  class="edit-solution-link" href="edit_solution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
+  {% autoescape off %}  {{solution.display_solution_text|linebreaks}} {% endautoescape %}
+  {% endfor %}
+  {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
+  <button type="button" class="btn btn-default" data-toggle="modal" data-target="#solution-mod">New Solution</button>
+  <br><br>
+  
+  
+  {{ form.as_p }}
+  <p>
+    <button type="submit" class="save btn btn-primary">Save</button>
+    
+  </p>
+</form>
 
-        {{ form.as_p }}
-<p>
-        <button type="submit" class="save btn btn-primary">Save</button>
+<div class="modal fade" id="solution-mod" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action=".">
+	
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">New Solution</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+	  <div class="form-group">
+	    {% include "problemeditor/snippetprobtextans.html" %}
+	  </div>
+          <div class="form-group">
+            <label for="new_solution_text" class="control-label">Solution Text</label>
+            <textarea class="form-control" min-width="100%" id="codetext" name="new_solution_text" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addsolution" class="btn btn-primary">Add Solution</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
 
-</p>
-    </form>
+<div class="modal fade" id="edit-solution-placeholder" tabindex="-1" role="dialog">
+  
+</div>
+<script type="text/javascript">
+
+
+(function($) {
+$(".edit-solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+    $("#edit-solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-solution-placeholder"]);
+         $("#edit-solution-placeholder").modal("show");
+    });
+});
+})(django.jQuery);
+</script>
+
 {% endblock %}

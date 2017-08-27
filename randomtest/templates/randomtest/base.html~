@@ -26,7 +26,6 @@
 
 <body>
 
-<div class="container">
 
 <nav class="navbar navbar-default navbar-static-top">
   <div class="container-fluid">
@@ -96,7 +95,7 @@
 
 {% endblock %}
 
-
+<div class="content">
   {% block content %}
     
   {% endblock %}

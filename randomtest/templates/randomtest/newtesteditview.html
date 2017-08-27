@@ -37,11 +37,88 @@ Drag around problems to reorder them, and then click "Save" to save changes.
 {% endfor %}
 </div>
 
+<button type="button" class="btn btn-default" data-toggle="modal" data-target="#addproblems">Add New Problems</button>
 <button type="submit" class="save btn btn-primary" name="save">Save</button>
 </form>
 </div>
 </div>
 </div>
+
+
+  <div class="modal fade" id="addproblems" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <form method="post" action=".">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+	    <h4 class="modal-title">Add Problems</h4>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+
+	    <div class="row">
+	      <div class="form-group col-lg-3">
+		<label for="keywords">Keywords:</label>
+		<input type="text" name="keywords" class="form-control">
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="form-group col-lg-3">
+		<label for="testtype" class="control-label">Problem Type:</label>
+		<select name="testtype" class="form-control">
+		  {% for ttest,testlabel in rows %}
+		  <option value="{{ttest}}">{{testlabel}} Problems</option>
+		  {% endfor %}
+		</select>
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="form-group col-lg-5">
+		<label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
+		
+		<select name="tag" class="form-control">
+		  <option value="">Unspecified</option>
+		  {% for t in tags %}
+		  <option value="{{t.tag}}">{{t.tag}}</option>
+		  {% endfor %}
+		</select>
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="form-group col-lg-5">
+		<label for="numproblems" class="control-label">Number of Problems:</label>
+		<input type="number" name="numproblems" id="numproblems" class="form-control" style="width:75px;">
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="form-group col-lg-5">
+		<label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+		<div class="form-inline">
+		  <input type="number" name="probbegin" style="width: 75px;" class="form-control"> to <input type="number" name="probend" style="width: 75px;" class="form-control">
+		</div>
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="form-group col-lg-5 form-inline">
+		<label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+		<div class="form-inline">
+		  <input type="number" name="yearbegin" style="width: 105px;" class="form-control"> to <input type="number" name="yearend" style="width: 105px;" class="form-control">
+		</div>
+	      </div>
+	    </div>
+	   
+
+          </div>
+          <div class="modal-footer">
+            <button type="submit" name="addproblems" class="btn btn-primary">Add Problems</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
 
 <script type="text/javascript">
 var editableList = Sortable.create(probList, {
