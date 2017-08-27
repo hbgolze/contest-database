@@ -23,7 +23,7 @@ Please select a problem
       {% for prob in rows %}
       <tr>
         <td>{{prob.label}}</td>
-        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span>{% endfor %}</td>
+        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span> {% endfor %}</td>
         <td>{{prob.solutions.count}}</td>
 	<td><a href="{{label}}">Edit Tags/Solutions</a></td>
       </tr>
