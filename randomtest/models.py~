@@ -264,6 +264,12 @@ class NewTest(models.Model):
     def __str__(self):
         return self.name
 
+class UserType(models.Model):
+    name = models.CharField(max_length=20)
+    allowed_types = models.ManyToManyField(Type,blank=True)
+    def __str__(self):
+        return self.name
+
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
@@ -277,6 +283,7 @@ class UserProfile(models.Model):
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
+    user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
     handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
     def __unicode__(self):

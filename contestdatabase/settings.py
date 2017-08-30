@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'crispy_forms',
     'formtools',
     'randomtest.apps.RandomtestConfig',
     'problemeditor.apps.ProblemeditorConfig',
@@ -138,6 +139,9 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
 # Added for login
 #LOGIN_URL = '/randomtest/login'
 LOGIN_REDIRECT_URL='/'
+
+#added for crispy_forms
+CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 #Added for logging...include 
 #import logging

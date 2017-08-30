@@ -35,6 +35,38 @@ from datetime import datetime,timedelta
 
 # Create your views here.
 
+from django.views import generic
+from .forms import LoginForm
+
+#Not in use (need to figure out how to redirect...) Also, login2.html has been deleted.
+class LoginView(generic.FormView):
+    form_class = LoginForm
+    success_url = reverse_lazy('tableview')
+    template_name = 'registration/login2.html'
+
+    def form_valid(self, form):
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user = authenticate(username=username, password=password)
+
+        if user is not None and user.is_active:
+            login(self.request, user)
+            return super(LoginView, self).form_valid(form)
+        else:
+            return self.form_invalid(form)
+    def get_initial(self):
+        initial = super(LoginView, self).get_initial()
+        redirect_field_name = 'name'#self.get_redirect_field_name()
+        if (redirect_field_name in self.request.GET and
+            redirect_field_value in self.request.GET):
+            initial.update({
+                    "redirect_field_name": redirect_field_name,
+                    "redirect_field_value": self.request.REQUEST.get(
+                        'next'),
+                    })
+        return initial
+
+
 class TestDelete(DeleteView):
     model = Test
     success_url = reverse_lazy('tableview')

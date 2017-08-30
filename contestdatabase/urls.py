@@ -23,6 +23,7 @@ import randomtest.views
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+#    url(r'^accounts/login/$',randomtest.views.LoginView.as_view(), name='login'),
     url(r'^accounts/login/$',django.contrib.auth.views.login, name='login'),
     url(r'^accounts/logout/$', django.contrib.auth.views.logout, name='logout', kwargs={'next_page': '/'}),
     url(r'^accounts/change-password/$', randomtest.views.UpdatePassword, name='change_password'),

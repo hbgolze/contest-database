@@ -2,6 +2,46 @@ from django import forms
 from django.contrib.auth.models import User
 from randomtest.models import UserProfile,Test
 
+from django.contrib.auth.forms import AuthenticationForm
+
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Layout, ButtonHolder, Submit, Field
+
+from django.contrib.auth import REDIRECT_FIELD_NAME
+
+#This form does not work yet...it does not redirect properly...
+class LoginForm(AuthenticationForm):
+    redirect_field_name = REDIRECT_FIELD_NAME
+    redirect_field_value = ''
+    def __init__(self, *args, **kwargs):
+        super(LoginForm, self).__init__(*args, **kwargs)
+
+        if ('redirect_field_name' in kwargs['initial'] and 'redirect_field_value' in kwargs['initial']):
+            self.has_redirection = True
+            self.redirect_field_name = kwargs['initial'].get('redirect_field_name')
+            self.redirect_field_value = kwargs['initial'].get('redirect_field_value')
+
+      ## dynamically add a field into form
+            hidden_field = forms.CharField(widget=forms.HiddenInput())
+            self.fields.update({
+                    self.redirect_field_name: hidden_field
+                    })
+
+        self.helper = FormHelper()
+        self.helper.layout = Layout(
+            'username',
+            'password',
+            ButtonHolder(
+                Submit('login', 'Login', css_class='btn-primary')
+            ),
+            Field(
+                self.redirect_field_name,
+                type='hidden',
+                value=redirect_field_value
+                )
+        )
+
+
 
 class TestForm(forms.Form):
 #    testchoices=(('AMC8','AMC 8 Problems'),('AMC10','AMC 10 Problems'),('AMC12','AMC 12 Problems'),('AIME','AIME Problems'),('USAMO','USAMO Problems'),('IMO','IMO Problems'),('Putnam','Putnam Problems'),('VTRMC','VTRMC Problems'))
