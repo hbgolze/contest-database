@@ -54,7 +54,7 @@ def tableview(request):
 @login_required
 def tagtableview(request):
     userprofile = get_or_create_up(request.user)
-    tags=Tag.objects.all()
+    tags=Tag.objects.all().order_by('tag')
     template=loader.get_template('groups/tagtableview.html')
     context = {}
     context['nbar'] = 'groups'
