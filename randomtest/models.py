@@ -145,6 +145,17 @@ class Problem(models.Model):
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
 
+class ProofResponse(models.Model):
+    problem = models.ForeignKey(Problem)
+    proof = models.TextField(blank = True)
+    problem_label = models.CharField(max_length=20)
+    modified_date = models.DateTimeField(default = timezone.now)
+    points_awarded = models.IntegerField(default = 0)
+    attempted = models.BooleanField(default = 0)
+    is_graded = models.BooleanField(default = 0)
+    def __str__(self):
+        return self.problem_label
+    
 class Response(models.Model):
     problem = models.ForeignKey(Problem,blank=True, null=True)
     response = models.CharField(max_length=10,blank=True)
@@ -239,6 +250,7 @@ class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)
     order = models.IntegerField(default = 0)
     problem = models.ForeignKey(Problem, blank=True,null=True)
+    point_value =models.IntegerField(default = 1)#add ability to use this
 #    def __str__(self):
 #        return 
 #in general, we would want this to be deleted if Problem is deleted, but not the other way around.
@@ -249,6 +261,12 @@ class NewTest(models.Model):
     types = models.ManyToManyField(Type,blank=True, related_name='types')
     created_date = models.DateTimeField(default = timezone.now)
     num_problems = models.IntegerField(default=0)
+    def __str__(self):
+        return self.name
+
+class UserType(models.Model):
+    name = models.CharField(max_length=20)
+    allowed_types = models.ManyToManyField(Type,blank=True)
     def __str__(self):
         return self.name
 
@@ -265,6 +283,7 @@ class UserProfile(models.Model):
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
+    user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
     handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
     def __unicode__(self):

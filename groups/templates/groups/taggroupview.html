@@ -2,13 +2,13 @@
 
 {% block content %}
 <script type="text/javascript">
-function togglemarked() {
-    var y=document.getElementById("problems");
+function togglemarked(prefixname,formname) {
+    var y=document.getElementById(formname);
     lang=y.elements.length;
 
     check=0;
     for (i=0;i<lang;i++) {
-        if (y.elements[i].name == "chk" && y.elements[i].checked==false) {
+        if (y.elements[i].name == prefixname && y.elements[i].checked==false) {
             check=1;
         }
     }
@@ -22,14 +22,14 @@ function togglemarked() {
         }
     }
 }
-function fixchecks() {
-    var y=document.getElementById("problems");
+function fixchecks(prefixname,formname,togglename) {
+    var y=document.getElementById(formname);
     lang=y.elements.length;
 
     allchecked=1;
     allunchecked=1;
     for (i=0;i<lang;i++) {
-        if (y.elements[i].name == "chk") {
+        if (y.elements[i].name == prefixname) {
             if (y.elements[i].checked==false) {
                 allchecked=0;
             } else {
@@ -37,7 +37,7 @@ function fixchecks() {
             }
         }
     }
-    z=document.getElementById("toggler");
+    z=document.getElementById(togglename);
     if (allchecked==1) {
         z.checked=true;
         z.indeterminate=false;
@@ -51,22 +51,40 @@ function fixchecks() {
 </script>
 
 <ol class="breadcrumb">
-  <li><a href="/problemgroups/">My Problem Groups</a></li>
+  <li><a href="/problemgroups/">Problem Groups</a></li>
+  <li><a href="/problemgroups/tags">Tags</a></li>
   <li class="active">{{name}}</li>
 </ol>
 
 <h2>{{name}}</h2>
 {% if rows|length > 0 %}
+<h3>Possible Types</h3>
+<form action="." method="GET" id="typeform">
+
+<div class="checkbox">
+ <label>
+ <input type="checkbox" id="toggletype" onclick="togglemarked('includetypes','typeform')" checked/>Select/Deselect All
+ </label>
+</div>
+        {% for typ in userprofile.user_type_new.allowed_types.all %}
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" name="includetypes" value="{{typ.type}}" onclick="fixchecks('includetypes','typeform','toggletype')" checked>{{typ.label}}
+          </label>
+	</div>
+        {% endfor %}
+<button type="submit" class="btn btn-default" name="updatetypes">Update Types</button>
+</form>
 
 
+<h3>Problems</h3>
 <form action="." method="POST" id="problems">
 {% csrf_token %}
 <input type="hidden" name="startform" value="{{pk}}">
 <table class="table">
 <tr>
 <td>
-<!--<button class="btn btn-default" id="toggler" onclick="togglemarked();">Select/Deselect All</button>-->
- <input type="checkbox" id="toggler" onclick="togglemarked()" checked/>
+ <input type="checkbox" id="toggler" onclick="togglemarked('chk','problems')" checked/>
 </td>
 <th>
 Problem
@@ -77,7 +95,7 @@ Problem
 <tr>
 <td valign="top"><br>
 {{forloop.counter}}.<br>
-<input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked/>
+<input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks('chk','problems','toggler')" checked/>
 </td>
 <td>
 {% if prob.question_type_new.question_type == 'multiple choice' %}
@@ -89,14 +107,13 @@ Problem
 </tr>
 {% endfor %}
 </table>
-<p><button type="submit" class="btn btn-default" name="remove" value="Remove Unselected Problems" />Remove Unselected Problems from Group</button></p>
 
 <p>
 Name of test: <input type="text" name="testname" value="New Test" /></p>
 <p><button type="submit" class="btn btn-primary" name="newtest" value="newtest">Create test with selected problems</button></p>
 </form>
 {% else %}
-There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.
+There are currently no problems with this tag.
 {% endif %}
 
 {% endblock %}

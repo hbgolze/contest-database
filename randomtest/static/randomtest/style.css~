@@ -35,7 +35,7 @@ h1 { font-size:1.6em; }
 h2 { font-size:1.4em; }
 h3 { font-size:1.3em; }
 a:visited { color: #551a8b; }
-a.btn:visited { color: #ffffff; }
+a.btn-primary:visited { color: #ffffff; }
 p { max-width: 60em; }
 
 a img { border:none; }
@@ -242,3 +242,6 @@ background: #006699; color: #fff; }
     box-shadow: none;
 }
 
+.div-inline{
+    display:inline-block;
+}

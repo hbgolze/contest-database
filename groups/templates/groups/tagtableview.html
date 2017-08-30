@@ -1,0 +1,38 @@
+{% extends "randomtest/base.html" %}
+
+
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemgroups/">Problem Groups</a></li>
+  <li class="active">Tags</li>
+</ol>
+<h2>Tag Groups</h2>
+<div class="col-md-9">
+  {% if tags.count == 0 %}
+There are no tags yet.
+{% else %}
+<table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Tag Name</th>
+        <th>Number of Problems</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for tag in tags %}
+      <tr>
+        <td><a href="{{tag.pk}}/">{{tag.tag}}</a></td>
+        <td>{{tag.problems.count}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+</table>
+
+</div>
+{% endif %}
+
+
+
+
+{% endblock %}
