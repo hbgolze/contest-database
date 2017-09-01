@@ -60,7 +60,7 @@ class SolutionForm(forms.ModelForm):
         model = Solution
         fields = ('solution_text',)
         widgets = {
-            'solution_text': forms.Textarea(attrs={'cols':100, 'rows': 15,'id' : 'codetext'})
+            'solution_text': forms.Textarea(attrs={"class":"form-control","min-width":"100%", 'rows': 15,'id' : 'codetext'})
         }
     def save(self,commit=True):
         instance = super(SolutionForm, self).save(commit=False)
@@ -277,31 +277,13 @@ class AddContestForm(forms.Form):
                 self.fields['answer%s' % i] = forms.CharField(max_length=50,label = 'Answer')
 
 
-#forms.Textarea(
-#                attrs={'cols': 120, 'rows': 15,'id' : 'codetext'},
-#                label='problem_%s' %i,
-#                )
-'''
-class ProblemForm(forms.Form):
-    class Media:
-        # Django also includes a few javascript files necessary
-        # for the operation of this form element. You need to
-        # include <script src="/admin/jsi18n"></script>
-        # in the template.
-        css = {
-            'all': ('admin/css/widgets.css',)
-            }
-        js = ('/admin/jsi18n',)
-    def __init__(self, *args, **kwargs):
-        prob=kwargs.pop('instance')
-        r=super(ProblemForm,self).__init__(*args, **kwargs)
-#        prob=Problem.objects.get(label=prob_label)
-        qs = Tag.objects.exclude(tag__in=[t.tag for t in prob.tags.all()])
-        fields=('label')
-        self.fields['trags'] = forms.ModelMultipleChoiceField(queryset=qs,widget=FilteredSelectMultiple('tags',is_stacked=False),label='')
-        return r
-#        fields = ('username', 'email', 'password')
+class DuplicateProblemForm(forms.Form):
+    duplicate_problem_label=forms.CharField(max_length=30,required=True)
+    def clean_label(self):
+        data = self.cleaned_data['duplicate_problem_label']
+        if Problem.objects.get(label=data).exists()=False:
+            raise forms.ValidationError("Not a Valid Problem!")
 
-
-'''
-
+        # Always return a value to use as the new cleaned data, even if
+        # this method didn't change it.
+        return data

@@ -12,7 +12,7 @@ from django.views.generic import UpdateView
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 
@@ -483,6 +483,14 @@ def problemview(request,type,tag,label):
                 action_flag=ADDITION,
                 change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
                 )
+            form = ProblemForm(instance=prob)
+        elif "addlink" in formpost:
+            form = request.POST
+            linked_problem_label = form.get("linked_problem_label","")
+            if Problem.objects.filter(label=linked_problem_label).exists():
+                q=Problem.objects.get(label=linked_problem_label)
+                prob.duplicate_problems.add(q)
+                prob.save()
             form = ProblemForm(instance=prob)
         else:
             form = ProblemForm(request.POST, instance=prob)
@@ -1226,3 +1234,11 @@ class CMSolutionUpdateView(UpdateView):
             context['suffix'] = '_bytag'
         context['prefix'] = 'CM_'
         return context
+
+def remove_duplicate(request,type,tag,label,pk):
+    if request.user.userprofile.user_type == 'super':
+        prob=get_object_or_404(Problem,label=label)
+        if prob.duplicate_problems.filter(pk=pk).exists():
+            prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
+            prob.save()
+    return redirect("../../")

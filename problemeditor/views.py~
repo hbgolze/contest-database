@@ -12,7 +12,7 @@ from django.views.generic import UpdateView
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 
@@ -377,14 +377,8 @@ def typetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    rows=problems
-#    for i in range(0,len(problems)):
-#        num_solutions=problems[i].solutions.count()
-#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
-
     template=loader.get_template('problemeditor/typetagview.html')
-
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -408,13 +402,9 @@ def CMtypetagview(request,type,tag):
     else:
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
-    rows=problems
-#    for i in range(0,len(problems)):
-#        num_solutions=problems[i].solutions.count()
-#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -435,15 +425,10 @@ def testlabelview(request,type,testlabel):
     if testlabel!='untagged':
         problems=list(Problem.objects.filter(test_label=testlabel))
     else:
-#        problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
         problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-#    for i in range(0,len(problems)):
-#        num_solutions=problems[i].solutions.count()
-#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
-    rows=problems
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
+    context= {'rows' : problems, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -452,13 +437,9 @@ def CMtopicview(request,type):#unapprovedview
     rows=[]
     problems=list(Problem.objects.filter(type_new=typ))
     problems=sorted(problems, key=lambda x:(x.pk))
-    rows=problems
-#    for i in range(0,len(problems)):
-#        num_solutions=problems[i].solutions.count()
-#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions,problems[i].pk,problems[i].approvals.all()))
     template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
 
-    paginator=Paginator(rows,50)
+    paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -502,6 +483,14 @@ def problemview(request,type,tag,label):
                 action_flag=ADDITION,
                 change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
                 )
+            form = ProblemForm(instance=prob)
+        elif "addlink" in formpost:
+            form = request.POST
+            linked_problem_label = form.get("linked_problem_label","")
+            if Problem.objects.filter(label=linked_problem_label).exists():
+                q=Problem.objects.get(label=linked_problem_label)
+                prob.duplicate_problems.add(q)
+                prob.save()
             form = ProblemForm(instance=prob)
         else:
             form = ProblemForm(request.POST, instance=prob)
@@ -881,15 +870,10 @@ def deletecommentpkview(request,**kwargs):#If solution_number is kept, this must
 def untaggedview(request,type):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-#    problems=list(Problem.objects.filter(types__in=[typ]).filter(tags__isnull=True))
     problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-#    for i in range(0,len(problems)):
-#        num_solutions=problems[i].solutions.count()
-#        rows.append((problems[i].label,problems[i].print_tags(),num_solutions))
-    rows=problems
     template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : rows, 'type' : typ.type, 'nbar': 'problemeditor'}
+    context= {'rows' : problems, 'type' : typ.type, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -1250,3 +1234,10 @@ class CMSolutionUpdateView(UpdateView):
             context['suffix'] = '_bytag'
         context['prefix'] = 'CM_'
         return context
+
+def remove_duplicate(request,type,tag,label,pk):
+    prob=get_object_or_404(Problem,label=label)
+    if prob.duplicate_problems.filter(pk=pk).exists():
+        prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
+        prob.save()
+    return redirect("../../")

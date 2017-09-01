@@ -25,24 +25,29 @@
   <li class="active">{{form.instance.readable_label}}</li>
 </ol>
 <h2>Edit Problem</h2>
-<form method="POST" class="post-form">{% csrf_token %}
+
+
   
   {% include "problemeditor/snippetprobtextans.html" %}
-  
-
 
   {% if form.instance.author_name != '' %}<p>Author: {{form.instance.author_name}}</p>{% endif %}
   
   {% if request.user.is_superuser %}<a href="edittext/">Edit LaTeX Code</a><br>{% endif %}<br>
+
   {% if form.instance.duplicate_problems.count > 0 %}
   <label>Duplicate Problems:</label>
   <ul>
     {% for dp in form.instance.duplicate_problems.all %}
-    <li>{{dp.label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>)</li>
+    <li>{{dp.label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>) {% if request.user.is_superuser %} <a class="btn btn-default" href="remove_duplicate/{{dp.pk}}/"><span style="color:red;">✖</span></a>{% endif %}</li>
     {% endfor %}
   </ul>
   {% endif %}
-  
+
+  {% if request.user.is_superuser %} 
+  <p>
+    <button type="button" class="btn btn-default" data-toggle="modal" data-target="#duplicate-modal">Link to Duplicate Problem</button>
+  </p>
+  {% endif %}  
   
   <label>Solutions</label><br>
   {% for solution in rows %}
@@ -53,8 +58,7 @@
   {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
   <button type="button" class="btn btn-default" data-toggle="modal" data-target="#solution-mod">New Solution</button>
   <br><br>
-  
-  
+<form method="POST" class="post-form">{% csrf_token %}    
   {{ form.as_p }}
   <p>
     <button type="submit" class="save btn btn-primary">Save</button>
@@ -92,6 +96,34 @@
   </div>
 </div>
 
+{% if request.user.is_superuser %}
+<div class="modal fade" id="duplicate-modal" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action=".">
+	
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Link to Duplicate Problem</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="linked_problem_label" class="control-label">Label of Linked Problem</label>
+            <input type="text" class="form-control" name="linked_problem_label" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addlink" class="btn btn-primary">Add Linked Problem</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+{% endif %}
 <div class="modal fade" id="edit-solution-placeholder" tabindex="-1" role="dialog">
   
 </div>
