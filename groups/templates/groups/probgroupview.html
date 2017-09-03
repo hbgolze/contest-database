@@ -85,6 +85,8 @@ Problem
 {% else %}
 {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
 {% endif %}
+
+{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
 </td>
 </tr>
 {% endfor %}
