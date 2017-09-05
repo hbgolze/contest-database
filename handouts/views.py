@@ -374,7 +374,6 @@ def editnewtestview(request,pk,hpk):
             blocked_probs = Tprobs.values('problem_id')
             P=P.exclude(id__in=blocked_probs)
             P=list(P)
-            shuf
             shuffle(P)
             P=P[0:min(50,num)]
             t=Tprobs.count()
