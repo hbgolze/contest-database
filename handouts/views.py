@@ -250,6 +250,8 @@ class TheoremUpdateView(UpdateView):
     def form_valid(self, form):
         form.save()
         theorem = Theorem.objects.get(id=self.theorem_id)
+        theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
+        compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
@@ -274,6 +276,8 @@ class ProofUpdateView(UpdateView):
     def form_valid(self, form):
         form.save()
         proof = Proof.objects.get(id=self.proof_id)
+        proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
+        compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
