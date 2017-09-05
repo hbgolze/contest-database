@@ -226,6 +226,8 @@ class TextBlockUpdateView(UpdateView):
     def form_valid(self, form):
         form.save()
         textblock = TextBlock.objects.get(id=self.textblock_id)
+        textblock.text_display = newtexcode(textblock.text_code, 'textblock_'+str(textblock.pk), "")
+        compileasy(textblock.text_code,'textblock_'+str(textblock.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
