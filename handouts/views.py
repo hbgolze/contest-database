@@ -19,6 +19,9 @@ from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem
 from randomtest.utils import newtexcode,compileasy
 from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem
 
+
+from random import shuffle
+
 # Create your views here.
 
 @login_required
