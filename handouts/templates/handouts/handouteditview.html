@@ -67,6 +67,9 @@
 		    </td>
 		  </tr>
 		  {% endfor %}
+		  {% if d.content_object.problems.all.count == 0 %}
+		  This problem set has no problems yet. Click the pencil to add problems. 
+		  {% endif %}
 		</table>
 		{% endif %}
 		{% if d.content_type.model == "imagemodel" %}
