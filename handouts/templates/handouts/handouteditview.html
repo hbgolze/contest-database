@@ -8,7 +8,7 @@
 
 <ol class="breadcrumb">
   <li><a href="/handouts/">Handouts</a></li>
-  <li class="active">Edit Handout</li>
+  <li class="active">Edit Handout: {{handout.name}}</li>
 </ol>
 
 <div class="container">
@@ -47,6 +47,31 @@
 		<span style="font-weight:bold">{{d.content_object.prefix}} {{d.section_number}}.{{d.subsection_number}}.{{d.content_object.theorem_number}}{% if d.content_object.name != "" %} ({{d.content_object.name}}){% endif %}: </span>
 		{% autoescape off %}{{d.content_object.theorem_display|linebreaks}}{% endautoescape %}
 		{% endif %}
+		{% if d.content_type.model == "newtest" %}
+		<table class="table">
+		  {% for prob in d.content_object.problems.all %}
+		  <tr>
+		    <td>
+		      {{forloop.counter}}
+		    </td>
+		    <td>
+		      {% if prob.problem.question_type_new.question_type == 'multiple choice' %}
+		      {% autoescape off %}{{prob.problem.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.problem.readable_label}}]
+		      {% endif %}
+		      {% if prob.problem.question_type_new.question_type == 'short answer' or prob.problem.question_type_new.question_type == 'proof' %}
+		      {% autoescape off %}{{prob.problem.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.problem.readable_label}}]
+		      {% endif %}
+		      {% if prob.problem.question_type_new.question_type == 'multiple choice short answer' %}
+		      {% autoescape off %}{{prob.problem.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.problem.readable_label}}] 
+		      {% endif %}
+		    </td>
+		  </tr>
+		  {% endfor %}
+		</table>
+		{% endif %}
+		{% if d.content_type.model == "imagemodel" %}
+		<img class="img-responsive center-block" src="/{{d.content_object.image.url }}/"/> 
+		{% endif %}
 	      </div>
 	      <div class="col-sm-1 col-md-1 col-lg-1">
 		{% if d.content_type.model == "section" %}
@@ -64,6 +89,10 @@
 		{% if d.content_type.model == "proof" %}
 		<a data-target="#edit-proof-placeholder"  class="edit-proof-link" href="edit_proof/{{d.content_object.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> 
 		{% endif %}
+		{% if d.content_type.model == "newtest" %}
+		<a href="editnewtest/{{d.content_object.pk}}"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a>
+		{% endif %}
+
 		<div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
 	      </div>
 	    </div>
@@ -83,6 +112,8 @@
 		  <li><a href="#proof" data-toggle="modal">Proof/Solution Environment</a></li>
 		  <li><a href="#section" data-toggle="modal">Section</a></li>
 		  <li><a href="#subsection" data-toggle="modal">Subsection</a></li>
+		  <li><a href="#problem-set" data-toggle="modal">Problem Set</a></li>
+		  <li><a href="#imageblock" data-toggle="modal">Image</a></li>
 		</ul>
 	      </div>
 	    </td>
@@ -247,6 +278,70 @@
       
     </div>
   </div>
+
+  <div class="modal fade" id="problem-set" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+	<form method="post" action="{% url 'handouteditview' handout.pk %}">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add a Problem Set</h4>
+          </div>
+          <div class="modal-body">
+	    {% csrf_token %}
+	    <div class="form-group">
+	      <div class="radio">
+		<label><input onclick="document.getElementById('problem-set-name').disabled = false; document.getElementById('existing-problem-set').disabled = true;" type="radio" name="neworold" checked="checked" value="new-problem-set">New Problem Set</label>
+	      </div>
+	      <input type="text" class="form-control" name="problem-set-name" id="problem-set-name">
+	      
+	      <div class="radio{% if mynewtests|length == 0 %} disabled{% endif %}">
+		<label><input onclick="document.getElementById('problem-set-name').disabled = true; document.getElementById('existing-problem-set').disabled = false;" type="radio" name="neworold" value="existing-problem-set" {% if mynewtests|length == 0 %} disabled{% endif %}>Copy Problem Set from Existing Test</label>
+	      </div>
+	      <select name="existing-problem-set" class="form-control" id="existing-problem-set" disabled="disabled">
+		{% for newtest in mynewtests %}
+		<option value={{newtest.pk}}>{{newtest.name}}</option>
+		{% endfor %}
+	      </select>
+	    </div>
+	    
+          </div>
+          <div class="modal-footer">
+	    <button type="submit" name="addproblemset" class="btn btn-primary">Add Problem Set</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+	</form>
+      </div>
+      
+    </div>
+  </div>
+
+  <div class="modal fade" id="imageblock" role="dialog">
+    <div class="modal-dialog" role="document">
+      
+      <div class="modal-content">
+	<form method="post" action="." enctype="multipart/form-data">
+	  {% csrf_token %}
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add an Image</h4>
+          </div>
+          <div class="modal-body">
+	    
+	    <div class="form-group">
+	      <input id="id_image" type="file" class="" name="image">
+	    </div>
+	    <button type="submit" name="addimage" class="btn btn-primary">Add Image</button>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+	</form>
+      </div>
+    </div>
+  </div>
+
 
   <div class="modal fade" id="edit-section-placeholder" tabindex="-1" role="dialog">
     

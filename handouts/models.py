@@ -42,6 +42,9 @@ class Section(models.Model):#possibly have an asterisk here...
     def __str__(self):
         return self.name
 
+class ImageModel(models.Model):
+    image = models.ImageField(upload_to='images')
+
 class DocumentElement(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
@@ -50,6 +53,9 @@ class DocumentElement(models.Model):
     section_number = models.IntegerField(default=0)
     subsection_number = models.IntegerField(default=0)
     order = models.IntegerField()
+    class Meta:
+        ordering = ['order']
+
 
 class Handout(models.Model):
     name=models.CharField(max_length=150)

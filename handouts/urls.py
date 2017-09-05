@@ -13,4 +13,6 @@ urlpatterns = [
     url(r'^edit/(?P<pk>\d+)/edit_theorem/(?P<spk>\d+)/$', login_required(views.TheoremUpdateView.as_view()),name="update_theorem"),
     url(r'^edit/(?P<pk>\d+)/edit_proof/(?P<spk>\d+)/$', login_required(views.ProofUpdateView.as_view()),name="update_proof"),
     url(r'^edit/(?P<pk>\d+)/edit_handout/$', login_required(views.HandoutUpdateView.as_view()),name="update_handout"),
+
+    url(r'^edit/(?P<pk>\d+)/editnewtest/(?P<hpk>\d+)/$', views.editnewtestview, name='h_editnewtestview'),
 ]

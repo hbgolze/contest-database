@@ -92,6 +92,7 @@ class ProofForm(forms.ModelForm):
             instance.save()
         return instance
 
-
+class ImageForm(forms.Form):
+    image = forms.ImageField()
 
 

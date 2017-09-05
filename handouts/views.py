@@ -14,10 +14,10 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 #import tempfile
 #import os
 
-from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm
-from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof
+from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
+from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof,ImageModel
 from randomtest.utils import newtexcode
-from randomtest.models import get_or_create_up
+from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag
 
 # Create your views here.
 
@@ -84,6 +84,35 @@ def handouteditview(request,pk):
             h.top_order_number = h.top_order_number+1
             h.document_elements.add(d)
             h.save()
+        if "addproblemset" in form:
+            radio=form.get("neworold","")
+            if radio=="new-problem-set":
+                t=NewTest(name=form.get("problem-set-name",""))
+                t.save()
+            else:
+                testtocopy=NewTest.objects.get(pk=form.get("existing-problem-set",""))
+                t=NewTest(name=testtocopy.name)
+                t.save()
+                for p in testtocopy.problems.all():
+                    sp=SortableProblem(order=p.order,problem=p.problem,newtest_pk=t.pk)
+                    sp.save()
+                    t.problems.add(sp)
+            d=DocumentElement(content_object=t,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
+            d.save()
+            h.top_order_number = h.top_order_number+1
+            h.document_elements.add(d)
+            h.save()
+#redirect to edit newtest view?
+        if "addimage" in form:
+            form = ImageForm(request.POST, request.FILES)
+            if form.is_valid():
+                m = ImageModel(image=form.cleaned_data['image'])
+                m.save()
+                d=DocumentElement(content_object=m,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
+                d.save()
+                h.top_order_number = h.top_order_number+1
+                h.document_elements.add(d)
+                h.save()
         if 'save' in form:
             if 'docinput' in form:
                 D=list(h.document_elements.all())
@@ -117,7 +146,7 @@ def handouteditview(request,pk):
                     d.save()        
     doc_elements = list(h.document_elements.all())
     doc_elements = sorted(doc_elements,key=lambda x:x.order)
-    return render(request, 'handouts/handouteditview.html',{'doc_elements': doc_elements,'nbar': 'viewmytests','handout':h})    
+    return render(request, 'handouts/handouteditview.html',{'doc_elements': doc_elements,'nbar': 'viewmytests','handout':h,'mynewtests':request.user.userprofile.newtests.all()})
 
 class HandoutUpdateView(UpdateView):
     model = Handout
@@ -265,3 +294,102 @@ def handoutlistview(request):
     handouts=userprofile.handouts.all()
     return render(request, 'handouts/handoutlistview.html',{'object_list': handouts,'nbar': 'viewmytests'})
 
+
+@login_required
+def editnewtestview(request,pk,hpk):
+    h=get_object_or_404(Handout,pk=pk)
+    T=get_object_or_404(NewTest,pk=hpk)
+    Tprobs=T.problems.all()
+    if request.method == "POST":
+        if 'save' in request.POST:
+            form=request.POST
+            if 'probleminput' in form:
+                P=list(T.problems.all())
+                P=sorted(P,key=lambda x:x.order)
+                probinputs=form.getlist('probleminput')#could be an issue if no problems             
+                for prob in P:
+                    if 'problem_'+str(prob.pk) not in probinputs:
+                        prob.delete()
+                for i in range(0,len(probinputs)):
+                    prob=T.problems.get(pk=probinputs[i].split('_')[1])
+                    prob.order=i+1
+                    prob.save()
+            return redirect('../../')
+        if 'addproblems' in request.POST:
+            form=request.POST
+            testtype = form.get('testtype','')
+            searchterm = form.get('keywords','')
+            if searchterm is None or searchterm==u'':
+                keywords=[]
+            else:
+                keywords=searchterm.split(' ')
+
+            num=form.get('numproblems','')
+            if num is None or num==u'':
+                num=10
+            else:
+                num=int(num)
+
+            tag=form.get('tag','')
+            if tag=="Unspecified":
+                tag=''
+
+            probbegin=form.get('probbegin','')
+            if probbegin is None or probbegin==u'':
+                probbegin=0
+            else:
+                probbegin=int(probbegin)
+
+            probend=form.get('probend','')
+            if probend is None or probend==u'':
+                probend=10000
+            else:
+                probend=int(probend)
+
+            yearbegin=form.get('yearbegin','')
+            if yearbegin is None or yearbegin==u'':
+                yearbegin=0
+            else:
+                yearbegin=int(yearbegin)
+            yearend=form.get('yearend','')
+            if yearend is None or yearend==u'':
+                yearend=10000
+            else:
+                yearend=int(yearend)
+
+            if len(tag)>0:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+            else:
+                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
+            for i in keywords:
+                P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i)|Q(label=i)|Q(test_label=i))
+            blocked_probs = Tprobs.values('problem_id')
+            P=P.exclude(id__in=blocked_probs)
+            P=list(P)
+            shuf
+            shuffle(P)
+            P=P[0:min(50,num)]
+            t=Tprobs.count()
+            for i in range(t,t+len(P)):
+                sp=SortableProblem(problem=P[i-t],order=i+1,newtest_pk=T.pk)
+                sp.save()
+                T.problems.add(sp)
+            T.num_problems=T.problems.count()
+            T.save()
+    userprofile = get_or_create_up(request.user)
+    if userprofile.user_type == 'member':
+        types=list(Type.objects.exclude(type__startswith="CM"))
+    elif userprofile.user_type == 'manager':
+        types=list(Type.objects.filter(type__startswith="CM"))
+    elif userprofile.user_type == 'super':
+        types=list(Type.objects.all())
+    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    rows=[]
+    for i in range(0,len(types)):
+        rows.append((types[i].type,types[i].label))
+    rows=sorted(rows,key=lambda x:x[1])
+    P=list(Tprobs)
+    P=sorted(P,key=lambda x:x.order)
+    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    return render(request, 'handouts/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags,'handout':h})

@@ -286,6 +286,7 @@ class UserProfile(models.Model):
     user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
     handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
+    newtests = models.ManyToManyField(NewTest,blank=True,related_name='newtests')
     def __unicode__(self):
         return self.user.username
 

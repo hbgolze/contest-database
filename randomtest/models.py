@@ -254,6 +254,8 @@ class SortableProblem(models.Model):
 #    def __str__(self):
 #        return 
 #in general, we would want this to be deleted if Problem is deleted, but not the other way around.
+    class Meta:
+        ordering = ['order']
 
 class NewTest(models.Model):
     name = models.CharField(max_length=50)
@@ -286,6 +288,7 @@ class UserProfile(models.Model):
     user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
     handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
+    newtests = models.ManyToManyField(NewTest,blank=True,related_name='newtests')
     def __unicode__(self):
         return self.user.username
 
