@@ -16,7 +16,7 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 
 from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
 from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof,ImageModel
-from randomtest.utils import newtexcode
+from randomtest.utils import newtexcode,asycompile
 from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag
 
 # Create your views here.
@@ -53,6 +53,7 @@ def handouteditview(request,pk):
             tb.save()
             tb.text_display = newtexcode(textbl, 'textblock_'+str(tb.pk), "")
             tb.save()
+            compileasy(tb.textcode,'textblock_'+str(tb.pk))
             d=DocumentElement(content_object=tb,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
             d.save()
             h.top_order_number = h.top_order_number+1
