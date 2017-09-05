@@ -53,7 +53,7 @@ def handouteditview(request,pk):
             tb.save()
             tb.text_display = newtexcode(textbl, 'textblock_'+str(tb.pk), "")
             tb.save()
-            compileasy(tb.textcode,'textblock_'+str(tb.pk))
+            compileasy(tb.text_code,'textblock_'+str(tb.pk))
             d=DocumentElement(content_object=tb,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
             d.save()
             h.top_order_number = h.top_order_number+1
