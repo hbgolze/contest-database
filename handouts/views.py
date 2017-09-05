@@ -17,7 +17,7 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
 from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof,ImageModel
 from randomtest.utils import newtexcode,compileasy
-from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag
+from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem
 
 # Create your views here.
 
