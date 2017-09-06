@@ -1321,7 +1321,7 @@ def uploadcontestview(request):
                         p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                         p.save()
                 if type2.default_question_type=='pf':
-                    for i in range(0,len(problemtexts)):
+                    for i in range(1,len(problemtexts)):
                         p=Problem(problem_text=problemtexts[i],
                                   label=label+str(i),
                                   readable_label=readablelabel+type2.readable_label_post_form+str(i),
