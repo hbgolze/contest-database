@@ -287,3 +287,12 @@ class DuplicateProblemForm(forms.Form):
         # Always return a value to use as the new cleaned data, even if
         # this method didn't change it.
         return data
+
+
+T=Type.objects.filter(is_contest=1)
+CONTEST_CHOICES=tuple((i.type,i.label) for i in T)
+class UploadContestForm(forms.Form):
+    year = forms.CharField(max_length=4,label='Year',required=True)
+    formletter = forms.CharField(max_length=2,label='Form',required=False)
+    typ = forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}), choices = CONTEST_CHOICES,label="Contest Type",required=True)
+    contestfile=forms.FileField()

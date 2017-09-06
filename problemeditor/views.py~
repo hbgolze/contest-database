@@ -12,7 +12,7 @@ from django.views.generic import UpdateView
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 
@@ -1235,9 +1235,124 @@ class CMSolutionUpdateView(UpdateView):
         context['prefix'] = 'CM_'
         return context
 
+@login_required
 def remove_duplicate(request,type,tag,label,pk):
-    prob=get_object_or_404(Problem,label=label)
-    if prob.duplicate_problems.filter(pk=pk).exists():
-        prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
-        prob.save()
+    if request.user.userprofile.user_type == 'super':
+        prob=get_object_or_404(Problem,label=label)
+        if prob.duplicate_problems.filter(pk=pk).exists():
+            prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
+            prob.save()
     return redirect("../../")
+
+@login_required
+def uploadcontestview(request):
+    if request.POST and request.FILES:
+        form = UploadContestForm(request.POST, request.FILES)
+        if form.is_valid():
+            contestfile = form.cleaned_data["contestfile"]
+            year=form.cleaned_data['year']
+            formletter=form.cleaned_data['formletter']
+            typ=form.cleaned_data['typ']
+            type2=Type.objects.get(type=typ)
+            if contestfile.multiple_chunks()== True:
+                pass
+            else:
+                f=contestfile.read().decode('utf-8')
+#                print(f.decode("utf-8"))
+                problemtexts = str(f).split('=========')
+
+
+                label = year+type2.type+formletter
+                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
+                readablelabel = readablelabel.rstrip()
+#                if type.default_question_type=='mc':
+#                    for i in range(1,num+1):
+#                p=Problem(mc_problem_text = F['problem_text'+str(i)],
+#                          problem_text = F['problem_text'+str(i)],
+#                          answer = F['answer'+str(i)],
+#                          mc_answer = F['answer'+str(i)],
+#                          answer_choices = '$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
+#                          answer_A = F['answer_A'+str(i)],
+#                          answer_B = F['answer_B'+str(i)],
+#                          answer_C = F['answer_C'+str(i)],
+#                          answer_D = F['answer_D'+str(i)],
+#                          answer_E = F['answer_E'+str(i)],
+#                          label = label+str(i),
+#                          readable_label = readablelabel+typ.readable_label_post_form+str(i),
+#                          type_new = typ,
+#                          question_type_new = QuestionType.objects.get(question_type='multiple choice'),
+#                          problem_number = i,
+#                          year = F['year'],
+#                          form_letter=F['formletter'],
+#                          test_label=label,
+#                          top_solution_number=0,
+#                          )
+#                p.save()
+#                p.types.add(typ)
+#                p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
+#                p.save()
+#                compileasy(p.mc_problem_text,p.label)
+#                compileasy(p.problem_text,p.label)
+#                p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+#                p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+#                p.save()
+                if type2.default_question_type=='sa':
+                    for i in range(0,len(problemtexts)):
+                        p=Problem(problem_text = problemtexts[i],
+                                  answer='',
+                                  sa_answer='',
+                                  label=label+str(i+1),
+                                  readable_label=readablelabel+type2.readable_label_post_form+str(i+1),
+                                  type_new=type2,
+                                  question_type_new=QuestionType.objects.get(question_type='short answer'),
+                                  problem_number=i+1,
+                                  year=year,
+                                  form_letter=formletter,
+                                  test_label=label,
+                                  top_solution_number=0,
+                                  )
+                        p.save()
+                        p.types.add(type2)
+                        p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                        p.save()
+                        compileasy(p.mc_problem_text,p.label)
+                        compileasy(p.problem_text,p.label)
+                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                        p.save()
+                if type2.default_question_type=='pf':
+                    for i in range(0,len(problemtexts)):
+                        p=Problem(problem_text=problemtexts[i],
+                                  label=label+str(i+1),
+                                  readable_label=readablelabel+type2.readable_label_post_form+str(i+1),
+                                  type_new=type2,
+                                  question_type_new=QuestionType.objects.get(question_type='proof'),
+                                  problem_number=i+1,
+                                  year=year,
+                                  form_letter=formletter,
+                                  test_label=label,
+                                  top_solution_number=0,
+                                  )
+                        p.save()
+                        p.types.add(type2)
+                        p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                        p.save()
+                        compileasy(p.mc_problem_text,p.label)
+                        compileasy(p.problem_text,p.label)
+                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                        p.save()
+                P=Problem.objects.filter(test_label=label)
+                if len(P)>0:
+                    t=Test(name=readablelabel)
+                    t.save()
+                for i in P:
+                    t.problems.add(i)
+                    t.types.add(i.type_new)
+                t.save()
+                tc,boolcreated=TestCollection.objects.get_or_create(name=type2.label)
+                tc.tests.add(t)
+                tc.save()
+                return redirect('/problemeditor/')
+    form=UploadContestForm()
+    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})

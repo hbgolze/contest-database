@@ -71,6 +71,7 @@ urlpatterns = [
     url(r'^CM/bytag/(?P<type>\w+)/(?P<tagstatus>\w+)/(?P<pk>\w+)/change_question_type$',ChangeQuestionTypeWizard.as_view(changequestiontype_forms,condition_dict={'1':show_mc_form_condition2,'2':show_sa_form_condition2,'3':show_pf_form_condition2,'4':show_mcsa_form_condition2,})),
     url(r'^addproblemform/$',AddProblemWizard.as_view(addproblem_forms,condition_dict={'1':show_mc_form_condition,'2':show_sa_form_condition,'3':show_pf_form_condition,'4':show_mcsa_form_condition,})),
     url(r'^addcontest/(?P<type>\w+)/(?P<num>\w+)/$',views.addcontestview, name='addcontestview'),
+    url(r'^uploadcontest/$',views.uploadcontestview, name='uploadcontestview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^untagged/(?P<type>\w+)/$', views.untaggedview, name='untaggedview'),
