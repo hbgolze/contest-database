@@ -1106,7 +1106,10 @@ def addcontestview(request,type,num):
                 p.save()
         P=Problem.objects.filter(test_label=label)
         if len(P)>0:
-            t=Test(name=readablelabel)
+            if formletter != "":
+                t=Test(name=readablelabel)
+            else:
+                t=Test(name=year+' '+type2.label)
             t.save()
         for i in P:
             t.problems.add(i)
@@ -1344,7 +1347,10 @@ def uploadcontestview(request):
                         p.save()
                 P=Problem.objects.filter(test_label=label)
                 if len(P)>0:
-                    t=Test(name=readablelabel)
+                    if formletter != "":
+                        t=Test(name=readablelabel)
+                    else:
+                        t=Test(name=year+' '+type2.label)
                     t.save()
                 for i in P:
                     t.problems.add(i)
