@@ -254,6 +254,8 @@ class SortableProblem(models.Model):
 #    def __str__(self):
 #        return 
 #in general, we would want this to be deleted if Problem is deleted, but not the other way around.
+    class Meta:
+        ordering = ['order']
 
 class NewTest(models.Model):
     name = models.CharField(max_length=50)

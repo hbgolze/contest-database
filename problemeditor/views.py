@@ -1300,51 +1300,69 @@ def uploadcontestview(request):
 #                p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
 #                p.save()
                 if type2.default_question_type=='sa':
+                    num=1
+                    prefix_pn=''
                     for i in range(1,len(problemtexts)):
-                        p=Problem(problem_text = problemtexts[i],
-                                  answer='',
-                                  sa_answer='',
-                                  label=label+str(i),
-                                  readable_label=readablelabel+type2.readable_label_post_form+str(i),
-                                  type_new=type2,
-                                  question_type_new=QuestionType.objects.get(question_type='short answer'),
-                                  problem_number=i,
-                                  year=year,
-                                  form_letter=formletter,
-                                  test_label=label,
-                                  top_solution_number=0,
-                                  )
-                        p.save()
-                        p.types.add(type2)
-                        p.question_type.add(QuestionType.objects.get(question_type='short answer'))
-                        p.save()
-                        compileasy(p.mc_problem_text,p.label)
-                        compileasy(p.problem_text,p.label)
-                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                        p.save()
+                        ptext=problemtexts[i]
+                        if '===' in ptext:
+                            prefix_pn=ptext[ptext.index('===')+3]
+                            num=1
+                        else:
+                            p=Problem(problem_text = problemtexts[i],
+                                      answer='',
+                                      sa_answer='',
+                                      label=label+prefix_pn+str(num),
+                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
+                                      type_new=type2,
+                                      question_type_new=QuestionType.objects.get(question_type='short answer'),
+                                      problem_number=num,
+                                      year=year,
+                                      form_letter=formletter,
+                                      test_label=label,
+                                      top_solution_number=0,
+                                      problem_number_prefix=prefix_pn,
+                                      )
+                            p.save()
+                            p.types.add(type2)
+                            p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                            p.save()
+                            compileasy(p.mc_problem_text,p.label)
+                            compileasy(p.problem_text,p.label)
+                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                            p.save()
+                            num+=1
                 if type2.default_question_type=='pf':
+                    num=1
+                    prefix_pn=''
                     for i in range(1,len(problemtexts)):
-                        p=Problem(problem_text=problemtexts[i],
-                                  label=label+str(i),
-                                  readable_label=readablelabel+type2.readable_label_post_form+str(i),
-                                  type_new=type2,
-                                  question_type_new=QuestionType.objects.get(question_type='proof'),
-                                  problem_number=i,
-                                  year=year,
-                                  form_letter=formletter,
-                                  test_label=label,
-                                  top_solution_number=0,
-                                  )
-                        p.save()
-                        p.types.add(type2)
-                        p.question_type.add(QuestionType.objects.get(question_type='proof'))
-                        p.save()
-                        compileasy(p.mc_problem_text,p.label)
-                        compileasy(p.problem_text,p.label)
-                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                        p.save()
+                        ptext=problemtexts[i]
+                        if '===' in ptext:
+                            prefix_pn=ptext[ptext.index('===')+3]
+                            num=1
+                        else:
+                            p=Problem(problem_text=problemtexts[i],
+                                      label=label+prefix_pn+str(num),
+                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
+                                      type_new=type2,
+                                      question_type_new=QuestionType.objects.get(question_type='proof'),
+                                      problem_number=num,
+                                      year=year,
+                                      form_letter=formletter,
+                                      test_label=label,
+                                      top_solution_number=0,
+                                      problem_number_prefix=prefix_pn,
+                                      )
+                            p.save()
+                            p.types.add(type2)
+                            p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                            p.save()
+                            compileasy(p.mc_problem_text,p.label)
+                            compileasy(p.problem_text,p.label)
+                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                            p.save()
+                            num+=1
                 P=Problem.objects.filter(test_label=label)
                 if len(P)>0:
                     if formletter != "":

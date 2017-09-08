@@ -57,7 +57,7 @@ def testview(request,pk):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     test = get_object_or_404(Test, pk=pk)
     P=list(test.problems.all())
-    P=sorted(P,key=lambda x:(x.problem_number,x.year))
+    P=sorted(P,key=lambda x:(x.problem_number_prefix,x.problem_number,x.year))
     return render(request, 'contestcollections/testview.html',{'rows': P,'pk' : pk,'nbar': 'contestcollection', 'name':test.name,'user_type': userprofile.user_type})
 
 @login_required

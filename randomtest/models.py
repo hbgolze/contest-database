@@ -115,6 +115,7 @@ class Problem(models.Model):
     comments = models.ManyToManyField(Comment,blank=True)
     approvals = models.ManyToManyField(ProblemApproval,blank=True)
     duplicate_problems = models.ManyToManyField("self",blank=True)
+    problem_number_prefix = models.CharField(max_length=5,default="")
     def __str__(self):
         return self.label
     def print_tags(self):
