@@ -42,8 +42,8 @@ class Section(models.Model):#possibly have an asterisk here...
     def __str__(self):
         return self.name
 
-class ImageModel(models.Model):
-    image = models.ImageField(upload_to='images')
+#class ImageModel(models.Model):
+#    image = models.ImageField(upload_to='images')
 
 class DocumentElement(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)

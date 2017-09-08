@@ -15,7 +15,7 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 #import os
 
 from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
-from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof,ImageModel
+from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof#,ImageModel
 from randomtest.utils import newtexcode,compileasy
 from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem
 
@@ -107,16 +107,16 @@ def handouteditview(request,pk):
             h.document_elements.add(d)
             h.save()
 #redirect to edit newtest view?
-        if "addimage" in form:
-            form = ImageForm(request.POST, request.FILES)
-            if form.is_valid():
-                m = ImageModel(image=form.cleaned_data['image'])
-                m.save()
-                d=DocumentElement(content_object=m,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
-                d.save()
-                h.top_order_number = h.top_order_number+1
-                h.document_elements.add(d)
-                h.save()
+#        if "addimage" in form:
+#            form = ImageForm(request.POST, request.FILES)
+#            if form.is_valid():
+#                m = ImageModel(image=form.cleaned_data['image'])
+#                m.save()
+#                d=DocumentElement(content_object=m,chapter_number=h.order,section_number=h.top_section_number,subsection_number=h.top_subsection_number,order=h.top_order_number+1)
+#                d.save()
+#                h.top_order_number = h.top_order_number+1
+#                h.document_elements.add(d)
+#                h.save()
         if 'save' in form:
             if 'docinput' in form:
                 D=list(h.document_elements.all())
