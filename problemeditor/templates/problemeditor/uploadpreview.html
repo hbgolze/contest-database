@@ -1,0 +1,21 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+<table class="table">
+{% for a,b,c in rows %}
+<tr>
+<td>{{a}}</td>
+<td>{{b}}</td>
+<td>{{c}}</td>
+</tr>
+{% endfor %}
+</table>
+<form>
+{% csrf_token %}
+{% for field in form %}
+{{ field.as_hidden }}
+{% endfor %}
+<button type="submit" class="btn btn-primary">Add Contest</button>
+</form>
+
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Duplicate Problems{% endblock %}
+
+{% block content %}
+<h2>Duplicate Problems: {{typ.label}}</h2>
+<div class="content">
+<table class="table">
+    <thead>
+      <tr>
+        <th>Problem</th>
+	<th>Duplicate Problems</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for prob in problems %}
+      
+      <tr>
+        <td>
+{% if prob.question_type_new.question_type == 'multiple choice' %}
+  <label>Problem Text:</label>
+  <p>{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
+{% endif %}
+{% if prob.question_type_new.question_type == 'short answer' or prob.question_type_new.question_type == 'proof' %}
+  <label>Problem Text:</label>
+  <p>{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
+{% endif %}
+{% if prob.question_type_new.question_type == 'multiple choice short answer' %}
+  <label>Problem Text (Multiple Choice):</label>
+  <p>{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
+  <label>Problem Text (Short Answer):</label>
+  <p>{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
+{% endif %}
+(<a href="/problemeditor/redirectproblem/{{prob.pk}}/">View Tags/Solutions</a>)
+	</td>
+        <td>
+	  {% for dprob in prob.duplicate_problems.all %}
+{% if dprob.question_type_new.question_type == 'multiple choice' %}
+  <p>{% autoescape off %}{{dprob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{dprob.readable_label}}]</p>
+{% endif %}
+{% if dprob.question_type_new.question_type == 'short answer' or dprob.question_type_new.question_type == 'proof' %}
+  <p>{% autoescape off %}{{dprob.display_problem_text|linebreaks}} {% endautoescape %}  [{{dprob.readable_label}}]</p>
+{% endif %}
+{% if dprob.question_type_new.question_type == 'multiple choice short answer' %}
+  <label>Problem Text (Multiple Choice):</label>
+  <p>{% autoescape off %}{{dprob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{dprob.readable_label}}]</p>
+  <label>Problem Text (Short Answer):</label>
+  <p>{% autoescape off %}{{dprob.display_problem_text|linebreaks}} {% endautoescape %}  [{{dprob.readable_label}}]</p>
+{% endif %}
+
+	  {% endfor %}
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}
