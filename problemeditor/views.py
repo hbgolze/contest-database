@@ -1533,5 +1533,5 @@ def uploadsave(request):
 @login_required
 def duplicate_view(request,type_name):
     typ=get_object_or_404(Type,type=type_name)
-    problems=typ.problem_set.annotate(c=Count('duplicate_problems')).filter(c__gt=0)
+    problems=typ.problem_set.annotate(c=Count('duplicate_problems')).filter(c__gt=0).order_by('year')
     return render(request,'problemeditor/duplicate_view.html',context={'typ':typ,'problems':problems})
