@@ -1,7 +1,7 @@
 from django.conf.urls import include,url
 
 from . import views
-from .forms import AddProblemForm1,AddProblemForm2MC,AddProblemForm2SA,AddProblemForm2PF,AddProblemForm2MCSA,AddProblemForm3,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,ChangeQuestionTypeForm2MCSA
+from .forms import AddProblemForm1,AddProblemForm2MC,AddProblemForm2SA,AddProblemForm2PF,AddProblemForm2MCSA,AddProblemForm3,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,ChangeQuestionTypeForm2MCSA,UploadContestForm
 from .views import AddProblemWizard,ChangeQuestionTypeWizard,show_mc_form_condition,show_sa_form_condition,show_pf_form_condition,show_mcsa_form_condition
 from .views import show_mc_form_condition2,show_sa_form_condition2,show_pf_form_condition2,show_mcsa_form_condition2
 
@@ -71,7 +71,13 @@ urlpatterns = [
     url(r'^CM/bytag/(?P<type>\w+)/(?P<tagstatus>\w+)/(?P<pk>\w+)/change_question_type$',ChangeQuestionTypeWizard.as_view(changequestiontype_forms,condition_dict={'1':show_mc_form_condition2,'2':show_sa_form_condition2,'3':show_pf_form_condition2,'4':show_mcsa_form_condition2,})),
     url(r'^addproblemform/$',AddProblemWizard.as_view(addproblem_forms,condition_dict={'1':show_mc_form_condition,'2':show_sa_form_condition,'3':show_pf_form_condition,'4':show_mcsa_form_condition,})),
     url(r'^addcontest/(?P<type>\w+)/(?P<num>\w+)/$',views.addcontestview, name='addcontestview'),
-    url(r'^addcontestfile/$',views.addcontestfileview, name='addcontestfileview'),
+    url(r'^uploadcontest/$',views.uploadcontestview, name='uploadcontestview'),
+
+    url(r'^tameuploadcontest/$',views.tameupload, name='tameupload'),
+    url(r'^tameuploadcontest/preview/$',views.uploadpreview, name='uploadpreview'),
+    url(r'^duplicateview/(?P<type_name>\w+)/$',views.duplicate_view, name='duplicate_view'),
+    url(r'^redirectproblem/(?P<pk>\w+)/$',views.redirect_problem, name='redirect_problem_view'),
+#    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^untagged/(?P<type>\w+)/$', views.untaggedview, name='untaggedview'),

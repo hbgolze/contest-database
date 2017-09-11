@@ -3,7 +3,6 @@
 {% if prob.question_type_new.question_type == 'multiple choice' %}
   <label>Problem Text:</label>
   <p>{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]</p>
-  </p>
 {% endif %}
 {% if prob.question_type_new.question_type == 'short answer' or prob.question_type_new.question_type == 'proof' %}
   <label>Problem Text:</label>

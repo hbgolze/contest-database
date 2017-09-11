@@ -15,6 +15,8 @@ from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Co
 from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
+from django.db.models import Count
+
 
 
 def show_mc_form_condition(wizard):
@@ -1380,3 +1382,156 @@ def uploadcontestview(request):
                 return redirect('/problemeditor/')
     form=UploadContestForm()
     return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
+
+@login_required
+def tameupload(request):
+    form=UploadContestForm()
+    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
+
+
+@login_required
+def uploadpreview(request):
+    if request.POST and request.FILES:
+        form = UploadContestForm(request.POST, request.FILES)
+        if form.is_valid():
+            contestfile = form.cleaned_data["contestfile"]
+            year=form.cleaned_data['year']
+            formletter=form.cleaned_data['formletter']
+            typ=form.cleaned_data['typ']
+            type2=Type.objects.get(type=typ)
+            if contestfile.multiple_chunks()== True:
+                pass
+            else:
+                f=contestfile.read().decode('utf-8')
+                problemtexts = str(f).split('=========')
+                label = year+type2.type+formletter
+                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
+                readablelabel = readablelabel.rstrip()
+                rows=[]
+                if type2.default_question_type=='sa' or type2.default_question_type=='pf':
+                    num=1
+                    prefix_pn=''
+                    for i in range(1,len(problemtexts)):
+                        ptext=problemtexts[i]
+                        if '===' in ptext:
+                            prefix_pn=ptext[ptext.index('===')+3]
+                            num=1
+                        else:
+                            rows.append((newtexcode(problemtexts[i],label+prefix_pn+str(num),''),
+                                         label+prefix_pn+str(num),
+                                         readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
+                                         ))
+                            num+=1
+#default_question_type
+#testlabel
+#prefix
+#problem number...
+                return render(request,'problemeditor/uploadpreview.html',context={'form':form,'rows':rows})
+    return redirect('/problemeditor/')
+
+
+
+# this is not working yet...upload preview needs to work better.
+@login_required
+def uploadsave(request):
+    if request.POST and request.FILES:
+        form = UploadContestForm(request.POST, request.FILES)
+        if form.is_valid():
+            contestfile = form.cleaned_data["contestfile"]
+            year=form.cleaned_data['year']
+            formletter=form.cleaned_data['formletter']
+            typ=form.cleaned_data['typ']
+            type2=Type.objects.get(type=typ)
+            if contestfile.multiple_chunks()== True:
+                pass
+            else:
+                f=contestfile.read().decode('utf-8')
+                problemtexts = str(f).split('=========')
+                label = year+type2.type+formletter
+                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
+                readablelabel = readablelabel.rstrip()
+                if type2.default_question_type=='sa':
+                    num=1
+                    prefix_pn=''
+                    for i in range(1,len(problemtexts)):
+                        ptext=problemtexts[i]
+                        if '===' in ptext:
+                            prefix_pn=ptext[ptext.index('===')+3]
+                            num=1
+                        else:
+                            p=Problem(problem_text = problemtexts[i],
+                                      answer='',
+                                      sa_answer='',
+                                      label=label+prefix_pn+str(num),
+                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
+                                      type_new=type2,
+                                      question_type_new=QuestionType.objects.get(question_type='short answer'),
+                                      problem_number=num,
+                                      year=year,
+                                      form_letter=formletter,
+                                      test_label=label,
+                                      top_solution_number=0,
+                                      problem_number_prefix=prefix_pn,
+                                      )
+                            p.save()
+                            p.types.add(type2)
+                            p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                            p.save()
+                            compileasy(p.mc_problem_text,p.label)
+                            compileasy(p.problem_text,p.label)
+                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                            p.save()
+                            num+=1
+                if type2.default_question_type=='pf':
+                    num=1
+                    prefix_pn=''
+                    for i in range(1,len(problemtexts)):
+                        ptext=problemtexts[i]
+                        if '===' in ptext:
+                            prefix_pn=ptext[ptext.index('===')+3]
+                            num=1
+                        else:
+                            p=Problem(problem_text=problemtexts[i],
+                                      label=label+prefix_pn+str(num),
+                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
+                                      type_new=type2,
+                                      question_type_new=QuestionType.objects.get(question_type='proof'),
+                                      problem_number=num,
+                                      year=year,
+                                      form_letter=formletter,
+                                      test_label=label,
+                                      top_solution_number=0,
+                                      problem_number_prefix=prefix_pn,
+                                      )
+                            p.save()
+                            p.types.add(type2)
+                            p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                            p.save()
+                            compileasy(p.mc_problem_text,p.label)
+                            compileasy(p.problem_text,p.label)
+                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                            p.save()
+                            num+=1
+                P=Problem.objects.filter(test_label=label)
+                if len(P)>0:
+                    if formletter != "":
+                        t=Test(name=readablelabel)
+                    else:
+                        t=Test(name=year+' '+type2.label)
+                    t.save()
+                for i in P:
+                    t.problems.add(i)
+                    t.types.add(i.type_new)
+                t.save()
+                tc,boolcreated=TestCollection.objects.get_or_create(name=type2.label)
+                tc.tests.add(t)
+                tc.save()
+                return redirect('/problemeditor/')
+
+@login_required
+def duplicate_view(request,type_name):
+    typ=get_object_or_404(Type,type=type_name)
+    problems=typ.problem_set.annotate(c=Count('duplicate_problems')).filter(c__gt=0)
+    return render(request,'problemeditor/duplicate_view.html',context={'typ':typ,'problems':problems})
