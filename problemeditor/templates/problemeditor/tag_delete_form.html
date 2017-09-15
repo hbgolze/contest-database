@@ -1,0 +1,48 @@
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form id="tag_delete_form" method='post' class="form" role="form" action='{% url 'delete_tag' tag.pk %}'>
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Delete Tag</h4>
+              </div>
+              <div class="modal-body">
+                    {% csrf_token %}
+
+		    <p>Are you sure you want to delete the tag 
+		      <label class="label label-default">
+			{{tag}}
+		      </label>
+		      &nbsp;({{tag.problems.count}} problems)?
+{% if tag.children.count > 0 %}This will also delete the following tags:</p>
+		    <ul>
+		      {% for tagchild in tag.children.all %}
+		      <li style="margin: 5px 0;">
+			<label class="label label-default">
+			  {{tagchild}}
+			</label>
+			&nbsp;({{tagchild.problems.count}} problems)
+			  {% if tagchild.level == 2 %}
+			  <ul>
+			  {% for tagchildchild in tagchild.children.all %}
+			  <li style="margin: 5px 0;">
+			    <label class="label label-default">
+			      {{tagchildchild}}
+			    </label>
+			    &nbsp;({{tagchildchild.problems.count}} problems)
+			  </li>
+			  {% endfor %}
+			  </ul>
+			  {% endif %}
+		      </li>
+		      {% endfor %}
+		    </ul>
+		    {% endif %}
+              </div>
+              <div class="modal-footer">
+                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
+                <input type="submit" class="btn btn-primary" value="Delete" style="margin-bottom: 5px;" />
+              </div>
+        </form>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

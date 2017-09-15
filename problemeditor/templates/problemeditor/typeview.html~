@@ -8,8 +8,11 @@
 </ol>
 {% block content %}
 <h2>Problem Editor</h2>
-Please select a test category<!-- or <a href="/problemeditor/newproblem/">add</a> a new problem-->.
 <div class="content">
+{% if request.user.userprofile.user_type=="super" %}
+<div class="pull-right"><a href="tags" class="btn btn-primary">Edit Tags</a></div>
+{% endif %}
+<p>Please select a test category.</p>
 {% if rows|length > 0 %}
 <table class="table table-striped">
     <thead>

@@ -5,7 +5,7 @@ from .forms import AddProblemForm1,AddProblemForm2MC,AddProblemForm2SA,AddProble
 from .views import AddProblemWizard,ChangeQuestionTypeWizard,show_mc_form_condition,show_sa_form_condition,show_pf_form_condition,show_mcsa_form_condition
 from .views import show_mc_form_condition2,show_sa_form_condition2,show_pf_form_condition2,show_mcsa_form_condition2
 
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 
 addproblem_forms = [AddProblemForm1,
                     AddProblemForm2MC,
@@ -77,6 +77,12 @@ urlpatterns = [
     url(r'^tameuploadcontest/preview/$',views.uploadpreview, name='uploadpreview'),
     url(r'^duplicateview/(?P<type_name>\w+)/$',views.duplicate_view, name='duplicate_view'),
     url(r'^redirectproblem/(?P<pk>\w+)/$',views.redirectproblem, name='redirect_problem_view'),
+    url(r'^tags/$',views.tageditview,name='tageditview'),
+
+    url(r'^tags/edit_tag/(?P<pk>\d+)/$', login_required(views.TagUpdateView.as_view()),name="update_tag"),
+    url(r'^tags/add_tag/(?P<pk>\d+)/$', login_required(views.TagCreateView.as_view()),name="add_tag"),
+    url(r'^tags/delete_tag/(?P<pk>\d+)/$', user_passes_test(lambda u: u.is_superuser)(views.TagDeleteView.as_view()),name="delete_tag"),
+    url(r'^tags/info_tag/(?P<pk>\d+)/$', views.taginfoview,name="info_tag"),
 #    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),

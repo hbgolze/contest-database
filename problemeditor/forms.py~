@@ -1,9 +1,10 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from randomtest.utils import newsoltexcode
 
+from django.forms.widgets import HiddenInput
 ANSWER_CHOICES = (
     ('A','Answer A'),
     ('B','Answer B'),
@@ -22,26 +23,26 @@ class ProblemForm(forms.ModelForm):
 #        'tags': forms.ModelMultipleChoiceField(widget=FilteredSelectMultiple(('tags'),False),queryset=Tag.objects.all(),required=False)
 #            'tags': forms.SelectMultiple(attrs={'size': 30})
 #    }
-    tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
+    newtags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('newtags',is_stacked=False), queryset = NewTag.objects.all().exclude(label='root'),required=False,label="Tags")
     class Meta:
         model = Problem
-        fields = ( 'tags',)
+        fields = ( 'newtags',)
     def __init__(self, *args, **kwargs):
         super(ProblemForm, self).__init__(*args, **kwargs)   
-        self.fields['tags'].queryset = Tag.objects.order_by('tag')
+        self.fields['newtags'].queryset = NewTag.objects.order_by('tag').exclude(label='root')
 
 
 class DetailedProblemForm(forms.ModelForm):
-    tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
+    newtags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('newtags',is_stacked=False), queryset = NewTag.objects.all().exclude(label='root'),required=False,label="Tags")
     class Meta:
         model = Problem
-        fields = ('tags','mc_answer','sa_answer','difficulty')
+        fields = ('newtags','mc_answer','sa_answer','difficulty')
         widgets = {
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
         }
     def __init__(self, *args, **kwargs):
         super(DetailedProblemForm, self).__init__(*args, **kwargs)
-        self.fields['tags'].queryset = Tag.objects.order_by('tag')
+        self.fields['newtags'].queryset = NewTag.objects.order_by('tag').exclude(label='root')
 
 class ProblemTextForm(forms.ModelForm):
     class Meta:
@@ -102,28 +103,6 @@ class SAAnswerForm(forms.ModelForm):
         model = Problem
         fields = ('sa_answer',)
 
-
-class AddProblemForm(forms.ModelForm):
-    tags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('tags',is_stacked=False), queryset = Tag.objects.all(),required=False)
-    question_type=forms.ModelMultipleChoiceField(widget = forms.CheckboxSelectMultiple(), queryset = QuestionType.objects.all(),required=True)
-    types=forms.ModelChoiceField(widget = forms.RadioSelect(),queryset=Type.objects.filter(type__startswith="CM"),label="Type",empty_label=None)
-    class Meta:
-        model = Problem
-        fields = ('problem_text','answer_choices','difficulty','question_type','types', 'tags','answer','latexanswer','author_name')
-        widgets = { 'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
-                    'answer_choices': forms.Textarea(attrs={'cols': 120, 'rows': 3,'id' : 'codetext'}),
-                    }
-    def __init__(self, *args, **kwargs):
-        super(AddProblemForm, self).__init__(*args, **kwargs)   
-        self.fields['tags'].queryset = Tag.objects.order_by('tag')
-        self.fields['answer_choices'].help_text = '<br/><div class="tex2jax_ignore">Should be in the form<br/>$\\textbf{(A) } Ans A\\qquad \\textbf{(B) } Ans B\\qquad \\textbf{(C) } Ans C\\qquad \\textbf{(D) } Ans D\\qquad \\textbf{(E) } Ans E$</div>'
-        self.fields['problem_text'].label = 'Problem LaTeX'
-        self.fields['latexanswer'].label = 'LaTeX Answer'
-        self.fields['author_name'].required = True
-        self.fields['types'].required = True
-    def clean_types(self):
-        data = self.cleaned_data['types']
-        return [data]
 
 class AddProblemForm1(forms.Form):
     question_type = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
@@ -289,10 +268,36 @@ class DuplicateProblemForm(forms.Form):
         return data
 
 
-T=Type.objects.filter(is_contest=1)
-CONTEST_CHOICES=tuple((i.type,i.label) for i in T)
+
 class UploadContestForm(forms.Form):
+    T=Type.objects.filter(is_contest=1)
+    CONTEST_CHOICES=tuple((i.type,i.label) for i in T)
     year = forms.CharField(max_length=4,label='Year',required=True)
     formletter = forms.CharField(max_length=2,label='Form',required=False)
     typ = forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}), choices = CONTEST_CHOICES,label="Contest Type",required=True)
     contestfile=forms.FileField()
+
+class NewTagForm(forms.ModelForm):
+    class Meta:
+        model = NewTag
+        fields = ('label',)
+        widgets = {
+            'label': forms.TextInput(attrs={'class':'form-control'}),
+            }
+class AddNewTagForm(forms.ModelForm):
+    class Meta:
+        model = NewTag
+        fields = ('label','parent',)
+        widgets = {
+            'label': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self,*args, **kwargs):
+        super(AddNewTagForm, self).__init__(*args, **kwargs)
+        self.fields['parent'].widget = HiddenInput()
+#    def clean(self):
+#        cleaned_data = super(AddNewTagForm,self).clean()
+#        label_clean = cleaned_data.get('label')
+#        parent_clean = cleaned_data.get('parent')
+#        if parent_clean.children.filter(label=label_clean).exists() == True:
+#            raise forms.ValidationError("Tag already exists!")
+

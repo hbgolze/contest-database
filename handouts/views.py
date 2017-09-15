@@ -17,7 +17,7 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
 from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof#,ImageModel
 from randomtest.utils import newtexcode,compileasy
-from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem
+from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem,NewTag
 
 
 from random import shuffle
@@ -369,7 +369,7 @@ def editnewtestview(request,pk,hpk):
 
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
             for i in keywords:
@@ -394,12 +394,11 @@ def editnewtestview(request,pk,hpk):
         types=list(Type.objects.filter(type__startswith="CM"))
     elif userprofile.user_type == 'super':
         types=list(Type.objects.all())
-    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    tags=sorted(list(NewTag.objects.exclude(tag="root")),key=lambda x:x.tag)
     rows=[]
     for i in range(0,len(types)):
         rows.append((types[i].type,types[i].label))
     rows=sorted(rows,key=lambda x:x[1])
     P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
-    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
     return render(request, 'handouts/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags,'handout':h})

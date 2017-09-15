@@ -76,7 +76,7 @@ def startform(request):
                 yearend=int(yearend)
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
@@ -122,7 +122,7 @@ def startform(request):
             return testview(request,int(form.get('startform','')))
     else:
         types=list(Type.objects.all())
-        tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+        tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
         rows=[]
         for i in range(0,len(types)):
             rows.append((types[i].type,types[i].label))
@@ -279,7 +279,7 @@ def testeditview(request,pk):
     dropboxpath = list(Dropboxurl.objects.all())[0].url
 #Prepare for the add problems form
     types=list(Type.objects.all())
-    taglist=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    taglist=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
     testrows=[]
     for i in range(0,len(types)):
         testrows.append((types[i].type,types[i].label))
@@ -347,7 +347,7 @@ def testeditview(request,pk):
 
                 if len(tag)>0:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                    matches=matches.filter(tags__in=Tag.objects.filter(tag__startswith=tag))
+                    matches=matches.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag))
                 else:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
                 matches.exclude(id__in=test.problems.all())

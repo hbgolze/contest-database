@@ -24,7 +24,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,pointsum
@@ -38,6 +38,7 @@ from datetime import datetime,timedelta
 from django.views import generic
 from .forms import LoginForm
 
+#Not in use (need to figure out how to redirect...) Also, login2.html has been deleted.
 class LoginView(generic.FormView):
     form_class = LoginForm
     success_url = reverse_lazy('tableview')
@@ -157,7 +158,7 @@ def startform(request):
                 yearend=int(yearend)
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
@@ -206,7 +207,7 @@ def startform(request):
             types = Type.objects.filter(type__startswith='CM').order_by('label')
         else:
             types = Type.objects.exclude(type__startswith='CM').order_by('label')
-        tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+        tags=sorted(list(NewTag.objects.all()),key=lambda x:x.tag)
         usertests=up.usertests.all()
         template = loader.get_template('randomtest/startform2.html')
         context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
@@ -256,7 +257,7 @@ def newstartform(request):
                 yearend=int(yearend)
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
 
@@ -288,7 +289,7 @@ def newstartform(request):
             types = Type.objects.filter(type__startswith='CM').order_by('label')
         else:
             types = Type.objects.exclude(type__startswith='CM').order_by('label')
-        tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+        tags=sorted(list(NewTag.objects.all()),key=lambda x:x.tag)
         usertests=up.usertests.all()
         template = loader.get_template('randomtest/startform2.html')
         context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
@@ -357,7 +358,7 @@ def editnewtestview(request,pk):
 
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(tags__in=Tag.objects.filter(tag__startswith=tag)).distinct()
+                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
             for i in keywords:
@@ -382,14 +383,13 @@ def editnewtestview(request,pk):
         types=list(Type.objects.filter(type__startswith="CM"))
     elif userprofile.user_type == 'super':
         types=list(Type.objects.all())
-    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    tags=sorted(list(NewTag.objects.all()),key=lambda x:x.tag)
     rows=[]
     for i in range(0,len(types)):
         rows.append((types[i].type,types[i].label))
     rows=sorted(rows,key=lambda x:x[1])
     P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
-    tags=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
     return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags})
 
 
@@ -397,7 +397,7 @@ def editnewtestview(request,pk):
 @login_required
 def tagcounts(request):
     types=list(Type.objects.all())
-    tags=list(Tag.objects.all())
+    tags=list(NewTag.objects.all())
     tags=sorted(tags,key=lambda x:x.tag)
     tagcounts=[]
     typeheaders=[]
@@ -405,7 +405,7 @@ def tagcounts(request):
         tagcounts.append([])
         typeheaders.append(types[i].type)
     for i in range(0,len(tags)):
-        t=Problem.objects.filter(tags__in=[tags[i]])
+        t=tags[i].problems.all()
         for j in range(0,len(types)):
             c=t.filter(types__in=[types[j]]).count()
             if c>0:
@@ -427,7 +427,7 @@ def tagcounts(request):
 
 def tagcounts2(request):
     types=list(Type.objects.all())
-    tags=list(Tag.objects.all())
+    tags=list(NewTag.objects.all())
     tags=sorted(tags,key=lambda x:x.tag)
     tagcounts=[]# will be a #types x #tags array
     typeheaders=[]
@@ -437,7 +437,7 @@ def tagcounts2(request):
         typeheaders.append(types[i].type)
         p=Problem.objects.filter(types__type=types[i].type)
         for j in p:
-            for k in j.tags.all():
+            for k in j.newtags.all():
                 if k.tag in Dcounts:
                     Dcounts[k.tag]+=1
                 else:
@@ -719,7 +719,7 @@ def testeditview(request,pk):
     dropboxpath = list(Dropboxurl.objects.all())[0].url
 #Prepare for the add problems form
     types=list(Type.objects.all())
-    taglist=sorted(list(Tag.objects.all()),key=lambda x:x.tag)
+    taglist=sorted(list(NewTag.objects.all()),key=lambda x:x.tag)
     testrows=[]
     for i in range(0,len(types)):
         testrows.append((types[i].type,types[i].label))
@@ -787,7 +787,7 @@ def testeditview(request,pk):
 
                 if len(tag)>0:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                    matches=matches.filter(tags__in=Tag.objects.filter(tag__startswith=tag))
+                    matches=matches.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag))
                 else:
                     matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
                 matches.exclude(id__in=test.problems.all())

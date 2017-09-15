@@ -18,6 +18,19 @@ class Tag(models.Model):
     def __str__(self):
         return self.tag
 
+class NewTag(models.Model):
+    tag = models.CharField(max_length=50)
+    label = models.CharField(max_length=50)
+    level = models.IntegerField(default=0)
+    parent = models.ForeignKey("self",null=True,related_name="children")
+    def __str__(self):
+        if self.level > 1:
+            return str(self.parent)+'>'+self.label
+        return self.label
+
+    class Meta:
+        ordering = ['label']
+
 class Type(models.Model):
     type = models.CharField(max_length=20)
     label = models.CharField(max_length=20,blank=True)
@@ -78,9 +91,10 @@ class Comment(models.Model):
 
 class Problem(models.Model):
     problem_number = models.IntegerField(default=0)
-    tags = models.ManyToManyField(Tag,related_name='problems',blank=True)
+    tags = models.ManyToManyField(Tag,related_name='problems',blank=True)#related name is used correctly here...
+    newtags = models.ManyToManyField(NewTag,related_name='problems',blank=True)
 #    tags = models.ManyToManyField(Tag,blank=True)
-    type_new = models.ForeignKey(Type,related_name='type_new',blank=True,null=True)#new(should replace)
+    type_new = models.ForeignKey(Type,related_name='problems',blank=True,null=True)#new(should replace)
     question_type_new = models.ForeignKey(QuestionType,related_name='question_type_new',blank=True,null=True)#new(should replace), then replace again.
     year = models.IntegerField(default=2016)
     difficulty = models.IntegerField(blank=True,null=True)

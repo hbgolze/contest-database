@@ -1,0 +1,57 @@
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form id="tag_update_form" method='post' class="form" role="form" action='{% url 'add_tag' parent_tag.pk %}'>
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h4 class="modal-title" id="myModalLabel">Add Tag</h4>
+              </div>
+              <div class="modal-body">
+                    {% csrf_token %}
+
+                    {{ form.non_field_errors }}
+                    <div class="form-group">
+                    {% for field in form %}
+		    {% if field.is_hidden == 0 %}
+                        <div class="form-group">
+                            {% if field.errors %}
+                                <ul class="form-errors">
+                                {% for error in field.errors %}
+                                    <li><span class="fa fa-exclamation-triangle"></span> <strong>{{ error|escape }}</strong></li>
+                                {% endfor %}
+                                </ul>
+                            {% endif %}
+                            {{ field.label_tag }} 
+				<table>
+				  <tr>
+				    <td>
+				      {% if parent_tag.level > 0 %}
+				      {{parent_tag}}&#62;
+				      {% endif %}
+<!--				      {% if parent_tag.level == 0 %}
+				      {% elif parent_tag.level == 1 %}
+				      {{parent_tag.label}}&#62;
+				      {% elif parent_tag.level == 2 %}
+				      {{parent_tag.parent.label}}&#62;{{parent_tag.label}}&#62;
+				      {% endif %}
+-->
+				    </td>
+				    <td>
+				      {{ field }} 
+				    </td>
+				  </tr>
+				</table>
+                            {% if field.help_text %}<div class="form-helptext">{{ field.help_text }}</div>{% endif %}
+                        </div>
+			{% else %}
+			{{ field.as_hidden }}
+			{% endif %}
+                    {% endfor %}
+              </div>
+              <div class="modal-footer">
+                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
+                <input type="submit" class="btn btn-primary" value="Save" style="margin-bottom: 5px;" />
+              </div>
+        </form>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

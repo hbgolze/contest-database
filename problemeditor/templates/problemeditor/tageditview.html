@@ -1,0 +1,144 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Edit Tags{% endblock %}
+
+{% block content %}
+
+{% if messages %}
+<div id="errorDiv">
+{% for message in messages %}
+<div class="alert alert-danger">
+{{message}}
+</div>
+{% endfor %}
+</div>
+{% endif %}
+<table class="table">
+<thead>
+<tr>
+<th>
+Level 1 Tag
+</th>
+<th>
+Level 2 Tag
+</th>
+<th>
+Level 3 Tag
+</th>
+</tr>
+</thead>
+<tbody>
+{% for t1 in root_tag.children.all %}
+{% for t2 in t1.children.all %}
+{% for t3 in t2.children.all %}
+<tr>
+<td>
+{% if forloop.parentloop.counter == 1 and forloop.counter == 1%}
+<span class="label label-default">{{t1.label}}</span> (<a data-target="#add-tag" class="add-tag-link" href="add_tag/{{t1.pk}}/">Add Subtag</a>) <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t1.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t1.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t1.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+{% endif %}
+</td>
+<td>
+{% if forloop.counter == 1 %}
+<span class="label label-default">{{t2.label}}</span> (<a data-target="#add-tag" class="add-tag-link" href="add_tag/{{t2.pk}}/">Add Subtag</a>) <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t2.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t2.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t2.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+{% endif %}
+</td>
+<td>
+<span class="label label-default">{{t3.label}}</span>  <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t3.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t3.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t3.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+</td>
+</tr>
+{% endfor %}
+{% if t2.children.count == 0 %}
+<tr>
+<td>
+{% if forloop.counter == 1%}
+<span class="label label-default">{{t1.label}}</span> (<a data-target="#add-tag" class="add-tag-link" href="add_tag/{{t1.pk}}/">Add Subtag</a>) <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t1.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t1.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t1.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+{% endif %}
+</td>
+<td>
+<span class="label label-default">{{t2.label}}</span> (<a data-target="#add-tag" class="add-tag-link" href="add_tag/{{t2.pk}}/">Add Subtag</a>) <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t2.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t2.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t2.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+</td>
+<td>
+</td>
+</tr>
+{% endif %}
+
+{% endfor %}
+{% if t1.children.count == 0 %}
+<tr>
+<td>
+<span class="label label-default">{{t1.label}}</span> (<a data-target="#add-tag" class="add-tag-link" href="add_tag/{{t1.pk}}/">Add Subtag</a>) <a data-target="#edit-tag"  class="edit-tag-link" href="edit_tag/{{t1.pk}}/"><span class="glyphicon glyphicon-pencil" aria-hidden="true"></span></a> <div style="display: inline" data-target="#delete-tag" data-toggle="modal" class="delete-tag-link" id="delete_tag/{{t1.pk}}"><span style="color:red; cursor:pointer">✖</span></div>
+<div style="display: inline" data-target="#info-tag" data-toggle="modal" class="info-tag-link" id="info_tag/{{t1.pk}}"><span style="color:green; cursor:pointer" class="glyphicon glyphicon-info-sign" aria-hidden="true"></span></div>
+</td>
+<td>
+</td>
+<td>
+</td>
+</tr>
+{% endif %}
+
+{% endfor %}
+</tbody>
+</table>
+<a class="btn btn-primary add-tag-link" data-target="#add-tag" href="add_tag/{{root_tag.pk}}/">Add Level 1 Tag</a>
+  <div class="modal fade" id="edit-tag-placeholder" tabindex="-1" role="dialog">
+
+  </div>
+
+  <div class="modal fade" id="add-tag-placeholder" tabindex="-1" role="dialog">
+
+  </div>
+  <div class="modal fade" id="delete-tag-placeholder" tabindex="-1" role="dialog">
+
+  </div>
+  <div class="modal fade" id="info-tag-placeholder" tabindex="-1" role="dialog">
+
+  </div>
+
+<script>
+$(".edit-tag-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-tag-placeholder").load(target, function() {
+         $("#edit-tag-placeholder").modal("show");
+    });
+});
+
+$(".add-tag-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#add-tag-placeholder").load(target, function() {
+         $("#add-tag-placeholder").modal("show");
+    });
+});
+$(".delete-tag-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("id");
+
+
+    $("#delete-tag-placeholder").load(target, function() {
+         $("#delete-tag-placeholder").modal("show");
+    });
+});
+$(".info-tag-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("id");
+
+
+    $("#info-tag-placeholder").load(target, function() {
+         $("#info-tag-placeholder").modal("show");
+    });
+});
+
+setTimeout(function() {
+$("#errorDiv").fadeOut().empty();
+},5000);
+</script>
+{% endblock %}

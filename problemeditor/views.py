@@ -1,23 +1,24 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404
 from django.template import loader,RequestContext
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
 from django.contrib.contenttypes.models import ContentType
-from django.views.generic import UpdateView
+from django.contrib import messages
+from django.views.generic import UpdateView,CreateView,DeleteView
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,AddProblemForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
 
-
+from django import forms
 
 def show_mc_form_condition(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
@@ -268,26 +269,20 @@ def typeview(request):
     rows=[]
     if userprofile.user_type == 'member' or userprofile.user_type == 'super':
         for i in range(0,len(obj)):
-#        P = Problem.objects.filter(types__in=[obj[i]])
             P = Problem.objects.filter(type_new=obj[i])
             num_problems = P.count()
-            untagged = P.filter(tags__isnull=True)
-            num_untagged = untagged.count()
-            nosolutions = P.filter(solutions__isnull=True)
-            num_nosolutions = nosolutions.count()
+            num_untagged = P.filter(newtags__isnull=True).count()#
+            num_nosolutions = P.filter(solutions__isnull=True).count()
             rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
     obj2=list(Type.objects.filter(is_contest=False))
     obj2=sorted(obj2,key=lambda x:x.type)
     rows2=[]
     if userprofile.user_type == 'manager' or userprofile.user_type == 'super':
         for i in range(0,len(obj2)):
-#        P = Problem.objects.filter(types__in=[obj2[i]])
             P = Problem.objects.filter(type_new=obj2[i])
             num_problems = P.count()
-            untagged = P.filter(tags__isnull=True)
-            num_untagged = untagged.count()
-            nosolutions = P.filter(solutions__isnull=True)
-            num_nosolutions = nosolutions.count()
+            num_untagged = P.filter(newtags__isnull=True).count()#
+            num_nosolutions = P.filter(solutions__isnull=True).count()
             rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/typeview.html')
 #    tests=list(UserProfile.objects.get(user=request.user).tests.all())
@@ -297,26 +292,19 @@ def typeview(request):
 @login_required
 def tagview(request,type):
     typ=get_object_or_404(Type, type=type)
-    obj=list(Tag.objects.all())
-    obj=sorted(obj,key=lambda x:x.tag)
+    newtags = NewTag.objects.all().exclude(label='root').order_by('tag')
+#    obj=list(Tag.objects.all())
+#    obj=sorted(obj,key=lambda x:x.tag)
     rows=[]
-#    probsoftype=Problem.objects.filter(types__in=[typ])
     probsoftype=Problem.objects.filter(type_new=typ)
-    untagged=probsoftype.filter(tags__isnull=True)
+    untagged=probsoftype.filter(newtags__isnull=True)
     num_untagged = untagged.count()
-    testlabels=[]
-    pot=list(probsoftype)
-    for i in range(0,len(pot)):
-        testlabels.append(pot[i].test_label)
-    testlabels=list(set(testlabels))
-    testlabels.sort()
-    for i in range(0,len(obj)):
-        T = probsoftype.filter(tags__in=[obj[i]])
+    for tag in newtags:#i
+        T = tag.problems.filter(type_new=typ)#probsoftype.filter(newtags__in=[tag])
         num_problems=T.count()
-        nosolutions = T.filter(solutions__isnull=True)
-        num_nosolutions = nosolutions.count()
+        num_nosolutions = T.filter(solutions__isnull=True).count()
         if num_problems>0:
-            rows.append((goodurl(str(obj[i])),str(obj[i]),num_nosolutions,num_problems))
+            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/tagview.html')
     context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'bytag'}
     return HttpResponse(template.render(context,request))
@@ -324,26 +312,18 @@ def tagview(request,type):
 @login_required
 def CMtagview(request,type):
     typ=get_object_or_404(Type, type=type)
-    obj=list(Tag.objects.all())
-    obj=sorted(obj,key=lambda x:x.tag)
+    newtags=NewTag.objects.all().exclude(label='root').order_by('tag')
+#    obj=list(Tag.objects.all())
+#    obj=sorted(obj,key=lambda x:x.tag)
     rows=[]
-#    probsoftype=Problem.objects.filter(types__in=[typ])
     probsoftype=Problem.objects.filter(type_new=typ)
-    untagged=probsoftype.filter(tags__isnull=True)
-    num_untagged = untagged.count()
-    testlabels=[]
-    pot=list(probsoftype)
-    for i in range(0,len(pot)):
-        testlabels.append(pot[i].test_label)
-    testlabels=list(set(testlabels))
-    testlabels.sort()
-    for i in range(0,len(obj)):
-        T = probsoftype.filter(tags__in=[obj[i]])
+    num_untagged=probsoftype.filter(tags__isnull=True).count()
+    for tag in newtags:
+        T = tag.problems.filter(type_new=typ)
         num_problems=T.count()
-        nosolutions = T.filter(solutions__isnull=True)
-        num_nosolutions = nosolutions.count()
+        num_nosolutions = T.filter(solutions__isnull=True).count()
         if num_problems>0:
-            rows.append((goodurl(str(obj[i])),str(obj[i]),num_nosolutions,num_problems))
+            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
     template=loader.get_template('problemeditor/CMtagview.html')
     context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'CMbytag'}
     return HttpResponse(template.render(context,request))
@@ -351,10 +331,8 @@ def CMtagview(request,type):
 @login_required
 def testview(request,type):
     typ=get_object_or_404(Type, type=type)
-#    probsoftype=Problem.objects.filter(types__in=[typ])
     probsoftype=Problem.objects.filter(type_new=typ)
-    untagged=probsoftype.filter(tags__isnull=True)
-    num_untagged = untagged.count()
+    num_untagged=probsoftype.filter(newtags__isnull=True).count()
     testlabels=[]
     pot=list(probsoftype)
     for i in range(0,len(pot)):
@@ -363,7 +341,7 @@ def testview(request,type):
     testlabels.sort()
     rows2=[]
     for i in range(0,len(testlabels)):
-        rows2.append((testlabels[i],probsoftype.filter(test_label=testlabels[i]).filter(tags__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).filter(solutions__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).count()))
+        rows2.append((testlabels[i],probsoftype.filter(test_label=testlabels[i]).filter(newtags__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).filter(solutions__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).count()))
     template=loader.get_template('problemeditor/testview.html')
     context= { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest'}
     return HttpResponse(template.render(context,request))
@@ -374,10 +352,10 @@ def typetagview(request,type,tag):
     typ=get_object_or_404(Type, type=type)
     rows=[]
     if tag!='untagged':
-        ttag=get_object_or_404(Tag, tag=tag)
-        problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
+        ttag=get_object_or_404(NewTag, tag=tag)
+        problems=list(ttag.problems.filter(type_new=typ))
     else:
-        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
+        problems=list(typ.problems.filter(newtags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     template=loader.get_template('problemeditor/typetagview.html')
     paginator=Paginator(problems,50)
@@ -399,10 +377,10 @@ def CMtypetagview(request,type,tag):
     typ=get_object_or_404(Type, type=type)
     rows=[]
     if tag!='untagged':
-        ttag=get_object_or_404(Tag, tag=tag)
-        problems=list(Problem.objects.filter(type_new=typ).filter(tags__in=[ttag]))
+        ttag=get_object_or_404(NewTag, tag=tag)
+        problems=list(ttag.problems.filter(type_new=typ))
     else:
-        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
+        problems=list(typ.problems.filter(newtags__isnull=True))
     problems=sorted(problems, key=lambda x:x.pk)
     template=loader.get_template('problemeditor/CMtypetagview.html')
 
@@ -423,11 +401,10 @@ def CMtypetagview(request,type,tag):
 @login_required
 def testlabelview(request,type,testlabel):
     typ=get_object_or_404(Type, type=type)
-    rows=[]
     if testlabel!='untagged':
         problems=list(Problem.objects.filter(test_label=testlabel))
     else:
-        problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
+        problems=typ.problems.filter(tags__isnull=True)
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : problems, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
@@ -437,7 +414,7 @@ def testlabelview(request,type,testlabel):
 def CMtopicview(request,type):#unapprovedview
     typ=get_object_or_404(Type, type=type)
     rows=[]
-    problems=list(Problem.objects.filter(type_new=typ))
+    problems=list(typ.problems.all())
     problems=sorted(problems, key=lambda x:(x.pk))
     template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
 
@@ -460,7 +437,6 @@ def problemview(request,type,tag,label):
     tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
-    tags=Tag.objects.all()
     if request.method == "POST":
         formpost=request.POST
         if "addsolution" in formpost:
@@ -555,7 +531,7 @@ def editproblemtextview(request,type,tag,label):
     context['breadcrumbs']=breadcrumbs
     context['typelabel']= typ.label
     context['label'] = label
-    context['tag'] = tag
+#    context['tag'] = tag
     return render(request, 'problemeditor/editproblemtext.html', context)
 
 @login_required
@@ -640,7 +616,7 @@ def newsolutionview(request,type,tag,label):
     context['label'] = label
     context['nbar']='problemeditor'
     context['typelabel']= typ.label
-    context['tag'] = tag
+
     context['breadcrumbs']=breadcrumbs
 
     return render(request, 'problemeditor/newsol.html', context)
@@ -1204,7 +1180,7 @@ class SolutionUpdateView(UpdateView):
         context['tag'] = self.tag
         context['label'] = self.problem_label
         context['suffix'] = ''
-        if Tag.objects.filter(tag=goodtag(self.tag)).exists() == True:
+        if NewTag.objects.filter(tag=goodtag(self.tag)).exists() == True:
             context['suffix'] = '_bytag'
         return context
 
@@ -1535,3 +1511,134 @@ def duplicate_view(request,type_name):
     typ=get_object_or_404(Type,type=type_name)
     problems=typ.problem_set.annotate(c=Count('duplicate_problems')).filter(c__gt=0).order_by('year')
     return render(request,'problemeditor/duplicate_view.html',context={'typ':typ,'problems':problems})
+
+
+@user_passes_test(lambda u: u.is_superuser)
+def tageditview(request):
+    root_tag=NewTag.objects.get(tag='root')
+    context={'nbar': 'problemeditor','root_tag':root_tag}
+    return render(request,'problemeditor/tageditview.html',context)
+
+
+class TagUpdateView(UpdateView):
+    model = NewTag
+    form_class = NewTagForm##
+    template_name = 'problemeditor/tag_edit_form.html'##
+
+    def dispatch(self, *args, **kwargs):
+        self.tag_id = kwargs['pk']
+        return super(TagUpdateView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        form.save()
+        form.instance.tag=str(form.instance)
+        form.instance.save()
+        if form.instance.level<3:
+            for child in form.instance.children.all():
+                child.tag=str(child)
+                child.save()
+                if child.level<3:
+                    for cchild in child.children.all():
+                        cchild.tag=str(cchild)
+                        cchild.save()
+        tag = NewTag.objects.get(id=self.tag_id)
+        return redirect('/problemeditor/tags/')
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(NewTag, pk=self.tag_id)
+
+
+#class AjaxableResponseMixin(object):
+#    """
+#    Mixin to add AJAX support to a form.
+#    Must be used with an object-based FormView (e.g. CreateView)
+#    """
+#    def form_invalid(self, form):
+#        response = super(AjaxableResponseMixin, self).form_invalid(form)
+#        if self.request.is_ajax():
+#            return JsonResponse(form.errors, status=400)
+#        else:
+#            return response
+#
+#    def form_valid(self, form):
+#        # We make sure to call the parent's form_valid() method because
+#        # it might do some processing (in the case of CreateView, it will
+#        # call form.save() for example).
+#        response = super(AjaxableResponseMixin, self).form_valid(form)
+#        if self.request.is_ajax():
+#            data = {
+#                'pk': self.object.pk,
+#            }
+#            return JsonResponse(data)
+#        else:
+#            return response
+
+class TagCreateView(CreateView):
+    model = NewTag
+    form_class = AddNewTagForm
+    template_name = 'problemeditor/tag_add_form.html'
+
+    def dispatch(self, *args, **kwargs):
+        self.parent_tag_id = kwargs['pk']
+        return super(TagCreateView, self).dispatch(*args, **kwargs)
+
+    def form_valid(self, form):
+        parent_tag = NewTag.objects.get(id=self.parent_tag_id)
+        if parent_tag.children.filter(label=form.instance.label).exists():
+#            form.add_error('label',forms.ValidationError(('Tag already exists'), code='invalid'))
+
+            messages.error(self.request,'Tag already exists')
+            return redirect('/problemeditor/tags')
+
+#            return super(TagCreateView,self).form_invalid(form)
+        form.save()
+        form.instance.parent = parent_tag
+        form.instance.level = parent_tag.level + 1
+        form.save()
+        form.instance.tag = str(form.instance)
+        form.instance.save()
+        return redirect('/problemeditor/tags/')
+
+#    def get_object(self, queryset=None):
+#        return get_object_or_404(NewTag, pk=self.tag_id)
+    def get_context_data(self, *args, **kwargs):
+        context = super(TagCreateView,self).get_context_data(*args,**kwargs)
+        context['parent_tag'] = NewTag.objects.get(id=self.parent_tag_id)
+        return context
+
+    def get_initial(self):
+        return {'parent': NewTag.objects.get(id=self.parent_tag_id)}
+#    def get_form_kwargs(self, **kwargs):
+#        form_kwargs = super(TagCreateView, self).get_form_kwargs(**kwargs)
+#        form_kwargs['parent'] = NewTag.objects.get(id=self.parent_tag_id)
+#        print(form_kwargs)
+#        return form_kwargs
+
+
+
+
+class TagDeleteView(DeleteView):
+    model = NewTag
+    template_name = 'problemeditor/tag_delete_form.html'
+    success_url = "/problemeditor/tags/"
+
+    def dispatch(self, *args, **kwargs):
+        self.tag_id = kwargs['pk']
+        return super(TagDeleteView, self).dispatch(*args, **kwargs)
+
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(NewTag, pk=self.tag_id)
+    def get_context_data(self, *args, **kwargs):
+        context = super(TagDeleteView,self).get_context_data(*args,**kwargs)
+        context['tag'] = NewTag.objects.get(id=self.tag_id)
+        return context
+
+@login_required
+def taginfoview(request,pk):
+    types=Type.objects.all()
+    tag=get_object_or_404(NewTag,pk=pk)
+    rows=[]
+    for typ in types:
+        rows.append((typ.label,tag.problems.filter(type_new=typ).count()))
+    return render(request,'problemeditor/tag_info_view.html',{'rows':rows,'tag':tag})

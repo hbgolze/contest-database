@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup,NewTag
 from randomtest.utils import newtexcode
 from .forms import GroupModelForm
 
@@ -54,7 +54,7 @@ def tableview(request):
 @login_required
 def tagtableview(request):
     userprofile = get_or_create_up(request.user)
-    tags=Tag.objects.all().order_by('tag')
+    tags=NewTag.objects.all().exclude(tag='root').order_by('tag')
     template=loader.get_template('groups/tagtableview.html')
     context = {}
     context['nbar'] = 'groups'
@@ -125,7 +125,7 @@ def viewproblemgroup(request,pk):
 @login_required
 def viewtaggroup(request,pk):
     userprofile = get_or_create_up(request.user)
-    tag = get_object_or_404(Tag,pk=pk)
+    tag = get_object_or_404(NewTag,pk=pk)
     if request.method=='POST':
         if request.POST.get("newtest"):
             form = request.POST

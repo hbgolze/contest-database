@@ -8,6 +8,10 @@ import subprocess
 import tempfile
 import os,os.path
 
+#center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
+#class ItemizeEnv:
+#    def __init__(self,itemize_code):
+
 def parsebool(tags):
     if '|' in tags and '&' not in tags:
         l=tags.split('|')
@@ -72,12 +76,24 @@ def replaceitemize(s):
     for i in range(0,len(itemizes)-1):
         middle=s[itemizes[i][0]:itemizes[i][1]+13]
         middle=middle.replace('\\begin{itemize}','<ul>').replace('\\end{itemize}','</ul>').replace('\\item','<li>')
+        middlelist=middle.split("<li")
+        mid=middlelist[0]
+        for j in range(1,len(middlelist)-1):
+            mid+="<li"+middlelist[j]+"</li>"
+        mid+="<li"+middlelist[-1]
+        mid=mid.replace('</ul>','</li></ul>')
         end=s[itemizes[i][1]+13:itemizes[i+1][0]]
-        r+=middle+end
+        r+=mid+end
     middle=s[itemizes[-1][0]:itemizes[-1][1]+13]
     middle=middle.replace('\\begin{itemize}','<ul>').replace('\\end{itemize}','</ul>').replace('\\item','<li>')
+    middlelist=middle.split("<li")
+    mid=middlelist[0]
+    for j in range(1,len(middlelist)-1):
+        mid+="<li"+middlelist[j]+"</li>"
+    mid+="<li"+middlelist[-1]
+    mid=mid.replace('</ul>','</li></ul>')
     end=s[itemizes[-1][1]+13:]
-    r+=middle+'\n'+end
+    r+=mid+'\n'+end
     return r
 
 def replaceenumerate(s,optional=''):
@@ -89,12 +105,24 @@ def replaceenumerate(s,optional=''):
         for i in range(0,len(enums)-1):
             middle=s[enums[i][0]:enums[i][1]+15]
             middle=middle.replace('\\begin{enumerate}','<ol>').replace('\\end{enumerate}','</ol>').replace('\\item ','<li>').replace('\\item[(a)]','<li type=\"a\">').replace('\\item[(b)]','<li type=\"a\">').replace('\\item[(c)]','<li type=\"a\">').replace('\\item[(d)]','<li type=\"a\">').replace('\\item[(e)]','<li type=\"a\">').replace('\\item[(i)]','<li type=\"i\">').replace('\\item[(ii)]','<li type=\"i\">').replace('\\item[(iii)]','<li type=\"i\">').replace('\\item[(iv)]','<li type=\"i\">').replace('\\item[(v)]','<li type=\"i\">')
+            middlelist=middle.split("<li")
+            mid=middlelist[0]
+            for j in range(1,len(middlelist)-1):
+                mid+="<li"+middlelist[j]+"</li>"
+            mid+="<li"+middlelist[-1]
+            mid=mid.replace('</ol>','</li></ol>')
             end=s[enums[i][1]+15:enums[i+1][0]]
-            r+=middle+end
+            r+=mid+end
         middle=s[enums[-1][0]:enums[-1][1]+15]
         middle=middle.replace('\\begin{enumerate}','<ol>').replace('\\end{enumerate}','</ol>').replace('\\item ','<li>').replace('\\item[(a)]','<li type=\"a\">').replace('\\item[(b)]','<li type=\"a\">').replace('\\item[(c)]','<li type=\"a\">').replace('\\item[(d)]','<li type=\"a\">').replace('\\item[(e)]','<li type=\"a\">').replace('\\item[(i)]','<li type=\"i\">').replace('\\item[(ii)]','<li type=\"i\">').replace('\\item[(iii)]','<li type=\"i\">').replace('\\item[(iv)]','<li type=\"i\">').replace('\\item[(v)]','<li type=\"i\">')
+        middlelist=middle.split("<li")
+        mid=middlelist[0]
+        for j in range(1,len(middlelist)-1):
+            mid+="<li"+middlelist[j]+"</li>"
+        mid+="<li"+middlelist[-1]
+        mid=mid.replace('</ol>','</li></ol>')
         end=s[enums[-1][1]+15:]
-        r+=middle+'\n'+end
+        r+=mid+'\n'+end
         return r
     else:
         token = optional.replace(')','').replace('(','').replace('.','')
@@ -102,12 +130,24 @@ def replaceenumerate(s,optional=''):
         for i in range(0,len(enums)-1):
             middle=s[enums[i][0]:enums[i][1]+15]
             middle=middle.replace('\\begin{enumerate}['+optional+']','<ol type=\"'+optional.replace(')','').replace('(','').replace('.','')+'\">').replace('\\end{enumerate}','</ol>').replace('\\item ','<li type=\"'+token+'\">').replace('\\item[(1)]','<li type=\"'+token+'\">').replace('\\item[(2)]','<li type=\"'+token+'\">').replace('\\item[(3)]','<li type=\"'+token+'\">').replace('\\item[(4)]','<li type=\"'+token+'\">').replace('\\item[(5)]','<li type=\"'+token+'\">').replace('\\item[(a)]','<li type=\"'+token+'\">').replace('\\item[(b)]','<li type=\"'+token+'\">').replace('\\item[(c)]','<li type=\"'+token+'\">').replace('\\item[(d)]','<li type=\"'+token+'\">').replace('\\item[(e)]','<li type=\"'+token+'\">').replace('\\item[(i)]','<li type=\"'+token+'\">').replace('\\item[(ii)]','<li type=\"'+token+'\">').replace('\\item[(iii)]','<li type=\"'+token+'\">').replace('\\item[(iv)]','<li type=\"'+token+'\">').replace('\\item[(v)]','<li type=\"'+token+'\">')
+            middlelist=middle.split("<li")
+            mid=middlelist[0]
+            for j in range(1,len(middlelist)-1):
+                mid+="<li"+middlelist[j]+"</li>"
+            mid+="<li"+middlelist[-1]
+            mid=mid.replace('</ol>','</li></ol>')
             end=s[enums[i][1]+15:enums[i+1][0]]
-            r+=middle+end
+            r+=mid+end
         middle=s[enums[-1][0]:enums[-1][1]+15]
         middle=middle.replace('\\begin{enumerate}['+optional+']','<ol type=\"'+optional.replace(')','').replace('(','').replace('.','')+'\">').replace('\\end{enumerate}','</ol>').replace('\\item ','<li type=\"'+token+'\">').replace('\\item[(1)]','<li type=\"'+token+'\">').replace('\\item[(2)]','<li type=\"'+token+'\">').replace('\\item[(3)]','<li type=\"'+token+'\">').replace('\\item[(4)]','<li type=\"'+token+'\">').replace('\\item[(5)]','<li type=\"'+token+'\">').replace('\\item[(a)]','<li type=\"'+token+'\">').replace('\\item[(b)]','<li type=\"'+token+'\">').replace('\\item[(c)]','<li type=\"'+token+'\">').replace('\\item[(d)]','<li type=\"'+token+'\">').replace('\\item[(e)]','<li type=\"'+token+'\">').replace('\\item[(i)]','<li type=\"'+token+'\">').replace('\\item[(ii)]','<li type=\"'+token+'\">').replace('\\item[(iii)]','<li type=\"'+token+'\">').replace('\\item[(iv)]','<li type=\"'+token+'\">').replace('\\item[(v)]','<li type=\"'+token+'\">')
+        middlelist=middle.split("<li")
+        mid=middlelist[0]
+        for j in range(1,len(middlelist)-1):
+            mid+="<li"+middlelist[j]+"</li>"
+        mid+="<li"+middlelist[-1]
+        mid=mid.replace('</ol>','</li></ol>')
         end=s[enums[-1][1]+15:]
-        r+=middle+'\n'+end
+        r+=mid+'\n'+end
         return r
 
 def newtexcode(texcode,label,answer_choices):
