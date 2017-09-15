@@ -36,7 +36,7 @@ Contest Collections: {{name}}
 <p>
 ({% if prob.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{prob.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %}) 
 (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Problem Tags/Solutions</a>) 
-{% if user_type == "super" %}
+{% if request.user.userprofile.user_type_new.name == "super" %}
 (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/edittext/">Edit LaTeX</a>) 
 <!--<a href="{{prob.pk}}">Solution</a>-->
 {% endif %}

@@ -1,0 +1,28 @@
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <form id="tag_delete_form" method='post' class="form" role="form" action='./deletesolution/{{solution.pk}}/'>
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+		<h4 class="modal-title" id="myModalLabel">Delete Solution to {{prob.readable_label}}</h4>
+              </div>
+              <div class="modal-body">
+                    {% csrf_token %}
+
+		    <p>Are you sure you want to delete the following solution?</p>
+
+		    <label>Solution:</label>
+		    <p>
+		      {% autoescape off %}
+		      {{solution.display_solution_text|linebreaks}}
+		      {% endautoescape %}
+		    </p>
+
+              </div>
+              <div class="modal-footer">
+                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
+                <input type="submit" class="btn btn-primary" value="Delete" style="margin-bottom: 5px;" />
+              </div>
+        </form>
+    </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->

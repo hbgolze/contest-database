@@ -388,17 +388,8 @@ def editnewtestview(request,pk,hpk):
             T.num_problems=T.problems.count()
             T.save()
     userprofile = get_or_create_up(request.user)
-    if userprofile.user_type == 'member':
-        types=list(Type.objects.exclude(type__startswith="CM"))
-    elif userprofile.user_type == 'manager':
-        types=list(Type.objects.filter(type__startswith="CM"))
-    elif userprofile.user_type == 'super':
-        types=list(Type.objects.all())
+    types=userprofile.user_type_new.allowed_types.all()
     tags=sorted(list(NewTag.objects.exclude(tag="root")),key=lambda x:x.tag)
-    rows=[]
-    for i in range(0,len(types)):
-        rows.append((types[i].type,types[i].label))
-    rows=sorted(rows,key=lambda x:x[1])
     P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
-    return render(request, 'handouts/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'rows':rows,'tags':tags,'handout':h})
+    return render(request, 'handouts/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'types':types,'tags':tags,'handout':h})

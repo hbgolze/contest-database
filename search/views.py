@@ -27,19 +27,10 @@ from randomtest.utils import parsebool,newtexcode,newsoltexcode
 @login_required
 def searchform(request):
     userprofile = get_or_create_up(request.user)
-    if userprofile.user_type == 'member':
-        types=list(Type.objects.exclude(type__startswith="CM"))
-    elif userprofile.user_type == 'manager':
-        types=list(Type.objects.filter(type__startswith="CM"))
-    elif userprofile.user_type == 'super':
-        types=list(Type.objects.all())
+    types = userprofile.user_type_new.allowed_types.all()
     tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
-    rows=[]
-    for i in range(0,len(types)):
-        rows.append((types[i].type,types[i].label))
-    rows=sorted(rows,key=lambda x:x[1])
     template = loader.get_template('search/searchform.html')
-    context={'nbar' : 'search', 'rows' : rows,'tags' : tags}
+    context={'nbar' : 'search', 'types' : types,'tags' : tags}
     return HttpResponse(template.render(context,request))
 
 @login_required

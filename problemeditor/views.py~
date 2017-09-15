@@ -8,7 +8,7 @@ from django.utils import timezone
 from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
-from django.views.generic import UpdateView,CreateView,DeleteView
+from django.views.generic import UpdateView,CreateView,DeleteView,ListView
 
 from formtools.wizard.views import SessionWizardView
 
@@ -264,37 +264,23 @@ class ChangeQuestionTypeWizard(SessionWizardView):
 @login_required
 def typeview(request):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
-    obj=list(Type.objects.all().exclude(is_contest=False))
-    obj=sorted(obj,key=lambda x:x.type)
+    allowed_types = list(userprofile.user_type_new.allowed_types.all())
+    allowed_types = sorted(allowed_types,key=lambda x:(-x.is_contest,x.label))
     rows=[]
-    if userprofile.user_type == 'member' or userprofile.user_type == 'super':
-        for i in range(0,len(obj)):
-            P = Problem.objects.filter(type_new=obj[i])
-            num_problems = P.count()
-            num_untagged = P.filter(newtags__isnull=True).count()#
-            num_nosolutions = P.filter(solutions__isnull=True).count()
-            rows.append((obj[i].type,obj[i].label,num_untagged,num_nosolutions,num_problems))
-    obj2=list(Type.objects.filter(is_contest=False))
-    obj2=sorted(obj2,key=lambda x:x.type)
-    rows2=[]
-    if userprofile.user_type == 'manager' or userprofile.user_type == 'super':
-        for i in range(0,len(obj2)):
-            P = Problem.objects.filter(type_new=obj2[i])
-            num_problems = P.count()
-            num_untagged = P.filter(newtags__isnull=True).count()#
-            num_nosolutions = P.filter(solutions__isnull=True).count()
-            rows2.append((obj2[i].type,obj2[i].label,num_untagged,num_nosolutions,num_problems))
+    for i in allowed_types:
+        P=i.problems.all()
+        num_problems = P.count()
+        num_untagged = P.filter(newtags__isnull=True).count()#
+        num_nosolutions = P.filter(solutions__isnull=True).count()
+        rows.append((i,num_untagged,num_nosolutions))
     template=loader.get_template('problemeditor/typeview.html')
-#    tests=list(UserProfile.objects.get(user=request.user).tests.all())
-    context= {'rows': rows, 'nbar': 'problemeditor','rows2':rows2,'user_type' : userprofile.user_type}
+    context= {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
 
 @login_required
 def tagview(request,type):
     typ=get_object_or_404(Type, type=type)
-    newtags = NewTag.objects.all().order_by('tag')
-#    obj=list(Tag.objects.all())
-#    obj=sorted(obj,key=lambda x:x.tag)
+    newtags = NewTag.objects.all().exclude(label='root').order_by('tag')
     rows=[]
     probsoftype=Problem.objects.filter(type_new=typ)
     untagged=probsoftype.filter(newtags__isnull=True)
@@ -312,9 +298,7 @@ def tagview(request,type):
 @login_required
 def CMtagview(request,type):
     typ=get_object_or_404(Type, type=type)
-    newtags=NewTag.objects.all().order_by('tag')
-#    obj=list(Tag.objects.all())
-#    obj=sorted(obj,key=lambda x:x.tag)
+    newtags=NewTag.objects.all().exclude(label='root').order_by('tag')
     rows=[]
     probsoftype=Problem.objects.filter(type_new=typ)
     num_untagged=probsoftype.filter(tags__isnull=True).count()
@@ -804,6 +788,32 @@ def editreviewpkview(request,**kwargs):
     return render(request, 'problemeditor/editappr.html', {'form': form, 'nbar': 'problemeditor','prob':prob,'breadcrumbs':breadcrumbs})
 
 
+
+
+class SolutionDeleteView(DeleteView):
+    model = Solution
+    template_name = 'problemeditor/solution_delete_form.html'
+    success_url = "../../"
+
+    def dispatch(self, *args, **kwargs):
+        self.sol_id = kwargs['spk']
+        if 'label' in kwargs:
+            self.label = kwargs['label']
+        if 'pk' in kwargs:
+            self.pk = kwargs['pk']
+        return super(SolutionDeleteView, self).dispatch(*args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Solution, pk=self.sol_id)
+    def get_context_data(self, *args, **kwargs):
+        context = super(SolutionDeleteView,self).get_context_data(*args,**kwargs)
+        try:
+            context['prob'] = get_object_or_404(Problem,label=self.label)
+        except AttributeError:
+            context['prob'] = get_object_or_404(Problem,pk=self.pk)
+        context['solution'] = get_object_or_404(Solution, pk=self.sol_id)
+        return context
+
 @login_required
 def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
     sol = get_object_or_404(Solution, pk=spk)
@@ -1147,6 +1157,8 @@ def my_activity(request):
 @login_required
 def redirectproblem(request,pk):
     p=get_object_or_404(Problem,pk=pk)
+    if p.type_new not in request.user.userprofile.user_type_new.allowed_types.all():
+        raise Http404("Unauthorized")
     if p.type_new.is_contest==True:
         return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
     else:
@@ -1218,7 +1230,7 @@ class CMSolutionUpdateView(UpdateView):
 
 @login_required
 def remove_duplicate(request,type,tag,label,pk):
-    if request.user.userprofile.user_type == 'super':
+    if request.user.userprofile.user_type_new.name == 'super':
         prob=get_object_or_404(Problem,label=label)
         if prob.duplicate_problems.filter(pk=pk).exists():
             prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
@@ -1513,7 +1525,8 @@ def duplicate_view(request,type_name):
     return render(request,'problemeditor/duplicate_view.html',context={'typ':typ,'problems':problems})
 
 
-@user_passes_test(lambda u: u.is_superuser)
+#@user_passes_test(lambda u: u.is_superuser)
+@login_required
 def tageditview(request):
     root_tag=NewTag.objects.get(tag='root')
     context={'nbar': 'problemeditor','root_tag':root_tag}
@@ -1636,9 +1649,21 @@ class TagDeleteView(DeleteView):
 
 @login_required
 def taginfoview(request,pk):
-    types=Type.objects.all()
+    types=request.user.userprofile.user_type_new.allowed_types.all()
     tag=get_object_or_404(NewTag,pk=pk)
     rows=[]
     for typ in types:
         rows.append((typ.label,tag.problems.filter(type_new=typ).count()))
     return render(request,'problemeditor/tag_info_view.html',{'rows':rows,'tag':tag})
+
+class TagProblemList(ListView):
+    model = Problem
+    template_name = 'problemeditor/tag_problem_list.html'
+    paginate_by = 10
+    def get_queryset(self):
+        self.tag = get_object_or_404(NewTag,pk=self.args[0])
+        return self.tag.problems.filter(type_new__in=self.request.user.userprofile.user_type_new.allowed_types.all()).order_by('type_new')
+    def get_context_data(self, **kwargs):
+        context = super(TagProblemList, self).get_context_data(**kwargs)
+        context['tag'] = self.tag
+        return context

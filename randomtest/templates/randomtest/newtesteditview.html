@@ -67,8 +67,8 @@ Drag around problems to reorder them, and then click "Save" to save changes.
 	      <div class="form-group col-lg-12">
 		<label for="testtype" class="control-label">Problem Type:</label>
 		<select name="testtype" class="form-control">
-		  {% for ttest,testlabel in rows %}
-		  <option value="{{ttest}}">{{testlabel}} Problems</option>
+		  {% for typ in types %}
+		  <option value="{{typ.type}}">{{typ.label}} Problems</option>
 		  {% endfor %}
 		</select>
 	      </div>

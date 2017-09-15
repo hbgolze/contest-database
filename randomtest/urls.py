@@ -1,5 +1,7 @@
 from django.conf.urls import include,url
 
+from django.contrib.auth.decorators import login_required
+
 from . import views
 #from views import TestDelete
 
@@ -8,6 +10,7 @@ urlpatterns = [
     url(r'^createtest/$', views.startform, name='startform'),
     url(r'^createtest/readme$', views.readme, name='readme'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
+    url(r'^test/(?P<pk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
     url(r'^test/(?P<testpk>\d+)/(?P<pk>\d+)/$', views.solutionview, name='solutionview'),
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
@@ -19,6 +22,7 @@ urlpatterns = [
     url(r'^student/(?P<username>\w+)/$', views.tableview, name='studenttableview'),
     url(r'^student/(?P<username>\w+)/addtest/(?P<pk>\w+)/$', views.addtestview, name='addstudenttestview'),
     url(r'^student/(?P<username>\w+)/(?P<pk>\w+)/$', views.testview, name='studenttestview'),
+    url(r'^student/(?P<username>\w+)/(?P<pk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
     url(r'^student/(?P<username>\w+)/archive/(?P<tpk>\d+)/$', views.archivestudentview, name='archivestudentview'),
     url(r'^student/(?P<username>\w+)/unarchive/(?P<tpk>\d+)/$', views.unarchivestudentview, name='unarchivestudentview'),
     url(r'^student/(?P<username>\w+)/delete/(?P<pk>\d+)/$', views.deletestudenttestresponses,name='test_delete'),

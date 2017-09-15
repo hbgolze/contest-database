@@ -1,0 +1,30 @@
+<div class="modal-dialog modal-lg">
+  
+  <!-- Modal content-->
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+      <h4 class="modal-title">Solutions to {{object.readable_label}}</h4>
+    </div>
+    <div class="modal-body">
+{% with object as prob %}
+{% include "problemeditor/snippetprobtext.html" %}
+{% endwith %}
+
+{% if object.solutions.count > 0 %}
+        {% for solution in object.solutions.all %}
+          <h3>Solution {{forloop.counter}}</h3>
+         {% autoescape off %} {{solution.display_solution_text|linebreaks}} {% endautoescape %}<br><br>
+        {% endfor %}
+{% else %}
+No current solutions.
+{% endif %}
+
+
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+  
+</div>

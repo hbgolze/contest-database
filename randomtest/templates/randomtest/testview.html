@@ -52,9 +52,11 @@
 </div>
 {% if resp.attempted %}
 {% if resp.problem.answer == resp.response %}
-<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if resp.problem.solutions.count > 0 %}(<a href="{{resp.problem.pk}}">Solution</a>){% endif %}{% endif %}
+<img id="cuteAnswer{{resp.problem.label}}" src="/media/Green.png"/> {% if username %}{% else %}
+({% if resp.problem.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %})
+{% endif %}
 {% else %}
-<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Red.png"/>
+<img id="cuteAnswer{{resp.problem.label}}" src="/media/Red.png"/>
 {% endif %}
 Last Attempted: {{resp.modified_date}}
 {% endif %}
@@ -70,15 +72,19 @@ Answer to Problem {{forloop.counter}}:
 {% if username %} (Correct answer: {{resp.problem.answer}}){% endif %}
 {% if resp.attempted  %}
 {% if resp.problem.answer == resp.response %}
-<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Green.png"/> {% if username %}{% else %}{% if resp.problem.solutions.count > 0 %}(<a href="{{resp.problem.pk}}">Solution</a>){% endif %}{% endif %}
+<img id="cuteAnswer{{resp.problem.label}}" src="/media/Green.png"/> {% if username %}{% else %}({% if resp.problem.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %})
+{% endif %}
 {% else %}
-<img id="cuteAnswer{{resp.problem.label}}" src="{{dropboxpath}}Red.png"/>
+<img id="cuteAnswer{{resp.problem.label}}" src="/media/Red.png"/>
 {% endif %}
 Last Attempted: {{resp.modified_date}}
 {% endif %}
 {% endif %}
 
-{% if username %}(<a href="../{{pk}}/{{resp.problem.pk}}">Solution</a>){% endif %}
+{% if username %}
+
+({% if resp.problem.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %})
+{% endif %}
 </p>
 
 
@@ -93,4 +99,21 @@ Last Attempted: {{resp.modified_date}}
 {% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
+
+<div id="solution-placeholder" class="modal fade" role="dialog">
+
+</div>
+<script>
+$(".solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+         $("#solution-placeholder").modal("show");
+    });
+});
+</script>
+
 {% endblock %}

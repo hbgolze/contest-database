@@ -52,7 +52,8 @@
   <label>Solutions</label><br>
   {% for solution in rows %}
   <label>Solution {{forloop.counter}}:</label>
-  <p><small>(<a data-target="#edit-solution-placeholder"  class="edit-solution-link" href="edit_solution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.is_superuser %}<small>(<a href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
+  <p><small>(<a data-target="#edit-solution-placeholder"  class="edit-solution-link" href="edit_solution/{{solution.pk}}/">Edit</a>)</small> {% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'sitemanager' or request.user.userprofile.user_type_new.name == 'contestmanager' %}<small>(<a data-target="#delete-solution" class="delete-solution-link" data-toggle="modal" href="deletesolution/{{solution.pk}}/">Delete</a>)</small>{% endif %}</p>
+
   {% autoescape off %}  {{solution.display_solution_text|linebreaks}} {% endautoescape %}
   {% endfor %}
   {% if rows|length == 0 %}<p>No Solutions Yet</p>{% endif %}
@@ -127,6 +128,9 @@
 <div class="modal fade" id="edit-solution-placeholder" tabindex="-1" role="dialog">
   
 </div>
+<div class="modal fade" id="delete-solution-placeholder" tabindex="-1" role="dialog">
+
+</div>
 <script type="text/javascript">
 
 
@@ -137,6 +141,17 @@ $(".edit-solution-link").click(function(event) {
     $("#edit-solution-placeholder").load(target, function() {
          MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-solution-placeholder"]);
          $("#edit-solution-placeholder").modal("show");
+    });
+});
+})(django.jQuery);
+
+(function($) {
+$(".delete-solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+    $("#delete-solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"delete-solution-placeholder"]);
+         $("#delete-solution-placeholder").modal("show");
     });
 });
 })(django.jQuery);

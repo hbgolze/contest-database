@@ -41,7 +41,8 @@ class Type(models.Model):
     readable_label_post_form = models.CharField(max_length=20,default = '')
     def __str__(self):
         return self.label
-
+    class Meta:
+        ordering = ['label']
 class ProblemApproval(models.Model):
     approval_user = models.ForeignKey(User,blank=True,null=True)
     APPROVAL_CHOICES = (

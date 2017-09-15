@@ -1,4 +1,4 @@
-{% extends './base.html' %}
+{% extends 'randomtest/base.html' %}
 
 {% block title %}Solutions: {{label}}{% endblock %}
 
@@ -10,7 +10,6 @@
   <li class="active">Solutions to {{readablelabel}}</li>
 </ol>
 <h2>Solutions to {{readablelabel}}</h2>
-<!--      <img src="{{dropboxpath}}{{label }}j.jpg" /> <br>-->
 <div class="form-group">
   {% if mc %}
     <label>Problem Text:</label>

@@ -22,8 +22,8 @@
       <div class="form-group col-lg-3">
 	<label for="testtype" class="control-label">Problem Type:</label>
 	<select name="testtype" class="form-control">
-	  {% for test,testlabel in rows %}
-	  <option value="{{test}}">{{testlabel}} Problems</option>
+	  {% for typ in types %}
+	  <option value="{{typ.type}}">{{typ.label}} Problems</option>
 	  {% endfor %}
 	</select>
       </div>

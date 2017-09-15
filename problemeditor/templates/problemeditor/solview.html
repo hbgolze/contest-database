@@ -14,13 +14,13 @@
   {% if mc %}
     <label>Problem Text:</label>
     <p>{% autoescape off %}{{mc_prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-    <p>Answer: {{mc_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}
+    <p>Answer: {{mc_answer}}{% if request.user.userprofile.user_type_new.name == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}
     </p>
   {% endif %}
   {% if sa or pf %}
     <label>Problem Text:</label>
     <p>{% autoescape off %}{{prob_latex|linebreaks}} {% endautoescape %}  [{{readablelabel}}]</p>
-    {% if sa %}<p>Answer: {{sa_answer}}{% if user_type == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
+    {% if sa %}<p>Answer: {{sa_answer}}{% if request.user.userprofile.user_type_new.name == "super" %} (<a href="editanswer/">Edit Answer</a>){% endif %}</p>
     {% endif %}
   {% endif %}
   {% if mcsa %}

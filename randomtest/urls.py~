@@ -1,5 +1,7 @@
 from django.conf.urls import include,url
 
+from django.contrib.auth.decorators import login_required
+
 from . import views
 #from views import TestDelete
 
@@ -8,6 +10,7 @@ urlpatterns = [
     url(r'^createtest/$', views.startform, name='startform'),
     url(r'^createtest/readme$', views.readme, name='readme'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
+    url(r'^test/(?P<pk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
     url(r'^test/(?P<testpk>\d+)/(?P<pk>\d+)/$', views.solutionview, name='solutionview'),
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),
     url(r'^edittest/(?P<pk>\d+)/$', views.testeditview,name='test_edit'),
@@ -34,5 +37,6 @@ urlpatterns = [
     url(r'^urltest/latex$', views.urllatexview, name='urlview_latex'),
     url(r'^urltest/latexsol$', views.urllatexsolview, name='urlview_latex'),
     url(r'^profiles/(?P<username>\w+)/',views.profileview,name='profileview'),
+    url(r'^newcreatetest/$', views.newstartform, name='startform2'),
     url(r'^newtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
 ]
