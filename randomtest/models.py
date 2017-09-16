@@ -29,7 +29,7 @@ class NewTag(models.Model):
         return self.label
 
     class Meta:
-        ordering = ['label']
+        ordering = ['tag']
 
 class Type(models.Model):
     type = models.CharField(max_length=20)
@@ -305,7 +305,7 @@ class UserProfile(models.Model):
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
     handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
     newtests = models.ManyToManyField(NewTest,blank=True,related_name='newtests')
-    def __unicode__(self):
+    def __str__(self):
         return self.user.username
 
 

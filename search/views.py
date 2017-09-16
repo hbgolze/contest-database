@@ -1,5 +1,5 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
 from django.template.loader import get_template
@@ -36,19 +36,19 @@ def searchform(request):
 @login_required
 def searchresults(request):
     userprofile = get_or_create_up(request.user)
-    if request.method=='POST':
-        form=request.POST
-        next = form.get('next', '')
-        next = next[next.index('?'):next.index('\'>')]
-        for i in form:
-            if 'problemgroup' in i:
-                pk = i.split('_')[1]
-                prob = Problem.objects.get(pk=pk)
-                gpk = form[i]
-                probgroup = ProblemGroup.objects.get(pk=gpk)
-                probgroup.problems.add(prob)
-                probgroup.save()
-        return HttpResponseRedirect(next)
+#    if request.method=='POST':
+#        form=request.POST
+#        next = form.get('next', '')
+#        next = next[next.index('?'):next.index('\'>')]
+#        for i in form:
+#            if 'problemgroup' in i:
+#                pk = i.split('_')[1]
+#                prob = Problem.objects.get(pk=pk)
+#                gpk = form[i]
+#                probgroup = ProblemGroup.objects.get(pk=gpk)
+#                probgroup.problems.add(prob)
+#                probgroup.save()
+#        return HttpResponseRedirect(next)
     if request.method=='GET':
         page = request.GET.get('page')
         z=request.GET.copy()
@@ -115,6 +115,57 @@ def searchresults(request):
                 # If page is out of range (e.g. 9999), deliver last page of results.
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
-            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request,
+            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.all(),
                      }
             return HttpResponse(template.render(context,request))
+
+@login_required
+def add_to_group(request):
+    problem_groups = [(d,p) for d, p in request.POST.items() if d.startswith('problemgroup')]
+    for i in problem_groups:
+        problem_pk=i[0].split('_')[1]
+        prob=get_object_or_404(Problem,pk=problem_pk)
+        p_group = get_object_or_404(ProblemGroup,pk=i[1])
+        if p_group.problems.filter(pk=problem_pk).exists():
+            return JsonResponse({'prob_pk':problem_pk,'status':1})
+        p_group.problems.add(prob)
+        p_group.save()
+    return JsonResponse({'prob_pk':problem_pk,'status':0})
+
+@login_required
+def add_tag(request):
+    tags = [(d,p) for d, p in request.POST.items() if d.startswith('addtag')]
+    for i in tags:
+        problem_pk=i[0].split('_')[1]
+        prob=get_object_or_404(Problem,pk=problem_pk)
+        tag = get_object_or_404(NewTag,pk=i[1])
+        if tag.problems.filter(pk=problem_pk).exists():
+            return JsonResponse({'prob_pk':problem_pk,'status':1})
+        prob.newtags.add(tag)
+        prob.save()
+        response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
+        L= prob.newtags.all()
+        for tag in L:
+            response_string+="<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
+        response_string+="</ul>"
+    return JsonResponse({'prob_pk':problem_pk,'status':0,'tag_list':response_string})
+
+
+@login_required
+def delete_tag(request):
+    delete_tag=request.POST.get('problem_tag_id','')
+    del_list=delete_tag.split('_')
+    problem_pk=del_list[1]
+    prob=get_object_or_404(Problem,pk=problem_pk)
+    tag_pk = del_list[2]
+    tag = get_object_or_404(NewTag,pk=tag_pk)
+    prob.newtags.remove(tag)
+    prob.save()
+    response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
+    L= prob.newtags.all()
+    for tag in L:
+        response_string += "<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
+    response_string+="</ul>"
+    if len(L) == 0:
+        response_string = ""
+    return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string})

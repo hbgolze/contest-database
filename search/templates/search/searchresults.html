@@ -1,11 +1,13 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
+
+
 <h2>Search results for "{{searchterm}}"</h2>
 There are {{matchnums}} matching problems in the database.
 <br>
 
-
+<div class="container">
 <table class="table">
 {% for prob in rows %}
 <tr>
@@ -19,25 +21,68 @@ There are {{matchnums}} matching problems in the database.
 {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}] {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}<br>
 {% endif %}
 
-<p>Add to Problem Group:</p>
-  <p>
-    <form action="." method="post">
-      {% csrf_token %}
-      <input type="hidden" name="next" value="{{ request}}">
-      <select name="problemgroup_{{prob.pk}}" onchange="this.form.submit()">
-	<option value="" disabled selected>Select a Group</option>
-	{% for pg in probgroups.all %}
-        <option value="{{pg.pk}}">{{pg.name}}
-        </option>
-	{% endfor %}
-      </select>
-    </form>
-  </p>
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+<form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
+  {% csrf_token %}
+  <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
+    {% if prob.newtags.count > 0 %}
+    
+    
+    <label for="tag-list-{{prob.pk}}">Current Tags</label>
+    <ul id="tag-list-{{prob.pk}}">
+      {% for tag in prob.newtags.all %}
+      <li>
+	<span class="label label-default">{{tag}}</span> <button type="submit" class="btn btn-default btn-xs delete-tag-link" id="deletetag_{{prob.pk}}_{{tag.pk}}"><span style="color:red; cursor:pointer">✖</span></button>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</form>
+
+<div class="col-xs-7">
+  <form action="{% url 'add_tag' %}" method="post" class="js-tag-form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request}}">
+    <label for="addtag_{{prob.pk}}">Add Tag:</label>
+    <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+      <option value="" disabled selected>Select a Tag</option>
+      {% for tag in tags %}
+      <option value="{{tag.pk}}">{{tag}}
+      </option>
+      {% endfor %}
+    </select>
+    <div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
+
+    </div>
+  </form>
+</div>
+{% endif %}
+
+<div class="col-xs-7">
+  <form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ request}}">
+<label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
+    <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
+      <option value="" disabled selected>Select a Group</option>
+      {% for pg in probgroups.all %}
+      <option value="{{pg.pk}}">{{pg.name}}
+      </option>
+      {% endfor %}
+    </select>
+    <div id="adding-status-{{prob.pk}}" class="js-adding-status">
+
+    </div>
+  </form>
+</div>
 
 </td>
 </tr>
 {% endfor %}
 </table>
+</div>
+
 {% if rows.has_other_pages %}
 <ul class="pagination">
         {% if rows.has_previous %}
@@ -61,5 +106,85 @@ There are {{matchnums}} matching problems in the database.
         {% endif %}
 </ul>
 {% endif %}
+
+
+<script>
+$("select.js-problem-group-select").change(function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_to_group' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {
+$("#adding-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Problem has been added to group.</div>");
+$("#adding-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#adding-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+            } else {
+$("#adding-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem is  already in group.</div>");
+$("#adding-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#adding-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+            }
+
+        }
+    });
+    return false;
+});
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+$("select.js-add-tag-select").change(function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_tag' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {
+$("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Tag has been added to problem.</div>");
+$("#tagging-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+$("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+
+            } else {
+$("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem already has tag.</div>");
+$("#tagging-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+            }
+
+        }
+    });
+    return false;
+});
+
+
+
+$(document).on('click',".delete-tag-link",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'delete_tag' %}',
+        data: form.serialize()+"&problem_tag_id="+$(this).attr('id'),
+        dataType: 'json',
+        success: function(data) {
+           $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+
+        }
+    });
+    return false;
+});
+{% endif %}
+</script>
 
 {% endblock %}
