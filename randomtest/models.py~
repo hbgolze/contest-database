@@ -29,7 +29,7 @@ class NewTag(models.Model):
         return self.label
 
     class Meta:
-        ordering = ['label']
+        ordering = ['tag']
 
 class Type(models.Model):
     type = models.CharField(max_length=20)
@@ -183,6 +183,7 @@ class Response(models.Model):
         return self.response
 
 
+
 class Test(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
     problems = models.ManyToManyField(Problem)
@@ -254,13 +255,6 @@ class UserResponse(models.Model):
     test_pk = models.CharField(max_length = 15,blank = True)
     point_value = models.IntegerField(default=0)
 
-class UserTest(models.Model):
-    test = models.ForeignKey(Test)
-    responses = models.ForeignKey(Responses,related_name='usertestresponses')
-    num_probs = models.IntegerField()
-    num_correct = models.IntegerField(default=0)
-    def __str__(self):
-        return self.test.name
 
 class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)
@@ -292,7 +286,7 @@ class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
-    usertests = models.ManyToManyField(UserTest, blank=True)
+    usertests = models.ManyToManyField('UserTest', blank=True)
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
     folders = models.ManyToManyField(Folder,blank = True,related_name='folders')
@@ -308,6 +302,26 @@ class UserProfile(models.Model):
     def __str__(self):
         return self.user.username
 
+
+class UserTest(models.Model):
+    userprofile = models.ForeignKey(UserProfile,related_name='user_tests',null=True)
+    test = models.ForeignKey(Test)
+    responses = models.ForeignKey(Responses,related_name='usertest')
+    num_probs = models.IntegerField()
+    num_correct = models.IntegerField(default=0)
+    def __str__(self):
+        return self.test.name
+
+class NewResponse(models.Model):
+    problem = models.ForeignKey(Problem,blank=True, null=True)
+    usertest = models.ForeignKey(UserTest,related_name = "newresponses")
+    response = models.CharField(max_length=10,blank=True)
+    problem_label = models.CharField(max_length=20)
+    modified_date = models.DateTimeField(default = timezone.now)
+    attempted = models.BooleanField(default = 0)
+    stickied = models.BooleanField(default = 0)
+    def __str__(self):
+        return self.problem_label+': '+self.response
 
 def get_or_create_up(user):
     userprofile,boolcreated=UserProfile.objects.get_or_create(user=user)

@@ -1,5 +1,5 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
 from django.template.loader import get_template
@@ -371,10 +371,6 @@ def editnewtestview(request,pk):
     userprofile = get_or_create_up(request.user)
     types = userprofile.user_type_new.allowed_types.order_by('label')
     tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
-    rows=[]
-    for i in range(0,len(types)):
-        rows.append((types[i].type,types[i].label))
-    rows=sorted(rows,key=lambda x:x[1])
     P=list(Tprobs)
     P=sorted(P,key=lambda x:x.order)
     return render(request, 'randomtest/newtesteditview.html',{'sortableproblems': P,'nbar': 'viewmytests','test':T,'types':types,'tags':tags})
@@ -526,7 +522,7 @@ def addtestview(request,**kwargs):#pk
     allresponses.save()
     P=test.problems.all()
     for j in P:
-        r=Response(response='',problem_label=j.label,problem=P[j])
+        r=Response(response='',problem_label=j.label,problem=j)
         r.save()
         allresponses.responses.add(r)
     allresponses.save()
@@ -662,8 +658,8 @@ def testview(request,**kwargs):#switching to UserTest
         usertest.save()
         R=allresponses.responses
     else:
-        R=allresponses.responses
-        rows=R.all()
+        R=list(allresponses.responses.all())
+        rows=sorted(R,key=lambda x:(x.problem.problem_number,x.problem.year))
     context['rows'] = rows
     context['pk'] = pk
     context['nbar'] = 'viewmytests'
@@ -1232,3 +1228,99 @@ class SolutionView(DetailView):
 
     def get_object(self, queryset=None):
         return get_object_or_404(Problem, pk=self.item_id)
+
+#This still isn't adding to the Sticky queue...
+@login_required
+def toggle_star(request,pk):
+    star_tag=request.POST.get('star_id','')
+    star_list=star_tag.split('_')
+    response_pk=star_list[1]
+    response=get_object_or_404(Response,pk=response_pk)
+    userprofile=request.user.userprofile
+    usertest=response.responses.usertest
+    if response.stickied == True:
+        response.stickied = False
+        response.save()
+        try:
+            s=Sticky.objects.get(problem_label=response.problem.label,test_pk=usertest.pk)
+            s.delete()
+        except Sticky.DoesNotExist:
+            s=None
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>"})
+    else:
+        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)
+        s.save()
+        userprofile.stickies.add(s)
+        response.stickied = True
+        response.save()
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>"})
+
+@login_required
+def checkanswer(request,pk):
+    usertest=get_object_or_404(UserTest,pk=pk)
+    userprofile=request.user.userprofile
+    response_label=request.POST.get('response_id','')
+    problem_label = response_label.split('-')[2]
+    prob = get_object_or_404(Problem,label=problem_label)
+    tempanswer=request.POST.get('answer','')
+    allresponses = usertest.responses
+    r=allresponses.responses.get(problem_label=problem_label)
+    qt = request.POST.get('question_type','')
+    t=timezone.now()
+    r.attempted = 1
+    if r.response != tempanswer:# i.e., new answer
+        pv=0
+        if prob.type_new.type=='AIME':
+            if prob.problem_number<=1:
+                pv=-3
+            elif prob.problem_number<=5:
+                pv=1
+            elif prob.problem_number<=10:
+                pv=3
+            else:
+                pv=5
+        ur=UserResponse(test_label=usertest.test.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv)
+        ur.save()
+        r.modified_date = t
+        r.response = tempanswer
+        r.save()
+        if prob.question_type_new.question_type == "multiple choice":
+            if r.response==prob.mc_answer and prob.question_type_new.question_type !='proof':
+                ur.correct=1
+                ur.save()
+            userprofile.responselog.add(ur)
+            allresponses.num_problems_correct = allresponses.num_problems_correct + 1
+            allresponses.show_answer_marks=1
+            allresponses.save()
+            usertest.num_correct = allresponses.num_problems_correct
+            usertest.save()
+        elif prob.question_type_new.question_type == "short_answer":
+            if r.response==prob.sa_answer and prob.question_type_new.question_type !='proof':
+                ur.correct=1
+                ur.save()
+            userprofile.responselog.add(ur)
+            allresponses.num_problems_correct = allresponses.num_problems_correct + 1
+            allresponses.show_answer_marks=1
+            allresponses.save()
+            usertest.num_correct = allresponses.num_problems_correct
+            usertest.save()
+    if tempanswer != None and tempanswer !='' and tempanswer != 'undefined':
+        if qt == 'mc':
+            if tempanswer == prob.mc_answer:
+                if prob.solutions.count() > 0:
+                    return JsonResponse({'blank':'false','correct' : 'true', 'has_solution' : 'true','prob_pk' : prob.pk})
+                else:
+                    return JsonResponse({'blank':'false','correct' : 'true', 'has_solution' : 'false','prob_pk' : prob.pk})
+            else:
+                return JsonResponse({'blank':'false','correct' : 'false'})
+        if qt == 'sa':
+            t=timezone.now()
+            r.attempted = 1
+            if tempanswer == prob.sa_answer:
+                if prob.solutions.count() > 0:
+                    return JsonResponse({'blank':'false','correct' : 'true', 'has_solution' : 'true','prob_pk' : prob.pk})
+                else:
+                    return JsonResponse({'blank':'false','correct' : 'true', 'has_solution' : 'false','prob_pk' : prob.pk})
+            else:
+                return JsonResponse({'blank':'false','correct' : 'false'})
+    return JsonResponse({'blank':'true'})

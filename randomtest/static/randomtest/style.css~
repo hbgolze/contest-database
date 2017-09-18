@@ -69,9 +69,6 @@ img.displayed {
     margin-right: auto;
     zoom: 50%; 
 }
-img.stuff {
-    max-width: 100%;
-}
 
 .user_name{
     font-size:14px;
@@ -247,4 +244,9 @@ background: #006699; color: #fff; }
 
 .div-inline{
     display:inline-block;
+}
+
+.row-no-padding {
+  margin-bottom: 0 !important;
+
 }
