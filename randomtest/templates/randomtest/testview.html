@@ -12,10 +12,6 @@
 </ol>
 <h2>{{name}}</h2>
 
-{% if username %}
-{% else %}
-<p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
-{% endif %}
 
 {% if username %}{% else %}
 <form action="." method="POST">
@@ -214,7 +210,8 @@ function triggerModal()
 //        $('.solution-link').modalEffects();
     });
 }
-
+{% if username %}
+{% else %}
 $(document).on('click',".js-star-toggle",function(event) {
     event.preventDefault();
     $.ajax({
@@ -228,6 +225,7 @@ $(document).on('click',".js-star-toggle",function(event) {
     });
     return false;
 });
+{% endif %}
 
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();

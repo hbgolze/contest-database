@@ -55,7 +55,7 @@
 		</div>
 		{% else %}
 		<div class="form-group has-error has-feedback">
-		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}{% if username %} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value={% if username %}"{{response}} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% else %}"{{response}}"{% endif %}>
 		  <span class="glyphicon glyphicon-remove form-control-feedback"></span>
 		</div>
 		{% endif %}
