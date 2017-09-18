@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^createtest/readme$', views.readme, name='readme'),
     url(r'^test/(?P<pk>\d+)/$', views.testview, name='testview'),
     url(r'^test/(?P<pk>\d+)/toggle_star/$', views.toggle_star, name='toggle_star'),
+    url(r'^test/(?P<pk>\d+)/checkanswer/$', views.checkanswer, name='checkanswer'),
     url(r'^test/(?P<pk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
     url(r'^test/(?P<testpk>\d+)/(?P<pk>\d+)/$', views.solutionview, name='solutionview'),
     url(r'^delete/(?P<pk>\d+)/$', views.deletetestresponses,name='test_delete'),

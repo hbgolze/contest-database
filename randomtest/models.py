@@ -306,9 +306,10 @@ class UserProfile(models.Model):
 class UserTest(models.Model):
     userprof = models.ForeignKey(UserProfile,related_name='user_tests',null=True)
     test = models.ForeignKey(Test)
-    responses = models.ForeignKey(Responses,related_name='usertest')
+    responses = models.ForeignKey(Responses,related_name='usertest',null = True)
     num_probs = models.IntegerField()
     num_correct = models.IntegerField(default=0)
+    show_answer_marks=models.BooleanField(default=0)
     def __str__(self):
         return self.test.name
 

@@ -19,117 +19,136 @@
 
 {% if username %}{% else %}
 <form action="." method="POST">
-{% csrf_token %}
-<input type="hidden" name="startform" value="{{pk}}">
-{% endif %}
-<table>
-{% for resp in rows %}
-<tr>
-<td>
-<a name="{{resp.problem.label}}"></a>
-
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Problem {{forloop.counter}} <span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="glyphicon glyphicon-star"></span>{% else %}<span class="glyphicon glyphicon-star-empty"></span>{% endif %}</span></h3>
-  </div>
-  <div class="panel-body">
-    {% if resp.problem.question_type_new.question_type == 'short answer' or resp.problem.question_type_new.question_type == 'proof' or resp.problem.question_type_new.question_type == 'multiple choice short answer' %}
-    {% autoescape off %}{{resp.problem.display_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
-    {% else %}
-    {% autoescape off %}{{resp.problem.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
-    {% endif %}
-    
-  </div>
-
-  <div class="panel-footer">
-    {% if resp.problem.question_type_new.question_type == 'short answer' or resp.problem.question_type_new.question_type == 'multiple choice' %}
-    <div>
-      <div class="col-xs-6" id="answer-input-{{resp.problem.label}}"><!--Answer Input-->
-	{% if resp.problem.question_type_new.question_type == 'short answer' %}
-	{% if resp.attempted %}
-	{% if resp.problem.answer == resp.response %}
-	<div class="form-group has-success has-feedback">
-          <input type="text" class="form-control" name="answer{{resp.problem.label}}" name="id{{resp.problem.label}}" value="{{resp.response}}" disabled>
-          <span class="glyphicon glyphicon-ok form-control-feedback"></span>
-	</div>
-	{% else %}
-	<div class="form-group has-error has-feedback">
-          <input type="text" class="form-control" name="answer{{resp.problem.label}}" name="id{{resp.problem.label}}" value="{{resp.response}}" {% if username %}disabled{% endif %}>
-          <span class="glyphicon glyphicon-remove form-control-feedback"></span>
-	</div>
-	{% endif %}
-	{% else %}
-        <input type="text" class="form-control" name="answer{{resp.problem.label}}" name="id{{resp.problem.label}}" {% if username %}value="{{resp.problem.answer}}" disabled{% endif %}>
-	{% endif %}
-
-	{% elif resp.problem.question_type_new.question_type == 'multiple choice' %}
-	<div class="form-group" name="answers_{{resp.problem.label}}">
-	  <label class="radio-inline{% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %} answer_{{resp.problem.label}}">
-	    <input type="radio" name="answer{{resp.problem.label}}" value="A" {% if resp.response == "A" %}checked="checked"{% endif %} {% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %}> A
-	  </label>
-	  <label class="radio-inline{% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %} answer_{{resp.problem.label}}">
-	    <input type="radio" name="answer{{resp.problem.label}}" value="B" {% if resp.response == "B" %}checked="checked"{% endif %} {% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %}> B
-      </label>
-	  <label class="radio-inline{% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %} answer_{{resp.problem.label}}">
-	    <input type="radio" name="answer{{resp.problem.label}}" value="C" {% if resp.response == "C" %}checked="checked"{% endif %} {% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %}> C
-	  </label>
-	  <label class="radio-inline{% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %} answer_{{resp.problem.label}}">
-	<input type="radio" name="answer{{resp.problem.label}}" value="D" {% if resp.response == "D" %}checked="checked"{% endif %} {% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %}> D
-	  </label>
-	  <label class="radio-inline{% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %} answer_{{resp.problem.label}}">
-	    <input type="radio" name="answer{{resp.problem.label}}" value="E" {% if resp.response == "E" %}checked="checked"{% endif %} {% if username or resp.response == resp.problem.mc_answer %} disabled{% endif %}> E
-
-	  </label>
-	  <span id="answerstatus_{{resp.problem.label}}">
-	    {% if resp.attempted %}
-	    {% if resp.response == resp.problem.mc_answer %}
-            <span class="glyphicon glyphicon-ok" style="color:green"></span>
+  {% csrf_token %}
+  <input type="hidden" name="startform" value="{{pk}}">
+  {% endif %}
+  <table>
+    {% for resp in rows %}
+    {% with question_type=resp.problem.question_type_new.question_type prob_label=resp.problem_label response=resp.response %}
+    <tr>
+      <td>
+	<a name="{{prob_label}}"></a>
+	
+	<div class="panel panel-default">
+	  <div class="panel-heading">
+	    <h3 class="panel-title">Problem {{forloop.counter}} <span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="glyphicon glyphicon-star"></span>{% else %}<span class="glyphicon glyphicon-star-empty"></span>{% endif %}</span></h3>
+	  </div>
+	  <div class="panel-body">
+	    {% if question_type == 'short answer' or question_type == 'proof' or question_type == 'multiple choice short answer' %}
+	    {% autoescape off %}{{resp.problem.display_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
 	    {% else %}
-	    <span class="glyphicon glyphicon-remove" style="color:red"></span>
+	    {% autoescape off %}{{resp.problem.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
 	    {% endif %}
-	    {% endif %}
-	  </span>
+	    
+	  </div>
+	  
+	  <div class="panel-footer">
+	    {% if question_type == 'short answer' or question_type == 'multiple choice' %}
+	    <div class="row">
+	      <div class="col-xs-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
+		{% if question_type == 'short answer' %}
+		{% if resp.attempted %}
+		{% if resp.problem.sa_answer == response %}
+		<div class="form-group has-success has-feedback">
+		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+		  <span class="glyphicon glyphicon-ok form-control-feedback"></span>
+		</div>
+		{% else %}
+		<div class="form-group has-error has-feedback">
+		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}{% if username %} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+		  <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+		</div>
+		{% endif %}
+		{% else %}
+		<input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+		{% endif %}
+		
+		{% elif question_type == 'multiple choice' %}
+		<div class="form-group" name="answers_{{prob_label}}">
+		  <label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+		    <input type="radio" name="answer{{prob_label}}" value="A" {% if response == "A" %}checked="checked"{% endif %} {% if username or response == resp.problem.mc_answer %} disabled{% endif %}> A
+		  </label>
+		  <label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+		    <input type="radio" name="answer{{prob_label}}" value="B" {% if response == "B" %}checked="checked"{% endif %} {% if username or response == resp.problem.mc_answer %} disabled{% endif %}> B
+		  </label>
+		  <label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+		    <input type="radio" name="answer{{prob_label}}" value="C" {% if response == "C" %}checked="checked"{% endif %} {% if username or response == resp.problem.mc_answer %} disabled{% endif %}> C
+		  </label>
+		  <label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+		    <input type="radio" name="answer{{prob_label}}" value="D" {% if response == "D" %}checked="checked"{% endif %} {% if username or response == resp.problem.mc_answer %} disabled{% endif %}> D
+		  </label>
+		  <label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+		    <input type="radio" name="answer{{prob_label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if username or response == resp.problem.mc_answer %} disabled{% endif %}> E
+		    
+		  </label>
+		  <span id="answerstatus_{{prob_label}}">
+		    {% if resp.attempted %}
+		    {% if response == resp.problem.mc_answer %}
+		    <span class="glyphicon glyphicon-ok" style="color:green"></span>
+		    {% else %}
+		    <span class="glyphicon glyphicon-remove" style="color:red"></span>
+		    {% endif %}
+		    {% endif %}
+		  </span>
+		</div>
+		{% endif %}
+	      </div><!--Answer input-->
+	      <div class="col-xs-6" id="check-button-{{prob_label}}" align="right"><!--button div-->
+		{% if username %}
+		{% else %}
+		
+		{% if question_type == 'multiple choice' %}
+		{% if resp.attempted == 0 or resp.problem.mc_answer != response %}
+		<button type="submit" class="btn btn-primary js-check-mc-answer" id="check-answer-{{prob_label}}">Check Answer</button>
+		{% endif %}
+		{% elif question_type == 'short answer' %}
+		{% if resp.attempted == 0 or resp.problem.sa_answer != response %}
+		<button type="submit" class="btn btn-primary js-check-answer" id="check-answer-{{prob_label}}">Check Answer</button>
+		{% endif %}
+		{% endif %}
+		{% endif %}
+		
+		{% if question_type == "multiple choice" %}
+		{% if resp.problem.mc_answer == response or username %}
+		{% if resp.problem.solutions.count > 0 %}
+		<button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		{% else %}
+		<button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		{% endif %}
+
+		{% endif %}
+		{% elif question_type == "short answer" %}
+		{% if resp.problem.sa_answer == response or username %}
+		{% if resp.problem.solutions.count > 0 %}
+		<button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		{% else %}
+		<button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		{% endif %}
+
+		{% endif %}
+		{% endif %}
+
+	      </div><!--button div-->
+	      <div class="col-xs-12 pull-right attemped-date-{{prob_label}}"><!--tracker-->
+		{% if resp.attempted %}
+		<div align="right">
+		  <small>Last Attempted: {{resp.modified_date}}</small>
+		</div>
+		{% endif %}
+		{% endif %}
+	      </div><!--tracker-->
+	    </div>    
+	  </div>
 	</div>
-	{% endif %}
-      </div><!--Answer input-->
-      <div class="col-xs-6" id="check-button-{{resp.problem.label}}" align="right"><!--button div-->
-	{% if username %}
-	{% else %}
-	{% if resp.attempted == 0 or resp.problem.answer != resp.response %}                     
-	{% if resp.problem.question_type_new.question_type == 'multiple choice' %}
-        <button type="submit" class="btn btn-primary js-check-mc-answer" id="check-answer-{{resp.problem.label}}">Check Answer</button>
-	{% elif resp.problem.question_type_new.question_type == 'short answer' %}
-        <button type="submit" class="btn btn-primary js-check-answer" id="check-answer-{{resp.problem.label}}">Check Answer</button>
-	{% endif %}
-        {% endif %}
-	{% endif %}
-	{% if resp.problem.answer == resp.response or username %}
-	{% if resp.problem.solutions.count > 0 %}<button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</a>{% else %}<button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
-	{% endif %}
-	{% endif %}
-      </div><!--button div-->
-      <div class="col-xs-12 pull-right attemped-date-{{resp.problem.label}}"><!--tracker-->
-	{% if resp.attempted %}
-	<div align="right">
-	  <small>Last Attempted: {{resp.modified_date}}</small>
-	</div>
-	{% endif %}
-	{% endif %}
-      </div><!--tracker-->
-    </div>    
-  </div>
-</div>
 
   
 
-</td>
-<!--<td valign="top"><br>
-&nbsp;<input type="checkbox" class="glyphicon glyphicon-star-empty" {% if resp.stickied == 1 %}checked{% endif %} name="sticky{{resp.problem.label}}" {% if username %}disabled{% endif %}>
-</td>-->
-</tr>
-{% endfor %}
-</table>
-{% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
+      </td>
+    </tr>
+    {% endwith %}
+    {% endfor %}
+  </table>
+  {% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
 
