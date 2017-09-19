@@ -1210,14 +1210,14 @@ def toggle_star(request,pk):
             s.delete()
         except Sticky.DoesNotExist:
             s=None
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>"})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",'problem_label':response.problem.label})
     else:
         s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
         response.save()
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>"})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>",'problem_label':response.problem.label})
 
 @login_required
 def checkanswer(request,pk):

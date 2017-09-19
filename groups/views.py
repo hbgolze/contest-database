@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup,NewTag
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup,NewTag,NewResponse
 from randomtest.utils import newtexcode
 from .forms import GroupModelForm
 
@@ -93,19 +93,13 @@ def viewproblemgroup(request,pk):
                     ti=TestTimeStamp(test_pk=t.pk)
                     ti.save()
                     userprofile.timestamps.add(ti)
-                    R=Responses(test=t,num_problems_correct=0)
-                    R.save()
-                    for i in t.problems.all():
-                        r=Response(response='',problem_label=i.label,problem=i)
-                        r.save()
-                        R.responses.add(r)
-                    R.save()
-                    userprofile.allresponses.add(R)
-                #            t.types.add(Type.objects.get(type=testtype))
-                    t.save()
-                    ut=UserTest(test = t,responses = R,num_probs = t.problems.count(),num_correct = 0)
+                    ut=UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof=userprofile)
                     ut.save()
-                    userprofile.usertests.add(ut)
+                    for i in t.problems.all():
+                        r=NewResponse(response='',problem_label=i.label,problem=i,usertest=ut)
+                        r.save()
+                    t.save()
+#                    userprofile.usertests.add(ut)
                     userprofile.save()            
                     return redirect('/test/'+str(ut.pk)+'/')
 
@@ -129,9 +123,11 @@ def viewtaggroup(request,pk):
     if request.method=='POST':
         if request.POST.get("newtest"):
             form = request.POST
+
             if "chk" in form:
                 checked=form.getlist("chk")
                 if len(checked)>0:
+#                P = prob_group.problems.all()
                     testname = form.get('testname','')
                 
                     t = Test(name = testname)
@@ -144,19 +140,13 @@ def viewtaggroup(request,pk):
                     ti=TestTimeStamp(test_pk=t.pk)
                     ti.save()
                     userprofile.timestamps.add(ti)
-                    R=Responses(test=t,num_problems_correct=0)
-                    R.save()
-                    for i in t.problems.all():
-                        r=Response(response='',problem_label=i.label,problem=i)
-                        r.save()
-                        R.responses.add(r)
-                    R.save()
-                    userprofile.allresponses.add(R)
-                #            t.types.add(Type.objects.get(type=testtype))
-                    t.save()
-                    ut=UserTest(test = t,responses = R,num_probs = t.problems.count(),num_correct = 0)
+                    ut=UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof=userprofile)
                     ut.save()
-                    userprofile.usertests.add(ut)
+                    for i in t.problems.all():
+                        r=NewResponse(response='',problem_label=i.label,problem=i,usertest=ut)
+                        r.save()
+                    t.save()
+#                    userprofile.usertests.add(ut)
                     userprofile.save()            
                     return redirect('/test/'+str(ut.pk)+'/')
     P = tag.problems.filter(type_new__in=userprofile.user_type_new.allowed_types.all())

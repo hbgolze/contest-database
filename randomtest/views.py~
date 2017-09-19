@@ -1252,19 +1252,19 @@ def checkanswer(request,pk):
             if r.response==prob.mc_answer and prob.question_type_new.question_type !='proof':
                 ur.correct=1
                 ur.save()
+                usertest.num_correct = usertest.num_correct+1
             userprofile.responselog.add(ur)
             userprofile.save()
             usertest.show_answer_marks=1
-            usertest.num_correct = usertest.num_correct+1
             usertest.save()
         elif prob.question_type_new.question_type == "short answer":
             if r.response==prob.sa_answer and prob.question_type_new.question_type !='proof':
                 ur.correct=1
-                ur.save()
+                ur.save() 
+                usertest.num_correct = usertest.num_correct+1
             userprofile.responselog.add(ur)
             userprofile.save()
             usertest.show_answer_marks=1
-            usertest.num_correct = usertest.num_correct+1
             usertest.save()
     if tempanswer != None and tempanswer !='' and tempanswer != 'undefined':
         if qt == 'mc':

@@ -10,19 +10,67 @@
 {% endif %}
   <li class="active">{{name}}</li>
 </ol>
+
+<div class="container">
+
 <h2>{{name}}</h2>
-
-{% if username %}
+<div class="row">
+<table class="table table-bordered">
+<tr>
+<td>
+Problem
+</td>
+{% for resp in rows %}
+<td style="text-align:center">
+<a href="#{{resp.problem.label}}">{{forloop.counter}}</a>
+</td>
+{% endfor%}
+</tr>
+<tr>
+<td>
+Status
+</td>
+{% for resp in rows %}
+<td style="text-align:center">
+<span id="table-problem-status-{{resp.problem.label}}">
+{% if resp.attempted %}
+ {% if resp.problem.question_type_new.question_type == "multiple choice" %}
+  {% if resp.response == resp.problem.mc_answer %}
+   <span class="glyphicon glyphicon-ok" style="color:green"></span>
+  {% else %}
+   <span class="glyphicon glyphicon-remove" style="color:red"></span>
+  {% endif %}
+ {% elif resp.problem.question_type_new.question_type == "short answer" %}
+  {% if resp.response == resp.problem.sa_answer %}
+   <span class="glyphicon glyphicon-ok" style="color:green"></span>
+  {% else %}
+   <span class="glyphicon glyphicon-remove" style="color:red"></span>
+  {% endif %}
+ {% endif %}
 {% else %}
-<p><b>Note:</b> To save starred problems, please click "Submit Answers."</p>
+-
 {% endif %}
+</span>
+<span id="table-star-status-{{resp.problem.label}}">
+{% if resp.stickied %}
+ (<span class="glyphicon glyphicon-star" style="color:#FFD700"></span>)
+{% endif %}
+</span>
+</td>
+{% endfor%}
 
+
+</tr>
+</table>
+</div>
+<div class="row">
 {% if username %}{% else %}
 <form action="." method="POST">
   {% csrf_token %}
   <input type="hidden" name="startform" value="{{pk}}">
   {% endif %}
   <table>
+
     {% for resp in rows %}
     {% with question_type=resp.problem.question_type_new.question_type prob_label=resp.problem_label response=resp.response %}
     <tr>
@@ -151,8 +199,10 @@
   {% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
-
+</div>
 <div id="solution-placeholder" class="modal fade" role="dialog">
+
+</div>
 
 </div>
 <script>
@@ -214,7 +264,8 @@ function triggerModal()
 //        $('.solution-link').modalEffects();
     });
 }
-
+{% if username %}
+{% else %}
 $(document).on('click',".js-star-toggle",function(event) {
     event.preventDefault();
     $.ajax({
@@ -224,10 +275,21 @@ $(document).on('click',".js-star-toggle",function(event) {
         dataType: 'json',
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
+   alert(data['is_stickied']);
+            if (data['is_stickied']=='true') {
+alert('hi');
+alert($("#table-star-status-"+problem_label).html());
+                $("#table-star-status-"+problem_label).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
+            } else {
+alert('bye');
+alert($("#table-star-status-"+problem_label).html());
+                $("#table-star-status-"+problem_label).html("");
+            }
         }
     });
     return false;
 });
+{% endif %}
 
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();
@@ -245,14 +307,15 @@ $(document).on('click',".js-check-mc-answer",function(event) {
 	            $('.answer_'+problem_label).each(function(i,obj) {
                         $(this).addClass('disabled');
                     });
+                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-			    console.log(data['prob_pk']);
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                          triggerModal();
                      } else {
 	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven't written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
+                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
                     $("#answerstatus_"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
                 }
             }
@@ -274,14 +337,15 @@ $(document).on('click',".js-check-answer",function(event) {
             if (data['blank'] == 'false') {
                 if (data['correct'] == 'true') {
 	             $("#answer-input-"+problem_label).html("<div class='form-group has-success has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"' disabled><span class='glyphicon glyphicon-ok form-control-feedback'></span></div>");
+                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-			    console.log(data['prob_pk']);
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                          triggerModal();
                      } else {
 	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven't written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
+                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
 	             $("#answer-input-"+problem_label).html("<div class='form-group has-error has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'><span class='glyphicon glyphicon-remove form-control-feedback'></span></div>");
                 }
             }

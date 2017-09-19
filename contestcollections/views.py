@@ -22,7 +22,7 @@ from subprocess import Popen,PIPE
 import tempfile
 import os
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection
+from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
