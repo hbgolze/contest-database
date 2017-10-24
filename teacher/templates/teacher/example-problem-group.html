@@ -1,0 +1,9 @@
+<div class="form-group">
+  <label for="example-problem-group" class="control-label">Problem Group</label>
+  <select name="example-problem-group" id="example-problem-group" class="form-control">
+    <option value="" disabled selected>Select a Problem Group</option>
+    {% for g in pg %}
+    <option value="{{g.pk}}">{{g.name}} ({{g.problems.count}} problems)</option>
+    {% endfor %}
+  </select>
+</div>

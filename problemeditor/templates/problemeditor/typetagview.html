@@ -7,30 +7,165 @@
   <li><a href="../">{{typelabel}}</a></li>
   <li class="active">{{tag}}</li>
 </ol>
-<h2>Problem Editor</h2>
-Please select a problem
-<div class="content">
-<table class="table table-striped">
-    <thead>
+<h2>Problem Editor: {{tag}}</h2>
+
+<div class="container-fluid">
+
+  <div class="row">
+    <table class="table table-bordered">
       <tr>
-        <th>Label</th>
-	<th>Current Tags</th>
-	<th>Number of Solutions</th>
-	<th>Actions</th>
+	<td>
+	  Problem
+	</td>
+	{% for prob in rows %}
+	<td style="text-align:center">
+	  <a href="#problem_{{prob.pk}}">{% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}{% else %}{{forloop.counter}}{% endif %}</a>
+	</td>
+	{% endfor %}
       </tr>
-    </thead>
-    <tbody>
-      {% for prob in rows %}
       <tr>
-        <td>{{prob.label}}</td>
-        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span> {% endfor %}</td>
-        <td>{{prob.solutions.count}}</td>
-	<td><a href="{{prob.label}}">Edit Tags/Solutions</a></td>
+	<td>
+	  # Solutions
+	</td>
+	{% for prob in rows %}
+	<td style="text-align:center">
+	  <span id="num_solutions-{{prob.pk}}">
+	    {{prob.solutions.count}}
+	  </span>
+	</td>
+	{% endfor%}
       </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+      <tr>
+	<td>
+	  Tagged
+	</td>
+	{% for prob in rows %}
+	<td style="text-align:center">
+	  <span id="tagged-{{prob.pk}}">
+	    {% if prob.newtags.count > 0 %}
+	    <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	    {% else %}
+	    -
+	    {% endif %}
+	  </span>
+	</td>
+	{% endfor%}
+      </tr>
+    </table>
+  </div>
+
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="problemList" class="list-group">
+        {% for prob in rows %}
+        <div class="list-group-item" id="problem_{{prob.pk}}">
+	  <div class="row">
+	    <div class="col-xs-1">
+	      {% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}.{% else %}{{forloop.counter}}.{% endif %}
+	    </div>
+	    <div class="col-xs-11">
+
+	      <p>
+		{% include "problemeditor/snippets/problemtext.html" %}
+		[{{prob.readable_label}}] (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>)
+	      </p>
+	      
+	      {% if prob.question_type_new.question_type == 'multiple choice' %}
+	      <p>Answer: <span id="mc_answer_{{prob.pk}}">{{prob.mc_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-mc-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+	      {% elif prob.question_type_new.question_type == 'short answer' %}
+	      <p>Answer: <span id="sa_answer_{{prob.pk}}">{{prob.sa_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+	      {% elif prob.question_type_new.question_type == 'multiple choice short answer' %}
+	      <p>Answer: <span id="mc_answer_{{prob.pk}}">{{prob.mc_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-mc-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+	      
+	      <p>Answer: <span id="sa_answer_{{prob.pk}}">{{prob.sa_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+	      {% endif %}
+	      
+	      
+	      
+	      
+	      {% if request.user.is_superuser %}
+	      <p>
+		{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
+		<a class="edit-mc-latex" href="{{prob.pk}}">Edit LaTeX Code{% if prob.question_type_new.question_type == 'multiple choice short answer' %} (Multiple Choice){% endif %}</a>
+		{% endif %}
+		{% if prob.question_type_new.question_type != 'multiple choice' %}
+		<a class="edit-latex" href="{{prob.pk}}">Edit LaTeX Code{% if prob.question_type_new.question_type == 'multiple choice short answer' %} (Short Answer){% endif %}</a>
+		{% endif %}
+	      </p>
+	      {% endif %}
+	      
+	      
+	      
+	      <div id="duplicate_problems_{{prob.pk}}">
+		{% include "problemeditor/duplicate_problems.html" %}
+	      </div>
+	      
+	      {% if request.user.is_superuser %}
+	      <p>
+		<a class="btn btn-default add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
+	      </p>
+	      <div id="duplicate-status-{{prob.pk}}"></div>
+	      {% endif %}
+	      
+	      
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-1"></div>
+	    <div class="col-xs-6" id="problem-tags-{{prob.pk}}">
+	      <form action="." method="post" class="js-tag-delete-form">
+		{% csrf_token %}
+		{% if prob.newtags.count > 0 %}
+		<label for="tag-list-{{prob.pk}}">Current Tags</label>
+		<ul id="tag-list-{{prob.pk}}">
+		  {% for tagg in prob.newtags.all %}
+		  <li>
+		    <span class="label label-default">{{tagg}}</span>  <span class="delete-tag-link" id="deletetag_{{prob.pk}}_{{tagg.pk}}" style="cursor:pointer;color:red;">&#10006;</span>
+		  </li>
+		  {% endfor %}
+		</ul>
+		{% endif %}
+	      </form>
+	      
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-1"></div>
+	    <div class="col-xs-6">
+	      <form action="." method="post" class="js-tag-form">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{{ request}}">
+		<label for="addtag_{{prob.pk}}">Add Tag:</label>
+		<select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+		  <option value="" disabled selected>Select a Tag</option>
+		  {% for tagg in tags %}
+		  <option value="{{tagg.pk}}">{{tagg}}
+		  </option>
+		  {% endfor %}
+		</select>
+		<div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
+		  
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	  <div class="row">
+	    <div class="col-xs-1"></div>
+	    <div class="col-xs-11">
+	      <label>Solutions:</label>
+	      <div>
+		<a class="btn btn-default solution-link" id="solution-link_{{prob.pk}}" href="load_sol/{{prob.pk}}/">View Solutions ({{prob.solutions.count}})</a>
+		<a class="btn btn-default new-sol" href="{{prob.pk}}">New Solution</a>
+	      </div>
+	    </div>
+	  </div>
+        </div>
+        {% endfor %}
+      </div><!--list-group-->
+    </div>
+  </div>
 </div>
+
 
 {% if rows.has_other_pages %}
 <ul class="pagination">
@@ -55,4 +190,373 @@ Please select a problem
         {% endif %}
 </ul>
 {% endif %}
+
+{% if request.user.is_superuser %}
+<div class="modal fade" id="duplicate-modal" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." class="add-linked-problem-form">
+	
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Link to Duplicate Problem</h4>
+	</div>
+	<div class="modal-body">
+          {% csrf_token %}
+	  <input type="hidden" name="original-prob_pk" id="original-prob_pk">
+          <div class="form-group">
+            <label for="linked_problem_label" class="control-label">Label of Linked Problem</label>
+            <input type="text" class="form-control" name="linked_problem_label" id="linked_problem_label" required>
+          </div>
+	</div>
+	<div class="modal-footer">
+          <button type="submit" name="addlink" class="btn btn-primary">Add Linked Problem</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	</div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+<div class="modal fade" id="edit-answer-modal" role="dialog">
+  
+</div>
+<div class="modal fade" id="edit-latex-modal" role="dialog">
+
+</div>
+{% endif %}
+<div class="modal fade" id="solution-placeholder" role="dialog">
+
+</div>
+<div class="modal fade" id="new-solution-placeholder" role="dialog">
+
+</div>
+
+
+
+<script>
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on("change","select.js-add-tag-select",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_tag' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {
+                $("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Tag has been added to problem.</div>");
+                $("#tagging-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+                $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+                $("#tagged-"+data['prob_pk']).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+
+            } else {
+                $("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem already has tag.</div>");
+                $("#tagging-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+            }
+
+        }
+    });
+    return false;
+});
+
+
+$(document).on('click',".delete-tag-link",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'delete_tag' %}',
+        data: form.serialize()+"&problem_tag_id="+$(this).attr('id'),
+        dataType: 'json',
+        success: function(data) {
+           $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+           if (data['tag_count'] == 0) {
+               $("#tagged-"+data['prob_pk']).html("-");
+           }
+        }
+    });
+    return false;
+});
+
+
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+
+$(document).on('click',".remove_duplicate",function(event) {
+    event.preventDefault();
+    var dupl_id = $(this).attr('id').split('_')[3];
+    var curr_id = $(this).attr('id').split('_')[2];
+    $.ajax({
+        type: 'GET',
+        url: '{% if oldtag %}{% url 'remove_duplicate' type oldtag %}{% else %}{% url 'remove_duplicate' type tag %}{% endif %}',
+        data: "&dpk="+dupl_id+"&pk="+curr_id,
+        dataType: 'json',
+        success: function(data) {
+           $("#duplicate_problems_"+curr_id).html(data['duplicate_problems']);
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".add-linked-problem",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+    $("#original-prob_pk").val(prob_pk);
+    $("#duplicate-modal").modal("show");
+});
+
+$(document).on('submit',".add-linked-problem-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: "{% if oldtag %}{% url 'add_duplicate' type oldtag %}{% else %}{% url 'add_duplicate' type tag %}{% endif %}",
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+           if (result['status']==1) {
+               $("#duplicate_problems_"+result['prob_pk']).html(result['duplicate_problems']);
+               $("#duplicate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+               $("#linked_problem_label").val("");
+           } else if (result['status']==0) {
+               $("#duplicate-status-"+result['prob_pk']).html("<div class='alert alert-danger' role='alert'>No such problem with entered label!</div>");
+               $("#duplicate-status-"+result['prob_pk']).prop("style","display:block");
+               $("#duplicate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+               $("#linked_problem_label").val("");
+               setTimeout(function() {
+                   $("#duplicate-status-"+result['prob_pk']).fadeOut().empty();
+               },5000);             
+           }
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-mc-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: 'load-edit-answer/',
+        data: "qt=mc&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
+            $("#edit-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-sa-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+    $.ajax({
+        type: 'GET',
+        url: 'load-edit-answer/',
+        data: "qt=sa&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
+            $("#edit-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_answer_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: 'save-answer/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['qt'] == 'mc') {
+                $("#mc_answer_"+result['pk']).html(result['answer']);
+            } else if (result['qt'] == 'sa') {
+                $("#sa_answer_"+result['pk']).html(result['answer']);
+            }
+               $("#edit-answer-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-mc-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: 'load-edit-latex/',
+        data: "qt=mc&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-latex-modal").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+            $("#edit-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: 'load-edit-latex/',
+        data: "qt=sa&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-latex-modal").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+            $("#edit-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_latex_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: 'save-latex/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['qt'] == 'mc') {
+                $("#mc_prob_text_"+result['pk']).html(result['prob-text']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mc_prob_text_"+result['pk']]);
+            } else if (result['qt'] == 'sa') {
+                $("#sa_prob_text_"+result['pk']).html(result['prob-text']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_prob_text_"+result['pk']]);
+            }
+               $("#edit-latex-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+{% endif %}
+
+$(".solution-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+    $("#solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+         $("#solution-placeholder").modal("show");
+    });
+});
+
+$(document).on('click',".new-sol",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: 'load-new-solution/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#new-solution-placeholder").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
+            $("#new-solution-placeholder").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-solution-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: 'save-new-solution/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#solution-link_"+result['pk']).text("View Solutions ("+result['sol_count']+")");
+	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
+            $("#edit-latex-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".delete-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'GET',
+        url: 'delete-solution/',
+        data: "pk="+prob_id+"&spk="+sol_id,
+        dataType: 'json',
+        success: function(result) {
+            if (result['deleted']==1) {
+                $("#solution-link_"+prob_id).text("View Solutions ("+result['sol_count']+")");
+	        $("#num_solutions-"+prob_id).html(result['sol_count']);
+                $("#sol_"+sol_id).empty();
+            }
+        }
+    });
+    return false;
+});
+</script>
+
+
 {% endblock %}
+
+

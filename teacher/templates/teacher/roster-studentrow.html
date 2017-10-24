@@ -1,0 +1,15 @@
+            <tr>
+              <td>
+                <a href="{{student_class.userprofile.user.username}}">{{student_class.userprofile.user.username}}</a>
+              </td>
+              {% for unit in student_class.userunit_set.all %}
+              <td style="border-left: 1px solid;border-right: 1px solid;">{{unit.points_earned}}/{{unit.total_points}}</td>
+              {% for user_unitobject in unit.userunitobject_set.all %}
+	      {% if user_unitobject.userproblemset %}
+	      {% with pset=user_unitobject.userproblemset %}
+              <td>{{pset.points_earned}}/{{pset.total_points}}</td>
+	      {% endwith %}
+	      {% endif %}
+              {% endfor %}
+              {% endfor %}
+            </tr>

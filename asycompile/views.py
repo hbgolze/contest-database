@@ -10,7 +10,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Dropboxurl,Comment,QuestionType,ProblemApproval
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval
 from .forms import AsyForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode
 
@@ -25,7 +25,6 @@ import os,os.path
 # Create your views here.
 @login_required
 def asytestview(request):
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     if request.method == "POST":
         if request.POST.get("save"):
             asylist=request.POST.getlist('asy_code')
@@ -64,4 +63,4 @@ def asytestview(request):
             return redirect('/')
     form = AsyForm()
     breadcrumbs=[('../','Home'),]
-    return render(request, 'asycompile/editasy.html', {'form': form, 'nbar': 'viewmytests','dropboxpath':dropboxpath,})
+    return render(request, 'asycompile/editasy.html', {'form': form, 'nbar': 'viewmytests',})

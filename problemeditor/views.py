@@ -1,6 +1,7 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
-from django.http import HttpResponse,HttpResponseRedirect,Http404
+from django.http import HttpResponse,HttpResponseRedirect,Http404,JsonResponse
 from django.template import loader,RequestContext
+from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -8,12 +9,12 @@ from django.utils import timezone
 from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
-from django.views.generic import UpdateView,CreateView,DeleteView,ListView
+from django.views.generic import UpdateView,CreateView,DeleteView,ListView,DetailView
 
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm
+from .forms import ProblemForm,SolutionForm,ProblemTextForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
@@ -301,7 +302,7 @@ def CMtagview(request,type):
     newtags=NewTag.objects.all().exclude(label='root').order_by('tag')
     rows=[]
     probsoftype=Problem.objects.filter(type_new=typ)
-    num_untagged=probsoftype.filter(tags__isnull=True).count()
+    num_untagged=probsoftype.filter(newtags__isnull=True).count()
     for tag in newtags:
         T = tag.problems.filter(type_new=typ)
         num_problems=T.count()
@@ -332,8 +333,9 @@ def testview(request,type):
 
 @login_required
 def typetagview(request,type,tag):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
+    oldtag = tag
+    tag = goodtag(tag)
+    typ = get_object_or_404(Type, type=type)
     rows=[]
     if tag!='untagged':
         ttag=get_object_or_404(NewTag, tag=tag)
@@ -341,7 +343,9 @@ def typetagview(request,type,tag):
     else:
         problems=list(typ.problems.filter(newtags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
+
     template=loader.get_template('problemeditor/typetagview.html')
+
     paginator=Paginator(problems,50)
     page = request.GET.get('page')
     try:
@@ -352,7 +356,15 @@ def typetagview(request,type,tag):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         prows = paginator.page(paginator.num_pages)
-    context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','tag':tag,'typelabel':typ.label}
+    context = {
+        'rows' : prows,
+        'type' : typ.type,
+        'nbar': 'problemeditor',
+        'tag':tag,
+        'typelabel':typ.label,
+        'tags':NewTag.objects.exclude(tag='root'),
+        'oldtag': oldtag
+        }
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -384,14 +396,21 @@ def CMtypetagview(request,type,tag):
 
 @login_required
 def testlabelview(request,type,testlabel):
-    typ=get_object_or_404(Type, type=type)
-    if testlabel!='untagged':
-        problems=list(Problem.objects.filter(test_label=testlabel))
+    typ = get_object_or_404(Type, type=type)
+    if testlabel != 'untagged':
+        problems = list(Problem.objects.filter(test_label=testlabel))
     else:
-        problems=typ.problems.filter(tags__isnull=True)
-    problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
-    template=loader.get_template('problemeditor/typetagview.html')
-    context= {'rows' : problems, 'type': typ.type, 'nbar': 'problemeditor','type':typ.type,'typelabel':typ.label,'tag':testlabel}
+        problems = typ.problems.filter(newtags__isnull=True)
+    problems = sorted(problems, key=lambda x:(x.year,x.problem_number))
+    template = loader.get_template('problemeditor/typetagview.html')
+    context = {
+        'rows' : problems,
+        'nbar': 'problemeditor',
+        'type':typ.type,
+        'typelabel':typ.label,
+        'tag':testlabel,
+        'tags':NewTag.objects.exclude(tag='root')
+        }
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -857,7 +876,7 @@ def deletecommentpkview(request,**kwargs):#If solution_number is kept, this must
 def untaggedview(request,type):
     typ=get_object_or_404(Type, type=type)
     rows=[]
-    problems=list(Problem.objects.filter(type_new=typ).filter(tags__isnull=True))
+    problems=list(Problem.objects.filter(type_new=typ).filter(newtags__isnull=True))
     problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : problems, 'type' : typ.type, 'nbar': 'problemeditor'}
@@ -1666,3 +1685,164 @@ class TagProblemList(ListView):
         context = super(TagProblemList, self).get_context_data(**kwargs)
         context['tag'] = self.tag
         return context
+
+@login_required
+def remove_duplicate_problem(request,**kwargs):
+    pk = request.GET.get('pk','')
+    dpk = request.GET.get('dpk','')
+    prob=get_object_or_404(Problem,pk=pk)
+    div_code = ""
+    if request.user.userprofile.user_type_new.name == 'super' and  prob.duplicate_problems.filter(pk=dpk).exists():
+        prob.duplicate_problems.remove(Problem.objects.get(pk=dpk))
+        prob.save()
+    return JsonResponse({'duplicate_problems':render_to_string('problemeditor/duplicate_problems.html',{'prob':prob,'request':request})})
+
+@login_required
+def add_duplicate_problem(request, **kwargs):
+    pk = request.GET.get('original-prob_pk','')
+    prob = get_object_or_404(Problem,pk=pk)
+    linked_problem_label = request.GET.get("linked_problem_label","")
+    if Problem.objects.filter(label=linked_problem_label).exists():
+        q=Problem.objects.get(label=linked_problem_label)
+        prob.duplicate_problems.add(q)
+        prob.save()
+        return JsonResponse({'duplicate_problems':render_to_string('problemeditor/duplicate_problems.html',{'prob':prob,'request':request}),'status':1,'prob_pk':pk})
+    return JsonResponse({'status':0,'prob_pk':pk})
+
+@login_required
+def load_edit_answer(request,**kwargs):
+    pk = request.GET.get('pk','')
+    qt = request.GET.get('qt','')
+    prob = get_object_or_404(Problem,pk=pk)
+    if qt == 'mc':
+        form = EditMCAnswer(instance = prob)
+    else:
+        form = EditSAAnswer(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-edit-answer.html',{'form': form,'qt':qt})})
+
+@login_required
+def save_answer(request,**kwargs):
+    pk = request.POST.get('ea_prob_pk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    qt = request.POST.get('ea_qt','')
+    if qt == 'mc':
+        form = EditMCAnswer(request.POST,instance = prob)
+        form.save()
+        return JsonResponse({'qt':qt,'pk':pk,'answer':form.instance.mc_answer})
+    elif qt == 'sa':
+        form = EditSAAnswer(request.POST,instance = prob)
+        form.save()
+        return JsonResponse({'qt':qt,'pk':pk,'answer':form.instance.sa_answer})
+
+@login_required
+def load_edit_latex(request,**kwargs):
+    pk = request.GET.get('pk','')
+    qt = request.GET.get('qt','')
+    prob = get_object_or_404(Problem,pk=pk)
+    if qt == 'mc':
+        form = MCProblemTextForm(instance = prob)
+    else:
+        form = SAProblemTextForm(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-edit-latex.html',{'form': form,'qt':qt})})
+
+
+@login_required
+def save_latex(request,**kwargs):
+    pk = request.POST.get('pt_prob_pk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    qt = request.POST.get('pt_qt','')
+    if qt == 'mc':
+        form = MCProblemTextForm(request.POST,instance = prob)
+        form.save()
+        prob = form.instance
+        prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
+        prob.save()
+        compileasy(prob.mc_problem_text,prob.label)
+        LogEntry.objects.log_action(
+            user_id = request.user.id,
+            content_type_id = ContentType.objects.get_for_model(prob).pk,
+            object_id = prob.id,
+            object_repr = prob.label,
+            action_flag = CHANGE,
+            change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/',
+            )
+        return JsonResponse({'qt':qt,'pk':pk,'prob-text':form.instance.display_mc_problem_text})
+    elif qt == 'sa':
+        form = SAProblemTextForm(request.POST,instance = prob)
+        form.save()
+        prob = form.instance
+        prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+        prob.save()
+        compileasy(prob.problem_text,prob.label)
+        LogEntry.objects.log_action(
+            user_id = request.user.id,
+            content_type_id = ContentType.objects.get_for_model(prob).pk,
+            object_id = prob.id,
+            object_repr = prob.label,
+            action_flag = CHANGE,
+            change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/',
+            )
+        return JsonResponse({'qt':qt,'pk':pk,'prob-text':form.instance.display_problem_text})
+
+class SolutionView(DetailView):
+    model = Problem
+    template_name = 'problemeditor/load_sol.html'
+
+    def dispatch(self, *args, **kwargs):
+        self.item_id = kwargs['pk']
+        return super(SolutionView, self).dispatch(*args, **kwargs)
+
+    def get_object(self, queryset=None):
+        return get_object_or_404(Problem, pk=self.item_id)
+
+@login_required
+def load_new_solution(request,**kwargs):
+    pk = request.GET.get('pk','')
+    prob = get_object_or_404(Problem,pk=pk)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-solution.html',{'prob':prob})})
+
+@login_required
+def save_new_solution(request,**kwargs):
+    pk = request.POST.get('ns-pk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    sol_text = request.POST.get("new_solution_text","")
+    sol_num = prob.top_solution_number+1
+    prob.top_solution_number = sol_num
+    prob.save()
+    sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
+    sol.save()
+    sol.authors.add(request.user)
+    sol.save()
+    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
+    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+    sol.save()
+    prob.solutions.add(sol)
+    prob.save()
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(sol).pk,
+        object_id = sol.id,
+        object_repr = prob.label+' sol '+str(sol.solution_number),
+        action_flag = ADDITION,
+        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
+        )
+    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count()})
+
+def delete_sol(request,**kwargs):
+    pk = request.GET.get('pk','')
+    spk = request.GET.get('spk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    sol =  get_object_or_404(Solution,pk=spk)
+    if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'sitemanager' or request.user.userprofile.user_type_new.name == 'contestmanager':
+        if prob.type_new in request.user.userprofile.user_type_new.allowed_types.all():
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                object_id = sol.id,
+                object_repr = prob.label+' sol '+str(sol.solution_number),
+                action_flag = DELETION,
+                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
+                )
+            sol.delete()
+            return JsonResponse({'deleted':1,'sol_count': prob.solutions.count()})
+    return JsonResponse({'deleted':0})

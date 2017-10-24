@@ -2,8 +2,7 @@ from django.shortcuts import render,render_to_response, get_object_or_404,redire
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
-from django.template.loader import get_template
-
+from django.template.loader import get_template,render_to_string
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.admin import User
 from django.contrib.auth.decorators import login_required
@@ -115,7 +114,7 @@ def searchresults(request):
                 # If page is out of range (e.g. 9999), deliver last page of results.
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
-            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.all(),
+            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.exclude(tag='root'),
                      }
             return HttpResponse(template.render(context,request))
 
@@ -140,15 +139,15 @@ def add_tag(request):
         prob=get_object_or_404(Problem,pk=problem_pk)
         tag = get_object_or_404(NewTag,pk=i[1])
         if tag.problems.filter(pk=problem_pk).exists():
-            return JsonResponse({'prob_pk':problem_pk,'status':1})
+            return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
         prob.newtags.add(tag)
         prob.save()
-        response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
-        L= prob.newtags.all()
-        for tag in L:
-            response_string+="<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
-        response_string+="</ul>"
-    return JsonResponse({'prob_pk':problem_pk,'status':0,'tag_list':response_string})
+#        response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
+#        L= prob.newtags.all()
+#        for tag in L:
+#            response_string+="<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
+#        response_string+="</ul>"
+    return JsonResponse({'prob_pk':problem_pk,'status':0,'tag_list':render_to_string("search/tag_snippet.html",{'prob':prob})})
 
 
 @login_required
@@ -163,9 +162,8 @@ def delete_tag(request):
     prob.save()
     response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
     L= prob.newtags.all()
-    for tag in L:
-        response_string += "<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
-    response_string+="</ul>"
-    if len(L) == 0:
-        response_string = ""
-    return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string})
+#    for tag in L:
+#        response_string += "<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
+#    response_string+="</ul>"
+    response_string = render_to_string("search/tag_snippet.html",{'prob':prob})
+    return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string,'tag_count':prob.newtags.count()})

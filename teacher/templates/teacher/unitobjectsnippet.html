@@ -1,0 +1,18 @@
+          <div class="list-group-item">
+            <input type="hidden" name="unitobjectinput" value="unitobject_{{unitobj.pk}}">
+            <div class="row">
+              <div class="col-sm-1 col-md-1 col-lg-1">
+                {{forcount}}.
+              </div>
+              <div class="col-sm-10 col-md-10 col-lg-10">
+                {% if unitobj.slidegroup %}
+                <a href="slides/{{unitobj.slidegroup.pk}}/">Slides: {{unitobj.slidegroup.name}}</a> ({{unitobj.slidegroup.slides.count}} slides)
+                {% elif unitobj.problemset %}
+                <a href="problemset/{{unitobj.problemset.pk}}/">Problem Set: {{unitobj.problemset.name}}</a> ({{unitobj.problemset.problem_objects.count}} problems)
+                {% endif %}
+              </div>
+              <div class="col-sm-1 col-md-1 col-lg-1">
+                <div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+              </div>
+            </div>
+          </div>

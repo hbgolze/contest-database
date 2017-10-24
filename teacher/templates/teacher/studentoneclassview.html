@@ -1,0 +1,169 @@
+{% extends "randomtest/base.html" %}
+
+{% block head %}
+<script language="javascript">
+function drawprogressbar(percent,color,barwidth) {
+var numpixels=barwidth*percent/100;
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
+document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
+document.write("</div>");
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="../../../../">My Classes</a></li>
+  <li><a href="../../">{{class.published_class.name}}</a></li>
+  <li><a href="../">Roster</a></li>
+  <li class="active">View Class ({{username}})</li>
+
+</ol>
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-9 main">
+      <div id="status_message">
+      </div>
+      <div id="my_classes">
+	<h2>{{class.published_class.name}} ({{username}})</h2>
+<div class="list-group">
+	<div class="list-group-item" style="background-color:lightgray">
+	  <div class="row">
+	    <div class="col-xs-4">
+	      Class Summary: {{class.published_class.units.count}} unit(s)
+	    </div>
+	    <div class="col-xs-4">
+	      {{class.num_correct}}/{{class.num_problems}}
+	      <span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+	    </div>
+	    <div class="col-xs-4" style="text-align:right">
+	      Points Earned: {{class.points_earned}}/{{class.total_points}}
+	    </div>
+	  </div>
+	</div>
+</div>
+	<div class="list-group">
+	  {% for unit in class.userunit_set.all %}
+	  <div href="#unit_{{unit.pk}}" class="list-group-item" style="background-color:lightgray">
+	    <div class="row">
+	      <div class="col-xs-4">
+		<b>Unit {{forloop.counter}}:</b> 
+		{{unit.unit.name}} ({{unit.num_problemsets}} problem set(s))
+	      </div>
+	      <div class="col-xs-4">
+		{{unit.num_correct}}/{{unit.num_problems}}
+		<span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+	      </div>
+	      <div class="col-xs-4" style="text-align:right">
+		Points Earned: {{unit.points_earned}}/{{unit.total_points}}
+	      </div>
+	    </div>
+	  </div>
+
+	  <div class="list-group" id="unit_{{unit.pk}}">
+	    {% for user_unitobject in unit.userunitobject_set.all %}
+	    {% if user_unitobject.userproblemset %}
+	    {% with pset=user_unitobject.userproblemset %}
+	    <a href="problemset/{{pset.pk}}" class="list-group-item">
+	      <div class="row">
+		<div class="col-xs-4">
+		  <b>Problem Set:</b> {{pset.problemset.name}}
+		</div>
+		<div class="col-xs-4">
+		  {{pset.num_correct}}/{{pset.num_problems}}
+		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+		</div>
+		<div class="col-xs-4" style="text-align:right">
+		  Points Earned: {{pset.points_earned}}/{{pset.total_points}}
+		</div>
+	      </div>
+	    </a>
+	    {% endwith %}
+	    {% endif %}
+	    {% endfor %}
+	  </div>
+	  {% endfor %}
+	</div>
+      </div>
+    </div>
+
+
+
+    <div class="col-sm-3">
+      <table class="table table-bordered centered">
+	<thead>
+	  <tr>
+	    <th colspan="3">
+	      Number of Problems Solved Today:
+	    </th>
+	  </tr>
+	</thead>
+	<tbody>
+	  <tr>
+	    <td colspan="3">
+	      <p style="text-align:center;font-size:40px">{{todaycorrect}}</p>
+	    </td>
+	  </tr>
+	  <tr>
+	    <th colspan="3">
+	      Number of Points Earned Today:
+	    </th>
+	  </tr>
+	  <tr>
+	    <td colspan="3">
+	      <p style="text-align:center;font-size:40px">{{pointtoday}}</p>
+	    </td>
+	  </tr>
+	  
+	  <tr>
+	    <td colspan="3"><b>Previous days:</b></td>
+	  </tr>
+	  {% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
+	</tbody>
+      </table>      
+      
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Stickied Problems</th>
+            <th>Date</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for sticky in stickies %}
+	  <tr>
+            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.problem_object.pk}}">{{sticky.problemset.problemset.name}}</a>: {{sticky.readable_label}}</small></td>
+	    <td>
+	      <small>{{sticky.sticky_date}}</small>
+	    </td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Recent Responses</th>
+            <th>Date</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for resp in responselog %}
+	  <tr>
+            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.problem_object.pk}}">{{resp.user_problemset.problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
+	    <td>
+	      <small>{{resp.modified_date}}</small>
+	    </td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>  
+
+
+{% endblock %}

@@ -26,7 +26,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
 
 from .utils import parsebool,pointsum
@@ -514,6 +514,31 @@ def addtestview(request,**kwargs):#pk
         return redirect('/test/'+str(ut.pk))
 
 @login_required
+def addnewtestview(request,**kwargs):#pk
+    pk=kwargs['pk']
+    curruserprof = get_or_create_up(request.user)
+    if 'username' in kwargs:#if looking at a student
+        username = kwargs['username']
+        user=get_object_or_404(User,username=username)
+        if user not in curruserprof.students.all():
+            return HttpResponse('Unauthorized', status=401)
+        userprof = get_or_create_up(user)
+    else:
+        userprof = get_or_create_up(request.user)
+    newtest = get_object_or_404(NewTest,pk=pk)
+    P=list(newtest.problems.order_by('order'))
+    ut=UserTest(newtest = newtest,num_probs = len(P),num_correct = 0, userprof = userprof)
+    ut.save()
+    for j in range(0,len(P)):
+        r=NewResponse(response='',problem_label=P[j].problem.label,problem=P[j].problem,usertest = ut,order = j+1)
+        r.save()
+    if 'username' in kwargs:
+        return redirect('../../')
+    else:
+        return redirect('/newtest/'+str(ut.pk))
+
+
+@login_required
 def addfolderview(request,pk):
     userprof = get_or_create_up(request.user)
     fold = Folder.objects.get(pk=pk)
@@ -632,133 +657,83 @@ def testview(request,**kwargs):#switching to UserTest
     return render(request, 'randomtest/testview.html',context)
 
 
-
-#@login_required
-#def testeditview(request,pk):
-#    test = get_object_or_404(Test, pk=pk)
-#    userprofile = get_or_create_up(request.user)
-#    testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
-#    if testresponses.count()==0:
-#        allresponses=Responses(test=test,num_problems_correct=0)
-#        allresponses.save()
-
-#        P=list(test.problems.all())
-#        for i in range(0,len(P)):
-#            r=Response(response='',problem_label=P[i].label,problem=P[i])
-#            r.save()
-#            allresponses.reponses.add(r)
-#        allresponses.save()
-#        userprofile.allresponses.add(allresponses)
-#        userprofile.save()
-#    else:
-#        allresponses=Responses.objects.get(test=test,user_profile=userprofile)
-#    msg=""
-#    dropboxpath = list(Dropboxurl.objects.all())[0].url
-#Prepare for the add problems form
-#    types=list(Type.objects.all())
-#    taglist=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
-#    testrows=[]
-#    for i in range(0,len(types)):
-#        testrows.append((types[i].type,types[i].label))
-#    testrows=sorted(testrows,key=lambda x:x[1])
-        
-#    if request.method == "POST":
-#        rows=[]
-#        if request.POST.get("remove"):
-#            form=request.POST
-#            P=list(test.problems.all())
-#            for i in range(0,len(P)):
-#                if "chk"+P[i].label not in form:
-#                    test.problems.remove(P[i])
-#                    A=list(Responses.objects.filter(test=test))
-#                    for j in range(0,len(A)):
-#                        r=A[j].responses.get(problem_label=P[i].label)
-#                        r.delete()
-#            P=list(test.problems.all())
-#            P=sorted(P,key=lambda x:(x.problem_number,x.year))
-#            num_correct=0
-#            for i in range(0,len(P)):
-#                r=allresponses.responses.get(problem_label=P[i].label)
-#                if r.response==P[i].answer:
-#                    num_correct+=1
-#            allresponses.num_problems_correct=num_correct
-#            allresponses.save()
-#            R=allresponses.responses
-#            for i in range(0,len(P)):
-#                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-#            msg="Problems Removed."
-#            test.refresh_types()
-#        elif request.POST.get("addproblems"):
-#            form=request.POST
-#            if form.get('startform','')=="start":
-#                testname=form.get('testname','')
-#                testtype=form.get('testtype','')
-#                tag=form.get('tag','')
-#                if tag=="Unspecified":
-#                    tag=''
-#                num=form.get('numproblems','')
-#                if num is None or num==u'':
-#                    num=10
-#                else:
-#                    num=int(num)
-#                probbegin=form.get('probbegin','')
-#                if probbegin is None or probbegin==u'':
-#                    probbegin=0
-#                else:
-#                    probbegin=int(probbegin)
-#                probend=form.get('probend','')
-#                if probend is None or probend==u'':
-#                    probend=10000
-#                else:
-#                    probend=int(probend)
-#                yearbegin=form.get('yearbegin','')
-#                if yearbegin is None or yearbegin==u'':
-#                    yearbegin=0
-#                else:
-#                    yearbegin=int(yearbegin)
-#                yearend=form.get('yearend','')
-#                if yearend is None or yearend==u'':
-#                    yearend=10000
-#                else:
-#                    yearend=int(yearend)
-
-#                if len(tag)>0:
-#                    matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-#                    matches=matches.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag))
-#                else:
-#                    matches=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-#                matches.exclude(id__in=test.problems.all())
-
-
-#            matches=list(matches)
-#            shuffle(matches)
-#            matches=matches[0:num]
-#            for i in range(0,len(matches)):
-#                test.problems.add(matches[i])
-#                A=list(Responses.objects.filter(test=test))
-#                for j in range(0,len(A)):
-#                    r=Response(response='',problem_label=matches[i].label,problem=matches[i])
-#                    r.save()
-#                    A[j].responses.add(r)
-#                    A[j].save()
-#            test.save()
-#            P=test.problems.all()
-#            P=sorted(P,key=lambda x:(x.problem_number,x.year))
-#            for i in range(0,len(P)):
-#                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-#            test.refresh_types()
-#        else:
-#            P=list(test.problems.all())
-#            P=sorted(P,key=lambda x:(x.problem_number,x.year))
-#            for i in range(0,len(P)):
-#                rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-#    else:
-#        P=list(test.problems.all())
-#        P=sorted(P,key=lambda x:(x.problem_number,x.year))
-#        rows=[]
-#        for i in range(0,len(P)):
-#            rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-#    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows,'taglist':taglist})
+@login_required
+def newtestview(request,**kwargs):#Get this ready for use...
+    context={}
+    pk=kwargs['pk']
+    curruserprof=get_or_create_up(request.user)
+    if 'username' in kwargs:
+        username = kwargs['username']
+        context['username'] = username
+        user=get_object_or_404(User,username=username)
+        if user not in curruserprof.students.all():
+            return HttpResponse('Unauthorized', status=401)
+        userprofile = get_or_create_up(user)
+    else:
+        userprofile = get_or_create_up(request.user)
+    usertest = get_object_or_404(UserTest, pk=pk)#should this be newusertest?
+    if userprofile.user_tests.filter(pk=pk).exists() == False:
+        return HttpResponse('Unauthorized', status=401)
+    newtest = get_object_or_404(NewTest, pk=usertest.newtest.pk)
+    if request.method == "POST" and 'username' not in kwargs:
+        form=request.POST
+        R=usertest.newresponses.order_by('order')
+        num_correct=0
+        rows=[]
+        for r in R:
+            prob = r.problem
+            tempanswer = form.get('answer'+prob.label)
+            if tempanswer != None and tempanswer !='':
+                t=timezone.now()
+                r.attempted = 1
+                if r.response != tempanswer:
+                    pv=0
+                    if prob.type_new.type=='AIME':
+                        if prob.problem_number<=1:
+                            pv=-3
+                        elif prob.problem_number<=5:
+                            pv=1
+                        elif prob.problem_number<=10:
+                            pv=3
+                        else:
+                            pv=5
+                    ur=UserResponse(test_label=newtest.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv)
+                    ur.save()
+                    r.modified_date = t
+                    r.response = tempanswer
+                    if r.response==prob.answer and prob.question_type_new.question_type !='proof':
+                        ur.correct=1
+                        ur.save()
+                    userprofile.responselog.add(ur)
+            tempsticky = form.get('sticky'+prob.label)
+            if tempsticky=='on':
+                if r.stickied == False:
+                    s=Sticky(problem_label=prob.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=newtest.name)
+                    s.save()
+                    userprofile.stickies.add(s)
+                r.stickied = True
+            else:
+                if r.stickied == True:
+                    try:
+                        s=Sticky.objects.get(problem_label=prob.label,test_pk=usertest.pk)
+                        s.delete()
+                    except Sticky.DoesNotExist:
+                        s=None
+                r.stickied = False
+            r.save()
+            if r.response==prob.answer and prob.question_type_new.question_type !='proof':
+                num_correct+=1
+            rows.append(r)
+        usertest.num_correct = num_correct
+        usertest.save()
+    else:
+        rows=usertest.newresponses.order_by('order')#Add order to response model.
+    context['rows'] = rows
+    context['pk'] = pk
+    context['nbar'] = 'viewmytests'
+    context['name'] = newtest.name
+    context['show_marks'] = usertest.show_answer_marks
+    return render(request, 'randomtest/testview.html',context)
 
 @login_required
 def UpdatePassword(request):
@@ -1193,7 +1168,6 @@ class SolutionView(DetailView):
     def get_object(self, queryset=None):
         return get_object_or_404(Problem, pk=self.item_id)
 
-#This still isn't adding to the Sticky queue...
 @login_required
 def toggle_star(request,pk):
     star_tag=request.POST.get('star_id','')
@@ -1210,24 +1184,49 @@ def toggle_star(request,pk):
             s.delete()
         except Sticky.DoesNotExist:
             s=None
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>"})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",'problem_label':response.problem.label})
     else:
-        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)
+        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)######
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
         response.save()
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>"})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>",'problem_label':response.problem.label})
+
+@login_required
+def new_toggle_star(request,pk):
+    star_tag=request.POST.get('star_id','')
+    star_list=star_tag.split('_')
+    response_pk=star_list[1]
+    response=get_object_or_404(NewResponse,pk=response_pk)
+    userprofile=request.user.userprofile
+    usertest=response.usertest
+    if response.stickied == True:
+        response.stickied = False
+        response.save()
+        try:
+            s=Sticky.objects.get(problem_label=response.problem.label,test_pk=usertest.pk)
+            s.delete()
+        except Sticky.DoesNotExist:
+            s=None
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",'problem_label':response.problem.label})
+    else:
+        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.newtest.name)######
+        s.save()
+        userprofile.stickies.add(s)
+        response.stickied = True
+        response.save()
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>",'problem_label':response.problem.label})
 
 @login_required
 def checkanswer(request,pk):
+    print('hi')
     usertest=get_object_or_404(UserTest,pk=pk)
     userprofile=request.user.userprofile
     response_label=request.POST.get('response_id','')
     problem_label = response_label.split('-')[2]
     prob = get_object_or_404(Problem,label=problem_label)
     tempanswer=request.POST.get('answer','')
-#    allresponses = usertest.responses
     r=usertest.newresponses.get(problem_label=problem_label)
     qt = request.POST.get('question_type','')
     t=timezone.now()

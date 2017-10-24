@@ -1,0 +1,17 @@
+<div class="form-group">
+  <label for="example-contest-type" class="control-label">Type</label>
+  <select name="example-contest-type" id="example-contest-type" class="form-control">
+    {% for typ in contest_types %}
+    <option value="{{typ.type}}">{{typ.label}}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="form-group">
+  <label for="example-tag" class="control-label">Tag</label>
+  <select name="example-tag" id="example-tag" class="form-control">
+    <option value="" disabled selected>Select a Tag</option>
+    {% for tag in tags %}
+    <option value="{{tag.pk}}">{{tag.tag}}</option>
+    {% endfor %}
+  </select>
+</div>

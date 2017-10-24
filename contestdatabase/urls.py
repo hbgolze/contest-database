@@ -34,7 +34,9 @@ urlpatterns = [
     url(r'^problemgroups/', include('groups.urls')),
     url(r'^asycompile/', include('asycompile.urls')),
     url(r'^search/', include('search.urls')),
-    url(r'^handouts/', include('handouts.urls')),
+#    url(r'^handouts/', include('handouts.urls')),
+    url(r'^teacher/', include('teacher.urls')),
+    url(r'^studentmode/', include('student.urls')),
 ]
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

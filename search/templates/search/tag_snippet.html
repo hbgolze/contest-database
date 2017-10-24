@@ -1,0 +1,12 @@
+    {% if prob.newtags.count > 0 %}
+
+
+    <label for="tag-list-{{prob.pk}}">Current Tags</label>
+    <ul id="tag-list-{{prob.pk}}">
+      {% for tag in prob.newtags.all %}
+      <li>
+        <span class="label label-default">{{tag}}</span> <span class="delete-tag-link" id="deletetag_{{prob.pk}}_{{tag.pk}}" style="cursor:pointer;color:red;">&#10006;</span>
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}

@@ -157,23 +157,23 @@ Status
 		{% endif %}
 		
 		{% if question_type == "multiple choice" %}
-		{% if resp.problem.mc_answer == response or username %}
-		{% if resp.problem.solutions.count > 0 %}
-		<button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
-		{% else %}
-		<button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
-		{% endif %}
+		 {% if resp.problem.mc_answer == response or username %}
+		  {% if resp.problem.solutions.count > 0 %}
+		   <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		  {% else %}
+		   <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		  {% endif %}
 
-		{% endif %}
+		 {% endif %}
 		{% elif question_type == "short answer" %}
-		{% if resp.problem.sa_answer == response or username %}
-		{% if resp.problem.solutions.count > 0 %}
-		<button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
-		{% else %}
-		<button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
-		{% endif %}
+		 {% if resp.problem.sa_answer == response or username %}
+		  {% if resp.problem.solutions.count > 0 %}
+		   <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		  {% else %}
+		   <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		  {% endif %}
 
-		{% endif %}
+		 {% endif %}
 		{% endif %}
 
 	      </div><!--button div-->
@@ -270,26 +270,20 @@ $(document).on('click',".js-star-toggle",function(event) {
     event.preventDefault();
     $.ajax({
         type: 'POST',
-        url: '{% url 'toggle_star' pk %}',
+        url: 'toggle_star/',
         data: "&star_id="+$(this).attr('id'),
         dataType: 'json',
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
-   alert(data['is_stickied']);
             if (data['is_stickied']=='true') {
-alert('hi');
-alert($("#table-star-status-"+problem_label).html());
-                $("#table-star-status-"+problem_label).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
+                $("#table-star-status-"+data['problem_label']).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
             } else {
-alert('bye');
-alert($("#table-star-status-"+problem_label).html());
-                $("#table-star-status-"+problem_label).html("");
+                $("#table-star-status-"+data['problem_label']).html("");
             }
         }
     });
     return false;
 });
-{% endif %}
 
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();
@@ -312,7 +306,7 @@ $(document).on('click',".js-check-mc-answer",function(event) {
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                          triggerModal();
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven't written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
                      $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
@@ -342,7 +336,7 @@ $(document).on('click',".js-check-answer",function(event) {
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                          triggerModal();
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven't written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
                      $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
@@ -353,7 +347,7 @@ $(document).on('click',".js-check-answer",function(event) {
     });
     return false;
 });
-
+{% endif %}
 </script>
 
 {% endblock %}

@@ -1,0 +1,17 @@
+      {% if probobj.isProblem == 1 %}
+      {% with prob=probobj.problem %}
+      {% if probobj.question_type.question_type == "multiple choice" %}
+      <p>
+        {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+      </p>
+      {% else %}
+      <p>
+        {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+      </p>
+      {% endif %}
+      {% endwith %}
+      {% else %}
+      <p>
+        {% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}
+      </p>
+      {% endif %}

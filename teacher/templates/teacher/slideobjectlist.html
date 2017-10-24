@@ -1,0 +1,5 @@
+{% for slide in slide_objects %}
+<div class="list-group-item" id="slideobject_list_{{s.pk}}">
+  {% include 'teacher/slideobject.html' with s=slide %}
+</div>
+{% endfor %}

@@ -1,0 +1,6 @@
+<h3>{{slide.title}}</h3>
+{% for sl in slide.slide_objects.all %}
+<div class="list-group-item" id="slideobject_list_{{s.pk}}">
+  {% include 'student/slideobject.html' with s=sl %}
+</div>
+{% endfor %}

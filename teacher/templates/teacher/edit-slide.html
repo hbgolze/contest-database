@@ -1,0 +1,725 @@
+{% extends "randomtest/base.html" %}
+
+
+{% block content %}
+
+<script src="//rubaxa.github.io/Sortable/Sortable.js"></script>
+
+<ol class="breadcrumb">
+  <li><a href="../../../../../../../../">My Classes</a></li>
+  <li><a href="../../../../../../">{{my_class.name}}</a></li>
+  <li><a href="../../../../">{{unit.name}}</a></li>
+  <li><a href="../../">{{slides.name}}</a></li>
+  <li class="active">{{slide.title}}</li>
+</ol>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+        {% include 'teacher/sidebar.html' with activenav="myclasses" %}
+      </ul>
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      <h2>Edit Slide: {{slide.title}}</h2>
+
+      {% if slide.slide_objects.count > 0 %}
+      <p>Drag around elements to reorder them.</p>
+      {% endif %}
+
+      <form action="." method="POST" id="slides">
+        {% csrf_token %}
+        <div id="slideobjectList" class="list-group">
+
+	  {% for s in slide.slide_objects.all %}
+          <div class="list-group-item" id="slideobject_list_{{s.pk}}">
+	    {% include "teacher/slideobject.html" with s=s %}
+	  </div>
+	  {% endfor %}
+	</div><!--list-group-->
+
+	<div id="save-msg"></div>
+
+        <span class="dropup">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Add <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#textblock" data-toggle="modal">Text Block</a></li>
+            <li><a href="#theorem" data-toggle="modal">Theorem</a></li>
+            <li><a href="#proof" data-toggle="modal">Proof/Solution</a></li>
+            <li><a href="#imageblock" data-toggle="modal">Image</a></li>
+            <li><a href="#example" data-toggle="modal">Example/Exercise Problem</a></li>
+          </ul>
+        </span>
+        <button type="submit" class="save btn btn-primary" name="save">Save</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="textblock" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." id="add-textblock-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Text Block</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="textblock-text" class="control-label">Text Block</label>
+            <textarea class="form-control codetext" id="codetextblock" name="codetextblock" rows="10"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+	  <button type="submit" name="addtextblock" class="btn btn-primary">Add Text Block</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+<div class="modal fade" id="theorem" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." id="add-theorem-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Theorem</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="theorem-prefix">Type</label>
+            <select class="form-control" id="theorem-prefix" name="theorem-prefix">
+              <option value="Theorem">Theorem</option>
+              <option value="Corollary">Corollary</option>
+              <option value="Proposition">Proposition</option>
+              <option value="Lemma">Lemma</option>
+              <option value="Definition">Definition</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="theorem-name" class="control-label">Name (optional)</label>
+            <input type="text" class="form-control" id="theorem-name" name="theorem-name">
+          </div>
+          <div class="form-group">
+            <label for="codetheoremblock" class="control-label">Statement</label>
+            <textarea class="form-control codetext" id="codetheoremblock" name="codetheoremblock" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addtheorem" class="btn btn-primary">Add Theorem</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="proof" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="post" action="." id="add-proof-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Proof/Solution</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="proof-prefix">Type</label>
+            <select class="form-control" id="proof-prefix" name="proof-prefix">
+              <option value="Proof">Proof</option>
+              <option value="Solution">Solution</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="codeproofblock" class="control-label">Text</label>
+            <textarea class="form-control codetext" id="codeproofblock" name="codeproofblock" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addproof" class="btn btn-primary">Add Proof</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="imageblock" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." enctype="multipart/form-data" id="add-image-form">
+        {% csrf_token %}
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add an Image</h4>
+        </div>
+        <div class="modal-body">
+	  
+          <div class="form-group">
+            <input id="id_image" type="file" class="" name="image" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addimage" class="btn btn-primary">Add Image</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="example" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="post" action="." id="add-example-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a New Example/Exercise</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="example-prefix">Type</label>
+            <select class="form-control" id="example-prefix" name="example-prefix">
+              <option value="Example">Example</option>
+              <option value="Exercise">Exercise</option>
+            </select>
+	  </div>
+	  <div class="form-group">
+            <label for="problem-source">Problem Source</label>
+            <select class="form-control" id="problem-source" name="problem-source">
+	      <option value="" disabled selected>Select a Source</option>
+              <option value="bytag">Database Problem (Search By Tag)</option>
+              <option value="bylabel">Database Problem (Add By Label)</option>
+              <option value="bygroups">Database Problem (From My Problem Groups)</option>
+              <option value="original">Original Problem</option>
+            </select>
+          </div>
+	  <div id="original-question-type">
+	    
+	  </div>
+          <div id="original-question-fields">
+	    
+          </div>
+	  <div id="bytag-fields">
+	    
+	  </div>
+	  <div id="bylabel-fields">
+	    
+	  </div>
+	  <div id="bygroups-fields">
+	    
+	  </div>
+	  <div id="problem-group-problems">
+	    
+	  </div>
+	  <div id="error-msg"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addproblem" id="addproblem" class="btn btn-primary" disabled>Add Problem</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="edit-textblock-placeholder" tabindex="-1" role="dialog">
+  
+</div>
+<div class="modal fade" id="edit-theorem-placeholder" tabindex="-1" role="dialog">
+  
+</div>
+<div class="modal fade" id="edit-proof-placeholder" tabindex="-1" role="dialog">
+    
+</div>
+
+
+<div class="modal fade" id="edit-qt-placeholder" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+
+    <div class="modal-content">
+      <form method="post" action="." id="form-change-question-type">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Edit Original Question</h4>
+	  </div>
+	<div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="cqt-question-type" class="control-label">Question Type</label>
+            <select name="cqt-question-type" id="cqt-question-type" class="form-control">
+              <option value="" disabled selected>Select a Question Type</option>
+              <option value="multiple choice">Multiple Choice</option>
+              <option value="short answer">Short Answer</option>
+              <option value="proof">Proof</option>
+            </select>
+          </div>
+          <div id="qt-question-fields">
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="change-qt" name="change-qt" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+
+<script type="text/javascript">
+var editableList = Sortable.create(slideobjectList, {
+  filter: '.js-remove',
+  onFilter: function (evt) {
+    var el = editableList.closest(evt.item); // get dragged item
+    el && el.parentNode.removeChild(el);
+  }
+});
+
+$('#add-theorem-form').on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: $(this).serialize()+'&addtheorem',
+        dataType: 'json',
+        success: function(result) {
+            $("#theorem").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobjectList").append(result['theorem']);
+            $("#theorem-prefix").val('Theorem');
+            $("#theorem-name").val('');
+            $("#codetheoremblock").val('');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+        }
+    });
+    return false;
+});
+$('#add-textblock-form').on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: $(this).serialize()+'&addtextblock',
+        dataType: 'json',
+        success: function(result) {
+            $("#textblock").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobjectList").append(result['textblock']);
+            $("#codetextblock").val('');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+        }
+    });
+    return false;
+});
+$('#add-proof-form').on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: $(this).serialize()+'&addproof',
+        dataType: 'json',
+        success: function(result) {
+            $("#proof").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobjectList").append(result['proof']);
+            $("#proof-prefix").val('Proof');
+            $("#codeproofblock").val('');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+        }
+    });
+    return false;
+});
+$('#add-image-form').on('submit',function(event) {
+    event.preventDefault();
+console.log($(this));
+    var formData = new FormData();
+    formData.append('id_image',$("#id_image")[0].files[0]);
+    formData.append("addimage","");
+console.log(formData);
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: formData,
+        dataType: 'json',
+        success: function(result) {
+alert('hi');
+            $("#imageblock").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobjectList").append(result['image']);
+//            $("#proof-prefix").val('Proof');
+//            $("#codeproofblock").val('');
+//            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+        }
+    });
+    return false;
+});
+
+$('#slides').on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: $(this).serialize()+'&save',
+        dataType: 'json',
+        success: function(result) {
+            $("#slideobjectList").html(result['slideobjectlist']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobjectList"]);
+            $("#save-msg").html("<div class='alert alert-success' role='alert'>Save Successful.</div>");
+            $("#save-msg").show();
+            setTimeout(function() {
+                $("#save-msg").fadeOut().empty();
+            },5000);
+        }
+    });
+    return false;
+});
+
+
+
+$(document).on('click',".edit-textblock-link",function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-textblock-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-textblock-placeholder"]);
+         $("#edit-textblock-placeholder").modal("show");
+    });
+});
+$(document).on('click',".edit-theorem-link",function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-theorem-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-theorem-placeholder"]);
+         $("#edit-theorem-placeholder").modal("show");
+    });
+});
+$(document).on('click',".edit-proof-link",function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#edit-proof-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-proof-placeholder"]);
+         $("#edit-proof-placeholder").modal("show");
+    });
+});
+
+
+
+$(document).on('change','#problem-source',function(event) {
+    event.preventDefault();
+    if ($("#problem-source").val()=='original') {
+        $('#addproblem').prop('disabled',true);
+        $("#bylabel-fields").empty();
+        $("#bytag-fields").empty();
+        $("#bygroups-fields").empty();
+        $("#problem-group-problems").empty();
+
+        $.ajax({
+            type: 'GET',
+            url: 'exampleoriginalqt/',
+            dataType: 'json',
+            success: function(result) {
+                $("#original-question-type").html(result['qt-form']);
+            }
+        });
+    } else {
+        $("#question-type").val("");
+        $("#original-question-type").empty();
+        $("#original-question-fields").empty();
+        if ($("#problem-source").val()=='bylabel') {
+            $('#addproblem').prop('disabled',false);
+            $("#bytag-fields").empty();
+            $("#bygroups-fields").empty();
+            $("#problem-group-problems").empty();
+            $.ajax({
+                type: 'GET',
+                url: 'exampleproblemlabel/',
+                dataType: 'json',
+                success: function(result) {
+                    $("#bylabel-fields").html(result['pl-form']);
+                }
+            });
+        } else if ($("#problem-source").val()=='bygroups') {
+            $('#addproblem').prop('disabled',true);
+            $("#bylabel-fields").empty();
+            $("#bytag-fields").empty();
+            $("#problem-group-problems").empty();
+            $.ajax({
+                type: 'GET',
+                url: 'example-problem-groups/',
+                dataType: 'json',
+                success: function(result) {
+                    $("#bygroups-fields").html(result['pg-form']);
+                }
+            });
+        } else if ($("#problem-source").val()=='bytag') {
+            $('#addproblem').prop('disabled',true);
+            $("#bylabel-fields").empty();
+            $("#bygroups-fields").empty();
+            $("#problem-group-problems").empty();
+            $.ajax({
+                type: 'GET',
+                url: 'load-bytag/',
+                dataType: 'json',
+                success: function(result) {
+                    $("#bytag-fields").html(result['tag-form']);
+                }
+            });
+        }
+    }
+});
+
+$(document).on('change',"#question-type",function(event) {
+    $('#addproblem').prop('disabled',false);
+    event.preventDefault();
+        if ($("#question-type").val()=='short answer') {
+
+        $.ajax({
+            type: 'GET',
+            url: 'load-original-problem/',
+            data: "&qt=sa",
+            dataType: 'html',
+            success: function(result) {
+                $("#original-question-fields").html(result);
+            }
+        });
+        return false;
+        } else if ($("#question-type").val()=='multiple choice') {
+        $.ajax({
+            type: 'GET',
+            url: 'load-original-problem/',
+            data: "&qt=mc",
+            dataType: 'html',
+            success: function(result) {
+                $("#original-question-fields").html(result);
+            }
+        });
+        return false;
+        } else if ($("#question-type").val()=='proof') {
+        $.ajax({
+            type: 'GET',
+            url: 'load-original-problem/',
+            data: "&qt=pf",
+            dataType: 'html',
+            success: function(result) {
+                $("#original-question-fields").html(result);
+            }
+        });
+        return false;
+        }
+});
+$("#add-example-form").on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '.',
+        data: $(this).serialize()+'&addproblem',
+        dataType: 'json',
+        success: function(result) {
+            if (result['error-msg']) {
+                $("#error-msg").html("<div class='alert alert-danger' role='alert'>"+result['error-msg']+"</div>");
+                $("#error-msg").show();
+                setTimeout(function() {
+                    $("#error-msg").fadeOut().empty();
+                },5000);
+            } else {
+                $("#example").hide();
+                $("[data-dismiss=modal]").trigger({ type: "click" });
+                $("#slideobjectList").append(result['example']);
+
+                $("#original-question-type").empty();
+                $("#original-question-fields").empty();
+                $("#bytag-fields").empty();
+                $("#bylabel-fields").empty();
+                $("#bygroups-fields").empty();
+                $("#example-prefix").val("Example");
+                $("#problem-source").val("");
+
+                $("#addproblem").attr('disabled','true');
+
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            }
+        }
+    });
+    return false;
+});
+
+
+$(document).on('change',"#example-problem-group",function(event) {
+    $('#addproblem').prop('disabled',false);
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        data: $(this).serialize(),
+        url: 'load-problem-group/',
+        dataType: 'json',
+        success: function(result) {
+            $("#problem-group-problems").html(result['pgp-form']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problem-group-problems"]);
+        }
+    });
+    return false;
+});
+
+$(document).on('click','.add-pg-problem',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        data: "&pk="+$(this).attr("href")+"&example-prefix="+$("#example-prefix").val(),
+        url: 'add-problem/',
+        dataType: 'json',
+        success: function(result) {
+            $("#example").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobjectList").append(result['example']);
+
+            $("#original-question-type").empty();
+            $("#original-question-fields").empty();
+            $("#bytag-fields").empty();
+            $("#bylabel-fields").empty();
+            $("#bygroups-fields").empty();
+            $("#example-prefix").val("Example");
+            $("#problem-source").val("");
+            $("#problem-group-problems").empty();
+
+            $("#addproblem").attr('disabled','true');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+        }
+    });
+    return false;
+});
+$(document).on('change',"#example-tag",function(event) {
+    $('#addproblem').prop('disabled',false);
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        data: $("#add-example-form").serialize(),
+        url: 'load-problems-bytag/',
+        dataType: 'json',
+        success: function(result) {
+            $("#problem-group-problems").html(result['problems']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problem-group-problems"]);
+        }
+    });
+    return false;
+});
+
+$(document).on('change',"#example-contest-type",function(event) {
+    event.preventDefault();
+    if ($("#example-tag").find(":selected").val() != "") {
+        $.ajax({
+            type: 'GET',
+            data: $("#add-example-form").serialize(),
+            url: 'load-problems-bytag/',
+            dataType: 'json',
+            success: function(result) {
+                $("#problem-group-problems").html(result['problems']);
+               MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problem-group-problems"]);
+            }
+        });
+    }
+    return false;
+});
+
+
+
+
+$(".edit-exampleproblem-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+    $.ajax({
+        type: 'GET',
+        url: target,
+        dataType: 'json',
+        success: function(result) {
+            $('#cqt-question-type').empty();
+                $("#cqt-question-type").append("<option value='multiple choice'>Multiple Choice</option>");
+                $("#cqt-question-type").append("<option value='short answer'>Short Answer</option>");
+                $("#cqt-question-type").append("<option value='proof'>Proof</option>");
+            $("#qt-question-fields").html(result['form']);
+            $("#cqt-question-type").val(result['qt']);
+            $("#edit-qt-placeholder").modal("show");
+        }
+    });
+});
+
+
+$('#cqt-question-type').change(function(event) {
+    event.preventDefault();
+    if ($(this).val()=='short answer') {
+    $.ajax({
+        type: 'GET',
+        url: 'change-qt/',
+        data: "qt=sa&pk="+$("#id_problem_id").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#qt-question-fields").html(result);
+        }
+    });
+    return false;
+
+    } else if ($(this).val()=='multiple choice') {
+    $.ajax({
+        type: 'GET',
+        url: 'change-qt/',
+        data: "qt=mc&pk="+$("#id_problem_id").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#qt-question-fields").html(result);
+        }
+    });
+    return false;
+    } else if ($(this).val()=='proof') {
+    $.ajax({
+        type: 'GET',
+        url: 'change-qt/',
+        data: "qt=pf&pk="+$("#id_problem_id").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#qt-question-fields").html(result);
+        }
+    });
+    return false;
+    }
+});
+
+
+$("#form-change-question-type").on('submit',function(event) {
+    event.preventDefault();
+    var prob_id=$("#id_problem_id").val();
+    $.ajax({
+        type: 'POST',
+        url: 'edit-exampleproblem/'+prob_id+'/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-qt-placeholder").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#slideobject_list_"+result['sopk']).html(result['prob']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+        }
+    });
+    return false;
+});
+</script>
+	  
+{% endblock %}

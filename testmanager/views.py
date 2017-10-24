@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,Dropboxurl,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
 
 from .utils import parsebool,newtexcode,newsoltexcode,pointsum
 
@@ -172,7 +172,6 @@ def testview(request,**kwargs):#switching to UserTest
     allresponses = usertest.responses
     
     
-    dropboxpath = list(Dropboxurl.objects.all())[0].url
     if request.method == "POST" and 'username' not in kwargs:
         form=request.POST
         P=list(test.problems.all())
@@ -223,9 +222,9 @@ def testview(request,**kwargs):#switching to UserTest
             if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
                 num_correct+=1
             if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
+                texcode=newtexcode(P[i].mc_problem_text,P[i].label,P[i].answers())
             else:
-                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+                texcode=newtexcode(P[i].problem_text,P[i].label,'')
             readablelabel=P[i].readable_label.replace('\\#','#')
             rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
         allresponses.num_problems_correct=num_correct
@@ -242,15 +241,14 @@ def testview(request,**kwargs):#switching to UserTest
         for i in range(0,len(P)):
             r=R.get(problem_label=P[i].label)
             if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-                texcode=newtexcode(P[i].mc_problem_text,dropboxpath,P[i].label,P[i].answers())
+                texcode=newtexcode(P[i].mc_problem_text,P[i].label,P[i].answers())
             else:
-                texcode=newtexcode(P[i].problem_text,dropboxpath,P[i].label,'')
+                texcode=newtexcode(P[i].problem_text,P[i].label,'')
             readablelabel=P[i].readable_label.replace('\\#','#')
             rows.append((texcode,P[i].label,str(P[i].answer),r.response,P[i].question_type_new,P[i].pk,P[i].solutions.count(),r.attempted,r.modified_date,r.stickied,readablelabel))
     context['rows'] = rows
     context['pk'] = pk
     context['nbar'] = 'viewmytests'
-    context['dropboxpath'] = dropboxpath
     context['name'] = test.name
     context['show_marks'] = allresponses.show_answer_marks
     return render(request, 'randomtest/testview.html',context)
@@ -276,7 +274,6 @@ def testeditview(request,pk):
     else:
         allresponses=Responses.objects.get(test=test,user_profile=userprofile)
     msg=""
-    dropboxpath = list(Dropboxurl.objects.all())[0].url
 #Prepare for the add problems form
     types=list(Type.objects.all())
     taglist=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
@@ -381,7 +378,7 @@ def testeditview(request,pk):
         rows=[]
         for i in range(0,len(P)):
             rows.append((P[i].label,str(P[i].answer),"checked=\"checked\""))
-    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'dropboxpath': dropboxpath, 'testrows' : testrows,'taglist':taglist})
+    return render(request, 'randomtest/testeditview.html',{'rows': rows,'pk' : pk,'nbar': 'viewmytests','msg':msg, 'testrows' : testrows,'taglist':taglist})
 
 @login_required
 def latexview(request,pk):
@@ -606,23 +603,21 @@ def solutionview(request,**kwargs):
     pk = kwargs['pk']
     prob = get_object_or_404(Problem, pk=pk)
     usertest = get_object_or_404(UserTest, pk=testpk)
-    dropboxpath=list(Dropboxurl.objects.all())[0].url
     sols=list(prob.solutions.all())
     sollist=[]
     rows=[]
     for sol in sols:
-        rows.append((newsoltexcode(sol.solution_text,dropboxpath,prob.label+'sol'+str(sol.solution_number)),sol.pk))
+        rows.append((newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number)),sol.pk))
     readablelabel=prob.readable_label.replace('\\#','#')
     if prob.question_type_new.question_type=='multiple choice' or prob.question_type_new.question_type=='multiple choice short answer':
-        texcode=newtexcode(prob.mc_problem_text,dropboxpath,prob.label,prob.answers())
+        texcode=newtexcode(prob.mc_problem_text,prob.label,prob.answers())
     else:
-        texcode=newtexcode(prob.problem_text,dropboxpath,prob.label,'')
+        texcode=newtexcode(prob.problem_text,prob.label,'')
     context['prob_latex']=texcode
     context['rows']=rows
     context['testpk']=testpk
     context['testname']=usertest.test.name
     context['nbar']='viewmytests'
-    context['dropboxpath']=dropboxpath
     context['readablelabel']=readablelabel
 
     return render(request, 'randomtest/solview.html', context)

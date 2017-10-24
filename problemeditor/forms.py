@@ -304,3 +304,46 @@ class AddNewTagForm(forms.ModelForm):
 #        if parent_clean.children.filter(label=label_clean).exists() == True:
 #            raise forms.ValidationError("Tag already exists!")
 
+class EditMCAnswer(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('mc_answer',)
+        widgets = {
+            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
+            }
+    def __init__(self, *args, **kwargs):
+        super(EditMCAnswer,self).__init__(*args,**kwargs)
+        self.fields['mc_answer'].label = "Answer"
+
+class EditSAAnswer(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('sa_answer',)
+        widgets = {
+            'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(EditSAAnswer,self).__init__(*args,**kwargs)
+        self.fields['sa_answer'].label = "Answer"
+
+
+class MCProblemTextForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('mc_problem_text','answer_A','answer_B','answer_C','answer_D','answer_E',)
+        widgets = {
+            'mc_problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(MCProblemTextForm, self).__init__(*args, **kwargs)
+        self.fields['mc_problem_text'].label = 'Problem Text'
+
+class SAProblemTextForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('problem_text',)
+        widgets = {
+            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(SAProblemTextForm, self).__init__(*args, **kwargs)   

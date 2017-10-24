@@ -1,0 +1,142 @@
+{% extends "randomtest/base.html" %}
+
+{% block head %}
+<script language="javascript">
+function drawprogressbar(percent,color,barwidth) {
+var numpixels=barwidth*percent/100;
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
+document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
+document.write("</div>");
+}
+</script>
+{% endblock %}
+
+{% block content %}
+
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+	{% include 'teacher/sidebar.html' with activenav="myclasses" %}
+      </ul>
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      <div id="status_message">
+      </div>
+      <div id="my_published_classes"{% if my_published_classes.count == 0 %} style="display:none"{% endif %}>
+	<h2>Classes I'm Teaching</h2>
+	<table class="table table-striped" id="published_table">
+	  <thead>
+	    <tr>
+	      <th>Class Name</th>
+	      <th>Number of Enrolled Students</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for cls in my_published_classes.all %}
+	    {% include 'teacher/publishedclassrow.html' with cls=cls %}
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+    {% if my_TA_classes.count > 0 %}
+      <h2>Classes I'm TAing</h2>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Class Name</th>
+	    <th>Number of Enrolled Students</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for cls in my_TA_classes.all %}
+	  <tr>
+	    <td><a href="class/{{cls.pk}}/">{{cls.name}}</a></td>
+	    <td>{{cls.enrolled_students.count}}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      {% endif %}
+      
+      <h2>Classes for Editing</h2>
+      {% if my_classes.count > 0 %}
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Class Name</th>
+	    <th>Number of Units</th>
+	    <th>Publish</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for cls in my_classes.all %}
+	  <tr>
+	    <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a></td>
+	    <td>{{cls.units.count}}</td>
+	    <td><a href="publishclass/{{cls.pk}}/" class="publish-class">Publish</a></td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      {% else %}
+      <p>You haven't written any classes yet. Click the button below to start a new class.</p>
+      {% endif %}
+      <button class="btn btn-primary addclass-link" data-toggle="modal">New Class</button>      
+    </div>
+  </div>
+</div>
+
+  <div class="modal fade addclass-modal" id="addclass-modal" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <form method="post" action=".">
+          {% csrf_token %}
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add a New Class</h4>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="class-name" class="control-label">Class Name</label>
+              <input type="text" class="form-control" id="class-name" name="class-name" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+	    <button type="submit" name="newclass" class="btn btn-primary">Add Class</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script>
+$(".addclass-link").click(function(event) {
+  event.preventDefault();
+  $("#addclass-modal").modal('show');
+});
+
+
+$(document).on('click',".publish-class",function(event) {
+    event.preventDefault();
+    $("#status_message").html("<div class='alert alert-info' role='alert'>Publishing Class...Please Wait...</div>");
+    $.ajax({
+        type: 'GET',
+        url: $(this).attr("href"),
+        dataType: 'json',
+        success: function(result) {
+            $("#published_table tbody").append(result['newrow']);
+            $("#status_message").html("");
+            $("#my_published_classes").css("display", "block");
+        }
+    });
+    return false;
+});
+</script>
+
+
+{% endblock %}

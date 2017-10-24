@@ -1,0 +1,134 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<script type="text/javascript">
+function togglemarked() {
+    var y=document.getElementById("problems");
+    lang=y.elements.length;
+
+    check=0;
+    for (i=0;i<lang;i++) {
+        if (y.elements[i].name == "chk" && y.elements[i].checked==false) {
+            check=1;
+        }
+    }
+    if (check==1) {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=true;
+        }
+    } else {
+        for (i=0;i<lang;i++) {
+            y.elements[i].checked=false;
+        }
+    }
+}
+function fixchecks() {
+    var y=document.getElementById("problems");
+    lang=y.elements.length;
+
+    allchecked=1;
+    allunchecked=1;
+    for (i=0;i<lang;i++) {
+        if (y.elements[i].name == "chk") {
+            if (y.elements[i].checked==false) {
+                allchecked=0;
+            } else {
+                allunchecked=0;
+            }
+        }
+    }
+    z=document.getElementById("toggler");
+    if (allchecked==1) {
+        z.checked=true;
+        z.indeterminate=false;
+    } else if (allunchecked==1) {
+        z.checked=false;
+        z.indeterminate=false;
+    } else {
+        z.indeterminate=true;
+    }
+}
+function fixcolors() {
+    var y=document.getElementById("problems");
+    lang=y.elements.length;
+    for (i=0;i<lang;i++) {
+        if (y.elements[i].name == "chk") {
+            if (y.elements[i].checked==false) {
+                $('#'+'prob-item_'+y.elements[i].value).css('background-color','#f2dede');
+            } else {
+                $('#'+'prob-item_'+y.elements[i].value).css('background-color','#dff0d8');
+            }
+        }
+    }
+}
+</script>
+
+<ol class="breadcrumb">
+  <li><a href="../../../../../../../">My Classes</a></li>
+  <li><a href="../../../../../">{{my_class.name}}</a></li>
+  <li><a href="../../../">{{unit.name}}</a></li>
+  <li><a href="../">{{problemset.name}}</a></li>
+  <li class="active">Add Problems</li>
+</ol>
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      {% include 'teacher/sidebar.html' with activenav="myclasses" %}
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      <h2>Add Problems to {{problemset.name}} (from problem group: {{prob_group.name}})</h2>
+      <form action="." method="POST" id="problems">
+	{% csrf_token %}
+        <p><input type="checkbox" id="toggler" onclick="togglemarked();fixcolors()" checked/> Select/Deselect All</p>
+	{% if rows|length > 0 %}
+	<ul class="list-group" id="probList">
+	  {% for prob in rows %}
+	  <li class="list-group-item prob-item" id="prob-item_{{prob.label}}" style="background-color:#dff0d8">
+	    <div class="row">
+	      <div class="col-xs-1">
+		{{forloop.counter}}.
+	      </div>
+	      <div class="col-xs-10">
+		{% if prob.question_type_new.question_type == 'multiple choice' %}
+		{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+		{% else %}
+		{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+		{% endif %}
+		
+		{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
+	      </div>
+	      <div class="col-xs-1">
+		<input type="checkbox" class="chk" id="chk_{{prob.label}}" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked/>
+	      </div>
+	    </div>
+	  </li>
+	  {% endfor %}
+	  
+	</ul>
+	{% else %}
+	There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.
+	{% endif %}
+	<p>
+	  <button type="submit" class="btn btn-primary" name="add-selected-problems" value="add-selected-problems">Add Selected Problems</button>
+	</p>
+      </form>
+    </div>
+  </div>
+
+</div>
+<script>
+$(".chk").change(function() {
+    if (this.checked) {
+        $('#'+'prob-item_'+$(this).val()).css('background-color','#dff0d8');
+    } else {
+        $('#'+'prob-item_'+$(this).val()).css('background-color','#f2dede');
+    }
+});
+$( document ).ready(function() {
+    fixcolors();
+});
+</script>
+
+{% endblock %}

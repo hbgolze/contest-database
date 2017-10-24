@@ -1,0 +1,74 @@
+{% extends "randomtest/base.html" %}
+
+
+{% block content %}
+
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+	{% include 'teacher/sidebar.html' with activenav="mystudents" %}
+      </ul>
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      {% if userprofile.students.count > 0 %}
+      <h2>My Students</h2>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th></th>
+	    <th>Student Username</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for student in userprofile.students.all %}
+	  <tr>
+	    <td>[future checkbox?]</td>
+	  <td><a href="{{student}}/">{{student}}</a></td>
+	</tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      {% else %}
+      <p>You don't have any students yet. Click the button below to add a student (they will need to confirm before you can view their information).
+      {% endif %}
+      <button class="btn btn-primary addstudent-link" data-toggle="modal">Add Student</button>      
+    </div>
+  </div>
+</div>
+
+<div class="modal fade addstudent-modal" id="addstudent-modal" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action=".">
+        {% csrf_token %}
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add a Student</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="class-name" class="control-label">Student Username</label>
+            <input type="text" class="form-control" id="student-username" name="student-username" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+	  <button type="submit" name="addstudent" class="btn btn-primary">Add Student</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+$(".addstudent-link").click(function(event) {
+  event.preventDefault();
+  $("#addstudent-modal").modal('show');
+});
+</script>
+
+{% endblock %}

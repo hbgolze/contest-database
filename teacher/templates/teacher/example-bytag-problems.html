@@ -1,0 +1,27 @@
+{% if rows|length > 0 %}
+<ul class="list-group" id="probList">
+  
+  {% for prob in rows %}
+  <li class="list-group-item prob-item" id="prob-item_{{prob.label}}">
+    <input type="hidden" name="chk" value="{{prob.label}}"/>
+    <div class="row">
+      <div class="col-xs-10">
+	{% if prob.question_type_new.question_type == 'multiple choice' %}
+	{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+	{% else %}
+	{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+	{% endif %}
+	
+      </div>
+      <div class="col-xs-2">
+
+	<a href="{{prob.pk}}" class="add-pg-problem">Add Problem</a>
+      </div>
+    </div>
+  </li>
+  {% endfor %}
+  
+</ul>
+{% else %}
+There are no problems with this type/tag.
+{% endif %}

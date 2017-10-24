@@ -18,7 +18,7 @@ class Proof(models.Model):
     proof_code = models.TextField(blank=True)
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True)
+    solution = models.ForeignKey(Solution,blank=True,null=True, related_name="handout_proof")
 
 class Theorem(models.Model):
     name=models.CharField(max_length=150, default="")

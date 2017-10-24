@@ -1,0 +1,129 @@
+{% extends "randomtest/base.html" %}
+
+{% block head %}
+<script language="javascript">
+function drawprogressbar(percent,color,barwidth) {
+var numpixels=barwidth*percent/100;
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
+document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
+document.write("</div>");
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="../../../">My Classes</a></li>
+  <li><a href="../">{{my_class.name}}</a></li>
+  <li class="active">Roster</li>
+</ol>
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      <ul class="nav nav-sidebar">
+	{% include 'teacher/sidebar.html' with activenav="myclasses" %}
+      </ul>
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      <div id="status_message">
+      </div>
+      <div id="course-roster">
+	<h2>Course Roster</h2>
+	<table class="table table-striped table-bordered" id="students-table">
+	  <thead>
+	    <tr>
+	      <th>Student Name</th>
+	      {% for unit in my_class.units.all %}
+	      <th style="border-left: 1px solid;border-right: 1px solid;">Total for Unit: {{unit.name}}</th>
+	      {% for unit_object in unit.unit_objects.all %}
+	      {% if unit_object.problemset %}
+	      <th>{{unit_object.problemset.name}}</th>
+	      {% endif %}
+	      {% endfor %}
+	      {% endfor %}
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for student_class in student_classes %}
+	    {% include "teacher/roster-studentrow.html" %}
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+      <button class="btn btn-primary add-student-link">Add Student</button>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="add-student-modal" role="dialog">
+  <div class="modal-dialog" role="document">
+
+    <div class="modal-content">
+      <form method="post" action="." id="add-student-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Student to Class</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+	  <div id="add-student-body">
+	  </div>
+	</div>
+        <div class="modal-footer">
+          <button type="submit" name="addstudentbutton" id="addstudentbutton" class="btn btn-primary" disabled>Add Student</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	  </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script>
+$(".add-student-link").click(function(event) {
+  event.preventDefault();
+  $("#addstudentbutton").prop('disabled',true);
+  $.ajax({
+    type: 'GET',
+    url: 'get-student-list/',
+    dataType: 'json',
+    success: function(result) {
+      $("#add-student-body").html(result['students']);
+    }
+  });
+  $("#add-student-modal").modal('show');
+  return false;
+
+});
+
+$(document).on("change","#student-selector", function(event) {
+  $("#addstudentbutton").prop('disabled',false);
+});
+
+$(document).on("submit","#add-student-form",function(event) {
+  event.preventDefault();
+
+    var prob_id=$("#id_problem_id").val();
+    $.ajax({
+        type: 'POST',
+        url: 'add-student/',
+        data: $(this).serialize()+"&student_id="+$("#student-selector").val(),
+        dataType: 'json',
+        success: function(result) {
+            $("#add-student-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#students-table tbody").append(result["student"]);
+        }
+    });
+    return false;
+});
+
+
+
+</script>
+
+
+{% endblock %}

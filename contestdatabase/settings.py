@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'groups.apps.GroupsConfig',
     'contestcollections.apps.ContestcollectionsConfig',
     'handouts.apps.HandoutsConfig',
+    'teacher.apps.TeacherConfig',
+    'student.apps.StudentConfig',
 ]
 
 MIDDLEWARE = [

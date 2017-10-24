@@ -257,20 +257,20 @@ class UserResponse(models.Model):
 
 
 class SortableProblem(models.Model):
-    newtest_pk = models.CharField(max_length = 15)
+    newtest_pk = models.CharField(max_length = 15)#unnecessary
+    newtest = models.ForeignKey('NewTest', null=True)
     order = models.IntegerField(default = 0)
     problem = models.ForeignKey(Problem, blank=True,null=True)
     point_value =models.IntegerField(default = 1)#add ability to use this
 #    def __str__(self):
 #        return 
-#in general, we would want this to be deleted if Problem is deleted, but not the other way around.
     class Meta:
         ordering = ['order']
 
 class NewTest(models.Model):
     name = models.CharField(max_length=50)
-    problems = models.ManyToManyField(SortableProblem,blank=True)
-    types = models.ManyToManyField(Type,blank=True, related_name='types')
+    problems = models.ManyToManyField(SortableProblem,blank=True, related_name = "new_test")
+    types = models.ManyToManyField(Type,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
     num_problems = models.IntegerField(default=0)
     def __str__(self):
@@ -288,24 +288,28 @@ class UserProfile(models.Model):
     tests = models.ManyToManyField(Test, blank=True)
     usertests = models.ManyToManyField('UserTest', blank=True)
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
-    archived_tests = models.ManyToManyField(Test,blank = True,related_name='archived_tests')
-    folders = models.ManyToManyField(Folder,blank = True,related_name='folders')
-    students = models.ManyToManyField(User,blank = True,related_name='students')
-    allresponses = models.ManyToManyField(Responses,blank=True,related_name='user_profile')
+    archived_tests = models.ManyToManyField(Test,blank = True,related_name='userprofiles')
+    folders = models.ManyToManyField(Folder,blank = True,related_name='userprofiles')
+    students = models.ManyToManyField(User,blank = True,related_name='userprofiles')
+    allresponses = models.ManyToManyField(Responses,blank=True,related_name='userprofiles')
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)
     user_type = models.CharField(max_length=15,default='member')
     user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
-    problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'problem_groups')
-    handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
-    newtests = models.ManyToManyField(NewTest,blank=True,related_name='newtests')
+    problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'userprofiles')
+#    handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
+    newtests = models.ManyToManyField(NewTest,blank=True,related_name='userprofiles')
+    my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
+    my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
+    my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='TA_userprofiles')
     def __str__(self):
         return self.user.username
 
 
 class UserTest(models.Model):
     userprof = models.ForeignKey(UserProfile,related_name='user_tests',null=True)
-    test = models.ForeignKey(Test)
+    test = models.ForeignKey(Test, null = True)
+    newtest = models.ForeignKey(NewTest,null = True)
     responses = models.ForeignKey(Responses,related_name='usertest',null = True)
     num_probs = models.IntegerField()
     num_correct = models.IntegerField(default=0)
@@ -321,6 +325,9 @@ class NewResponse(models.Model):
     modified_date = models.DateTimeField(default = timezone.now)
     attempted = models.BooleanField(default = 0)
     stickied = models.BooleanField(default = 0)
+    order = models.IntegerField(default = 0)
+    points = models.IntegerField(default = 0)
+    point_value = models.IntegerField(default = 1)
     def __str__(self):
         return self.problem_label+': '+self.response
 

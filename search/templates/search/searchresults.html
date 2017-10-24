@@ -25,18 +25,7 @@ There are {{matchnums}} matching problems in the database.
 <form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
   {% csrf_token %}
   <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
-    {% if prob.newtags.count > 0 %}
-    
-    
-    <label for="tag-list-{{prob.pk}}">Current Tags</label>
-    <ul id="tag-list-{{prob.pk}}">
-      {% for tag in prob.newtags.all %}
-      <li>
-	<span class="label label-default">{{tag}}</span> <button type="submit" class="btn btn-default btn-xs delete-tag-link" id="deletetag_{{prob.pk}}_{{tag.pk}}"><span style="color:red; cursor:pointer">✖</span></button>
-      </li>
-      {% endfor %}
-    </ul>
-    {% endif %}
+    {% include "search/tag_snippet.html" %}
   </div>
 </form>
 

@@ -1,0 +1,140 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+<ol class="breadcrumb">
+  <li><a href="/problemgroups/">My Problem Groups</a></li>
+  <li class="active">{{name}}</li>
+</ol>
+
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-3 col-md-2 sidebar">
+      {% include 'teacher/sidebar.html' with activenav="myproblemgroups" %}
+    </div>
+    <div class="col-sm-9 col-md-10 main">
+      <h2>{{name}}</h2>
+      <form action="." method="POST" id="problems">
+	{% csrf_token %}
+	{% if rows|length > 0 %}
+	<ul class="list-group" id="probList">
+	  {% for prob in rows %}
+	  <li class="list-group-item prob-item" id="prob-item_{{prob.label}}">
+	    <input type="hidden" name="chk" value="{{prob.label}}"/>
+	    <div class="row">
+	      <div class="col-xs-1">
+		{{forloop.counter}}.
+	      </div>
+	      <div class="col-xs-10">
+		{% if prob.question_type_new.question_type == 'multiple choice' %}
+		{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+		{% else %}
+		{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+		{% endif %}
+		
+		{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
+	      </div>
+	      <div class="col-xs-1">
+		<span class="glyphicon glyphicon-remove js-remove" style="color:red;cursor:pointer" id="remove_{{prob.label}}"></span>
+	      </div>
+	    </div>
+	  </li>
+	  {% endfor %}
+	  
+	</ul>
+	{% else %}
+	There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.
+	{% endif %}
+	<p>
+	  <button type="submit" class="btn btn-primary" name="save" value="save">Save</button>
+	  <button class="btn btn-primary add-problems-link" data-toggle="modal">Add Random Problems</button>
+	</p>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal fade" id="addproblems" role="dialog">`
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+	<form method="GET" action="fetchproblems/" id="add-problems-form">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add Random Problems</h4>
+          </div>
+          <div class="modal-body">
+            <div class="row">
+              <div class="form-group col-lg-12">
+		<label for="contest_type" class="control-label">Contest Type:</label>
+		{{form.contest_type}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-lg-12">
+		<label for="desired_tag" class="control-label">Desired Tag:</label>
+		{{form.desired_tag}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-lg-12">
+		<label for="numproblems" class="control-label">Number of Problems (10 if left blank):</label>
+		{{form.num_problems}}
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-lg-12">
+		<label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+		<div class="form-inline">
+		  {{form.prob_num_low}} to {{form.prob_num_high}}
+		</div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-lg-12 form-inline">
+		<label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+		<div class="form-inline">
+		  {{form.year_low}} to {{form.year_high}}
+		</div>
+              </div>
+            </div>
+	    
+          </div>
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" name="add-problems" value="add-problems">Add Random Problems</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+	</form>
+      </div>
+      
+    </div>
+  </div>
+</div>
+<script>
+$(".js-remove").click(function(event) {
+    event.preventDefault();
+    var div_name = $(this).attr("id").replace("remove","prob-item");
+    $("#"+div_name).remove();
+});
+$(".add-problems-link").click(function(event) {
+  event.preventDefault();
+  $("#addproblems").modal('show');
+});
+$("#add-problems-form").on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: 'fetchproblems/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#addproblems").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            probs = result['prob_list'];
+            for (i=0; i < probs.length; i++) {
+                $("#probList").append(probs[i]);
+            }
+        }
+    });
+    return false;
+});
+</script>
+{% endblock %}

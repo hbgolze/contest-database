@@ -1,0 +1,29 @@
+          <div class="list-group-item">
+            <input type="hidden" name="unitinput" value="unit_{{unit.pk}}">
+            <div class="row">
+              <div class="col-sm-1 col-md-1 col-lg-1">
+                {{forcount}}.
+              </div>
+              <div class="col-sm-10 col-md-10 col-lg-10">
+
+		<a href="units/{{unit.pk}}/">{{unit.name}}</a>
+		{% if unit.unit_objects.count > 0 %}
+		<ul>
+		  {% for unitobj in unit.unit_objects.all %}
+		  {% if unitobj.slidegroup %}
+		  <li>Slides: {{unitobj.slidegroup.name}}</li>
+		  {% elif unitobj.problemset %}
+		  <li>Problem Set: {{unitobj.problemset.name}}</li>
+		  {% endif %}
+		  {% endfor %}
+		</ul>
+		{% else %}
+		<p><i>You haven't added anything to this unit yet.</i></p>
+		{% endif %}
+              </div>
+              <div class="col-sm-1 col-md-1 col-lg-1">
+                <div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+              </div>
+            </div>
+          </div>
+	

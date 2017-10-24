@@ -4,7 +4,7 @@
 <script language="javascript">
 function drawprogressbar(percent,color,barwidth) {
 var numpixels=barwidth*percent/100;
-document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+barwidth.toString()+"px; height=10px;\">");
+document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
 document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
 document.write("</div>");
 }

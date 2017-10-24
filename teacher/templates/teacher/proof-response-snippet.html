@@ -1,0 +1,7 @@
+                    {% if resp.attempted %}
+                    <ul class="list-group">
+                      <label for="proof-text-{{prob_label}}">Student Response<span id="grading-status-{{prob_label}}">{% if resp.is_graded %} ({{resp.points}}/{{resp.point_value}} Points){% else %} (Ungraded){% endif %}</span>:</label>
+                      <li class="list-group-item" id="proof-text-{{prob_label}}">{% autoescape off %}{{resp.display_response}}{% endautoescape %}</li>
+                    </ul>
+		    <button class="btn btn-primary grade-link" id="grade_{{resp.pk}}">Change Grade</button>
+		    {% endif %}

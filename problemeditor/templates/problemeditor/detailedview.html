@@ -33,16 +33,21 @@
 {% if prob.question_type_new.question_type == "multiple choice" %}
 <label>Answer:</label>
 <p>{{form.mc_answer}}</p>
-{% endif %}
-{% if prob.question_type_new.question_type == "short answer" %}
+{{form.sa_answer.as_hidden}}
+{% elif prob.question_type_new.question_type == "short answer" %}
 <label>Answer:</label>
 <p>{{form.sa_answer}}</p>
-{% endif %}
-{% if prob.question_type_new.question_type == "multiple choice short answer" %}
+{{form.mc_answer.as_hidden}}
+
+{% elif prob.question_type_new.question_type == "multiple choice short answer" %}
 <p><label>Answer (Multiple Choice):</label>
 {{form.mc_answer}}</p>
 <p><label>Answer (Short Answer):</label></p>
 <p>{{form.sa_answer}}</p>
+
+{% else %}
+{{form.mc_answer.as_hidden}}
+{{form.sa_answer.as_hidden}}
 {% endif %}
 
 

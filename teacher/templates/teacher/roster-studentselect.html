@@ -1,0 +1,6 @@
+<select id="student-selector" class="form-control">
+<option value="" disabled selected>Choose a Student</option>
+{% for student in students %}
+<option value="{{student.pk}}">{{student.username}}</option>
+{% endfor %}
+</select>
