@@ -1027,6 +1027,7 @@ def editslideview(request,pk,upk,spk,sspk):
             pf.save()
             pf.proof_display = newtexcode(proofbl, 'proofblock_'+str(pf.pk), "")
             pf.save()
+            compileasy(pf.proof_code,'proofblock_'+str(pf.pk))#######Check
             s=SlideObject(content_object=pf,slide=slide,order=slide.top_order_number+1)
             s.save()
             slide.top_order_number = slide.top_order_number +1
@@ -1328,6 +1329,7 @@ class ProofUpdateView(UpdateView):
         form.save()
         proof = Proof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
+        compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
         return redirect('../../')
 
     def get_object(self, queryset=None):
