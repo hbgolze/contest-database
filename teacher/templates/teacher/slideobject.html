@@ -1,3 +1,4 @@
+<div class="list-group-item" id="slideobject_list_{{s.pk}}">
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
             <div class="row">
               <div class="col-sm-11 col-md-11 col-lg-11">
@@ -54,8 +55,9 @@
 {% endif %}
                 {% endif %}
                 {% if s.content_type.model == "imagemodel" %}
-                <a href="edit-imagemodel/{{s.content_object.pk}}" class="edit-imagemodel-link"><span class="glyphicon glyphicon-pencil"></span></a>
+<!--                <a href="edit-imagemodel/{{s.content_object.pk}}" class="edit-imagemodel-link"><span class="glyphicon glyphicon-pencil"></span></a>-->
                 {% endif %}
 
               </div>
             </div><!--row-->
+</div>

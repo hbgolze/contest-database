@@ -32,9 +32,7 @@
         <div id="slideobjectList" class="list-group">
 
 	  {% for s in slide.slide_objects.all %}
-          <div class="list-group-item" id="slideobject_list_{{s.pk}}">
 	    {% include "teacher/slideobject.html" with s=s %}
-	  </div>
 	  {% endfor %}
 	</div><!--list-group-->
 
@@ -290,6 +288,8 @@ var editableList = Sortable.create(slideobjectList, {
   }
 });
 
+
+
 $('#add-theorem-form').on('submit',function(event) {
     event.preventDefault();
     $.ajax({
@@ -346,24 +346,23 @@ $('#add-proof-form').on('submit',function(event) {
 });
 $('#add-image-form').on('submit',function(event) {
     event.preventDefault();
-console.log($(this));
-    var formData = new FormData();
+    var formData = new FormData($(this)[0]);
     formData.append('id_image',$("#id_image")[0].files[0]);
     formData.append("addimage","");
-console.log(formData);
     $.ajax({
         type: 'POST',
         url: '.',
         data: formData,
-        dataType: 'json',
+//        dataType: 'json',
+        processData: false,
+        contentType: false,
         success: function(result) {
-alert('hi');
             $("#imageblock").hide();
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#slideobjectList").append(result['image']);
-//            $("#proof-prefix").val('Proof');
-//            $("#codeproofblock").val('');
-//            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#proof-prefix").val('Proof');
+            $("#codeproofblock").val('');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
         }
     });
     return false;

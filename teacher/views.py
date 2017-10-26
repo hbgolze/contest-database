@@ -1033,12 +1033,8 @@ def editslideview(request,pk,upk,spk,sspk):
             slide.save()
             return JsonResponse({'proof':render_to_string('teacher/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addimage" in form:
-            print('here')
-            print(form)
             form = ImageForm(request.POST, request.FILES)
-            print(form)
             if form.is_valid():
-                print('not here')
                 m = ImageModel(image=form.cleaned_data['image'])
                 m.save()
                 s = SlideObject(content_object=m,slide=slide,order=slide.top_order_number+1)
@@ -1332,7 +1328,6 @@ class ProofUpdateView(UpdateView):
         form.save()
         proof = Proof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
-        compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
         return redirect('../../')
 
     def get_object(self, queryset=None):
