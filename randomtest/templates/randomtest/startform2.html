@@ -16,10 +16,14 @@ else { document.getElementById(d).style.display = "none"; }
 {% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/randomtest/">My Tests</a></li>
+  <li class="active">New Test</li>
+</ol>
 <div class="container">
 <div class="row">
 <h2>New Test</h2>
-<p>Enter a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). Tags like 2000AIMEI or 2009AMC10A will give you the problems from that particular test. To get uncategorized problems, simply leave the tag field blank. Submit your answers when you are ready.</p>
+<p>Select a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). To get uncategorized problems, simply leave the tag field unspecified. Submit your answers when you are ready.</p>
 <p>For more information, see the <a href="readme">Readme</a>.</p>
 </div>
 <div class="row">
@@ -57,7 +61,7 @@ else { document.getElementById(d).style.display = "none"; }
   
   <div class="row">
     <div class="form-group col-lg-5" id="taglist">
-      <label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
+      <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
       <select name="tag" class="form-control">
 	<option value="">Unspecified</option>
 	{% for t in tags %}

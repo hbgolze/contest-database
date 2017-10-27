@@ -74,6 +74,10 @@ class TestDelete(DeleteView):
     success_url = reverse_lazy('tableview')
 
 @login_required
+def splashview(request):
+    return render(request,'splashview.html')
+
+@login_required
 def deletetestresponses(request,pk):
     test = get_object_or_404(Test, pk=pk)
     isreserved=0
@@ -92,7 +96,7 @@ def deletetestresponses(request,pk):
     a= userprofile.timestamps.filter(test_pk=pk)
     if a.count() >0:
         a.delete()        
-    return redirect('/')
+    return redirect('/randomtest/')
 
 @login_required
 def deletestudenttestresponses(request,username,pk):
@@ -194,7 +198,7 @@ def startform(request):
 
             T.types.add(Type.objects.get(type=testtype))
             T.save()
-            return redirect('/test/'+str(ut.pk)+'/')
+            return redirect('/randomtest/test/'+str(ut.pk)+'/')
         else:
             return testview(request,int(form.get('startform','')))
     else:
@@ -203,7 +207,7 @@ def startform(request):
         tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
         usertests=up.user_tests.all()
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
+        context={'nbar' : 'viewmytests', 'types' : types, 'tags' : tags, 'usertests' : usertests}
         return HttpResponse(template.render(context,request))
 
 
@@ -271,7 +275,7 @@ def newstartform(request):
                 T.problems.add(sp)
             T.types.add(Type.objects.get(type=testtype))
             T.save()
-            return redirect('/newtest/'+str(T.pk)+'/')
+            return redirect('/randomtest/newtest/'+str(T.pk)+'/')
         else:
             return testview(request,int(form.get('startform','')))
     else:
@@ -280,7 +284,7 @@ def newstartform(request):
         tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
         usertests=up.user_tests.all()
         template = loader.get_template('randomtest/startform2.html')
-        context={'nbar' : 'newtest', 'types' : types, 'tags' : tags, 'usertests' : usertests}
+        context={'nbar' : 'viewmytests', 'types' : types, 'tags' : tags, 'usertests' : usertests}
         return HttpResponse(template.render(context,request))
 
 @login_required
@@ -401,7 +405,7 @@ def tagcounts(request):
             t[j]=ent
         tagrows.append(t)
     template = loader.get_template('randomtest/taglist.html')
-    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
+    context={'nbar': 'viewmytests', 'typeheaders' : typeheaders,'tagrows':tagrows}
     return HttpResponse(template.render(context,request))
 
 def tagcounts2(request):
@@ -435,7 +439,7 @@ def tagcounts2(request):
             t[j]=ent
         tagrows.append(t)
     template = loader.get_template('randomtest/taglist.html')
-    context={'nbar': 'newtest', 'typeheaders' : typeheaders,'tagrows':tagrows}
+    context={'nbar': 'viewmytests', 'typeheaders' : typeheaders,'tagrows':tagrows}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -511,7 +515,7 @@ def addtestview(request,**kwargs):#pk
     if 'username' in kwargs:
         return redirect('../../')
     else:
-        return redirect('/test/'+str(ut.pk))
+        return redirect('/randomtest/test/'+str(ut.pk))
 
 @login_required
 def addnewtestview(request,**kwargs):#pk
@@ -535,7 +539,7 @@ def addnewtestview(request,**kwargs):#pk
     if 'username' in kwargs:
         return redirect('../../')
     else:
-        return redirect('/newtest/'+str(ut.pk))
+        return redirect('/randomtest/newtest/'+str(ut.pk))
 
 
 @login_required
@@ -552,7 +556,7 @@ def addfolderview(request,pk):
             r.save()
     userprof.folders.add(fold)
     userprof.save()
-    return redirect('/')
+    return redirect('/randomtest/')
     
 
 @login_required
@@ -744,7 +748,7 @@ def UpdatePassword(request):
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, form.user)
-            return redirect('/')
+            return redirect('/randomtest/')
     return render(request, 'registration/change-password.html', {
         'form': form,
     })
@@ -789,7 +793,7 @@ def latexsolview(request,pk):
 
 @login_required
 def readme(request):
-    return render(request,'randomtest/readme.html',{'nbar':'newtest'})
+    return render(request,'randomtest/readme.html',{'nbar':'viewmytests'})
 
 @login_required
 def test_as_pdf(request, pk):
@@ -1220,7 +1224,6 @@ def new_toggle_star(request,pk):
 
 @login_required
 def checkanswer(request,pk):
-    print('hi')
     usertest=get_object_or_404(UserTest,pk=pk)
     userprofile=request.user.userprofile
     response_label=request.POST.get('response_id','')

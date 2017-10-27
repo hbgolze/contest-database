@@ -12,30 +12,18 @@ function ReverseDisplay(d) {
 if(document.getElementById(d).style.display == "none") { document.getElementById(d).style.display = "block"; }
 else { document.getElementById(d).style.display = "none"; }
 }
-
-function addInput(divName) {
-    var newDiv = document.createElement('div');
-    var selectHTML = "<div class=\"form-inline\">";
-    selectHTML="<select name=\"tag\" class=\"form-control\">";
-    selectHTML += "<option value=''>Unspecified</option>";
-    {% for t in tags %}
-    selectHTML += "<option value='{{t.tag}}'>{{t.tag}}</option>";
-    {% endfor %}
-    selectHTML += "</select>";
-    selectHTML += "<button type=\"button\" onclick=\"addInput('taglist')\" class=\"btn btn-default\">or</button>";
-    selectHTML += "</div>";
-    newDiv.innerHTML = selectHTML;
-    document.getElementById(divName).appendChild(newDiv);
-}
-
 </script>
 {% endblock %}
 
 {% block content %}
+<ol class="breadcrumb">
+  <li><a href="/">My Tests</a></li>
+  <li class="active">New Test</li>
+</ol>
 <div class="container">
 <div class="row">
 <h2>New Test</h2>
-<p>Enter a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). Tags like 2000AIMEI or 2009AMC10A will give you the problems from that particular test. To get uncategorized problems, simply leave the tag field blank. Submit your answers when you are ready.</p>
+<p>Select a tag below, and press the button to get a customized test (Default = 10 problems/max # of problems with tag). To get uncategorized problems, simply leave the tag field unspecified. Submit your answers when you are ready.</p>
 <p>For more information, see the <a href="readme">Readme</a>.</p>
 </div>
 <div class="row">
@@ -74,17 +62,12 @@ function addInput(divName) {
   <div class="row">
     <div class="form-group col-lg-5" id="taglist">
       <label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
-      <div class="form-inline">
-	<select name="tag" class="form-control">
-	  <option value="">Unspecified</option>
-	  {% for t in tags %}
-	  <option value="{{t.tag}}">{{t.tag}}</option>
-	  {% endfor %}
-	</select>
-	<button type="button" onclick="addInput('taglist')" class="btn btn-default">
-	  or
-	</button>
-      </div>
+      <select name="tag" class="form-control">
+	<option value="">Unspecified</option>
+	{% for t in tags %}
+	<option value="{{t.tag}}">{{t.tag}}</option>
+	{% endfor %}
+      </select>
     </div>
   </div>
   <div class="row">

@@ -17,16 +17,16 @@
 	      {% autoescape off %}{{s.content_object.proof_display|linebreaks}}{% endautoescape %}
 	      {% endif %}
 	      {% if s.content_type.model == "theorem" %}
-	      <span style="font-weight:bold">{{s.content_object.prefix}} {{s.content_object.theorem_number}}{% if s.content_object.name != "" %} ({{s.content_object.name}}){% endif %}: </span>
+	      <span style="font-weight:bold">{{s.content_object.prefix}}{% if s.content_object.name != "" %} ({{s.content_object.name}}){% endif %}: </span>
 	      {% autoescape off %}{{s.content_object.theorem_display|linebreaks}}{% endautoescape %}
 	      {% endif %}
 	      {% if s.content_type.model == "exampleproblem" %}
-	      <span style="font-weight:bold">{{s.content_object.prefix}} {{s.content_object.problem_number}}: </span>
+	      <span style="font-weight:bold">{{s.content_object.prefix}}: </span>
 	      {% if s.content_object.isProblem == 1 %}
 	      {% if s.content_object.problem.question_type_new.question_type == "multiple_choice" %}
-	      {% autoescape off %}{{s.content_object.problem.display_mc_problem_text|linebreaks}}{% endautoescape %}
+	      {% autoescape off %}{{s.content_object.problem.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
 	      {% else %}
-	      {% autoescape off %}{{s.content_object.problem.display_problem_text|linebreaks}}{% endautoescape %}
+	      {% autoescape off %}{{s.content_object.problem.display_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
 	      {% endif %}
 	      {% else %}
 	      {% autoescape off %}{{s.content_object.problem_display|linebreaks}}{% endautoescape %}

@@ -38,7 +38,7 @@ $(function() {
 		{{class.published_class.name}} ({{class.published_class.units.count}} units)
 	      </div>
 	      <div class="col-xs-4">
-		{{class.num_correct}}/{{class.num_problems}}
+		{{class.num_correct}}/{{class.num_problems}} (<script>document.write(Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)));</script>%)
 		<span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 	      </div>
 	      <div class="col-xs-4" style="text-align:right">
@@ -56,7 +56,7 @@ $(function() {
 		  {{unit.unit.name}} ({{unit.num_problemsets}} problem sets)
 		</div>
 		<div class="col-xs-4">
-		  {{unit.num_correct}}/{{unit.num_problems}}
+		  {{unit.num_correct}}/{{unit.num_problems}} (<script>document.write(Math.round({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1)));</script>%)
 		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 		</div>
 		<div class="col-xs-4" style="text-align:right">
@@ -74,7 +74,7 @@ $(function() {
 		    <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.problemset.name}}
 		  </div>
 		  <div class="col-xs-4">
-		    {{pset.num_correct}}/{{pset.num_problems}}
+		    {{pset.num_correct}}/{{pset.num_problems}} (<script>document.write(Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)));</script>%)
 		    <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 		  </div>
 		  <div class="col-xs-4" style="text-align:right">

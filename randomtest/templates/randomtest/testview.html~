@@ -24,7 +24,7 @@ Problem
 <td style="text-align:center">
 <a href="#{{resp.problem.label}}">{{forloop.counter}}</a>
 </td>
-{% endfor%}
+{% endfor %}
 </tr>
 <tr>
 <td>

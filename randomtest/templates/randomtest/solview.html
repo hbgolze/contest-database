@@ -5,15 +5,15 @@
 {% block content %}
 {% if username %}
 <ol class="breadcrumb">
-  <li><a href="/">My Tests & Students</a></li>
+  <li><a href="/randomtest/">My Tests & Students</a></li>
   <li><a href="../../">{{username}}'s Tests</a></li>
   <li><a href="../">{{testname}}</a></li>
   <li class="active">Solutions to {{problem.readable_label}}</li>
 </ol>
 {% else %}
 <ol class="breadcrumb">
-  <li><a href="/">My Tests</a></li>
-  <li><a href="/test/{{testpk}}/">{{testname}}</a></li>
+  <li><a href="/randomtest/">My Tests</a></li>
+  <li><a href="/randomtest/test/{{testpk}}/">{{testname}}</a></li>
   <li class="active">Solutions to {{problem.readable_label}}</li>
 </ol>
 {% endif %}
