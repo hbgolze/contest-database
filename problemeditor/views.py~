@@ -1797,7 +1797,6 @@ class SolutionView(DetailView):
 
 @login_required
 def load_new_solution(request,**kwargs):
-    print(request.POST)
     pk = request.GET.get('pk','')
     prob = get_object_or_404(Problem,pk=pk)
     return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-solution.html',{'prob':prob})})

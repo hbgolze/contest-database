@@ -342,7 +342,7 @@ def typetagview(request,type,tag):
         problems=list(ttag.problems.filter(type_new=typ))
     else:
         problems=list(typ.problems.filter(newtags__isnull=True))
-    problems=sorted(problems, key=lambda x:(x.year,x.problem_number))
+    problems=sorted(problems, key=lambda x:(x.problem_number,x.year))
 
     template=loader.get_template('problemeditor/typetagview.html')
 
