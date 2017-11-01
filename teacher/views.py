@@ -51,7 +51,7 @@ def publishview(request,pk):
     my_class = get_object_or_404(Class,pk=pk)
     if userprofile.my_classes.filter(pk=pk).exists()==False:
         raise Http404("Unauthorized.")
-    p=PublishedClass(name=my_class.name)
+    p=PublishedClass(name=my_class.name,parent_class = my_class)
     p.save()
     class_points = 0
     class_prob_num = 0
@@ -249,8 +249,9 @@ def studentproblemsetview(request,**kwargs):
         raise Http404("Unauthorized.")
     if user_problemset.is_initialized == 0:
         for p in user_problemset.problemset.problem_objects.all():
-            r = Response(problem_object = p, user_problemset = user_problemset,order=p.order,point_value = p.point_value,response="")
-            r.save()
+            if user_problemset.response_set.filter(problem_object=p).exists()==False:
+                r = Response(problem_object = p, user_problemset = user_problemset,order=p.order,point_value = p.point_value,response="")
+                r.save()
             user_problemset.is_initialized = True
         user_problemset.save()
     rows = user_problemset.response_set.all()
@@ -1532,6 +1533,111 @@ def deletegroup(request,pk):
         else:
             userprofile.problem_groups.remove(pg)
     return redirect('/teacher/problemgroups/')
+
+#@login_required
+#def sync_class(request,pk):
+#    p = get_object_or_404(PublishedClass,pk=pk)
+#    userprofile=request.user.userprofile
+#    my_class = pub_class.parent_class
+#    if userprofile.my_published_classes.filter(pk=pk).exists()==False:
+#        raise Http404("Unauthorized.")
+#    class_points = 0
+#    class_prob_num = 0
+#    for u in my_class.units.all():
+#        new_unit = Unit(name=u.name,order=u.order)
+#        new_unit.save()
+#        p.units.add(new_unit)
+#        unit_points = 0
+#        unit_prob_num = 0
+#        num_problemsets = 0
+#        for uo in u.unit_objects.all():
+#            try:
+#                sg = uo.slidegroup
+#                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
+#                new_unit_object.save()
+#                new_slide_group = SlideGroup(name = uo.slidegroup.name,num_slides = uo.slidegroup.slides.count(),unit_object = new_unit_object)
+#                new_slide_group.save()
+#                for s in uo.slidegroup.slides.all():
+#                    new_slide = Slide(title=s.title,order=s.order, slidegroup=new_slide_group,top_order_number=s.top_order_number)
+#                    new_slide.save()
+#                    for so in s.slide_objects.all():
+#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'textblock'):
+#                            new_textblock = TextBlock(text_code = so.content_object.text_code,text_display="")
+#                            new_textblock.save()
+#                            new_textblock.text_display = newtexcode(so.content_object.text_code, 'textblock_'+str(new_textblock.pk), "")
+#                            new_textblock.save()
+#                            compileasy(new_textblock.text_code,'textblock_'+str(new_textblock.pk))
+#                            new_so=SlideObject(content_object=new_textblock,slide=new_slide,order=so.order)
+#                            new_so.save()
+#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'proof'):
+#                            new_proof = Proof(prefix=so.content_object.prefix,proof_code = so.content_object.proof_code,proof_display="")
+#                            new_proof.save()
+#                            new_proof.proof_display = newtexcode(so.content_object.proof_code, 'proofblock_'+str(new_proof.pk), "")
+#                            new_proof.save()
+#                            compileasy(new_proof.proof_code,'proofblock_'+str(new_proof.pk))
+#                            new_so=SlideObject(content_object=new_proof,slide=new_slide,order=so.order)
+#                            new_so.save()
+#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'theorem'):
+#                            new_theorem = Theorem(name=so.content_object.name,prefix=so.content_object.prefix,theorem_code = so.content_object.theorem_code,theorem_display="")
+#                            new_theorem.save()
+#                            new_theorem.theorem_display = newtexcode(so.content_object.theorem_code, 'theoremblock_'+str(new_theorem.pk), "")
+#                            new_theorem.save()
+#                            compileasy(new_theorem.theorem_code,'theoremblock_'+str(new_theorem.pk))
+#                            new_so=SlideObject(content_object=new_theorem,slide=new_slide,order=so.order)
+#                            new_so.save()
+#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem'):
+#                            new_example = ExampleProblem(name=so.content_object.name,prefix=so.content_object.prefix,problem_code = so.content_object.problem_code,problem_display="",isProblem=so.content_object.isProblem, problem=so.content_object.problem,question_type=so.content_object.question_type,mc_answer = so.content_object.mc_answer,sa_answer = so.content_object.sa_answer,answer_A = so.content_object.answer_A,answer_B = so.content_object.answer_B,answer_C = so.content_object.answer_C,answer_D = so.content_object.answer_D,answer_E = so.content_object.answer_E,author=so.content_object.author)
+#                            new_example.save()
+#                            new_example.problem_display = newtexcode(so.content_object.problem_code, 'exampleproblem_'+str(new_example.pk), "")
+#                            new_example.save()
+#                            compileasy(new_example.problem_code,'exampleproblem_'+str(new_example.pk))
+#                            new_so=SlideObject(content_object=new_example,slide=new_slide,order=so.order)
+#                            new_so.save()
+#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'imagemodel'):
+#                            new_image = ImageModel(image = so.content_object.image)
+#                            new_image.save()
+#                            new_so=SlideObject(content_object=new_image,slide=new_slide,order=so.order)
+#                            new_so.save()
+#            except:
+#                pset = uo.problemset
+#                num_problemsets += 1
+#                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
+#                new_unit_object.save()
+#                new_problemset = ProblemSet(name = uo.problemset.name,default_point_value = uo.problemset.default_point_value,unit_object = new_unit_object)
+#                new_problemset.save()
+#                total_points=0
+#                for po in uo.problemset.problem_objects.all():
+#                    new_po = ProblemObject(order = po.order,point_value=po.point_value,problem_code = po.problem_code,problem_display="",isProblem=po.isProblem, problem=po.problem,question_type=po.question_type,mc_answer = po.mc_answer,sa_answer = po.sa_answer,answer_A = po.answer_A,answer_B = po.answer_B,answer_C = po.answer_C,answer_D = po.answer_D,answer_E = po.answer_E,author=po.author)
+#                    new_po.save()
+#                    if new_po.isProblem == 0:
+#                        if new_po.question_type.question_type =='multiple choice':
+#                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), new_po.answers())
+#                        else:
+#                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), "")
+#                        new_po.save()
+#                        compileasy(new_po.problem_code,'originalproblem_'+str(new_po.pk))
+#                    new_problemset.problem_objects.add(new_po)
+#                    total_points += po.point_value
+#                new_problemset.total_points = total_points
+#                new_problemset.num_problems = new_problemset.problem_objects.count()
+#                new_problemset.save()
+#                unit_points += total_points
+#                unit_prob_num += new_problemset.num_problems
+#        new_unit.total_points = unit_points
+#        new_unit.num_problems = unit_prob_num
+#        new_unit.num_problemsets = num_problemsets
+#        new_unit.save()
+#        class_points += unit_points
+#        class_prob_num += new_unit.num_problems
+#    p.total_points = class_points
+#    p.num_problems = class_prob_num
+#    p.save()
+#    userprofile.my_published_classes.add(p)
+#    userprofile.save()
+
+    
+    
+
 
 @login_required
 def migrate_response(request,username,npk):

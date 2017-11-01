@@ -17,6 +17,7 @@ class Class(models.Model):#This should be reserved for drafts of classes; also, 
 
 
 class PublishedClass(models.Model):#class?
+    parent_class = models.ForeignKey(Class, null=True)
     name = models.CharField(max_length = 100)
     enrolled_students = models.ManyToManyField(User, blank = True)# or userprofile?
     created_date = models.DateTimeField(default = timezone.now)
