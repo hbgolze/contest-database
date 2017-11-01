@@ -13,7 +13,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime,timedelta
 
 from randomtest.utils import newtexcode,compileasy,pointsum
-from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag
+from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem
 from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm
@@ -1533,3 +1533,54 @@ def deletegroup(request,pk):
             userprofile.problem_groups.remove(pg)
     return redirect('/teacher/problemgroups/')
 
+@login_required
+def migrate_response(request,username,npk):
+    user=get_object_or_404(User,username=username)
+    userprofile=user.userprofile
+    if user not in request.user.userprofile.students.all():
+        raise Http404('no')
+    newuserclass = get_object_or_404(UserClass,pk=npk)
+    if newuserclass not in userprofile.userclasses.all():
+        raise Http404('nouc')
+    usertests = userprofile.usertests.all()
+    user_psets = UserProblemSet.objects.filter(userunitobject__user_unit__user_class=newuserclass)
+    UTR = []
+    for ut in usertests:
+        R=[]
+        for r in ut.newresponses.all():
+            J=[]
+            for ups in user_psets:
+                if ups.problemset.problem_objects.filter(problem=r.problem).exists():
+                    J.append(ups)
+            R.append((r,J))
+        UTR.append((ut,R))
+    return render(request,'teacher/response_migration.html', {'usertests':usertests,'user_psets':user_psets,'UTR':UTR})
+
+@login_required
+def move_response(request,**kwargs):
+    user=get_object_or_404(User,username=kwargs['username'])
+    userprofile=user.userprofile
+    if user not in request.user.userprofile.students.all():
+        raise Http404('no')
+    userclass = get_object_or_404(UserClass,pk=kwargs['npk'])
+    if userclass not in userprofile.userclasses.all():
+        raise Http404('nouc')
+    resp_pk = request.GET.get('resp_pk','')
+    resp = get_object_or_404(NewResponse,pk=resp_pk)
+    ups_pk = request.GET.get('ups_pk','')
+    user_problemset = get_object_or_404(UserProblemSet,pk=ups_pk)
+    po = user_problemset.problemset.problem_objects.get(problem = resp.problem)
+    print('josadf')
+    print(user_problemset.response_set.filter(problem_object = po))
+    if user_problemset.response_set.filter(problem_object = po).exists()==False:
+        print('josadf2')
+        r = Response(problem_object = po, user_problemset=user_problemset, response = resp.response,attempted = resp.attempted, stickied = resp.stickied, order = po.order, point_value = po.point_value, modified_date = resp.modified_date)
+        r.save()
+        if po.question_type.question_type == "short answer":
+            if resp.response == po.sa_answer:
+                r.points = r.point_value
+                r.save()
+        resp.is_migrated = 1
+        resp.save()
+        return JsonResponse({'success':1,'name':user_problemset.problemset.name,'resp_pk':resp_pk})
+    return JsonResponse({'success':0,'name':''})

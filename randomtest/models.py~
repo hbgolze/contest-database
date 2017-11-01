@@ -301,7 +301,7 @@ class UserProfile(models.Model):
     newtests = models.ManyToManyField(NewTest,blank=True,related_name='userprofiles')
     my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
     my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
-    my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
+    my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='TA_userprofiles')
     def __str__(self):
         return self.user.username
 

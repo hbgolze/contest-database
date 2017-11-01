@@ -328,6 +328,7 @@ class NewResponse(models.Model):
     order = models.IntegerField(default = 0)
     points = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
+    is_migrated = models.BooleanField(default = 0)
     def __str__(self):
         return self.problem_label+': '+self.response
 

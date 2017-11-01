@@ -1684,6 +1684,7 @@ class TagProblemList(ListView):
     def get_context_data(self, **kwargs):
         context = super(TagProblemList, self).get_context_data(**kwargs)
         context['tag'] = self.tag
+        context['nbar'] = 'problemeditor'
         return context
 
 @login_required

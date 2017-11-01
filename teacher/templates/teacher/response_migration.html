@@ -1,0 +1,68 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+    <div class="col-xs-9">
+      {% for ut,R in UTR %}
+      <div class="panel panel-default">
+	<div class="panel-heading">
+	  {{ut.test.name}}
+	</div>
+	<div class="panel-body">
+	  <table class="table table-striped">
+	    {% for r,upses in R %}
+	    {% if r.is_migrated == 0 %}
+	    <tr>
+	      <td>
+		{{r.problem.label}}
+	      </td>
+	      <td>
+		<form>
+		  <input type="hidden" name="resp_pk" value="{{r.pk}}">
+		  <select class="form-control add-problemset" name="ups_pk">
+		    <option selected disabled value="">Select a Problem Set</option>
+		    {% for pset in upses %}
+		    <option value="{{pset.pk}}">{{pset.problemset.name}}</option>
+		    {% endfor %}
+		  </select>
+		</form>
+<div id="resp_status_{{r.pk}}">
+
+</div>
+
+	      </td>
+	    </tr>
+	    {% endif %}
+	    {% endfor %}
+	  </table>
+	</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<script>
+$(document).on("change","select.add-problemset",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+console.log(form.serialize());
+    $.ajax({
+        type: 'GET',
+        url: 'add_response/',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['success'] == 1) {
+$("#resp_status_"+data['resp_pk']).html("<div class='alert alert-success' role='alert'>"+data['name']+"</div>");
+            } 
+
+        }
+    });
+    return false;
+});
+</script>
+
+{% endblock %}

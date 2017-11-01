@@ -69,7 +69,8 @@ urlpatterns = [
     url(r'^class/(?P<pk>\d+)/problemset/(?P<pspk>\w+)/alpha/(?P<popk>\w+)/load_grade/$', views.load_grade, name='alphaloadgrade'),
     url(r'^class/(?P<pk>\d+)/problemset/(?P<pspk>\w+)/alpha/(?P<popk>\w+)/save_grade/$', views.save_grade, name='alphasavegrade'),
     url(r'^class/(?P<pk>\d+)/problemset/(?P<pspk>\w+)/alpha/(?P<popk>\w+)/change_grade/$', views.change_grade, name='alphachangegrade'),
-
+    url(r'^migrate_response/(?P<username>\w+)/(?P<npk>\w+)/$',views.migrate_response,name="migrate_response"),
+    url(r'^migrate_response/(?P<username>\w+)/(?P<npk>\w+)/add_response/$',views.move_response,name="move_response"),
 
 #    url(r'^edit/(?P<pk>\d+)/edit_section/(?P<spk>\d+)/$', login_required(views.SectionUpdateView.as_view()),name="update_section"),
 #    url(r'^edit/(?P<pk>\d+)/edit_subsection/(?P<spk>\d+)/$', login_required(views.SubsectionUpdateView.as_view()),name="update_subsection"),
