@@ -99,18 +99,20 @@ class UserProblemSet(models.Model):
         num_correct = 0
         for r in self.response_set.all():
             total_points += r.point_value
-            points += r.points
             po = r.problem_object
             if po.isProblem:
                 if po.question_type.question_type == 'multiple choice':
                     if r.response == po.problem.mc_answer:
                         num_correct += 1
+                        points += r.point_value
                 elif po.question_type.question_type == 'short answer':
                     if r.response == po.problem.sa_answer:
                         num_correct += 1
+                        points += r.point_value
             else:
                 if r.response == po.answer:
                     num_correct += 1
+                    points += r.point_value
         self.points_earned = points
         self.total_points = total_points
         self.num_correct = num_correct
