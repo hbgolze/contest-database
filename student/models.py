@@ -18,6 +18,22 @@ class UserClass(models.Model):
     num_correct = models.IntegerField(default=0)
     class Meta:
         ordering = ['date_created']
+    def update_stats(self):
+        num_problems = 0
+        points_earned = 0
+        total_points = 0
+        num_correct = 0
+        for uu in self.userunit_set.all():
+            uu.update_stats()
+            total_points += uu.total_points
+            points_earned += uu.points_earned
+            num_correct += uu.num_correct
+            num_problems += uu.num_problems
+        self.points_earned = points_earned
+        self.total_points = total_points
+        self.num_correct = num_correct
+        self.num_problems = num_problems
+        self.save()
 
 class UserUnit(models.Model):
     unit = models.ForeignKey(Unit)
@@ -30,6 +46,26 @@ class UserUnit(models.Model):
     num_problemsets = models.IntegerField(default=0)
     class Meta:
         ordering = ['order']
+    def update_stats(self):
+        num_problems = 0
+        points_earned = 0
+        total_points = 0
+        num_correct = 0
+        for uo in self.userunitobject_set.all():
+            try:
+                u_pset = uo.userproblemset
+                u_pset.update_stats()
+                total_points += u_pset.total_points
+                points_earned += u_pset.points_earned
+                num_correct += u_pset.num_correct
+                num_problems += u_pset.num_problems
+            except:
+                a=0
+        self.points_earned = points_earned
+        self.total_points = total_points
+        self.num_correct = num_correct
+        self.num_problems = num_problems
+        self.save()
 
 
 class UserUnitObject(models.Model):
