@@ -51,6 +51,15 @@ def publishview(request,pk):
     my_class = get_object_or_404(Class,pk=pk)
     if userprofile.my_classes.filter(pk=pk).exists()==False:
         raise Http404("Unauthorized.")
+    p=my_class.publish(userprofile)
+    return JsonResponse({'newrow':render_to_string('teacher/publishedclassrow.html',{'cls':p})})
+
+@login_required
+def publishview2(request,pk):
+    userprofile=request.user.userprofile
+    my_class = get_object_or_404(Class,pk=pk)
+    if userprofile.my_classes.filter(pk=pk).exists()==False:
+        raise Http404("Unauthorized.")
     p=PublishedClass(name=my_class.name,parent_class = my_class)
     p.save()
     class_points = 0
