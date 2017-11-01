@@ -248,12 +248,7 @@ def studentproblemsetview(request,**kwargs):
     if user_problemset.userunitobject.user_unit.user_class.published_class not in userprofile.my_published_classes.all():
         raise Http404("Unauthorized.")
     if user_problemset.is_initialized == 0:
-        for p in user_problemset.problemset.problem_objects.all():
-            if user_problemset.response_set.filter(problem_object=p).exists()==False:
-                r = Response(problem_object = p, user_problemset = user_problemset,order=p.order,point_value = p.point_value,response="")
-                r.save()
-            user_problemset.is_initialized = True
-        user_problemset.save()
+        user_problemset.response_initialize()
     rows = user_problemset.response_set.all()
     context['rows'] = rows
     response_rows = []

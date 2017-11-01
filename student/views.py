@@ -54,12 +54,7 @@ def problemsetview(request,**kwargs):
     if user_problemset.userunitobject.user_unit.user_class.userprofile != userprofile:
         return HttpResponse('Unauthorized', status=401)
     if user_problemset.is_initialized == 0:
-        for p in user_problemset.problemset.problem_objects.all():
-            if user_problemset.response_set.filter(problem_object=p).exists()==False:
-                r = Response(problem_object = p, user_problemset = user_problemset,order=p.order,point_value = p.point_value,response="")
-                r.save()
-        user_problemset.is_initialized = True
-        user_problemset.save()
+        user_problemset.response_initialize()
     if request.method == "POST":
         form=request.POST
         P=user_problemset.response_set.all()

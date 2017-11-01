@@ -34,6 +34,9 @@ class UserClass(models.Model):
         self.num_correct = num_correct
         self.num_problems = num_problems
         self.save()
+    def response_initialize(self):
+        for uu in self.userunit_set.all():
+            uu.response_initialize()
 
 class UserUnit(models.Model):
     unit = models.ForeignKey(Unit)
@@ -66,7 +69,13 @@ class UserUnit(models.Model):
         self.num_correct = num_correct
         self.num_problems = num_problems
         self.save()
-
+    def response_initialize(self):
+        for uo in self.userunitobject_set.all():
+            try:
+                u_pset = uo.userproblemset
+                u_pset.response_initialize()
+            except:
+                a=0
 
 class UserUnitObject(models.Model):
     user_unit = models.ForeignKey(UserUnit)
@@ -117,6 +126,16 @@ class UserProblemSet(models.Model):
         self.total_points = total_points
         self.num_correct = num_correct
         self.save()
+    def response_initialize(self):
+        R=self.response_set.all()
+        for p in self.problemset.problem_objects.all():
+            if R.filter(problem_object = p).exists()==False:
+                r = Response(problem_object = p, user_problemset = self,order=p.order,point_value = p.point_value,response="")
+                r.save()
+        self.is_initialized = True
+        self.save()
+
+                
 
 class UserSlides(models.Model):
     userunitobject = models.OneToOneField(
