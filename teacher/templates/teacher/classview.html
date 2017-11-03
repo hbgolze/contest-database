@@ -62,8 +62,7 @@
 	      </div>
 	    </a>
 	    {% endwith %}
-	    {% endif %}
-	    {% if unitobject.slidegroup %}
+	    {% elif unitobject.slidegroup %}
               {% with slides=unitobject.slidegroup %}
               <a href="slides/{{slides.pk}}/" class="list-group-item">
                 <div class="row">
@@ -71,11 +70,14 @@
                     <b>Lesson {{forloop.parentloop.counter}}.{{unitobject.order}}:</b> {{slides.name}}
                   </div>
                   <div class="col-xs-6" style="text-align:right">
-                    {{slides.num_slides}} Slides
+                    {{slides.num_slides}} Slides 
+
                   </div>
                 </div>
               </a>
               {% endwith %}
+	      {% else %}
+...
               {% endif %}
 	    {% endfor %}
 	  </div>

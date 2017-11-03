@@ -6,7 +6,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from randomtest.models import UserProfile,QuestionType,UserProfile
-from teacher.models import PublishedClass,ProblemObject,Unit,ProblemSet,SlideGroup
+from teacher.models import PublishedClass,ProblemObject,Unit,ProblemSet,SlideGroup,PublishedProblemObject,PublishedUnit,PublishedProblemSet,PublishedSlideGroup
 # Create your models here.
 class UserClass(models.Model):
     published_class = models.ForeignKey(PublishedClass)
@@ -40,6 +40,7 @@ class UserClass(models.Model):
 
 class UserUnit(models.Model):
     unit = models.ForeignKey(Unit)
+    published_unit = models.ForeignKey(PublishedUnit,null=True)
     user_class = models.ForeignKey(UserClass)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
@@ -92,7 +93,7 @@ class UserProblemSet(models.Model):
         null = True,
     )
     problemset = models.ForeignKey(ProblemSet)
-#    user_unit = models.ForeignKey(UserUnit)
+    published_problemset = models.ForeignKey(PublishedProblemSet,null=True)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
     order = models.IntegerField(default = 0)
@@ -145,7 +146,7 @@ class UserSlides(models.Model):
         null = True,
     )
     slides = models.ForeignKey(SlideGroup)
-#    user_unit = models.ForeignKey(UserUnit)
+    published_slides = models.ForeignKey(PublishedSlideGroup,null=True)
     order = models.IntegerField(default = 0)
     num_slides = models.IntegerField(default = 0)
     class Meta:
@@ -153,6 +154,7 @@ class UserSlides(models.Model):
 
 class Response(models.Model):
     problem_object = models.ForeignKey(ProblemObject)
+    publishedproblem_object = models.ForeignKey(PublishedProblemObject,null=True)
     user_problemset = models.ForeignKey(UserProblemSet)
     response = models.CharField(max_length=50,blank=True)
     response_code = models.TextField(blank=True)
