@@ -39,7 +39,7 @@ class UserClass(models.Model):
             uu.response_initialize()
 
 class UserUnit(models.Model):
-    unit = models.ForeignKey(Unit)
+    unit = models.ForeignKey(Unit,null=True)
     published_unit = models.ForeignKey(PublishedUnit,null=True)
     user_class = models.ForeignKey(UserClass)
     total_points = models.IntegerField()
@@ -92,7 +92,7 @@ class UserProblemSet(models.Model):
 #        primary_key=True,
         null = True,
     )
-    problemset = models.ForeignKey(ProblemSet)
+    problemset = models.ForeignKey(ProblemSet,null=True)
     published_problemset = models.ForeignKey(PublishedProblemSet,null=True)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
@@ -109,7 +109,7 @@ class UserProblemSet(models.Model):
         num_correct = 0
         for r in self.response_set.all():
             total_points += r.point_value
-            po = r.problem_object
+            po = r.publishedproblem_object
             if po.isProblem:
                 if po.question_type.question_type == 'multiple choice':
                     if r.response == po.problem.mc_answer:
@@ -129,9 +129,9 @@ class UserProblemSet(models.Model):
         self.save()
     def response_initialize(self):
         R=self.response_set.all()
-        for p in self.problemset.problem_objects.all():
-            if R.filter(problem_object = p).exists()==False:
-                r = Response(problem_object = p, user_problemset = self,order=p.order,point_value = p.point_value,response="")
+        for p in self.published_problemset.problem_objects.all():
+            if R.filter(publishedproblem_object = p).exists()==False:
+                r = Response(publishedproblem_object = p, user_problemset = self,order=p.order,point_value = p.point_value,response="")
                 r.save()
         self.is_initialized = True
         self.save()
@@ -145,7 +145,7 @@ class UserSlides(models.Model):
 #        primary_key=True,
         null = True,
     )
-    slides = models.ForeignKey(SlideGroup)
+    slides = models.ForeignKey(SlideGroup,null=True)
     published_slides = models.ForeignKey(PublishedSlideGroup,null=True)
     order = models.IntegerField(default = 0)
     num_slides = models.IntegerField(default = 0)
@@ -153,7 +153,7 @@ class UserSlides(models.Model):
         ordering = ['order']
 
 class Response(models.Model):
-    problem_object = models.ForeignKey(ProblemObject)
+    problem_object = models.ForeignKey(ProblemObject,null=True)
     publishedproblem_object = models.ForeignKey(PublishedProblemObject,null=True)
     user_problemset = models.ForeignKey(UserProblemSet)
     response = models.CharField(max_length=50,blank=True)

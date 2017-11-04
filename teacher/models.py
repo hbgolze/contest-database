@@ -46,7 +46,7 @@ class PublishedClass(models.Model):#class?
         self.name = self.parent_class.name
         self.save()
         parent_units_pk=[]
-        for u in self.units.all():
+        for u in self.pub_units.all():
             if u.parent_unit not in self.parent_class.units.all():
                 u.delete()
             else:
