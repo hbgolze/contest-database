@@ -1,18 +1,18 @@
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
             <div class="row">
               <div class="col-xs-12">
-                {% if s.content_type.model == "textblock" %}
+                {% if s.content_type.model == "publishedtextblock" %}
                 {% autoescape off %}{{s.content_object.text_display|linebreaks}}{% endautoescape %}
                 {% endif %}
-                {% if s.content_type.model == "proof" %}
+                {% if s.content_type.model == "publishedproof" %}
                 <span style="font-weight:bold">{{s.content_object.prefix}}: </span>
                 {% autoescape off %}{{s.content_object.proof_display|linebreaks}}{% endautoescape %}
                 {% endif %}
-                {% if s.content_type.model == "theorem" %}
+                {% if s.content_type.model == "publishedtheorem" %}
                 <span style="font-weight:bold">{{s.content_object.prefix}}{% if s.content_object.name != "" %} ({{s.content_object.name}}){% endif %}: </span>
                 {% autoescape off %}{{s.content_object.theorem_display|linebreaks}}{% endautoescape %}
                 {% endif %}
-                {% if s.content_type.model == "exampleproblem" %}
+                {% if s.content_type.model == "publishedexampleproblem" %}
                 <span style="font-weight:bold">{{s.content_object.prefix}}: </span>
 		{% if s.content_object.isProblem == 1 %}
 		{% with prob=s.content_object.problem %}
@@ -32,7 +32,7 @@
 		</p>
 		{% endif %}
                 {% endif %}
-                {% if s.content_type.model == "imagemodel" %}
+                {% if s.content_type.model == "publishedimagemodel" %}
                 <img class="img-responsive center-block" src="/{{s.content_object.image.url }}/"/>
                 {% endif %}
               </div>

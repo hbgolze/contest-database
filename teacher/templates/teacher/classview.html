@@ -25,7 +25,7 @@
 	  <div class="list-group-item" style="background-color:lightgray">
 	    <div class="row">
 	      <div class="col-xs-6">
-		Class Summary: {{class.units.count}} unit(s)
+		Class Summary: {{class.pub_units.count}} unit(s)
 	      </div>
 	      <div class="col-xs-6" style="text-align:right">
 		{{class.num_problems}} Problems, {{class.total_points}} Points
@@ -34,7 +34,7 @@
 	  </div>
 	</div>
 	<div class="list-group">
-	  {% for unit in class.units.all %}
+	  {% for unit in class.pub_units.all %}
 	  <div href="#unit_{{unit.pk}}" class="list-group-item" style="background-color:lightgray">
 	    <div class="row">
 	      <div class="col-xs-6">
@@ -49,8 +49,8 @@
 
 	  <div class="list-group" id="unit_{{unit.pk}}">
 	    {% for unitobject in unit.unit_objects.all %}
-	    {% if unitobject.problemset %}
-	    {% with pset=unitobject.problemset %}
+	    {% if unitobject.publishedproblemset %}
+	    {% with pset=unitobject.publishedproblemset %}
 	    <a href="problemset/{{pset.pk}}" class="list-group-item">
 	      <div class="row">
 		<div class="col-xs-6">
@@ -62,8 +62,8 @@
 	      </div>
 	    </a>
 	    {% endwith %}
-	    {% elif unitobject.slidegroup %}
-              {% with slides=unitobject.slidegroup %}
+	    {% elif unitobject.publishedslidegroup %}
+              {% with slides=unitobject.publishedslidegroup %}
               <a href="slides/{{slides.pk}}/" class="list-group-item">
                 <div class="row">
                   <div class="col-xs-6">

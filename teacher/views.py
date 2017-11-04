@@ -16,6 +16,7 @@ from randomtest.utils import newtexcode,compileasy,pointsum
 from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem
+from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject
 from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
@@ -334,7 +335,7 @@ def slidesview(request,**kwargs):
     pk=kwargs['pk']
     spk = kwargs['spk']
     userprofile = request.user.userprofile
-    slidegroup = get_object_or_404(SlideGroup, pk = spk)
+    slidegroup = get_object_or_404(PublishedSlideGroup, pk = spk)
     pub_class = get_object_or_404(PublishedClass, pk = pk)
     if userprofile not in pub_class.userprofiles.all():
         return HttpResponse('Unauthorized', status=401)
@@ -355,10 +356,10 @@ def teacherproblemsetview(request,**kwargs):
     context={}
     my_class = get_object_or_404(PublishedClass, pk = kwargs['pk'])
     userprofile=request.user.userprofile
-    problemset = get_object_or_404(ProblemSet, pk = kwargs['pspk'])
+    problemset = get_object_or_404(PublishedProblemSet, pk = kwargs['pspk'])##
     if my_class not in userprofile.my_published_classes.all():
         raise Http404("Unauthorized.")
-    if problemset.unit_object.unit not in my_class.units.all():
+    if problemset.unit_object.unit not in my_class.pub_units.all():##
         raise Http404("Unauthorized.")
     rows = problemset.problem_objects.all()
     expanded_rows = []
@@ -399,27 +400,29 @@ def addstudenttoclass(request,pk):
         my_class.save()
         user_class = UserClass(published_class = my_class,userprofile=student.userprofile,total_points=my_class.total_points,points_earned=0,num_problems = my_class.num_problems)
         user_class.save()
-        for unit in my_class.units.all():
-            user_unit = UserUnit(unit = unit,user_class = user_class,total_points=unit.total_points, points_earned=0,order = unit.order,num_problems = unit.num_problems)
+        for unit in my_class.pub_units.all():
+            user_unit = UserUnit(published_unit = unit,user_class = user_class,total_points=unit.total_points, points_earned=0,order = unit.order,num_problems = unit.num_problems)
             user_unit.save()
             num_psets = 0
             for unit_object in unit.unit_objects.all():
                 user_unitobject = UserUnitObject(order = unit_object.order, user_unit = user_unit)
                 user_unitobject.save()
                 try:
-                    pset = unit_object.problemset
+                    pset = unit_object.publishedproblemset
 #                if unit_object.problemset:#####################
-                    user_problemset = UserProblemSet(problemset=unit_object.problemset,total_points=unit_object.problemset.total_points,points_earned=0,order=unit_object.order,num_problems = unit_object.problemset.num_problems,userunitobject = user_unitobject)
+                    user_problemset = UserProblemSet(published_problemset=unit_object.publishedproblemset,total_points=unit_object.publishedproblemset.total_points,points_earned=0,order=unit_object.order,num_problems = unit_object.publishedproblemset.num_problems,userunitobject = user_unitobject)
                     user_problemset.save()
                     num_psets +=1
                 except:
-                    user_slides = UserSlides(slides=unit_object.slidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = unit_object.slidegroup.slides.count())
+                    user_slides = UserSlides(published_slides=unit_object.publishedslidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = unit_object.publishedslidegroup.slides.count())
                     user_slides.save()
             user_unit.num_problemsets = num_psets
             user_unit.save()
         return JsonResponse({'student':render_to_string('teacher/roster-studentrow.html',{'student_class':user_class})})
 
-
+##############################
+##Class Editing Views
+##############################
 @login_required
 def classeditview(request,pk):
     userprofile=request.user.userprofile
@@ -1361,8 +1364,8 @@ def studentmanager(request):#request student accounts; add to classes
 @login_required
 def blindgrade(request,**kwargs):
     my_class = get_object_or_404(PublishedClass,pk=kwargs['pk'])
-    problemset = get_object_or_404(ProblemSet,pk=kwargs['pspk'])
-    problem_object = get_object_or_404(ProblemObject,pk=kwargs['popk'])
+    problemset = get_object_or_404(PublishedProblemSet,pk=kwargs['pspk'])##
+    problem_object = get_object_or_404(PublishedProblemObject,pk=kwargs['popk'])
     if problem_object.question_type.question_type != 'proof':
         raise Http404('Not a proof question')
     responses = list(problem_object.response_set.all())
@@ -1372,8 +1375,8 @@ def blindgrade(request,**kwargs):
 @login_required
 def alphagrade(request,**kwargs):
     my_class = get_object_or_404(PublishedClass,pk=kwargs['pk'])
-    problemset = get_object_or_404(ProblemSet,pk=kwargs['pspk'])
-    problem_object = get_object_or_404(ProblemObject,pk=kwargs['popk'])
+    problemset = get_object_or_404(PublishedProblemSet,pk=kwargs['pspk'])
+    problem_object = get_object_or_404(PublishedProblemObject,pk=kwargs['popk'])
     if problem_object.question_type.question_type != 'proof':
         raise Http404('Not a proof question')
     responses = problem_object.response_set.order_by('user_problemset__userunitobject__user_unit__user_class__userprofile__user__username')

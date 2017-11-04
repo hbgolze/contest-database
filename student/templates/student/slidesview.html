@@ -3,11 +3,11 @@
 {% block content %}
 <ol class="breadcrumb">
   <li><a href="../../">My Classes</a></li>
-  <li class="active">{{slides.userunitobject.user_unit.user_class.published_class.name}} > {{slides.userunitobject.user_unit.unit.name}} > {{slides.slides.name}}</li>
+  <li class="active">{{slides.userunitobject.user_unit.user_class.published_class.name}} > {{slides.userunitobject.user_unit.published_unit.name}} > {{slides.published_slides.name}}</li>
 </ol>
 
 <div class="container">
-  <h2>{{slides.slides.name}}</h2>
+  <h2>{{slides.published_slides.name}}</h2>
   <div class="row">
     <div class="col-xs-12" style="text-align:center">
     {% if rows.has_other_pages %}

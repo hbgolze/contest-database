@@ -75,7 +75,7 @@ class TestDelete(DeleteView):
 
 @login_required
 def splashview(request):
-    return render(request,'splashview.html')
+    return render(request,'randomtest/splashview.html')
 
 @login_required
 def deletetestresponses(request,pk):

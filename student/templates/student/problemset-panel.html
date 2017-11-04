@@ -80,8 +80,8 @@
 
 		    
 		    {% if answer == response %}
-		    {% if resp.problem_object.isProblem == 1 and resp.problem_object.problem.solutions.count > 0 %}
-		    <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem_object.pk}}/">Solution</button>
+		    {% if resp.publishedproblem_object.isProblem == 1 and resp.publishedproblem_object.problem.solutions.count > 0 %}
+		    <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.publishedproblem_object.pk}}/">Solution</button>
 		    {% else %}
 		    <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		    {% endif %}

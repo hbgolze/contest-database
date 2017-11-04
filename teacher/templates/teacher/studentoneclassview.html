@@ -32,7 +32,7 @@ document.write("</div>");
 	<div class="list-group-item" style="background-color:lightgray">
 	  <div class="row">
 	    <div class="col-xs-4">
-	      Class Summary: {{class.published_class.units.count}} unit(s)
+	      Class Summary: {{class.published_class.pub_units.count}} unit(s)
 	    </div>
 	    <div class="col-xs-4">
 	      {{class.num_correct}}/{{class.num_problems}}
@@ -50,7 +50,7 @@ document.write("</div>");
 	    <div class="row">
 	      <div class="col-xs-4">
 		<b>Unit {{forloop.counter}}:</b> 
-		{{unit.unit.name}} ({{unit.num_problemsets}} problem set(s))
+		{{unit.published_unit.name}} ({{unit.num_problemsets}} problem set(s))
 	      </div>
 	      <div class="col-xs-4">
 		{{unit.num_correct}}/{{unit.num_problems}}
@@ -69,7 +69,7 @@ document.write("</div>");
 	    <a href="problemset/{{pset.pk}}" class="list-group-item">
 	      <div class="row">
 		<div class="col-xs-4">
-		  <b>Problem Set:</b> {{pset.problemset.name}}
+		  <b>Problem Set:</b> {{pset.published_problemset.name}}
 		</div>
 		<div class="col-xs-4">
 		  {{pset.num_correct}}/{{pset.num_problems}}
@@ -134,7 +134,7 @@ document.write("</div>");
 	<tbody>
 	  {% for sticky in stickies %}
 	  <tr>
-            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.problem_object.pk}}">{{sticky.problemset.problemset.name}}</a>: {{sticky.readable_label}}</small></td>
+            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.problemset.published_problemset.name}}</a>: {{sticky.readable_label}}</small></td>
 	    <td>
 	      <small>{{sticky.sticky_date}}</small>
 	    </td>
@@ -153,7 +153,7 @@ document.write("</div>");
 	<tbody>
 	  {% for resp in responselog %}
 	  <tr>
-            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.problem_object.pk}}">{{resp.user_problemset.problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
+            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.publishedproblem_object.pk}}">{{resp.user_problemset.published_problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
 	    <td>
 	      <small>{{resp.modified_date}}</small>
 	    </td>

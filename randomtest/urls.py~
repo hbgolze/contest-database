@@ -6,6 +6,7 @@ from . import views
 #from views import TestDelete
 
 urlpatterns = [
+    url(r'^$', views.splashview, name='splashview'),
     url(r'^randomtest/$', views.tableview, name='tableview'),
     url(r'^randomtest/createtest/$', views.startform, name='startform'),
     url(r'^randomtest/createtest/readme$', views.readme, name='readme'),

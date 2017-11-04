@@ -46,6 +46,7 @@
 		    {% endif %}
 		    
 		  </div><!--button div-->
+{% if problem_object.question_type.question_type == 'proof' %}
 		  <div class="col-xs-6">
 		    {{graded_num}} graded/{{attempted_num}} submitted
 		  </div>
@@ -53,6 +54,7 @@
 		    <button class="btn btn-default" onclick="location.href='alpha/{{problem_object.pk}}/'" type="button">Grade (alphabetical)</a>
 		    <button class="btn btn-default" onclick="location.href='blind/{{problem_object.pk}}/'" type="button">Grade (blind)</a>
 		  </div>
+{% endif %}
 		</div><!--row-->
 	      </div><!--panel footer-->
 	    </div><!--panel-->

@@ -42,7 +42,7 @@ $(function() {
 	    <div class="row">
 	      <div class="col-xs-4">
 		<i class="glyphicon glyphicon-chevron-right"></i>
-		{{class.published_class.name}} ({{class.published_class.units.count}} units)
+		{{class.published_class.name}} ({{class.published_class.pub_units.count}} units)
 	      </div>
 	      <div class="col-xs-4">
 		{{class.num_correct}}/{{class.num_problems}}
@@ -61,7 +61,7 @@ $(function() {
                 <div class="col-xs-4">
                   <i class="glyphicon glyphicon-chevron-right"></i>
                   <b>Unit {{forloop.counter}}:</b>
-                  {{unit.unit.name}} ({{unit.num_problemsets}} problem sets)
+                  {{unit.published_unit.name}} ({{unit.num_problemsets}} problem sets)
                 </div>
                 <div class="col-xs-4">
                   {{unit.num_correct}}/{{unit.num_problems}}
@@ -79,7 +79,7 @@ $(function() {
               <a href="problemset/{{pset.pk}}/" class="list-group-item">
                 <div class="row">
                   <div class="col-xs-4">
-                    <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.problemset.name}}
+                    <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
                   </div>
                   <div class="col-xs-4">
                     {{pset.num_correct}}/{{pset.num_problems}}
@@ -97,7 +97,7 @@ $(function() {
               <a href="slides/{{slides.pk}}/" class="list-group-item">
                 <div class="row">
                   <div class="col-xs-4">
-                    <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.slides.name}}
+                    <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.published_slides.name}}
                   </div>
                   <div class="col-xs-4">
 

@@ -12,7 +12,7 @@ from datetime import datetime,timedelta
 
 
 from student.models import UserProblemSet,Response,Sticky,UserResponse,UserSlides
-from teacher.models import ProblemObject
+from teacher.models import ProblemObject,PublishedProblemObject
 
 from randomtest.utils import pointsum,compileasy,newtexcode
 
@@ -62,26 +62,26 @@ def problemsetview(request,**kwargs):
         num_correct = 0
         num_points = 0
         for r in P:
-            tempanswer = form.get('answer'+str(r.problem_object.pk))
+            tempanswer = form.get('answer'+str(r.publishedproblem_object.pk))
             if tempanswer != None and tempanswer !='':
                 t=timezone.now()
                 r.attempted = 1
                 if r.response != tempanswer:
-                    if r.problem_object.isProblem:
-                        readable_label = r.problem_object.problem.readable_label
+                    if r.publishedproblem_object.isProblem:
+                        readable_label = r.publishedproblem_object.problem.readable_label
                     else:
-                        readable_label = 'Problem #'+str(r.problem_object.order)
+                        readable_label = 'Problem #'+str(r.publishedproblem_object.order)
                     ur=UserResponse(userprofile=userprofile, user_problemset = user_problemset,response=r,static_response=tempanswer,readable_label=readable_label,modified_date=t,point_value=r.point_value)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
                     r.save()
 
-                    if r.problem_object.question_type.question_type == "multiple choice":
-                        if r.problem_object.isProblem == True:
-                            answer = r.problem_object.problem.mc_answer
+                    if r.publishedproblem_object.question_type.question_type == "multiple choice":
+                        if r.publishedproblem_object.isProblem == True:
+                            answer = r.publishedproblem_object.problem.mc_answer
                         else:
-                            answer = r.problem_object.mc_answer
+                            answer = r.publishedproblem_object.mc_answer
                         if r.response == answer:
                             ur.correct = 1
                             ur.save()
@@ -89,11 +89,11 @@ def problemsetview(request,**kwargs):
                             r.save()
                             num_correct += 1
                             num_points += r.point_value
-                    elif r.problem_object.question_type.question_type == "short answer":
-                        if r.problem_object.isProblem == True:
-                            answer = r.problem_object.problem.sa_answer
+                    elif r.publishedproblem_object.question_type.question_type == "short answer":
+                        if r.publishedproblem_object.isProblem == True:
+                            answer = r.publishedproblem_object.problem.sa_answer
                         else:
-                            answer = r.problem_object.sa_answer
+                            answer = r.publishedproblem_object.sa_answer
                         if r.response == answer:
                             ur.correct = 1
                             ur.save()
@@ -132,7 +132,7 @@ class SolutionView(DetailView):
         return super(SolutionView, self).dispatch(*args, **kwargs)
 
     def get_object(self, queryset=None):
-        return get_object_or_404(ProblemObject, pk=self.item_id)
+        return get_object_or_404(PublishedProblemObject, pk=self.item_id)
 
 @login_required
 def toggle_star(request,pk):
@@ -156,13 +156,13 @@ def toggle_star(request,pk):
                 'response_pk' : response_pk,
                 'is_stickied' : 'false',
                 'response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",
-                'problem_label':response.problem_object.pk
+                'problem_label':response.publishedproblem_object.pk
                 })
     else:
-        if response.problem_object.isProblem:
-            readable_label = response.problem_object.problem.readable_label
+        if response.publishedproblem_object.isProblem:
+            readable_label = response.publishedproblem_object.problem.readable_label
         else:
-            readable_label = 'Problem #'+str(response.problem_object.order)
+            readable_label = 'Problem #'+str(response.publishedproblem_object.order)
         s=Sticky(response = response, problemset = user_problemset, userprofile = userprofile, readable_label=readable_label)
         s.save()
         response.stickied = True
@@ -171,7 +171,7 @@ def toggle_star(request,pk):
                 'response_pk' : response_pk,
                 'is_stickied' : 'true',
                 'response_code' : "<span class='glyphicon glyphicon-star'></span>",
-                'problem_label' : response.problem_object.pk
+                'problem_label' : response.publishedproblem_object.pk
                 })
 
 
@@ -184,11 +184,11 @@ def checkanswer(request,pk):
 
     response_label=request.POST.get('response_id','')
     problem_label = response_label.split('-')[2]
-    problem_object = get_object_or_404(ProblemObject,pk=problem_label)
+    problem_object = get_object_or_404(PublishedProblemObject,pk=problem_label)
 
     tempanswer = request.POST.get('answer','')
     
-    r = user_problemset.response_set.get(problem_object = problem_object)
+    r = user_problemset.response_set.get(publishedproblem_object = problem_object)
     t=timezone.now()
     r.attempted = 1
     if r.response != tempanswer:#....if new response
@@ -201,7 +201,6 @@ def checkanswer(request,pk):
         r.modified_date = t
         r.response = tempanswer
         r.save()
-        print(t,r.modified_date)
         if problem_object.question_type.question_type == "multiple choice":
             if problem_object.isProblem == True:
                 answer = problem_object.problem.mc_answer
@@ -249,14 +248,14 @@ def load_proof_response(request,**kwargs):
     resp_pk = request.GET.get('resp_pk','')
     resp = get_object_or_404(Response,pk=resp_pk)
     context = {}
-    if resp.problem_object.isProblem == 1:
-        if resp.problem_object.question_type.question_type == "multiple choice":
-            context['problem_display'] = resp.problem_object.problem.display_mc_problem_text
+    if resp.publishedproblem_object.isProblem == 1:
+        if resp.publishedproblem_object.question_type.question_type == "multiple choice":
+            context['problem_display'] = resp.publishedproblem_object.problem.display_mc_problem_text
         else:
-            context['problem_display'] = resp.problem_object.problem.display_problem_text
-        context['readable_label'] = resp.problem_object.problem.readable_label
+            context['problem_display'] = resp.publishedproblem_object.problem.display_problem_text
+        context['readable_label'] = resp.publishedproblem_object.problem.readable_label
     else:
-        context['problem_display'] = resp.problem_object.problem_display
+        context['problem_display'] = resp.publishedproblem_object.problem_display
     context['resp'] = resp
     return JsonResponse({'modal-html':render_to_string('student/modal-edit-proof.html',context)})
 
@@ -272,7 +271,7 @@ def save_proof_response(request,**kwargs):
     resp.save()
     compileasy(resp.response_code,'response_'+str(resp.pk))
     mod_date = render_to_string("student/date-snippet.html",{'resp':resp})
-    return JsonResponse({'display_response':render_to_string("student/proof-response-snippet.html",{'resp':resp,'problem_label':resp.problem_object.pk}),'po_pk':resp.problem_object.pk,'mod-date':mod_date})
+    return JsonResponse({'display_response':render_to_string("student/proof-response-snippet.html",{'resp':resp,'problem_label':resp.publishedproblem_object.pk}),'po_pk':resp.publishedproblem_object.pk,'mod-date':mod_date})
 
 @login_required
 def slidesview(request,**kwargs):
@@ -282,7 +281,7 @@ def slidesview(request,**kwargs):
     user_slides = get_object_or_404(UserSlides, pk=pk)
     if user_slides.userunitobject.user_unit.user_class.userprofile != userprofile:
         return HttpResponse('Unauthorized', status=401)
-    slides = user_slides.slides.slides.all()
+    slides = user_slides.published_slides.slides.all()
     paginator = Paginator(slides,1)
     page = request.GET.get('page')
     try:
