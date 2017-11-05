@@ -19,17 +19,17 @@
 		    {% if resp.attempted %}
 		    {% if answer == response %}
 		    <div class="form-group has-success has-feedback">
-		      <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+		      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
 		      <span class="glyphicon glyphicon-ok form-control-feedback"></span>
 		    </div>
 		    {% else %}
 		    <div class="form-group has-error has-feedback">
-		      <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}">
+		      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}">
 		      <span class="glyphicon glyphicon-remove form-control-feedback"></span>
 		    </div>
 		    {% endif %}
 		    {% else %}
-		    <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}">
+		    <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}">
 		    {% endif %}
 		    
 		    {% elif question_type == 'multiple choice' %}
