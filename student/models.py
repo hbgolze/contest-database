@@ -103,12 +103,13 @@ class UserProblemSet(models.Model):
     class Meta:
         ordering = ['order']
     def update_stats(self):
-        self.num_problems = self.response_set.count()
-        points = 0
+        self.num_problems = self.published_problemset.problem_objects.count()
         total_points = 0
+        for po in self.published_problemset.problem_objects.all():
+            total_points += po.point_value
+        points = 0
         num_correct = 0
         for r in self.response_set.all():
-            total_points += r.point_value
             po = r.publishedproblem_object
             if po.isProblem:
                 if po.question_type.question_type == 'multiple choice':
@@ -135,8 +136,6 @@ class UserProblemSet(models.Model):
                 r.save()
         self.is_initialized = True
         self.save()
-
-                
 
 class UserSlides(models.Model):
     userunitobject = models.OneToOneField(

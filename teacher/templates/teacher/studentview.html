@@ -46,7 +46,7 @@ $(function() {
 	      </div>
 	      <div class="col-xs-4">
 		{{class.num_correct}}/{{class.num_problems}}
-		<span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+		<span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 	      </div>
 	      <div class="col-xs-4" style="text-align:right">
 		Points Earned: {{class.points_earned}}/{{class.total_points}}
@@ -65,7 +65,7 @@ $(function() {
                 </div>
                 <div class="col-xs-4">
                   {{unit.num_correct}}/{{unit.num_problems}}
-                  <span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+                  <span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 		  </div>
                 <div class="col-xs-4" style="text-align:right">
                   Points Earned: {{unit.points_earned}}/{{unit.total_points}}
@@ -79,11 +79,11 @@ $(function() {
               <a href="problemset/{{pset.pk}}/" class="list-group-item">
                 <div class="row">
                   <div class="col-xs-4">
-                    <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
+                    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
                   </div>
                   <div class="col-xs-4">
                     {{pset.num_correct}}/{{pset.num_problems}}
-                    <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+                    <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
                   </div>
                   <div class="col-xs-4" style="text-align:right">
                     Points Earned: {{pset.points_earned}}/{{pset.total_points}}
@@ -97,7 +97,7 @@ $(function() {
               <a href="slides/{{slides.pk}}/" class="list-group-item">
                 <div class="row">
                   <div class="col-xs-4">
-                    <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.published_slides.name}}
+                    <span class="glyphicon glyphicon-blackboard"></span> <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.published_slides.name}}
                   </div>
                   <div class="col-xs-4">
 

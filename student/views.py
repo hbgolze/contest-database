@@ -57,6 +57,7 @@ def problemsetview(request,**kwargs):
         user_problemset.response_initialize()
     if request.method == "POST":
         form=request.POST
+        print(form)
         P=user_problemset.response_set.all()
 
         num_correct = 0
@@ -110,7 +111,7 @@ def problemsetview(request,**kwargs):
         user_problemset.save()
         user_problemset.userunitobject.user_unit.save()
         user_problemset.userunitobject.user_unit.user_class.save()
-
+        return HttpResponse('')
     rows = user_problemset.response_set.all()
     context['rows'] = rows
     response_rows = []
@@ -120,11 +121,11 @@ def problemsetview(request,**kwargs):
     context['problemset'] = user_problemset
     context['pk'] = pk
     context['nbar'] = 'student'
-    return render(request, 'student/problemsetview.html',context)
+    return render(request, 'student/problemsetview2.html',context)
 
 
 class SolutionView(DetailView):
-    model = ProblemObject
+    model = PublishedProblemObject
     template_name = 'student/load_sol.html'
 
     def dispatch(self, *args, **kwargs):

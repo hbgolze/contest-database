@@ -2,7 +2,7 @@ from django import forms
 #from django.contrib.auth.models import User
 from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag
 from django.contrib.admin.widgets import FilteredSelectMultiple
-from randomtest.utils import newsoltexcode
+from randomtest.utils import newsoltexcode,compileasy
 
 from django.forms.widgets import HiddenInput
 ANSWER_CHOICES = (
@@ -68,7 +68,8 @@ class SolutionForm(forms.ModelForm):
         }
     def save(self,commit=True):
         instance = super(SolutionForm, self).save(commit=False)
-        instance.display_solution_text = newsoltexcode(instance.solution_text,instance.problem_label+str(instance.solution_number))
+        instance.display_solution_text = newsoltexcode(instance.solution_text,instance.problem_label+'sol'+str(instance.solution_number))
+        compileasy(instance.solution_text,instance.problem_label,sol='sol'+str(instance.solution_number))
         if commit:
             instance.save()
         return instance

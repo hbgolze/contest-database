@@ -1188,6 +1188,7 @@ class SolutionUpdateView(UpdateView):
     form_class = SolutionForm
     template_name = 'problemeditor/solution_edit_form.html'
     def dispatch(self, *args, **kwargs):
+        print('gi')
         self.solution_id = kwargs['spk']
         self.problem_label = kwargs['label']
         self.type = kwargs['type']
@@ -1197,6 +1198,18 @@ class SolutionUpdateView(UpdateView):
     def form_valid(self, form):
         form.save()
         solution = Solution.objects.get(id=self.solution_id)
+#        compileasy(solution.solution_text,prob.label,sol='sol'+str(solution.solution_number))
+#        solution.display_solution_text = newsoltexcode(solultion.solution_text,prob.label+'sol'+str(sol.solution_number))
+#            solution.save()
+#            LogEntry.objects.log_action(
+#                user_id = request.user.id,
+#                content_type_id = ContentType.objects.get_for_model(sol).pk,
+#                object_id = sol.id,
+#                object_repr = prob.label+' sol '+str(sol.solution_number),
+#                action_flag = CHANGE,
+#                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
+#                )
+
         return redirect('../../')
 
 
@@ -1684,6 +1697,7 @@ class TagProblemList(ListView):
     def get_context_data(self, **kwargs):
         context = super(TagProblemList, self).get_context_data(**kwargs)
         context['tag'] = self.tag
+        context['nbar'] = 'problemeditor'
         return context
 
 @login_required

@@ -272,7 +272,7 @@ def studentproblemsetview(request,**kwargs):
     return render(request, 'teacher/problemsetview.html',context)
 
 class SolutionView(DetailView):
-    model = ProblemObject
+    model = PublishedProblemObject
     template_name = 'teacher/load_sol.html'
 
     def dispatch(self, *args, **kwargs):
@@ -280,7 +280,7 @@ class SolutionView(DetailView):
         return super(SolutionView, self).dispatch(*args, **kwargs)
 
     def get_object(self, queryset=None):
-        return get_object_or_404(ProblemObject, pk=self.item_id)
+        return get_object_or_404(PublishedProblemObject, pk=self.item_id)
 
 @login_required
 def load_grade(request,**kwargs):

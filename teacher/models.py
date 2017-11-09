@@ -97,36 +97,6 @@ class Unit(models.Model):#with order
         new_unit.num_problemsets = num_problemsets
         new_unit.save()
         return new_unit
-    def sync_to_parent(self):
-        self.name = self.parent_unit.name
-        self.order = self.parent_unit.order
-        self.save()
-        parent_uos_pk=[]
-        for uo in self.unit_objects.all():
-            if uo.parent_unitobject not in self.parent_unit.unit_objects.all():
-                print("uo",UnitObject.objects.count())
-                print("sg",SlideGroup.objects.count())
-                print("s",Slide.objects.count())
-                print("so",SlideObject.objects.count())
-#                try:
-#                    sg = uo.slidegroup
-#                    sg.delete()
-#                except:
-#                    pset = uo.problemset
-#                    pset.delete()
-#                uo.delete()
-                print(uo,uo.pk)
-                print("post-uo",UnitObject.objects.count())
-                print("post-sg",SlideGroup.objects.count())
-                print("post-s",Slide.objects.count())
-                print("post-so",SlideObject.objects.count())
-            else:
-                uo.sync_to_parent()
-                parent_uos_pk.append(uo.parent_unitobject.pk)
-        for uo in self.parent_unit.unit_objects.exclude(pk__in=parent_uos_pk):
-            print('new unit object')
-            new_uo = uo.publish(self)
-            print(new_uo.pk)
     def update_stats(self):
         total_points = 0
         num_problems = 0
