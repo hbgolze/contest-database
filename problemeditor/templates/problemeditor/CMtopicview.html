@@ -24,7 +24,7 @@ Please select a problem
       
       <tr>
         <td>{{prob.label}}</td>
-        <td>{% for taglabel in prob.tags.all %}<span class="label label-default">{{taglabel.tag}}</span> {% endfor %}</td>
+        <td>{% for tagg in prob.newtags.all %}<span class="label label-default">{{tagg}}</span> {% endfor %}</td>
         <td>{{prob.solutions.count}}</td>
 	<td><a href="{{prob.pk}}/">Edit</a></td>
 	<td>
