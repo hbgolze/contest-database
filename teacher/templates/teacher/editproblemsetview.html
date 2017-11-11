@@ -33,7 +33,7 @@
               <div class="col-sm-1">
                 {{forloop.counter}}.
               </div>
-              <div class="col-sm-9" id="problemtext_{{probobj.pk}}">
+              <div class="col-sm-8 col-md-9" id="problemtext_{{probobj.pk}}">
 		{% if probobj.isProblem == 1 %}
 		{% with prob=probobj.problem %}
 		{% if probobj.question_type.question_type == "multiple choice" %}
@@ -52,27 +52,20 @@
 		</p>
 		{% endif %}
 	      </div>
-	      <div class="col-sm-2" style="text-align:right">
-		<div>
-		<span id="pointvalue_{{probobj.pk}}">
-		  <b>Point Value:</b><br>{{probobj.point_value}}
-		</span>
-		</div>
-		<div>
-		  <b>Question Type:</b><br><span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
-		</div>
-		
-		<div class="dropdown">
-		  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-		    Options <span class="caret"></span>
-		  </button>
-		  <ul class="dropdown-menu" role="menu">
-		    <li><a data-target="#edit-question-type" class="edit-qt-link" href="edit-question-type/{{probobj.pk}}" data-toggle="modal">Change Question Type</a></li>
-		    <li><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}" data-toggle="modal">Change Point Value</a></li>
-		  </ul>
-		</div>
-		
+	      <div class="col-sm-3 col-md-2" style="text-align:right">
                 <div><span class="js-remove" style="color:red; cursor:pointer">✖</span></div>
+		<div>
+		  <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
+		  <span id="pointvalue_{{probobj.pk}}">
+		    {{probobj.point_value}}
+		  </span>
+		  (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+		</div>
+		<div>
+		  <label for="qt_{{probobj.pk}}">Question Type:</label>
+		  <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
+		  (<small><a data-target="#edit-question-type" class="edit-qt-link" href="edit-question-type/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+		</div>		
               </div>
             </div>
           </div>
@@ -324,7 +317,7 @@ $("#form-edit-pv").on('submit',function(event) {
         success: function(result) {
             $("#edit-pv-modal").hide();
             $("[data-dismiss=modal]").trigger({ type: "click" });
-            $("#pointvalue_"+result['pk']).html('<b>Point Value:</b><br>'+result['point_value']);
+            $("#pointvalue_"+result['pk']).html(result['point_value']);
         }
     });
     return false;

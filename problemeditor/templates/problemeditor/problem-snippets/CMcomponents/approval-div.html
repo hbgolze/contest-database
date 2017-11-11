@@ -1,0 +1,9 @@
+{% if prob.approvals.count != 0 %}
+<ul>
+{% for appr in prob.approvals.all %}
+<li>{{appr.author_name}}: {{appr.get_approval_status_display}} <small>(<a class="edit-review-link" href="{{prob.pk}}_{{appr.pk}}">Edit</a>)</small></li>
+{% endfor %}
+</ul>
+{% else %}
+No one has reviewed this problem for approval yet.<br>
+{% endif %}

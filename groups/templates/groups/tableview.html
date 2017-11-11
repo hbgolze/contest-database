@@ -3,45 +3,46 @@
 
 {% block content %}
 <h2>My Problem Groups</h2>
-<div class="col-md-9">
-  {% if probgroups.count == 0 %}
-  You don't have any problem groups yet.
-  {% endif  %}
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12 col-md-9">
+      {% if probgroups.count == 0 %}
+      You don't have any problem groups yet.
+      {% endif  %}
 
-{% if probgroups.count > 0 %}
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Group Name</th>
-        <th>Number of Problems</th>
-	<th>Date Added</th>
-	<th>Remove</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for pg in probgroups %}
-      <tr>
-        <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
-        <td>{{pg.problems.count}}</td>
-        <td>{{pg.created_date}}</td>
-	<td><a href="{{pg.pk}}/delete/"><span class="glyphicon glyphicon-remove" style="color:#ff0000"></span></a></td>
-      </tr>
-      {% endfor %}
-    </tbody>
-</table>
-
+      {% if probgroups.count > 0 %}
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Group Name</th>
+            <th>Number of Problems</th>
+	    <th>Date Added</th>
+	    <th>Remove</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for pg in probgroups %}
+	  <tr>
+            <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
+            <td>{{pg.problems.count}}</td>
+            <td>{{pg.created_date}}</td>
+	    <td><a href="{{pg.pk}}/delete/"><span class="glyphicon glyphicon-remove" style="color:#ff0000"></span></a></td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+      {% endif %}
+    </div>
+    <div class="col-xs-12">
+      <p>Start a new problem group.</p>
+      <form action="." method="post">
+	{% csrf_token %}
+	<p>{{form}}</p>
+	<p><button type="submit" class="btn btn-primary" value="New Group">New Group</button></p>
+      </form>
+      <p><a href="tags" class="btn btn-primary">View Tags as Problem Groups</a></p>
+    </div>
+  </div>
 </div>
-{% endif %}
-<p>Start a new problem group.</p>
-<form action="." method="post">
-{% csrf_token %}
-<p>{{form}}</p>
-<p><button type="submit" class="btn btn-primary" value="New Group">New Group</button></p>
-</form>
-
-<p><a href="tags" class="btn btn-primary">View Tags as Problem Groups</a></p>
-
-
-
 
 {% endblock %}

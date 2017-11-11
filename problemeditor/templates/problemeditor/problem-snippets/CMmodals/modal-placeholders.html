@@ -1,0 +1,28 @@
+{% if request.user.is_superuser or request.user.userprofile.user_type_new.name == "sitemanager" %}
+
+  <div class="modal fade" id="edit-answer-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="edit-latex-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="change-qt-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="change-difficulty-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="review-modal" role="dialog">
+
+  </div>
+  {% endif %}
+  <div class="modal fade" id="comment-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="solution-placeholder" role="dialog">
+
+  </div>
+  <div class="modal fade" id="new-solution-placeholder" role="dialog">
+
+  </div>
+

@@ -18,46 +18,6 @@ APPROVAL_CHOICES = (
     ('MJ', 'Needs Major Revision'),
     ('DE', 'Propose For Deletion'),
     )
-class ProblemForm(forms.ModelForm):
-#    widgets = {
-#        'tags': forms.ModelMultipleChoiceField(widget=FilteredSelectMultiple(('tags'),False),queryset=Tag.objects.all(),required=False)
-#            'tags': forms.SelectMultiple(attrs={'size': 30})
-#    }
-    newtags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('newtags',is_stacked=False), queryset = NewTag.objects.all().exclude(label='root'),required=False,label="Tags")
-    class Meta:
-        model = Problem
-        fields = ( 'newtags',)
-        labels = {
-            'newtags':'tags',
-            }
-    def __init__(self, *args, **kwargs):
-        super(ProblemForm, self).__init__(*args, **kwargs)   
-        self.fields['newtags'].queryset = NewTag.objects.order_by('tag').exclude(label='root')
-
-
-class DetailedProblemForm(forms.ModelForm):
-    newtags=forms.ModelMultipleChoiceField(widget = FilteredSelectMultiple('newtags',is_stacked=False), queryset = NewTag.objects.all().exclude(label='root'),required=False,label="Tags")
-    class Meta:
-        model = Problem
-        fields = ('newtags','mc_answer','sa_answer','difficulty')
-        widgets = {
-            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
-        }
-    def __init__(self, *args, **kwargs):
-        super(DetailedProblemForm, self).__init__(*args, **kwargs)
-        self.fields['newtags'].queryset = NewTag.objects.order_by('tag').exclude(label='root')
-
-class ProblemTextForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = ('problem_text','mc_problem_text','answer_A','answer_B','answer_C','answer_D','answer_E')
-        widgets = {
-            'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
-            'mc_problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
-            }
-    def __init__(self, *args, **kwargs):
-        super(ProblemTextForm, self).__init__(*args, **kwargs)   
-#        self.fields['answer_choices'].help_text = '<br/><div class="tex2jax_ignore">Should be in the form<br/>$\\textbf{(A) } Ans A\\qquad \\textbf{(B) } Ans B\\qquad \\textbf{(C) } Ans C\\qquad \\textbf{(D) } Ans D\\qquad \\textbf{(E) } Ans E$</div>'
 
 class SolutionForm(forms.ModelForm):
     class Meta:
@@ -79,7 +39,8 @@ class CommentForm(forms.ModelForm):
         model = Comment
         fields = ('author_name','comment_text',)
         widgets = {
-            'comment_text': forms.Textarea(attrs={'cols': 100, 'rows': 15,'id' : 'codetext'})
+            'comment_text': forms.Textarea(attrs={"class":"form-control","min-width":"100%", 'rows': 15,'id' : 'codetext'}),
+            'author_name': forms.TextInput(attrs={"class":"form-control"}),
         }
     def __init__(self, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)   
@@ -89,23 +50,15 @@ class ApprovalForm(forms.ModelForm):
     class Meta:
         model = ProblemApproval
         fields = ('author_name','approval_status',)
+        widgets = {
+            'author_name': forms.TextInput(attrs={"class":"form-control"}),
+            'approval_status': forms.Select(attrs={"class":"form-control"})
+            }
     def __init__(self, *args, **kwargs):
         super(ApprovalForm, self).__init__(*args, **kwargs)   
         self.fields['author_name'].required = True
         self.fields['approval_status'].required = True
 
-class MCAnswerForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = ('mc_answer',)
-        widgets = {
-            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
-        }
-
-class SAAnswerForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = ('sa_answer',)
 
 
 class AddProblemForm1(forms.Form):
@@ -148,11 +101,14 @@ class AddProblemForm3(forms.Form):
     solution_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
     
 class ChangeQuestionTypeForm1(forms.ModelForm):
-#    question_type = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
-    question_type_new = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
+#    question_type_new = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
+    question_type_new = forms.ModelChoiceField(widget = forms.Select(attrs={'class':'form-control'}), queryset = QuestionType.objects.all(),required=True,empty_label=None)
     class Meta:
         model = Problem
         fields = ('question_type_new',)
+    def __init__(self, *args, **kwargs):
+        super(ChangeQuestionTypeForm1, self).__init__(*args, **kwargs)   
+        self.fields['question_type_new'].label = "Question Type:"
 
 class ChangeQuestionTypeForm2MC(forms.ModelForm):
     class Meta:
@@ -164,11 +120,15 @@ class ChangeQuestionTypeForm2MC(forms.ModelForm):
                   'answer_D',
                   'answer_E',
                   'mc_answer',
-                  'question_type_new',
                   )
         widgets = {
-            'mc_problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
+            'mc_problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
+            'answer_A': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_B': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_C': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_D': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_E': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(ChangeQuestionTypeForm2MC, self).__init__(*args, **kwargs)   
@@ -179,30 +139,31 @@ class ChangeQuestionTypeForm2MC(forms.ModelForm):
         self.fields['answer_D'].required = True
         self.fields['answer_E'].required = True
         self.fields['mc_answer'].required = True
+        self.fields['mc_answer'].label = 'Answer:'
 
 class ChangeQuestionTypeForm2SA(forms.ModelForm):
     class Meta:
         model = Problem
         fields = ('problem_text',
                   'sa_answer',
-                  'question_type_new',
                   )
         widgets = {
-            'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
+            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(ChangeQuestionTypeForm2SA, self).__init__(*args, **kwargs)   
         self.fields['problem_text'].required = True
         self.fields['sa_answer'].required = True
+        self.fields['sa_answer'].label = 'Answer:'
 
 class ChangeQuestionTypeForm2PF(forms.ModelForm):
     class Meta:
         model = Problem
         fields = ('problem_text',
-                  'question_type_new',
                   )
         widgets = {
-            'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
+            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             }
     def __init__(self, *args, **kwargs):
         super(ChangeQuestionTypeForm2PF, self).__init__(*args, **kwargs)   
@@ -212,20 +173,25 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
     class Meta:
         model = Problem
         fields = ('mc_problem_text',
-                  'problem_text',
                   'answer_A',
                   'answer_B',
                   'answer_C',
                   'answer_D',
                   'answer_E',
                   'mc_answer',
+                  'problem_text',
                   'sa_answer',
-                  'question_type_new',
                   )
         widgets = {
-            'mc_problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
-            'problem_text': forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),
+            'mc_problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
+            'answer_A': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_B': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_C': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_D': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_E': forms.TextInput(attrs={'class':'form-control'}),
+            'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(ChangeQuestionTypeForm2MCSA, self).__init__(*args, **kwargs)   
@@ -238,6 +204,8 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
         self.fields['answer_E'].required = True
         self.fields['mc_answer'].required = True
         self.fields['sa_answer'].required = True
+        self.fields['mc_answer'].label = 'Answer (Multiple Choice):'
+        self.fields['sa_answer'].label = 'Answer (Short Answer):'
 
 class AddContestForm(forms.Form):
 #    type = forms.ModelChoiceField( queryset = Type.objects.exclude(type__startswith='CM'),required=True)
@@ -348,3 +316,13 @@ class SAProblemTextForm(forms.ModelForm):
             }
     def __init__(self, *args, **kwargs):
         super(SAProblemTextForm, self).__init__(*args, **kwargs)   
+
+class DifficultyForm(forms.ModelForm):
+    class Meta:
+        model = Problem
+        fields = ('difficulty',)
+        widgets = {
+            'difficulty': forms.TextInput(attrs={"class":"form-control"})
+            }
+    def __init__(self, *args, **kwargs):
+        super(DifficultyForm, self).__init__(*args, **kwargs)

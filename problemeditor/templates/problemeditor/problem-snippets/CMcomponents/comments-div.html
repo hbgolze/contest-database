@@ -1,0 +1,8 @@
+{% if prob.comments.count == 0 %}<p>No Comments Yet</p>
+{% else %}
+<div class="list-group" id="comment-list-group_{{prob.pk}}">
+  {% for com in prob.comments.all %}
+  {% include 'problemeditor/problem-snippets/CMcomponents/comment.html' %}
+  {% endfor %}
+</div>
+{% endif %}

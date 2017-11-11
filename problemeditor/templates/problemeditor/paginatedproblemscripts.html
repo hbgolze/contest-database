@@ -1,0 +1,324 @@
+
+
+<script>
+
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on("change","select.js-add-tag-select",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_tag' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {
+                $("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Tag has been added to problem.</div>");
+                $("#tagging-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+                $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+                $("#tagged-"+data['prob_pk']).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+
+            } else {
+                $("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem already has tag.</div>");
+                $("#tagging-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#tagging-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+            }
+
+        }
+    });
+    return false;
+});
+
+
+$(document).on('click',".delete-tag-link",function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'delete_tag' %}',
+        data: form.serialize()+"&problem_tag_id="+$(this).attr('id'),
+        dataType: 'json',
+        success: function(data) {
+           $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
+           if (data['tag_count'] == 0) {
+               $("#tagged-"+data['prob_pk']).html("-");
+           }
+        }
+    });
+    return false;
+});
+
+
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+
+$(document).on('click',".remove_duplicate",function(event) {
+    event.preventDefault();
+    var dupl_id = $(this).attr('id').split('_')[3];
+    var curr_id = $(this).attr('id').split('_')[2];
+    $.ajax({
+        type: 'GET',
+        url: '{% url 'remove_duplicate' %}',
+        data: "&dpk="+dupl_id+"&pk="+curr_id,
+        dataType: 'json',
+        success: function(data) {
+           $("#duplicate_problems_"+curr_id).html(data['duplicate_problems']);
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".add-linked-problem",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+    $("#original-prob_pk").val(prob_pk);
+    $("#duplicate-modal").modal("show");
+});
+
+$(document).on('submit',".add-linked-problem-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: "{% url 'add_duplicate' %}",
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+           if (result['status']==1) {
+               $("#duplicate_problems_"+result['prob_pk']).html(result['duplicate_problems']);
+               $("#duplicate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+               $("#linked_problem_label").val("");
+           } else if (result['status']==0) {
+               $("#duplicate-status-"+result['prob_pk']).html("<div class='alert alert-danger' role='alert'>No such problem with entered label!</div>");
+               $("#duplicate-status-"+result['prob_pk']).prop("style","display:block");
+               $("#duplicate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+               $("#linked_problem_label").val("");
+               setTimeout(function() {
+                   $("#duplicate-status-"+result['prob_pk']).fadeOut().empty();
+               },5000);             
+           }
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-mc-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-answer/',
+        data: "qt=mc&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
+            $("#edit-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-sa-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-answer/',
+        data: "qt=sa&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
+            $("#edit-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_answer_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-answer/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['qt'] == 'mc') {
+                $("#mc_answer_"+result['pk']).html(result['answer']);
+            } else if (result['qt'] == 'sa') {
+                $("#sa_answer_"+result['pk']).html(result['answer']);
+            }
+               $("#edit-answer-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-mc-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-latex/',
+        data: "qt=mc&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-latex-modal").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+            $("#edit-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-latex/',
+        data: "qt=sa&pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-latex-modal").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+            $("#edit-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_latex_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-latex/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['qt'] == 'mc') {
+                $("#mc_prob_text_"+result['pk']).html(result['prob-text']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mc_prob_text_"+result['pk']]);
+            } else if (result['qt'] == 'sa') {
+                $("#sa_prob_text_"+result['pk']).html(result['prob-text']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_prob_text_"+result['pk']]);
+            }
+               $("#edit-latex-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+{% endif %}
+
+$(".solution-link").click(function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr('id').split('_')[1];
+    var target = "/problemeditor/ajax/load_sol/"+prob_pk+"/";
+
+    $("#solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+         $("#solution-placeholder").modal("show");
+    });
+});
+
+$(document).on('click',".new-sol",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-solution/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#new-solution-placeholder").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
+            $("#new-solution-placeholder").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-solution-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-new-solution/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#solution-link_"+result['pk']).text("View Solutions ("+result['sol_count']+")");
+	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
+            $("#edit-latex-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".delete-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/delete-solution/',
+        data: "pk="+prob_id+"&spk="+sol_id,
+        dataType: 'json',
+        success: function(result) {
+            if (result['deleted']==1) {
+                $("#solution-link_"+prob_id).text("View Solutions ("+result['sol_count']+")");
+	        $("#num_solutions-"+prob_id).html(result['sol_count']);
+                $("#sol_"+sol_id).empty();
+            }
+        }
+    });
+    return false;
+});
+</script>
+
+

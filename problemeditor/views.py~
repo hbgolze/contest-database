@@ -14,7 +14,7 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag
-from .forms import ProblemForm,SolutionForm,ProblemTextForm,DetailedProblemForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm
+from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,SAAnswerForm,MCAnswerForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
@@ -193,73 +193,6 @@ class AddProblemWizard(SessionWizardView):
         return redirectproblem(self.request,prob.pk)
 #        return redirect('/problemeditor/detailedview/'+str(prob.pk)+'/')
 
-CQTTEMPLATES = {
-    "0": "problemeditor/changequestiontypewizard.html",
-    "1": "problemeditor/changequestiontypewizardmc.html",
-    "2": "problemeditor/changequestiontypewizardsa.html",
-    "3": "problemeditor/changequestiontypewizardpf.html",
-    "4": "problemeditor/changequestiontypewizardmcsa.html",
-    }
-class ChangeQuestionTypeWizard(SessionWizardView):
-#    template_name='problemeditor/changequestiontypewizard.html'
-    instance=None
-    def get_context_data(self, **kwargs):
-        ctx = super(ChangeQuestionTypeWizard, self).get_context_data(**kwargs)
-        ctx['ctx'] = ctx
-        ctx['nbar']= 'problemeditor'
-        breadcrumbs=[]
-        prob=get_object_or_404(Problem,pk=self.kwargs['pk'])
-        if 'tagstatus' in self.kwargs:
-            if self.kwargs['tagstatus']=='untagged':
-                breadcrumbs=[
-                    ('../../',prob.type_new.label),
-                    ('../','untagged'),
-                    ('.',str(prob.readable_label)),
-                    ]
-            else:
-                raise Http404("Bad URL")
-        elif 'type' in self.kwargs:
-            breadcrumbs=[('../',prob.type_new.label+' Problems'),('.',str(prob.readable_label))]
-        ctx['breadcrumbs']=breadcrumbs
-        return ctx
-    def get_template_names(self):
-        return [CQTTEMPLATES[self.steps.current]]
-    def get_form_initial(self, step):
-        if 'pk' in self.kwargs:
-            return {}
-        return self.initial_dict.get(step, {})
-    def get_form_instance(self, step):
-        if self.instance is None:
-            if 'pk' in self.kwargs:
-                pk = self.kwargs['pk']
-                self.instance = get_object_or_404(Problem,pk=pk)
-            else:
-                self.instance = Problem()
-        return self.instance
-    def get_form(self, step=None, data=None, files=None):
-#        print('get_form')
-        form = super(ChangeQuestionTypeWizard, self).get_form(step, data, files)
-        if step == '1' or step == '2' or step == '3' or step == '4':
-            prev_data = self.storage.get_step_data('0')
-            question_type = prev_data.get('0-question_type_new', '')
-            form.fields['question_type_new'].initial = question_type
-        return form
-    def done(self,form_list,**kwargs):
-        self.instance.question_type_new = QuestionType.objects.get(pk=self.storage.get_step_data('0').get('0-question_type_new', ''))
-        if self.instance.question_type_new.question_type == "multiple choice":
-            self.instance.problem_text = self.instance.mc_problem_text
-            self.instance.display_problem_text=newtexcode(self.instance.mc_problem_text,prob.label,'')
-        if self.instance.question_type_new.question_type in ["short answer", "proof"]:
-            self.instance.mc_problem_text = self.instance.problem_text
-            self.instance.display_mc_problem_text=newtexcode(prob.problem_text,prob.label,prob.answers())
-
-        self.instance.save()
-        compileasy(self.instance.mc_problem_text,self.instance.label)
-        compileasy(self.instance.problem_text,self.instance.label)
-        return redirect('.')
-#        return redirect('/problemeditor/detailedview/'+str(self.instance.pk)+'/')
-
-
 
 # Create your views here.
 @login_required
@@ -402,9 +335,21 @@ def testlabelview(request,type,testlabel):
     else:
         problems = typ.problems.filter(newtags__isnull=True)
     problems = sorted(problems, key=lambda x:(x.year,x.problem_number))
+
+    paginator=Paginator(problems,50)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
     template = loader.get_template('problemeditor/typetagview.html')
     context = {
-        'rows' : problems,
+        'rows' : prows,
         'nbar': 'problemeditor',
         'type':typ.type,
         'typelabel':typ.label,
@@ -440,370 +385,19 @@ def problemview(request,type,tag,label):
     tag=goodtag(tag)
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
-    if request.method == "POST":
-        formpost=request.POST
-        if "addsolution" in formpost:
-            sol_text=formpost.get("new_solution_text","")
-            sol_num=prob.top_solution_number+1
-            prob.top_solution_number=sol_num
-            prob.save()
-            sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
-            sol.save()
-            sol.authors.add(request.user)
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            prob.solutions.add(sol)
-            prob.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag=ADDITION,
-                change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
-                )
-            form = ProblemForm(instance=prob)
-        elif "addlink" in formpost:
-            form = request.POST
-            linked_problem_label = form.get("linked_problem_label","")
-            if Problem.objects.filter(label=linked_problem_label).exists():
-                q=Problem.objects.get(label=linked_problem_label)
-                prob.duplicate_problems.add(q)
-                prob.save()
-            form = ProblemForm(instance=prob)
-        else:
-            form = ProblemForm(request.POST, instance=prob)
-            if form.is_valid():
-                problem = form.save()
-                problem.save()
-                LogEntry.objects.log_action(
-                    user_id = request.user.id,
-                    content_type_id = ContentType.objects.get_for_model(problem).pk,
-                    object_id = problem.id,
-                    object_repr = problem.label,
-                    action_flag = CHANGE,
-                    change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
-                    )
 
-    else:
-        form = ProblemForm(instance=prob)
     context={}
     context['rows']=prob.solutions.all()
     context['prob']=prob
-    context['form']=form
     context['nbar']='problemeditor'
     context['typelabel']= typ.label
     context['label'] = label
     context['tag'] = tag
+    context['tags'] = NewTag.objects.exclude(tag='root')
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     return render(request, 'problemeditor/view.html', context)
 
-@login_required
-def editproblemtextview(request,type,tag,label):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-    if request.method == "POST":
-        form = ProblemTextForm(request.POST, instance=prob)
-        if form.is_valid():
-            problem = form.save()
-            problem.display_problem_text = newtexcode(problem.problem_text,problem.label,'')
-            problem.display_mc_problem_text = newtexcode(problem.mc_problem_text,problem.label,problem.answers())
-            problem.save()
-            compileasy(problem.mc_problem_text,problem.label)
-            compileasy(problem.problem_text,problem.label)
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(problem).pk,
-                object_id = problem.id,
-                object_repr = problem.label,
-                action_flag = CHANGE,
-                change_message = "problemeditor/contest/bytest/"+problem.type_new.type+'/'+problem.test_label+'/'+problem.label+'/',
-                )
-        return redirect('../')
-    else:
-        form = ProblemTextForm(instance=prob)
-    breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',tag),('../',prob.readable_label),]
 
-    context={}
-    context['nbar']='problemeditor'
-    context['form']=form
-    context['breadcrumbs']=breadcrumbs
-    context['typelabel']= typ.label
-    context['label'] = label
-#    context['tag'] = tag
-    return render(request, 'problemeditor/editproblemtext.html', context)
-
-@login_required
-def editproblemtextpkview(request,**kwargs):
-    pk=kwargs['pk']
-    prob=get_object_or_404(Problem, pk=pk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('/problemeditor/','Select Type'),('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('/problemeditor/','Select Type'),('../../',typ.label+' Problems'),('../',str(prob.readable_label))]
-    else:
-        breadcrumbs=[('/problemeditor/','Select Type'),('../',str(prob.readable_label)),]
-    if request.method == "POST":
-        form = ProblemTextForm(request.POST, instance=prob)
-        if form.is_valid():
-            problem = form.save()
-            problem.display_problem_text = newtexcode(problem.problem_text,problem.label,'')
-            problem.display_mc_problem_text = newtexcode(problem.mc_problem_text,problem.label,problem.answers())
-
-            problem.save()
-            compileasy(problem.mc_problem_text,problem.label)
-            compileasy(problem.problem_text,problem.label)
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(problem).pk,
-                object_id = problem.id,
-                object_repr = problem.label,
-                action_flag = CHANGE,
-                change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
-                )
-
-        return redirect('../')
-    else:
-        form = ProblemTextForm(instance=prob)
-    context={}
-    context['nbar']='problemeditor'
-    context['form']=form
-    context['breadcrumbs']=breadcrumbs
-    return render(request, 'problemeditor/editproblemtext.html', context)
-
-@login_required
-def newsolutionview(request,type,tag,label):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-    if request.method == "POST":
-        sol_form = SolutionForm(request.POST)
-        if sol_form.is_valid():
-            sol_num=prob.top_solution_number+1
-            prob.top_solution_number=sol_num
-            prob.save()
-            sol = sol_form.save()
-            sol.solution_number=sol_num
-            sol.authors.add(request.user)
-            sol.problem_label=label
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            prob.solutions.add(sol)
-            prob.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag=ADDITION,
-                change_message="problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
-                )
-        return redirect('../')
-    else:
-        sol_num=prob.top_solution_number+1
-        sol = Solution(solution_text='', solution_number=sol_num, problem_label=label)
-        form = SolutionForm(instance=sol)
-    breadcrumbs=[('../../../',typ.label),('../../',tag),('../',prob.readable_label),]
-
-    context={}
-    context['prob']=prob
-    context['form']=form
-    context['label'] = label
-    context['nbar']='problemeditor'
-    context['typelabel']= typ.label
-
-    context['breadcrumbs']=breadcrumbs
-
-    return render(request, 'problemeditor/newsol.html', context)
-
-@login_required
-def newsolutionpkview(request,**kwargs):
-    pk=kwargs['pk']
-    prob=get_object_or_404(Problem, pk=pk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label)]
-    else:
-        breadcrumbs=[('../',prob.readable_label),]
-    if request.method == "POST":
-        sol_form = SolutionForm(request.POST)
-        if sol_form.is_valid():
-            sol_num=prob.top_solution_number+1
-            prob.top_solution_number=sol_num
-            prob.save()
-            sol = sol_form.save()
-            sol.solution_number=sol_num
-            sol.authors.add(request.user)
-            sol.problem_label=prob.label
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            prob.solutions.add(sol)
-            prob.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag=ADDITION,
-                change_message="problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk)+'/',
-                )
-
-        return redirect('../')#detailedproblemview,pk=pk)
-    else:
-        sol_num=prob.top_solution_number+1
-        sol=Solution(solution_text='', solution_number=sol_num, problem_label=prob.label)
-        form = SolutionForm(instance=sol)
-
-    return render(request, 'problemeditor/newsol.html',{'form': form, 'nbar': 'problemeditor', 'prob':prob, 'breadcrumbs':breadcrumbs})
-
-@login_required
-def editsolutionview(request,type,tag,label,spk):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-    sol=Solution.objects.get(pk=spk)
-    if request.method == "POST":
-        if request.POST.get("save"):
-            sollist=request.POST.getlist('solution_text')
-            sol.solution_text = sollist[0]
-            sol.modified_date = timezone.now()
-            sol.authors.add(request.user)
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag = CHANGE,
-                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
-                )
-            return redirect('../../')
-#            return redirect(problemview,type=type,tag=tag,label=label)
-    form = SolutionForm(instance=sol)
-
-    breadcrumbs=[('../../../../',typ.label),('../../../',tag),('../../',prob.readable_label),]
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor','typelabel':typ.label,'tag':tag,'label':label, 'prob':prob,'breadcrumbs':breadcrumbs})
-
-@login_required
-def editsolutionpkview(request,**kwargs):
-    pk=kwargs['pk']
-    spk=kwargs['spk']
-    prob=get_object_or_404(Problem, pk=pk)
-    sol=Solution.objects.get(pk=spk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../../',typ.label),('../../../',goodtag(kwargs['tag'])),('../../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
-    else:
-        breadcrumbs=[('../../','Solutions to '+prob.readable_label),]
-    if request.method == "POST":
-        if request.POST.get("save"):
-            sollist=request.POST.getlist('solution_text')
-            sol.solution_text=sollist[0]
-            sol.modified_date = timezone.now()
-            sol.authors.add(request.user)
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag = CHANGE,
-                change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk),
-                )
-            return redirect('../../')#detailedproblemview,pk=pk)
-    form = SolutionForm(instance=sol)
-    return render(request, 'problemeditor/editsol.html', {'form': form, 'nbar': 'problemeditor', 'prob':prob,'breadcrumbs':breadcrumbs})
-
-@login_required
-def editanswerview(request,type,tag,label):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-    if request.method == "POST":
-        if request.POST.get("save"):
-            if request.POST.get("qt")=='multiple choice':
-                ans_form = MCAnswerForm(request.POST,instance=prob)
-                if ans_form.is_valid():
-                    prob2 = ans_form.save()
-                    prob2.save()
-                    prob.answer=prob.mc_answer
-                    prob.save()
-            else:
-                ans_form = SAAnswerForm(request.POST,instance=prob)
-                if ans_form.is_valid():
-                    prob2 = ans_form.save()
-                    prob2.save()
-                    prob.answer=prob.sa_answer
-                    prob.save()
-            return redirect('../')
-    breadcrumbs=[('../../../',typ.label),('../../',tag),('../',prob.readable_label),]
-    ans=''
-    if prob.question_type_new.question_type=='multiple choice':
-        form = MCAnswerForm(instance=prob)
-        ans=prob.mc_answer
-    elif prob.question_type_new.question_type=='short answer':
-        form = SAAnswerForm(instance=prob)
-        ans=prob.sa_answer
-#    elif prob.question_type_new.question_type=='multiple choice short answer':
-#        ans=prob.mc_answer+' and '+prob.sa_answer
-    return render(request, 'problemeditor/editanswer.html', {'form': form, 'nbar': 'problemeditor','typelabel':typ.label,'tag':tag,'label':label,'answer':ans,'breadcrumbs':breadcrumbs,'prob':prob})
-
-@login_required
-def editreviewpkview(request,**kwargs):
-    pk=kwargs['pk']
-    apk=kwargs['apk']
-    prob=get_object_or_404(Problem, pk=pk)
-    appr=ProblemApproval.objects.get(pk=apk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../../',typ.label),('../../../',goodtag(kwargs['tag'])),('../../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label+' Problems'),('../../',prob.readable_label),]
-    else:
-        breadcrumbs=[('../../','Solutions to '+prob.readable_label),]
-    if request.method == "POST":
-        if request.POST.get("save"):
-            appr_form = ApprovalForm(request.POST,instance=appr)
-            if appr_form.is_valid():
-                appr2 = appr_form.save()
-                appr2.save()
-#                appr.approval_user = request.user
-#                appr.author_name=appr_form.author_name
-#                appr.approval_status=request.POST.get('approval_status')#appr_form.approval_status
-#                appr.save()
-                LogEntry.objects.log_action(
-                    user_id = request.user.id,
-                    content_type_id = ContentType.objects.get_for_model(appr2).pk,
-                    object_id = appr2.id,
-                    object_repr = prob.label,
-                    action_flag = CHANGE,
-                    change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
-                    )
-            return redirect('../../')#detailedproblemview,pk=pk)
-    form = ApprovalForm(instance=appr)
-    return render(request, 'problemeditor/editappr.html', {'form': form, 'nbar': 'problemeditor','prob':prob,'breadcrumbs':breadcrumbs})
 
 
 
@@ -832,45 +426,6 @@ class SolutionDeleteView(DeleteView):
         context['solution'] = get_object_or_404(Solution, pk=self.sol_id)
         return context
 
-@login_required
-def deletesolutionview(request,type,tag,label,spk):#If solution_number is kept, this must be modified to adjust.
-    sol = get_object_or_404(Solution, pk=spk)
-    prob = get_object_or_404(Problem,label=label)
-    LogEntry.objects.log_action(
-        user_id = request.user.id,
-        content_type_id = ContentType.objects.get_for_model(sol).pk,
-        object_id = sol.id,
-        object_repr = prob.label+' sol '+str(sol.solution_number),
-        action_flag = DELETION,
-        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
-        )
-    sol.delete()
-    return redirect('../../')
-
-@login_required
-def deletesolutionpkview(request,**kwargs):#If solution_number is kept, this must be modified to adjust.
-    pk=kwargs['pk']
-    spk=kwargs['spk']
-    sol = get_object_or_404(Solution, pk=spk)
-    prob = get_object_or_404(Problem,pk=pk)
-    LogEntry.objects.log_action(
-        user_id = request.user.id,
-        content_type_id = ContentType.objects.get_for_model(sol).pk,
-        object_id = sol.id,
-        object_repr = prob.label+' sol '+str(sol.solution_number),
-        action_flag = DELETION,
-        change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/editsolution/'+str(sol.pk),
-        )
-    sol.delete()
-    return redirect('../../')
-
-@login_required
-def deletecommentpkview(request,**kwargs):#If solution_number is kept, this must be modified to adjust.
-    pk=kwargs['pk']
-    cpk=kwargs['cpk']
-    com = get_object_or_404(Comment, pk=cpk)
-    com.delete()
-    return redirect('../../')
 
 @login_required
 def untaggedview(request,type):
@@ -881,76 +436,6 @@ def untaggedview(request,type):
     template=loader.get_template('problemeditor/typetagview.html')
     context= {'rows' : problems, 'type' : typ.type, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
-
-@login_required
-def newcommentpkview(request,**kwargs):
-    pk=kwargs['pk']
-    prob=get_object_or_404(Problem, pk=pk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
-    else:
-        breadcrumbs=[('../',prob.readable_label),]
-
-    com_num=prob.comments.count()+1
-    if request.method == "POST":
-        com_form = CommentForm(request.POST)
-        if com_form.is_valid():
-            com = com_form.save(commit=False)
-            com.comment_number=com_num
-            com.author = request.user
-            com.problem_label=prob.label
-            com.save()
-            prob.comments.add(com)
-            prob.save()
-            return redirect('../')
-    else:
-        com=Comment(comment_text='', comment_number=com_num, problem_label=prob.label)
-        com_form = CommentForm(instance=com)
-
-    return render(request, 'problemeditor/newcom.html', {'form': com_form, 'nbar': 'problemeditor','breadcrumbs':breadcrumbs,'label':prob.readable_label})
-
-@login_required
-def newreviewpkview(request,**kwargs):
-    pk=kwargs['pk']
-    prob=get_object_or_404(Problem, pk=pk)
-    if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../../',typ.label),('../../',goodtag(kwargs['tag'])),('../',str(prob.readable_label))]
-    elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../',typ.label+' Problems'),('../',prob.readable_label),]
-    else:
-        breadcrumbs=[('../',prob.readable_label),]
-
-    if request.method == "POST":
-        appr_form = ApprovalForm(request.POST)
-        if appr_form.is_valid():
-            appr = appr_form.save(commit=False)
-            appr.approval_user = request.user
-            appr.save()
-            prob.approvals.add(appr)
-            prob.save()
-
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(appr).pk,
-                object_id = appr.id,
-                object_repr = prob.label,
-                action_flag = ADDITION,
-                change_message = "problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
-                )
-
-            return redirect('../')
-    else:
-        appr=ProblemApproval()
-        appr_form = ApprovalForm(instance=appr)
-
-    return render(request, 'problemeditor/newappr.html', {'form': appr_form, 'nbar': 'problemeditor','breadcrumbs':breadcrumbs,'prob':prob})
-
 
 @login_required
 def detailedproblemview(request,**kwargs):
@@ -965,61 +450,10 @@ def detailedproblemview(request,**kwargs):
         breadcrumbs=[('../',typ.label+' Problems'),]
     else:
         breadcrumbs=[]
-    if request.method == "POST":#need more (was previously disabled)
-        formpost=request.POST
-        if "addsolution" in formpost:
-            sol_text=formpost.get("new_solution_text","")
-            sol_num=prob.top_solution_number+1
-            prob.top_solution_number=sol_num
-            prob.save()
-            sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
-            sol.save()
-            sol.authors.add(request.user)
-            sol.save()
-            compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-            sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
-            sol.save()
-            prob.solutions.add(sol)
-            prob.save()
-            LogEntry.objects.log_action(
-                user_id = request.user.id,
-                content_type_id = ContentType.objects.get_for_model(sol).pk,
-                object_id = sol.id,
-                object_repr = prob.label+' sol '+str(sol.solution_number),
-                action_flag=ADDITION,
-                change_message="problemeditor/CM/bytopic/"+prob.type_new.type+'/'+str(prob.pk)+'/',
-                )
-            form = DetailedProblemForm(instance=prob)
-        elif "addcomment" in formpost:
-            com_num = prob.comments.count()+1
-            com_text = formpost.get("new_comment_text","")
-            author_name = formpost.get("author_name","")
-            com = Comment(comment_text=com_text,comment_number=com_num,author_name=author_name,author=request.user,problem_label=prob.label)
-            com.save()
-            prob.comments.add(com)
-            prob.save()
-            form = DetailedProblemForm(instance=prob)
-        else:
-            form=DetailedProblemForm(request.POST,instance=prob)
-            if form.is_valid():
-                problem = form.save()
-                problem.display_problem_text = newtexcode(problem.problem_text,problem.label,'')
-                problem.display_mc_problem_text = newtexcode(problem.mc_problem_text,problem.label,problem.answers())
-                problem.save()
-                LogEntry.objects.log_action(
-                    user_id = request.user.id,
-                    content_type_id = ContentType.objects.get_for_model(problem).pk,
-                    object_id = problem.id,
-                    object_repr = problem.label,
-                    action_flag = CHANGE,
-                    change_message = "problemeditor/CM/bytopic/"+problem.type_new.type+'/'+str(problem.pk)+'/',
-                    )
-    else:
-        form=DetailedProblemForm(instance=prob)
-    context['prob']=prob
-    context['nbar']='problemeditor'
-    context['form']=form
-    context['breadcrumbs']=breadcrumbs
+    context['prob'] = prob
+    context['nbar'] = 'problemeditor'
+    context['breadcrumbs'] = breadcrumbs
+    context['tags'] = NewTag.objects.exclude(tag='root')
     return render(request, 'problemeditor/detailedview.html', context)
 
 
@@ -1183,90 +617,6 @@ def redirectproblem(request,pk):
         return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
 
 
-class SolutionUpdateView(UpdateView):
-    model = Solution
-    form_class = SolutionForm
-    template_name = 'problemeditor/solution_edit_form.html'
-    def dispatch(self, *args, **kwargs):
-        print('gi')
-        self.solution_id = kwargs['spk']
-        self.problem_label = kwargs['label']
-        self.type = kwargs['type']
-        self.tag = kwargs['tag']
-        return super(SolutionUpdateView, self).dispatch(*args, **kwargs)
-
-    def form_valid(self, form):
-        form.save()
-        solution = Solution.objects.get(id=self.solution_id)
-#        compileasy(solution.solution_text,prob.label,sol='sol'+str(solution.solution_number))
-#        solution.display_solution_text = newsoltexcode(solultion.solution_text,prob.label+'sol'+str(sol.solution_number))
-#            solution.save()
-#            LogEntry.objects.log_action(
-#                user_id = request.user.id,
-#                content_type_id = ContentType.objects.get_for_model(sol).pk,
-#                object_id = sol.id,
-#                object_repr = prob.label+' sol '+str(sol.solution_number),
-#                action_flag = CHANGE,
-#                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
-#                )
-
-        return redirect('../../')
-
-
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(Solution, pk=self.solution_id)
-    def get_context_data(self, *args, **kwargs):
-        context = super(SolutionUpdateView, self).get_context_data(*args, **kwargs)
-        context['prob'] = get_object_or_404(Problem,label=self.problem_label)
-        context['type'] = self.type
-        context['tag'] = self.tag
-        context['label'] = self.problem_label
-        context['suffix'] = ''
-        if NewTag.objects.filter(tag=goodtag(self.tag)).exists() == True:
-            context['suffix'] = '_bytag'
-        return context
-
-class CMSolutionUpdateView(UpdateView):
-    model = Solution
-    form_class = SolutionForm
-    template_name = 'problemeditor/solution_edit_form.html'
-    def dispatch(self, *args, **kwargs):
-        self.solution_id = kwargs['spk']
-        self.type = kwargs['type']
-        if 'tag' in kwargs:
-            self.tag = kwargs['tag']
-        self.prob_pk = kwargs['pk']
-        return super(CMSolutionUpdateView, self).dispatch(*args, **kwargs)
-
-    def form_valid(self, form):
-        form.save()
-        solution = Solution.objects.get(id=self.solution_id)
-        return redirect('../../')
-
-
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(Solution, pk=self.solution_id)
-    def get_context_data(self, *args, **kwargs):
-        context = super(CMSolutionUpdateView, self).get_context_data(*args, **kwargs)
-        context['prob'] = get_object_or_404(Problem,pk=self.prob_pk)
-        context['type'] = self.type
-        context['suffix'] = ''
-        if hasattr(self,'tag'):
-            context['tag'] = self.tag
-            context['suffix'] = '_bytag'
-        context['prefix'] = 'CM_'
-        return context
-
-@login_required
-def remove_duplicate(request,type,tag,label,pk):
-    if request.user.userprofile.user_type_new.name == 'super':
-        prob=get_object_or_404(Problem,label=label)
-        if prob.duplicate_problems.filter(pk=pk).exists():
-            prob.duplicate_problems.remove(Problem.objects.get(pk=pk))
-            prob.save()
-    return redirect("../../")
 
 @login_required
 def uploadcontestview(request):
@@ -1591,32 +941,6 @@ class TagUpdateView(UpdateView):
     def get_object(self, queryset=None):
         return get_object_or_404(NewTag, pk=self.tag_id)
 
-
-#class AjaxableResponseMixin(object):
-#    """
-#    Mixin to add AJAX support to a form.
-#    Must be used with an object-based FormView (e.g. CreateView)
-#    """
-#    def form_invalid(self, form):
-#        response = super(AjaxableResponseMixin, self).form_invalid(form)
-#        if self.request.is_ajax():
-#            return JsonResponse(form.errors, status=400)
-#        else:
-#            return response
-#
-#    def form_valid(self, form):
-#        # We make sure to call the parent's form_valid() method because
-#        # it might do some processing (in the case of CreateView, it will
-#        # call form.save() for example).
-#        response = super(AjaxableResponseMixin, self).form_valid(form)
-#        if self.request.is_ajax():
-#            data = {
-#                'pk': self.object.pk,
-#            }
-#            return JsonResponse(data)
-#        else:
-#            return response
-
 class TagCreateView(CreateView):
     model = NewTag
     form_class = AddNewTagForm
@@ -1732,7 +1056,7 @@ def load_edit_answer(request,**kwargs):
         form = EditMCAnswer(instance = prob)
     else:
         form = EditSAAnswer(instance = prob)
-    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-edit-answer.html',{'form': form,'qt':qt})})
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-edit-answer.html',{'form': form,'qt':qt})})
 
 @login_required
 def save_answer(request,**kwargs):
@@ -1757,7 +1081,7 @@ def load_edit_latex(request,**kwargs):
         form = MCProblemTextForm(instance = prob)
     else:
         form = SAProblemTextForm(instance = prob)
-    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-edit-latex.html',{'form': form,'qt':qt})})
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-edit-latex.html',{'form': form,'qt':qt})})
 
 
 @login_required
@@ -1778,9 +1102,9 @@ def save_latex(request,**kwargs):
             object_id = prob.id,
             object_repr = prob.label,
             action_flag = CHANGE,
-            change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/',
+            change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
             )
-        return JsonResponse({'qt':qt,'pk':pk,'prob-text':form.instance.display_mc_problem_text})
+        return JsonResponse({'qt':qt,'pk':pk,'prob-text':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_mc_problem_text})})
     elif qt == 'sa':
         form = SAProblemTextForm(request.POST,instance = prob)
         form.save()
@@ -1794,13 +1118,13 @@ def save_latex(request,**kwargs):
             object_id = prob.id,
             object_repr = prob.label,
             action_flag = CHANGE,
-            change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/',
+            change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
             )
-        return JsonResponse({'qt':qt,'pk':pk,'prob-text':form.instance.display_problem_text})
+        return JsonResponse({'qt':qt,'pk':pk,'prob-text':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_problem_text})})
 
 class SolutionView(DetailView):
     model = Problem
-    template_name = 'problemeditor/load_sol.html'
+    template_name = 'problemeditor/problem-snippets/modals/load_sol.html'
 
     def dispatch(self, *args, **kwargs):
         self.item_id = kwargs['pk']
@@ -1813,7 +1137,7 @@ class SolutionView(DetailView):
 def load_new_solution(request,**kwargs):
     pk = request.GET.get('pk','')
     prob = get_object_or_404(Problem,pk=pk)
-    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-solution.html',{'prob':prob})})
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-new-solution.html',{'prob':prob})})
 
 @login_required
 def save_new_solution(request,**kwargs):
@@ -1838,13 +1162,13 @@ def save_new_solution(request,**kwargs):
         object_id = sol.id,
         object_repr = prob.label+' sol '+str(sol.solution_number),
         action_flag = ADDITION,
-        change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk)+'/',
+        change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
         )
     return JsonResponse({'pk':pk,'sol_count':prob.solutions.count()})
 
 def delete_sol(request,**kwargs):
-    pk = request.GET.get('pk','')
-    spk = request.GET.get('spk','')
+    pk = request.POST.get('pk','')
+    spk = request.POST.get('spk','')
     prob =  get_object_or_404(Problem,pk=pk)
     sol =  get_object_or_404(Solution,pk=spk)
     if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'sitemanager' or request.user.userprofile.user_type_new.name == 'contestmanager':
@@ -1855,8 +1179,235 @@ def delete_sol(request,**kwargs):
                 object_id = sol.id,
                 object_repr = prob.label+' sol '+str(sol.solution_number),
                 action_flag = DELETION,
-                change_message = "problemeditor/contest/bytest/"+prob.type_new.type+'/'+prob.test_label+'/'+prob.label+'/editsolution/'+str(sol.pk),
+                change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
                 )
             sol.delete()
             return JsonResponse({'deleted':1,'sol_count': prob.solutions.count()})
     return JsonResponse({'deleted':0})
+
+@login_required
+def add_tag(request):
+    tags = [(d,p) for d, p in request.POST.items() if d.startswith('addtag')]
+    for i in tags:
+        problem_pk=i[0].split('_')[1]
+        prob=get_object_or_404(Problem,pk=problem_pk)
+        tag = get_object_or_404(NewTag,pk=i[1])
+        if tag.problems.filter(pk=problem_pk).exists():
+            return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
+        prob.newtags.add(tag)
+        prob.save()
+    return JsonResponse({'prob_pk':problem_pk,'status':0,'tag_list':render_to_string("problemeditor/problem-snippets/components/tag_snippet.html",{'prob':prob})})
+
+
+@login_required
+def delete_tag(request):
+    delete_tag=request.POST.get('problem_tag_id','')
+    del_list=delete_tag.split('_')
+    problem_pk=del_list[1]
+    prob=get_object_or_404(Problem,pk=problem_pk)
+    tag_pk = del_list[2]
+    tag = get_object_or_404(NewTag,pk=tag_pk)
+    prob.newtags.remove(tag)
+    prob.save()
+    L= prob.newtags.all()
+    response_string = render_to_string("problemeditor/problem-snippets/components/tag_snippet.html",{'prob':prob})
+    return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string,'tag_count':prob.newtags.count()})
+
+
+@login_required
+def load_edit_sol(request,**kwargs):
+    pk = request.POST.get('pk','')
+    spk = request.POST.get('spk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    sol =  get_object_or_404(Solution,pk=spk)
+    form = SolutionForm(instance=sol)
+    return JsonResponse({'sol_form':render_to_string('problemeditor/problem-snippets/modals/edit_sol_form.html',{'form':form,'prob':prob})})
+
+@login_required
+def save_sol(request,**kwargs):
+    pk = request.POST.get('pk','')
+    spk = request.POST.get('spk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    sol =  get_object_or_404(Solution,pk=spk)
+
+    sol.solution_text = request.POST.get('solution_text')
+    sol.modified_date = timezone.now()
+    sol.authors.add(request.user)
+    sol.save()
+    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
+    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+    sol.save()
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(sol).pk,
+        object_id = sol.id,
+        object_repr = prob.label+' sol '+str(sol.solution_number),
+        action_flag = CHANGE,
+        change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
+        )
+    return JsonResponse({'sol_text':render_to_string('problemeditor/problem-snippets/modals/soltext.html',{'solution':sol})})
+
+@login_required
+def change_qt(request,**kwargs):
+    pk = request.POST.get('pk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    form = ChangeQuestionTypeForm1(instance=prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/CMmodals/modal-change-qt.html',{'form':form})})
+
+@login_required
+def change_qt_load(request,**kwargs):
+    pk = request.POST.get('pk','')
+    qt_pk = request.POST.get('qt_pk','')
+    prob =  get_object_or_404(Problem,pk=pk)
+    qt = get_object_or_404(QuestionType,pk=qt_pk)
+    if qt.question_type == "multiple choice":
+        form = ChangeQuestionTypeForm2MC(instance=prob)
+    elif qt.question_type == "multiple choice short answer":
+        form = ChangeQuestionTypeForm2MCSA(instance=prob)
+    elif qt.question_type == "short answer":
+        form = ChangeQuestionTypeForm2SA(instance=prob)
+    elif qt.question_type == "proof":
+        form = ChangeQuestionTypeForm2PF(instance=prob)
+    return JsonResponse({'cqt-form':render_to_string('problemeditor/problem-snippets/CMmodals/cqt-fields.html',{'form':form})})
+
+@login_required
+def save_qt(request,**kwargs):
+    print(request.POST)
+    qt = get_object_or_404(QuestionType,pk=request.POST.get('question_type_new',''))
+    prob = get_object_or_404(Problem,pk=request.POST.get('cqt_prob_pk',''))
+    prob.question_type_new = qt
+    if qt.question_type == 'proof':
+        prob.problem_text = request.POST.get('problem_text')
+        prob.save()
+        prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+        prob.save()
+        compileasy(prob.problem_text,prob.label)
+    elif qt.question_type == 'short answer':
+        prob.problem_text = request.POST.get('problem_text')
+        prob.sa_answer = request.POST.get('sa_answer')
+        prob.save()
+        prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+        prob.save()
+        compileasy(prob.problem_text,prob.label)
+    elif qt.question_type == 'multiple choice':
+        prob.problem_text = request.POST.get('mc_problem_text')
+        prob.mc_answer = request.POST.get('mc_answer')
+        prob.answer_A = request.POST.get('answer_A')
+        prob.answer_B = request.POST.get('answer_B')
+        prob.answer_C = request.POST.get('answer_C')
+        prob.answer_D = request.POST.get('answer_D')
+        prob.answer_E = request.POST.get('answer_E')
+        prob.save()
+        prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
+        prob.save()
+        compileasy(prob.mc_problem_text,prob.label)
+    elif qt.question_type == 'multiple choice short answer':
+        prob.problem_text = request.POST.get('mc_problem_text')
+        prob.mc_answer = request.POST.get('mc_answer')
+        prob.answer_A = request.POST.get('answer_A')
+        prob.answer_B = request.POST.get('answer_B')
+        prob.answer_C = request.POST.get('answer_C')
+        prob.answer_D = request.POST.get('answer_D')
+        prob.answer_E = request.POST.get('answer_E')
+        prob.save()
+        prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
+        prob.save()
+        compileasy(prob.mc_problem_text,prob.label)
+        prob.problem_text = request.POST.get('problem_text')
+        prob.sa_answer = request.POST.get('sa_answer')
+        prob.save()
+        prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+        prob.save()
+        compileasy(prob.problem_text,prob.label)
+    return JsonResponse({'problem-div':render_to_string('problemeditor/problem-snippets/CMcomponents/problemtext.html',{'prob':prob}),'qt':qt.question_type})
+
+@login_required
+def load_change_difficulty(request,**kwargs):
+    prob = get_object_or_404(Problem,pk=request.POST.get('pk',''))
+    form = DifficultyForm(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/CMmodals/modal-change-difficulty.html',{'form':form})})
+
+@login_required
+def save_difficulty(request,**kwargs):
+    prob = get_object_or_404(Problem,pk=request.POST.get('diff_prob_pk',''))
+    prob.difficulty = request.POST.get('difficulty','')
+    prob.save()
+    return JsonResponse({'difficulty':prob.difficulty})
+
+@login_required
+def load_edit_review(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    review = get_object_or_404(ProblemApproval,pk = request.POST.get('review_pk',''))
+    form = ApprovalForm(instance = review)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/CMmodals/modal-review.html',{'form':form,'edit_review':1,'prob':prob})})
+
+@login_required
+def new_review(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    form = ApprovalForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/CMmodals/modal-review.html',{'form':form,'prob':prob})})
+
+@login_required
+def save_review(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    review = get_object_or_404(ProblemApproval,pk = request.POST.get('rv_pk',''))
+    review.author_name = request.POST.get('author_name','')
+    review.approval_status = request.POST.get('approval_status','')
+    review.save()
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(review).pk,
+        object_id = rewview.id,
+        object_repr = prob.label,
+        action_flag = CHANGE,
+        change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
+        )
+    return JsonResponse({'approvals':render_to_string('problemeditor/problem-snippets/CMcomponents/approval-div.html',{'prob':prob})})
+
+@login_required
+def save_new_review(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    review = ProblemApproval(author_name = request.POST.get('author_name',''),approval_status = request.POST.get('approval_status',''),approval_user=request.user)
+    review.save()
+    prob.approvals.add(review)
+    prob.save()
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(review).pk,
+        object_id = rewview.id,
+        object_repr = prob.label,
+        action_flag = ADDITION,
+        change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
+        )
+    return JsonResponse({'approvals':render_to_string('problemeditor/problem-snippets/CMcomponents/approval-div.html',{'prob':prob})})
+
+@login_required
+def new_comment(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    form = CommentForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/CMmodals/modal-new-comment.html',{'form':form,'prob':prob})})
+
+@login_required
+def save_comment(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('nc-pk',''))
+    com_form = CommentForm(request.POST)
+    com_num=prob.comments.count()+1
+    if com_form.is_valid():
+        com = com_form.save(commit=False)
+        com.comment_number=com_num
+        com.author = request.user
+        com.problem_label=prob.label
+        com.save()
+        prob.comments.add(com)
+        prob.save()
+        if prob.comments.count() > 1:
+            return JsonResponse({'new_comment':0,'comment':render_to_string('problemeditor/problem-snippets/CMcomponents/comment.html',{'com':com_form.instance,'request':request,'prob':prob})})
+        else:
+            return JsonResponse({'new_comment':1,'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})
+    return JsonResponse({})
+
+def delete_comment(request, **kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    comment = get_object_or_404(Comment,pk = request.POST.get('com_pk',''))
+    comment.delete()
+    return JsonResponse({'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})

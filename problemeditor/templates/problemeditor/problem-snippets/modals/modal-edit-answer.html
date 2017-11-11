@@ -1,18 +1,19 @@
-
 <div class="modal-dialog">
     <div class="modal-content">
-        <form id="tag_update_form" method='post' class="form" role="form" action='{% url 'add_new_tag' parent_tag.pk %}'>
+        <form id="edit_answer_form" method='get' action='.'>
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="myModalLabel">Add Tag</h4>
+                <h4 class="modal-title">Edit Answer</h4>
               </div>
               <div class="modal-body">
-                    {% csrf_token %}
 
+
+		{% include  "problemeditor/snippetprobtext.html" with prob=form.instance %}
+		<input type="hidden" id="ea_qt" name="ea_qt" value="{{qt}}">
+<input type="hidden" id="ea_prob_pk" name="ea_prob_pk" value="{{form.instance.pk}}">
                     {{ form.non_field_errors }}
                     <div class="form-group">
                     {% for field in form %}
-		    {% if field.is_hidden == 0 %}
                         <div class="form-group">
                             {% if field.errors %}
                                 <ul class="form-errors">
@@ -21,37 +22,16 @@
                                 {% endfor %}
                                 </ul>
                             {% endif %}
-                            {{ field.label_tag }} 
-				<table>
-				  <tr>
-				    <td>
-				      {% if parent_tag.level > 0 %}
-				      {{parent_tag}}&#62;
-				      {% endif %}
-<!--				      {% if parent_tag.level == 0 %}
-				      {% elif parent_tag.level == 1 %}
-				      {{parent_tag.label}}&#62;
-				      {% elif parent_tag.level == 2 %}
-				      {{parent_tag.parent.label}}&#62;{{parent_tag.label}}&#62;
-				      {% endif %}
--->
-				    </td>
-				    <td>
-				      {{ field }} 
-				    </td>
-				  </tr>
-				</table>
+                            {{ field.label_tag }} {{ field }}
                             {% if field.help_text %}<div class="form-helptext">{{ field.help_text }}</div>{% endif %}
                         </div>
-			{% else %}
-			{{ field.as_hidden }}
-			{% endif %}
                     {% endfor %}
               </div>
               <div class="modal-footer">
-                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
-                <input type="submit" class="btn btn-primary" value="Save" style="margin-bottom: 5px;" />
+                <input type="submit" class="btn btn-primary" value="Save" style="margin-bottom: 5px;" >
+                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" >
               </div>
         </form>
     </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->
+

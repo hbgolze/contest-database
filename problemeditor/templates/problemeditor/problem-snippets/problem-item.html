@@ -1,0 +1,18 @@
+
+              {% include "problemeditor/problem-snippets/components/problemtext.html" %}
+{% if not no_answer %}
+              {% include "problemeditor/problem-snippets/components/answer.html" %}
+{% endif %}
+{% if not no_editlatex %}
+              {% include "problemeditor/problem-snippets/components/editlatex.html" %}
+{% endif %}
+{% if not no_duplicate %}
+              {% include "problemeditor/problem-snippets/components/duplicateproblem.html" %}
+{% endif %}
+{% if not no_tags %}
+              {% include "problemeditor/problem-snippets/components/currenttags.html" %}
+              {% include "problemeditor/problem-snippets/components/addtagform.html" %}
+{% endif %}
+{% if not no_solutions %}
+              {% include "problemeditor/problem-snippets/components/solutiondiv.html" %}
+{% endif %}

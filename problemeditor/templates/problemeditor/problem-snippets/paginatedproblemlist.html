@@ -1,0 +1,46 @@
+  <div class="row">
+    <div class="col-xs-12">
+      <div id="problemList" class="list-group">
+        {% for prob in rows %}
+        <div class="list-group-item" id="problem_{{prob.pk}}">
+	  <div class="row">
+	    <div class="col-xs-1">
+	      {% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}.{% else %}{{forloop.counter}}.{% endif %}
+
+	    </div>
+	    <div class="col-xs-11">
+              {% include 'problemeditor/problem-snippets/problem-item.html' %}
+	    </div>
+	  </div>
+        </div>
+        {% endfor %}
+      </div><!--list-group-->
+    </div>
+  </div>
+
+  {% if rows.has_other_pages %}
+  <ul class="pagination">
+    {% if rows.has_previous %}
+    <li><a href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
+    {% else %}
+    <li class="disabled"><span>&laquo;</span></li>
+    {% endif %}
+    {% for i in rows.paginator.page_range %}
+    {% if rows.number == i %}
+    <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+    {% else %}
+    <li><a href="?page={{ i }}">{{ i }}</a></li>
+    {% endif %}
+    {% endfor %}
+    
+
+    {% if rows.has_next %}
+    <li><a href="?page={{ rows.next_page_number }}">&raquo;</a></li>
+    {% else %}
+    <li class="disabled"><span>&raquo;</span></li>
+    {% endif %}
+  </ul>
+  {% endif %}
+
+  {% include 'problemeditor/problem-snippets/modals/modal-placeholders.html' %}
+

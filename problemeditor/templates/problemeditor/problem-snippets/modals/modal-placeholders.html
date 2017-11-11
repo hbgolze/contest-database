@@ -1,0 +1,42 @@
+{% if request.user.is_superuser %}
+  <div class="modal fade" id="duplicate-modal" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <form method="post" action="." class="add-linked-problem-form">
+
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add Link to Duplicate Problem</h4>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            <input type="hidden" name="original-prob_pk" id="original-prob_pk">
+            <div class="form-group">
+              <label for="linked_problem_label" class="control-label">Label of Linked Problem</label>
+              <input type="text" class="form-control" name="linked_problem_label" id="linked_problem_label" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" name="addlink" class="btn btn-primary">Add Linked Problem</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+  <div class="modal fade" id="edit-answer-modal" role="dialog">
+
+  </div>
+  <div class="modal fade" id="edit-latex-modal" role="dialog">
+
+  </div>
+  {% endif %}
+  <div class="modal fade" id="solution-placeholder" role="dialog">
+
+  </div>
+  <div class="modal fade" id="new-solution-placeholder" role="dialog">
+
+  </div>
+

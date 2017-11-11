@@ -57,7 +57,6 @@ def problemsetview(request,**kwargs):
         user_problemset.response_initialize()
     if request.method == "POST":
         form=request.POST
-        print(form)
         P=user_problemset.response_set.all()
 
         num_correct = 0

@@ -142,11 +142,6 @@ def add_tag(request):
             return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
         prob.newtags.add(tag)
         prob.save()
-#        response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
-#        L= prob.newtags.all()
-#        for tag in L:
-#            response_string+="<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
-#        response_string+="</ul>"
     return JsonResponse({'prob_pk':problem_pk,'status':0,'tag_list':render_to_string("search/tag_snippet.html",{'prob':prob})})
 
 
@@ -162,8 +157,5 @@ def delete_tag(request):
     prob.save()
     response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
     L= prob.newtags.all()
-#    for tag in L:
-#        response_string += "<li>\n<span class=\"label label-default\">"+str(tag)+"</span> <button type=\"submit\" class=\"btn btn-default btn-xs delete-tag-link\" id=\"deletetag_"+str(prob.pk)+"_"+str(tag.pk)+"\"><span style=\"color:red; cursor:pointer\">✖</span></button>\n</li>\n"
-#    response_string+="</ul>"
     response_string = render_to_string("search/tag_snippet.html",{'prob':prob})
     return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string,'tag_count':prob.newtags.count()})

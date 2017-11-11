@@ -1,0 +1,10 @@
+  <div class="list-group-item">
+    <div class="list-group-item-heading">
+    <small class="text-muted pull-right">{{com.created_date}}</small>
+
+<b>{{com.author_name}}</b>
+</div>
+
+    <p class="list-group-item-text">{{com.comment_text|linebreaks}}</p>
+    {% if request.user.is_superuser %}<p><small>(<a class="delete-comment-link" href="{{prob.pk}}_{{com.pk}}">Delete</a>)</small></p>{% endif %}
+  </div>
