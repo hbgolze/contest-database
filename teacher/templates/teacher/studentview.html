@@ -12,7 +12,7 @@ document.write("</div>");
 $(function() {
         
   $('.list-group-item').on('click', function() {
-    $('.glyphicon', this)
+    $('.glg', this)
       .toggleClass('glyphicon-chevron-right')
       .toggleClass('glyphicon-chevron-down');
   });
@@ -41,7 +41,7 @@ $(function() {
 	  <a href="#class_{{class.pk}}" class="list-group-item" data-toggle="collapse" style="background-color:lightgray">
 	    <div class="row">
 	      <div class="col-xs-4">
-		<i class="glyphicon glyphicon-chevron-right"></i>
+		<i class="glyphicon glyphicon-chevron-right glg"></i>
 		{{class.published_class.name}} ({{class.published_class.pub_units.count}} units)
 	      </div>
 	      <div class="col-xs-4">
@@ -59,7 +59,7 @@ $(function() {
             <a href="#unit_{{unit.pk}}" class="list-group-item" data-toggle="collapse">
               <div class="row">
                 <div class="col-xs-4">
-                  <i class="glyphicon glyphicon-chevron-right"></i>
+                  <i class="glyphicon glyphicon-chevron-right glg"></i>
                   <b>Unit {{forloop.counter}}:</b>
                   {{unit.published_unit.name}} ({{unit.num_problemsets}} problem sets)
                 </div>

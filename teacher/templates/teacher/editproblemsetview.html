@@ -19,6 +19,14 @@
     </div>
     <div class="col-sm-9 col-md-10 main">
       <h2>Edit Problem Set: {{problemset.name}}</h2>
+
+<p><b>Options:</b></p>
+<div class="row">
+<div class="col-xs-6" id="duedatediv">
+{% if problemset.due_date %}{% else %}{% endif %}
+</div>
+</div>
+
       {% if problemset.problem_objects.count > 0 %}
       <p>Drag problems around to reorder them.</p>
       {% endif %}

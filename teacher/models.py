@@ -641,6 +641,8 @@ class ProblemSet(models.Model):#like NewTest
 #    unit_objects = GenericRelation(UnitObject)#??????
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
+    due_date = models.DateTimeField(null = True)
+    time_limit = models.TimeField(null = True)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
@@ -686,6 +688,8 @@ class PublishedProblemSet(models.Model):#like NewTest
 #    unit_objects = GenericRelation(UnitObject)#??????
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
+    due_date = models.DateTimeField(null = True)
+    time_limit = models.TimeField(null = True)
     def __str__(self):
         return self.name
     def sync_to_parent(self):

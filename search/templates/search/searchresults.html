@@ -25,7 +25,7 @@ There are {{matchnums}} matching problems in the database.
 <form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
   {% csrf_token %}
   <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
-    {% include "search/tag_snippet.html" %}
+    {% include "problemeditor/problem-snippets/components/tag_snippet.html" %}
   </div>
 </form>
 
