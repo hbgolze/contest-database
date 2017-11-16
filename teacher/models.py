@@ -673,7 +673,7 @@ class ProblemSet(models.Model):#like NewTest
     )
     name = models.CharField(max_length = 100)
     created_date = models.DateTimeField(default = timezone.now)
-    problem_objects = models.ManyToManyField('ProblemObject',blank=True)
+#    problem_objects = models.ManyToManyField('ProblemObject',blank=True)
     default_point_value = models.IntegerField(default = 1)
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
@@ -718,9 +718,8 @@ class PublishedProblemSet(models.Model):#like NewTest
     )
     name = models.CharField(max_length = 100)
     created_date = models.DateTimeField(default = timezone.now)
-    problem_objects = models.ManyToManyField('PublishedProblemObject',blank=True)
+#    problem_objects = models.ManyToManyField('PublishedProblemObject',blank=True)
     default_point_value = models.IntegerField(default = 1)
-#    unit_objects = GenericRelation(UnitObject)#??????
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
@@ -814,8 +813,8 @@ class PublishedTest(models.Model):#like NewTest
                 r.save()
 
 class ProblemObject(models.Model):
-    a_problemset = models.ForeignKey(ProblemSet,null = True)
-    test = models.ForeignKey(Test,null = True)
+    problemset = models.ForeignKey(ProblemSet,null = True, related_name = "problem_objects")
+    test = models.ForeignKey(Test,null = True,related_name = "problem_objects")
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
     blank_point_value = models.FloatField(default = 0)
@@ -887,8 +886,8 @@ class ProblemObject(models.Model):
 
 
 class PublishedProblemObject(models.Model):
-    problemset = models.ForeignKey(PublishedProblemSet,null=True)
-    test = models.ForeignKey(PublishedTest,null=True)
+    problemset = models.ForeignKey(PublishedProblemSet,null=True,related_name="problem_objects")
+    test = models.ForeignKey(PublishedTest,null=True,related_name = "problem_objects")
     parent_problemobject = models.ForeignKey(ProblemObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
