@@ -7,7 +7,20 @@ from django.contrib.admin.models import LogEntry
 
 
 # Create your models here.
-
+TIMEZONES=(
+    ("US/Alaska","US/Alaska"),
+    ("US/Aleutian","US/Aleutian"),
+    ("US/Arizona","US/Arizona"),
+    ("US/Central","US/Central"),
+    ("US/East-Indiana","US/East-Indiana"),
+    ("US/Eastern","US/Eastern"),
+    ("US/Hawaii","US/Hawaii"),
+    ("US/Indiana-Starke","US/Indiana-Starke"),
+    ("US/Michigan","US/Michigan"),
+    ("US/Mountain","US/Mountain"),
+    ("US/Pacific","US/Pacific"),
+    ("US/Samoa","US/Samoa")
+)
 class Dropboxurl(models.Model):
     url=models.CharField(max_length=100)
     def __str__(self):
@@ -302,6 +315,7 @@ class UserProfile(models.Model):
     my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
     my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
     my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='TA_userprofiles')
+    time_zone = models.CharField(max_length=100, blank=True, null=True, choices=TIMEZONES)
     def __str__(self):
         return self.user.username
 

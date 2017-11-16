@@ -1288,3 +1288,15 @@ def checkanswer(request,pk):
             else:
                 return JsonResponse({'blank':'false','correct' : 'false'})
     return JsonResponse({'blank':'true'})
+
+@login_required
+def changetimezoneview(request):
+    print('hi')
+    userprofile = request.user.userprofile
+    if request.method == 'POST':
+        print(request.POST)
+        form = UserProfileForm(request.POST, instance=userprofile)
+        print(form)
+        form.save()
+    form = UserProfileForm(instance = userprofile)
+    return render(request,'randomtest/timezoneform.html',{'form':form})

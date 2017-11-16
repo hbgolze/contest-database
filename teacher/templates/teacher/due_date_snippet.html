@@ -1,0 +1,33 @@
+{% load tz %}
+{% if problemset %}
+<b>Due Date:</b> 
+{% if problemset.due_date %}
+
+{{problemset.due_date|timezone:request.user.userprofile.time_zone}} 
+<span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:blue;cursor:pointer"><span class="glyphicon glyphicon-pencil"></span></span>
+<span class="delete-duedate-link" id="delete-duedate_{{problemset.pk}}" style="color:red;cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span>
+{% else %}
+No due date set for this assignment.<span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
+{% endif %}
+{% else %}
+<p>
+<b>Start Date:</b>
+{% if test.start_date %}
+{{test.start_date|timezone:request.user.userprofile.time_zone}} 
+<span class="edit-startdate-link" id="edit-startdate_{{test.pk}}" style="color:blue;cursor:pointer"><span class="glyphicon glyphicon-pencil"></span></span>
+<span class="delete-startdate-link" id="delete-startdate_{{test.pk}}" style="color:red;cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span>
+{% else %}
+No start date set for this test.<span class="edit-startdate-link" id="edit-startdate_{{test.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
+{% endif %}
+</p>
+<p>
+<b>Due Date:</b>
+{% if test.due_date %}
+{{test.due_date|timezone:request.user.userprofile.time_zone}} 
+<span class="edit-duedate-link" id="edit-duedate_{{test.pk}}" style="color:blue;cursor:pointer"><span class="glyphicon glyphicon-pencil"></span></span>
+<span class="delete-duedate-link" id="delete-duedate_{{test.pk}}" style="color:red;cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span>
+{% else %}
+No due date set for this test.<span class="edit-duedate-link" id="edit-duedate_{{test.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
+{% endif %}
+</p>
+{% endif %}

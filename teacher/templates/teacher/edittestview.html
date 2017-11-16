@@ -14,7 +14,7 @@
   <li><a href="../../../../../../">My Classes</a></li>
   <li><a href="../../../../">{{my_class.name}}</a></li>
   <li><a href="../../">{{unit.name}}</a></li>
-  <li class="active">{{problemset.name}}</li>
+  <li class="active">{{test.name}}</li>
 </ol>
 
 <div class="container-fluid">
@@ -23,26 +23,75 @@
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Problem Set: {{problemset.name}}</h2>
+      <h2>Edit Test: {{test.name}}</h2>
 
 
-      <div class="row">
-	<div class="col-xs-6" id="duedatediv">
-	  {% include 'teacher/editduedate.html' %}
-	</div>
-      </div>
+<div class="row">
+<div class="col-xs-6" id="duedatediv">
+{% include 'teacher/editduedate.html' %}
+</div>
+<div class="col-xs-6" id="timelimitdiv">
+{% include 'teacher/edittimelimit.html' %}
+</div>
+</div>
 
-      {% if problemset.problem_objects.count > 0 %}
+      {% if test.test_problem_objects.count > 0 %}
       <p>Drag problems around to reorder them, then click "Save".</p>
       {% endif %}
-      <form action="." method="POST" id="problemobjects">
+      <form action="." method="POST" id="testproblemobjects">
         {% csrf_token %}
-        <div id="problemobjectList" class="list-group">
-	  {% if problemset.problem_objects.count > 0 %}
-          {% for probobj in problemset.problem_objects.all %}
-
-{% include 'teacher/problemobjectsnippet.html' with forcount=forloop.counter %}
-
+        <div id="testproblemobjectList" class="list-group">
+	  {% if test.test_problem_objects.count > 0 %}
+          {% for probobj in test.test_problem_objects.all %}
+          <div class="list-group-item">
+            <input type="hidden" name="problemobjectinput" value="problemobject_{{probobj.pk}}">
+            <div class="row">
+              <div class="col-sm-1">
+                {{forloop.counter}}.
+              </div>
+              <div class="col-sm-8 col-md-9" id="problemtext_{{probobj.pk}}">
+		{% if probobj.isProblem == 1 %}
+		{% with prob=probobj.problem %}
+		{% if probobj.question_type.question_type == "multiple choice" %}
+		<p>
+		  {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+		</p>
+		{% else %}
+		<p>
+		  {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+		</p>
+		{% endif %}
+		{% endwith %}
+		{% else %}
+		<p>
+		  {% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}
+		</p>
+		{% endif %}
+	      </div>
+	      <div class="col-sm-3 col-md-2" style="text-align:right">
+                <div><span class="js-remove" style="color:red; cursor:pointer">✖</span></div>
+		<div>
+		  <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
+		  <span id="pointvalue_{{probobj.pk}}">
+		    {{probobj.point_value}}
+		  </span>
+		  (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+		</div>
+		<div>
+		  <label for="blankpointvalue_{{probobj.pk}}">Blank Point Value:</label>
+		  <span id="blankpointvalue_{{probobj.pk}}">
+		    {{probobj.blank_point_value}}
+		  </span>
+		  (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+		</div>
+		<div>
+		  <label for="qt_{{probobj.pk}}">Question Type:</label>
+		  <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
+		  (<small><a data-target="#edit-question-type" class="edit-qt-link" href="edit-question-type/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+		</div>		
+              </div>
+            </div>
+          </div>
           {% endfor %}
 	  {% else %}
 	  <div id="msg-no-problems"><p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p></div>
@@ -120,6 +169,34 @@
         </div>
         <div class="modal-footer">
           <button type="submit" id="updatepointvalue" name="updatepointvalue" class="btn btn-primary">Update Point Value</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+</div>
+
+<div class="modal fade" id="edit-bpv-modal" tabindex="-1" role="dialog">
+  
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" id="form-edit-bpv" action=".">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Edit Blank Point Value</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+
+	  <div id="edit-bpv-placeholder">
+	    
+	  </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="updateblankpointvalue" name="updateblankpointvalue" class="btn btn-primary">Update Blank Point Value</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </form>
@@ -245,6 +322,9 @@
 <div class="modal fade" id="edit-duedate-modal" tabindex="-1" role="dialog">
 
 </div>
+<div class="modal fade" id="edit-startdate-modal" tabindex="-1" role="dialog">
+
+</div>
 
 <div class="modal fade" id="edit-timelimit-modal" tabindex="-1" role="dialog">
 
@@ -337,6 +417,34 @@ $("#form-edit-pv").on('submit',function(event) {
     return false;
 });
 
+$(".edit-bpv-link").click(function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+    $("#form-edit-bpv").attr("action",$(this).attr("href")+'/');
+    $("#edit-bpv-placeholder").load(target, function() {
+
+         $("#edit-bpv-modal").modal("show");
+    });
+});
+
+$("#form-edit-bpv").on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: $(this).attr('action'),
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-bpv-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#blankpointvalue_"+result['pk']).html(result['blank_point_value']);
+        }
+    });
+    return false;
+});
+
+
 $('#question-type').change(function(event) {
     event.preventDefault();
     $('#addoriginalproblem').prop('disabled',false);
@@ -428,7 +536,7 @@ $("#form-add-original-problem").on('submit',function(event) {
         success: function(result) {
             $("#originalproblem").hide();
             $("[data-dismiss=modal]").trigger({ type: "click" });
-            $("#problemobjectList").append(result['problem_text']);
+            $("#testproblemobjectList").append(result['problem_text']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problemtext_"+result['pk']]);
         }
     });
@@ -481,7 +589,7 @@ $("#contest-tags").change(function(event) {
 });
 
 
-var editableList = Sortable.create(problemobjectList, {
+var editableList = Sortable.create(testproblemobjectList, {
   filter: '.js-remove',
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
@@ -497,7 +605,7 @@ $(document).on('click',".edit-duedate-link",function(event) {
     $.ajax({
         type: 'POST',
         url: '/teacher/ajax/load-edit-duedate/',
-        data: "pk="+ps_pk+"&uo=ps",
+        data: "pk="+ps_pk+"&uo=tst",
         dataType: 'json',
         success: function(result) {
             $("#edit-duedate-modal").html(result['modal-html']);
@@ -515,7 +623,7 @@ $(document).on('submit',"#edit-duedate-form",function(event) {
     $.ajax({
         type: 'POST',
         url: '/teacher/ajax/save-duedate/',
-        data: $(this).serialize()+"&uo=ps",
+        data: $(this).serialize()+"&uo=tst",
         dataType: 'json',
         success: function(result) {
            $("#due_date_div").html(result['date_snippet']);
@@ -532,10 +640,109 @@ $(document).on('click',".delete-duedate-link",function(event) {
     $.ajax({
         type: 'POST',
         url: '/teacher/ajax/delete-duedate/',
-        data: "pk="+ps_pk+"&uo=ps",
+        data: "pk="+ps_pk+"&uo=tst",
         dataType: 'json',
         success: function(result) {
            $("#due_date_div").html(result['date_snippet']);
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-startdate-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/load-edit-startdate/',
+        data: "pk="+ps_pk+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-startdate-modal").html(result['modal-html']);
+ $(function() {
+   $('#datetimepicker2').datetimepicker({defaultDate:result['date']});
+ });
+            $("#edit-startdate-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit-startdate-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/save-startdate/',
+        data: $(this).serialize()+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+           $("#due_date_div").html(result['date_snippet']);
+           $("#edit-startdate-modal").hide();
+           $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".delete-startdate-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/delete-startdate/',
+        data: "pk="+ps_pk+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+           $("#due_date_div").html(result['date_snippet']);
+        }
+    });
+    return false;
+});
+
+
+$(document).on('click',".edit-timelimit-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/load-edit-timelimit/',
+        data: "pk="+ps_pk+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-timelimit-modal").html(result['modal-html']);
+            $("#edit-timelimit-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit-timelimit-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/save-timelimit/',
+        data: $(this).serialize()+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+           $("#time_limit_div").html(result['time_snippet']);
+           $("#edit-timelimit-modal").hide();
+           $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".delete-timelimit-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/delete-timelimit/',
+        data: "pk="+ps_pk+"&uo=tst",
+        dataType: 'json',
+        success: function(result) {
+           $("#time_limit_div").html(result['time_snippet']);
         }
     });
     return false;

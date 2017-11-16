@@ -6,6 +6,7 @@ from django.contrib.contenttypes.models import ContentType
 
 from randomtest.models import Problem,Solution,QuestionType
 from randomtest.utils import newtexcode, compileasy
+from student.models import UserClass,UserUnit,UserUnitObject,UserProblemSet,UserSlides,UserTest
 # Create your models here.
 
 class Class(models.Model):#This should be reserved for drafts of classes; also, curated (i.e., professionally done) classes will appear here, which can be copied directly (or used as a template)/starting point
@@ -65,6 +66,14 @@ class PublishedClass(models.Model):#class?
         self.total_points = total_points
         self.num_problems = num_problems
         self.save()
+    def add_student(self,student):
+        self.enrolled_students.add(student)
+        self.save()
+        new_user_class = UserClass(published_class = self,userprofile=student.userprofile,total_points=self.total_points,points_earned=0,num_problems = self.num_problems)
+        new_user_class.save()
+        for unit in self.pub_units.all():
+            unit.add_student(student,new_user_class)
+        return new_user_class
 
 class Unit(models.Model):#with order
     name = models.CharField(max_length = 100)
@@ -86,12 +95,16 @@ class Unit(models.Model):#with order
             try:
                 sg = uo.slidegroup
                 new_uo = uo.publish(new_unit)
-            except:
-                pset = uo.problemset
-                new_uo = uo.publish(new_unit)
-                num_problemsets += 1
-                unit_num_problems += new_uo.publishedproblemset.num_problems
-                unit_points += new_uo.publishedproblemset.total_points
+            except SlideGroup.DoesNotExist:
+                try:
+                    pset = uo.problemset
+                    new_uo = uo.publish(new_unit)
+                    num_problemsets += 1
+                    unit_num_problems += new_uo.publishedproblemset.num_problems
+                    unit_points += new_uo.publishedproblemset.total_points
+                except ProblemSet.DoesNotExist:
+                    test = uo.test
+                    new_uo = uo.publish(new_unit)
         new_unit.total_points = unit_points
         new_unit.num_problems = unit_num_problems
         new_unit.num_problemsets = num_problemsets
@@ -134,10 +147,30 @@ class PublishedUnit(models.Model):
                 uo.sync_to_parent()
                 parent_uos_pk.append(uo.parent_unitobject.pk)
         for uo in self.parent_unit.unit_objects.exclude(pk__in=parent_uos_pk):
-            print('new unit object')
             new_uo = uo.publish(self)
-            print(new_uo.pk)
-
+    def add_student(self,student,user_class):
+        new_user_unit = UserUnit(published_unit = self,user_class = user_class,total_points=self.total_points, points_earned=0,order = self.order,num_problems = self.num_problems)
+        new_user_unit.save()
+        num_psets = 0
+        for unit_object in self.unit_objects.all():
+            new_user_unitobject = UserUnitObject(order = unit_object.order, user_unit = new_user_unit)
+            new_user_unitobject.save()
+            try:
+                slidegroup = unit_object.publishedslidegroup
+                user_slides = UserSlides(published_slides = slidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = slidegroup.slides.count())
+                user_slides.save()
+            except PublishedSlideGroup.DoesNotExist:
+                try:
+                    pset = unit_object.publishedproblemset
+                    user_problemset = UserProblemSet(published_problemset = pset, total_points = pset.total_points,points_earned = 0,order = unit_object.order,num_problems = pset.num_problems,userunitobject = new_user_unitobject)
+                    user_problemset.save()
+                    num_psets +=1
+                except PublishedProblemSet.DoesNotExist:
+                    test = unit_object.publishedtest
+                    user_test = UserTest(published_test = test, total_points = test.total_points, points_earned = 0, order = unit_object.order,num_problems = test.num_problems,userunitobject = new_user_unitobject)
+                    user_test.save()
+        new_user_unit.num_problemsets = num_psets
+        new_user_unit.save()
 
 class UnitObject(models.Model):
     order = models.IntegerField(default = 0)
@@ -150,9 +183,13 @@ class UnitObject(models.Model):
         try:
             sg = self.slidegroup
             sg.publish(new_unit_object)
-        except:
-            pset = self.problemset
-            pset.publish(new_unit_object)
+        except SlideGroup.DoesNotExist:
+            try:
+                pset = self.problemset
+                pset.publish(new_unit_object)
+            except ProblemSet.DoesNotExist:
+                test = self.test
+                test.publish(new_unit_object)
         return new_unit_object
     def sync_to_parent(self):
         self.order = self.parent_unitobject.order
@@ -180,11 +217,11 @@ class PublishedUnitObject(models.Model):
         try:
             sg = self.publishedslidegroup
             sg.sync_to_parent()
-        except:
+        except SlideGroup.DoesNotExist:
             try:
                 pset = self.publishedproblemset
                 pset.sync_to_parent()
-            except:
+            except ProblemSet.DoesNotExist:
                 a=0
 
 
@@ -638,15 +675,13 @@ class ProblemSet(models.Model):#like NewTest
     created_date = models.DateTimeField(default = timezone.now)
     problem_objects = models.ManyToManyField('ProblemObject',blank=True)
     default_point_value = models.IntegerField(default = 1)
-#    unit_objects = GenericRelation(UnitObject)#??????
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
-    time_limit = models.TimeField(null = True)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
-        new_problemset = PublishedProblemSet(name = self.name,default_point_value = self.default_point_value,unit_object = published_unit_object, parent_problemset = self)
+        new_problemset = PublishedProblemSet(name = self.name,default_point_value = self.default_point_value,unit_object = published_unit_object, parent_problemset = self, due_date = self.due_date)
         new_problemset.save()
         total_points=0
         for po in self.problem_objects.all():
@@ -689,7 +724,6 @@ class PublishedProblemSet(models.Model):#like NewTest
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
-    time_limit = models.TimeField(null = True)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -710,9 +744,81 @@ class PublishedProblemSet(models.Model):#like NewTest
                 r=Response(problem_object = new_po,user_problemset = ups,order = new_po.order,point_value = new_po.point_value)
                 r.save()
 
+class Test(models.Model):#like NewTest
+    unit_object = models.OneToOneField(
+        UnitObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
+    name = models.CharField(max_length = 100)
+    created_date = models.DateTimeField(default = timezone.now)
+    default_point_value = models.IntegerField(default = 1)
+    default_blank_value = models.FloatField(default = 0)
+    total_points = models.IntegerField(default=0)
+    num_problems = models.IntegerField(default=0)
+    start_date = models.DateTimeField(null = True)
+    due_date = models.DateTimeField(null = True)
+    time_limit = models.TimeField(null = True)
+    def __str__(self):
+        return self.name
+    def publish(self,published_unit_object):
+        new_test = PublishedTest(name = self.name,default_point_value = self.default_point_value,default_blank_value = self.default_blank_value,unit_object = published_unit_object, parent_test = self, due_date = self.due_date,time_limit = self.time_limit, start_date = self.start_date)
+        new_test.save()
+        total_points=0
+        for po in self.test_problem_objects.all():
+            new_po = po.publish(new_test)
+            new_test.test_problem_objects.add(new_po)
+            total_points += po.point_value
+        new_test.total_points = total_points
+        new_test.num_problems = new_test.test_problem_objects.count()
+        new_test.save()
+
+class PublishedTest(models.Model):#like NewTest
+    parent_test = models.ForeignKey(Test,null=True,on_delete=models.SET_NULL)
+    unit_object = models.OneToOneField(
+        PublishedUnitObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
+    name = models.CharField(max_length = 100)
+    created_date = models.DateTimeField(default = timezone.now)
+#    test_problem_objects = models.ManyToManyField('PublishedProblemObject',blank=True)
+    default_point_value = models.IntegerField(default = 1)
+    default_blank_value = models.FloatField(default = 0)
+    total_points = models.IntegerField(default=0)
+    num_problems = models.IntegerField(default=0)
+    due_date = models.DateTimeField(null = True)
+    start_date = models.DateTimeField(null = True)
+    time_limit = models.TimeField(null = True)
+    def __str__(self):
+        return self.name
+    def sync_to_parent(self):
+        self.name = self.parent_test.name
+        self.default_point_value = self.parent_test.default_point_value
+        self.default_blank_value = self.parent_test.default_blank_value
+        self.due_date = self.parent_test.due_date
+        self.start_date = self.parent_test.start_date
+        self.save()
+        parent_po_pks=[]
+        for po in self.test_problem_objects.all():
+            if po.parent_testproblemobject not in self.parent_test.test_problem_objects().all():
+                po.testresponse_set.delete()
+                po.delete()
+            else:
+                po.sync_to_parent(self)
+                parent_po_pks.append(po.parent_test_problem_object.pk)
+        for po in self.parent_test.test_problem_objects.exclude(pk__in=parent_po_pks):
+            new_po=po.publish(self)
+            for ut in self.usertest_set.all():
+                r=TestResponse(test_problem_object = new_po,user_test = ut,order = new_po.order,point_value = new_po.point_value)
+                r.save()
+
 class ProblemObject(models.Model):
+    a_problemset = models.ForeignKey(ProblemSet,null = True)
+    test = models.ForeignKey(Test,null = True)
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
+    blank_point_value = models.FloatField(default = 0)
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
@@ -753,9 +859,9 @@ class ProblemObject(models.Model):
         new_po.save()
         if new_po.isProblem == 0:
             if new_po.question_type.question_type =='multiple choice':
-                new_po.problem_display = newtexcode(po.problem_code, 'publishedoriginalproblem_'+str(new_po.pk), new_po.answers())
+                new_po.problem_display = newtexcode(new_po.problem_code, 'publishedoriginalproblem_'+str(new_po.pk), new_po.answers())
             else:
-                new_po.problem_display = newtexcode(po.problem_code, 'publishedoriginalproblem_'+str(new_po.pk), "")
+                new_po.problem_display = newtexcode(new_po.problem_code, 'publishedoriginalproblem_'+str(new_po.pk), "")
             new_po.save()
             compileasy(new_po.problem_code,'publishedoriginalproblem_'+str(new_po.pk))
         return new_po
@@ -781,9 +887,12 @@ class ProblemObject(models.Model):
 
 
 class PublishedProblemObject(models.Model):
+    problemset = models.ForeignKey(PublishedProblemSet,null=True)
+    test = models.ForeignKey(PublishedTest,null=True)
     parent_problemobject = models.ForeignKey(ProblemObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
+    blank_point_value = models.FloatField(default = 0)
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
@@ -838,6 +947,15 @@ class PublishedProblemObject(models.Model):
         self.problem_display = newtexcode(self.problem_code, 'publishedoriginalproblem_'+str(self.pk), "")
         self.save()
         compileasy(self.problem_code,'publishedoriginalproblem_'+str(self.pk))
+
+
+
+##delete this model....but this also means that i want to make a foreignkey to Test; ProblemSet in problemobject (instead of manytomany)
+#1: add foreign key
+#2: Perform migrations and links
+#3: delete manytomany field
+
+
 
 #perhaps newresponse should have a generic reference....
 #units....manytomany or foreign key?

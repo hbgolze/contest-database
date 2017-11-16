@@ -16,7 +16,7 @@ document.write("</div>");
 
 {% if username %}
 <ol class="breadcrumb">
-  <li><a href="/">My Tests & Students</a></li>
+  <li><a href="/randomtest/">My Tests & Students</a></li>
   <li class="active">{{username}}'s Tests</li>
 </ol>
 <h2>{{username}}'s Tests</h2>
@@ -33,7 +33,7 @@ document.write("</div>");
     </button>
     <ul class="dropdown-menu">
       {% for cut in currusertests %}
-      <li><a href="addtest/{{cut.pk}}">{{cut.name}}</a></li>
+      <li><a href="randomtest/addtest/{{cut.pk}}">{{cut.name}}</a></li>
       {% endfor %}
 
     </ul>
@@ -43,9 +43,9 @@ document.write("</div>");
 <h2>My Tests</h2>
 <div class="col-md-9">
   {% if testcount == 0 %}
-  You don't have any tests. Start by creating a new test <a href="/createtest/">here</a>.
+  You don't have any tests. Start by creating a new test <a href="/randomtest/createtest/">here</a>.
   {% else %}
-  <a class="btn btn-primary" href="/createtest/">Create a New Test</a>
+  <a class="btn btn-primary" href="/randomtest/createtest/">Create a New Test</a>
   {% endif  %}
 {% endif %}
 

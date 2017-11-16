@@ -1,0 +1,71 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+
+<div class="container-fluid">
+<h2>Change Time Zone</h2>
+  <div class="row">
+    <div class="col-xs-12 col-sm-6">
+      <form action="." method="POST" id="tz_form">
+	{% csrf_token %}
+	{{form.as_p}}
+<div id="success-message">
+</div>
+	<button type="submit" class="btn btn-primary">Save</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+		    }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('submit','#tz_form', function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/randomtest/edittimezone/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+$("#success-message").html("<div class='alert alert-success' role='alert'>Time zone changed.</div>");
+$("#success-message").show();
+setTimeout(function() {
+$("#success-message").fadeOut().empty();
+},5000);
+        }
+    });
+});
+</script>
+
+{% endblock %}

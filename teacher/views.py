@@ -10,14 +10,16 @@ from django.template import loader
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,time
+from django.utils import timezone
+import pytz
 
 from randomtest.utils import newtexcode,compileasy,pointsum
 from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse
 
-from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem
-from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject
-from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm
+from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
+from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest
+from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
 
@@ -121,7 +123,7 @@ def publishview2(request,pk):
                             new_image.save()
                             new_so=SlideObject(content_object=new_image,slide=new_slide,order=so.order)
                             new_so.save()
-            except:
+            except SlideGroup.DoesNotExist:
                 pset = uo.problemset
 #            if uo.problemset:################
                 num_problemsets += 1
@@ -378,6 +380,33 @@ def teacherproblemsetview(request,**kwargs):
     context['class'] = my_class
     return render(request, 'teacher/teacherproblemsetview.html',context)
 
+def teachertestview(request,**kwargs):
+    context={}
+    my_class = get_object_or_404(PublishedClass, pk = kwargs['pk'])
+    userprofile=request.user.userprofile
+    test = get_object_or_404(PublishedTest, pk = kwargs['tpk'])
+    if my_class not in userprofile.my_published_classes.all():
+        raise Http404("Unauthorized.")
+    if test.unit_object.unit not in my_class.pub_units.all():##
+        raise Http404("Unauthorized.")
+    rows = test.test_problem_objects.all()
+    context['rows'] = rows
+#    expanded_rows = []
+#    for po in rows:
+#        resps = po.response_set.all()
+#        atts = resps.filter(attempted=1)
+#        grds = atts.filter(is_graded=1)
+#        expanded_rows.append((po,atts.count(),grds.count()))
+#    context['rows'] = expanded_rows
+    po_rows = []
+    for i in range(0,int((rows.count()+14)/15)):
+        po_rows.append((rows[15*i:15*(i+1)],15*i))
+    context['po_rows'] = po_rows
+    context['test'] = test
+    context['nbar'] = 'teacher'
+    context['class'] = my_class
+    return render(request, 'teacher/teachertestview.html',context)
+
 @login_required
 def getstudentlist(request,pk):
     userprofile=request.user.userprofile
@@ -396,29 +425,28 @@ def addstudenttoclass(request,pk):
     if request.method == "POST":
         form = request.POST
         student = get_object_or_404(User,pk=form.get("student_id",""))
-        my_class.enrolled_students.add(student)
-        my_class.save()
-        user_class = UserClass(published_class = my_class,userprofile=student.userprofile,total_points=my_class.total_points,points_earned=0,num_problems = my_class.num_problems)
-        user_class.save()
-        for unit in my_class.pub_units.all():
-            user_unit = UserUnit(published_unit = unit,user_class = user_class,total_points=unit.total_points, points_earned=0,order = unit.order,num_problems = unit.num_problems)
-            user_unit.save()
-            num_psets = 0
-            for unit_object in unit.unit_objects.all():
-                user_unitobject = UserUnitObject(order = unit_object.order, user_unit = user_unit)
-                user_unitobject.save()
-                try:
-                    pset = unit_object.publishedproblemset
-#                if unit_object.problemset:#####################
-                    user_problemset = UserProblemSet(published_problemset=unit_object.publishedproblemset,total_points=unit_object.publishedproblemset.total_points,points_earned=0,order=unit_object.order,num_problems = unit_object.publishedproblemset.num_problems,userunitobject = user_unitobject)
-                    user_problemset.save()
-                    num_psets +=1
-                except:
-                    user_slides = UserSlides(published_slides=unit_object.publishedslidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = unit_object.publishedslidegroup.slides.count())
-                    user_slides.save()
-            user_unit.num_problemsets = num_psets
-            user_unit.save()
-        return JsonResponse({'student':render_to_string('teacher/roster-studentrow.html',{'student_class':user_class})})
+#        my_class.enrolled_students.add(student)
+#        my_class.save()
+#        user_class = UserClass(published_class = my_class,userprofile=student.userprofile,total_points=my_class.total_points,points_earned=0,num_problems = my_class.num_problems)
+#        user_class.save()
+#        for unit in my_class.pub_units.all():
+#            user_unit = UserUnit(published_unit = unit,user_class = user_class,total_points=unit.total_points, points_earned=0,order = unit.order,num_problems = unit.num_problems)
+#            user_unit.save()
+#            num_psets = 0
+#            for unit_object in unit.unit_objects.all():
+#                user_unitobject = UserUnitObject(order = unit_object.order, user_unit = user_unit)
+#                user_unitobject.save()
+#                try:
+#                    pset = unit_object.publishedproblemset
+#                    user_problemset = UserProblemSet(published_problemset=unit_object.publishedproblemset,total_points=unit_object.publishedproblemset.total_points,points_earned=0,order=unit_object.order,num_problems = unit_object.publishedproblemset.num_problems,userunitobject = user_unitobject)
+#                    user_problemset.save()
+#                    num_psets +=1
+#                except:
+#                    user_slides = UserSlides(published_slides=unit_object.publishedslidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = unit_object.publishedslidegroup.slides.count())
+#                    user_slides.save()
+#            user_unit.num_problemsets = num_psets
+#            user_unit.save()
+        return JsonResponse({'student':render_to_string('teacher/roster-studentrow.html',{'student_class':my_class.add_student(student)})})
 
 ##############################
 ##Class Editing Views
@@ -522,6 +550,24 @@ def newproblemsetview(request,pk,upk):
         u.save()
         p=ProblemSet(name=form.get("problemset-name",""),default_point_value=form.get("problemset-default_point_value",""),unit_object = u)
         p.save()
+        return HttpResponse(render_to_string('teacher/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()},request=request))
+    return HttpResponse('')
+
+@login_required
+def newtestview(request,pk,upk):
+    userprofile=request.user.userprofile
+    my_class = get_object_or_404(Class,pk=pk)
+    if userprofile.my_classes.filter(pk=pk).exists()==False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk=upk)
+    if my_class.units.filter(pk=upk).exists==False:
+        raise Http404("No such unit in this class.")
+    if request.method == "POST":
+        form=request.POST
+        u=UnitObject(unit=unit,order=unit.unit_objects.count()+1)
+        u.save()
+        t=Test(name=form.get("test-name",""),default_point_value=form.get("test-default_point_value",""),default_blank_value = form.get("test-default_blank_value",""),unit_object = u)
+        t.save()
         return HttpResponse(render_to_string('teacher/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()},request=request))
     return HttpResponse('')
 
@@ -925,6 +971,398 @@ def reviewproblemgroup(request,pk,upk,ppk):
     context['my_class'] = my_class
     context['unit'] = unit
     context['problemset'] = problemset
+    context['nbar'] = 'teacher'
+    context['rows'] = P
+    context['prob_group'] = prob_group
+    return render(request,'teacher/review-problem-group.html',context)
+
+###Test###
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/$', views.testeditview, name='testeditview'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/load-original-problem/$', views.testloadoriginalproblemform, name='test-load-original-problem'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/add-original-problem/$', views.testaddoriginalproblem, name='testadd-original-problem'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/find-num-probs-matching-tag/$', views.testnumprobsmatching, name='testnumprobsmatching'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/add-tagged-problems/$', views.testreviewmatchingproblems, name='testreviewmatchingproblems'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/review-problem-group/$', views.testreviewproblemgroup, name='testreviewproblemgroup'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-point-value/(?P<pppk>\d+)/$', views.testupdate_point_value, name='testedit-point-value'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-blank-value/(?P<pppk>\d+)/$', views.testupdate_blank_value, name='testedit-blank-value'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.testeditquestiontype, name='testedit-question-type'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/change-qt-original-problem/$', views.testloadcqtoriginalproblemform, name='testloadcqtoriginalproblemform'),
+
+@login_required
+def testeditview(request,pk,upk,tpk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = tpk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    if request.method == "POST":
+        form = request.POST
+        if "addoriginalproblem" in form:###############
+            qt = form.get('question-type','')
+            po = TestProblemObject()
+            if qt == "multiple choice":
+                pform = NewTestProblemObjectMCForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.author = request.user
+                    prob.point_value = test.default_point_value
+                    prob.blank_point_value = test.default_blank_value
+                    prob.order = test.test_problem_objects.count() + 1
+                    prob.test = test
+                    prob.save()
+            elif qt == "short answer":
+                pform = NewTestProblemObjectSAForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.author = request.user
+                    prob.blank_point_value = test.default_blank_value
+                    prob.order = test.test_problem_objects.count() + 1
+                    prob.test = test
+                    prob.save()
+            elif qt == "proof":
+                pform = NewTestProblemObjectPFForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.author = request.user
+                    prob.blank_point_value = test.default_blank_value
+                    prob.order = test.test_problem_objects.count() + 1
+                    prob.test = test
+                    prob.save()
+                    
+        if 'save' in form:
+            prob_objs = list(test.test_problem_objects.all())
+            prob_objs = sorted(prob_objs,key = lambda x:x.order)###
+            prob_obj_inputs = form.getlist('problemobjectinput')#could be an issue if no units
+            for p in prob_objs:
+                if 'problemobject_'+str(p.pk) not in prob_obj_inputs:
+                    p.delete()
+            for i in range(0,len(prob_obj_inputs)):
+                p = test.test_problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
+                p.order = i+1
+                p.save()
+    context={}
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['test'] = test
+    context['tags'] = NewTag.objects.exclude(tag='root')
+    context['nbar'] = 'teacher'
+    return render(request, 'teacher/edittestview.html',context)
+
+@login_required
+def testloadoriginalproblemform(request,**kwargs):
+    qt = request.GET.get('qt','')
+    po = TestProblemObject()
+    if qt == 'sa':
+        form = NewTestProblemObjectSAForm(instance = po)
+    if qt == 'mc':
+        form = NewTestProblemObjectMCForm(instance = po)
+    if qt == 'pf':
+        form = NewTestProblemObjectPFForm(instance = po)
+    return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
+
+@login_required
+def testloadcqtoriginalproblemform(request,**kwargs):
+    qt = request.GET.get('qt','')
+    pk = request.GET.get('pk','')
+    po = get_object_or_404(TestProblemObject,pk = pk)
+    if po.isProblem == 0:
+        if qt == 'sa':
+            form = NewTestProblemObjectSAForm(instance = po)
+        if qt == 'mc':
+            form = NewTestProblemObjectMCForm(instance = po)
+        if qt == 'pf':
+            form = NewTestProblemObjectPFForm(instance = po)
+        return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
+    form = EditTestProblemObjectForm(instance = po)
+    return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
+
+@login_required
+def testaddoriginalproblem(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    if request.method == "POST":
+        form = request.POST
+        qt = form.get('question-type','')
+        po = TestProblemObject()
+        if qt == "multiple choice":
+            pform = NewTestProblemObjectMCForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
+                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
+                prob.author = request.user
+                prob.point_value = test.default_point_value
+                prob.blank_point_value = test.default_blank_value
+                prob.order = test.test_problem_objects.count()+1
+                prob.test = test
+                prob.save()
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+        elif qt == "short answer":
+            pform = NewTestProblemObjectSAForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
+                prob.author = request.user
+                prob.point_value = test.default_point_value
+                prob.blank_point_value = test.default_blank_value
+                prob.order = test.test_problem_objects.count() + 1
+                prob.test = test
+                prob.save()
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+        elif qt == "proof":
+            pform = NewTestProblemObjectPFForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
+                prob.author = request.user
+                prob.point_value = test.default_point_value
+                prob.blank_point_value = test.default_blank_value
+                prob.order = test.test_problem_objects.count() + 1
+                prob.test = test
+                prob.save()
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+    return JsonResponse({'problem_text':'','pk':'0'})
+
+@login_required
+def testupdate_point_value(request,pk,upk,ppk,pppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    po = get_object_or_404(TestProblemObject,pk = pppk)
+    if request.method == 'POST':
+        form = TestPointValueForm(request.POST,instance=po)
+        if form.is_valid():
+            form.save()
+            data = {
+                'pk': pppk,
+                'point_value':form.instance.point_value,
+            }
+            return JsonResponse(data)
+    form = TestPointValueForm(instance = po)
+    return render(request,'teacher/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
+
+@login_required
+def testupdate_blank_value(request,pk,upk,ppk,pppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    po = get_object_or_404(TestProblemObject,pk = pppk)
+    if request.method == 'POST':
+        form = TestBlankPointValueForm(request.POST,instance=po)
+        if form.is_valid():
+            form.save()
+            data = {
+                'pk': pppk,
+                'blank_point_value':form.instance.blank_point_value,
+            }
+            return JsonResponse(data)
+    form = TestBlankPointValueForm(instance = po)
+    return render(request,'teacher/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
+
+@login_required
+def testeditquestiontype(request,pk,upk,ppk,pppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    po = get_object_or_404(TestProblemObject,pk = pppk)
+    if request.method == "POST":
+        form = request.POST
+        qt = form.get('cqt-question-type','')
+        if po.isProblem == 0:
+            if qt == "multiple choice":
+                pform = NewTestProblemObjectMCForm(request.POST, instance=po)
+                if pform.is_valid():
+                    prob=pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.author = request.user
+                    prob.save()
+                    return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':prob}),'qt':qt})
+            elif qt == "short answer":
+                pform = NewTestProblemObjectSAForm(request.POST, instance=po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.author = request.user
+                    prob.save()
+                    return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':prob}),'qt':qt})
+            elif qt == "proof":
+                pform = NewTestProblemObjectPFForm(request.POST, instance=po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type=qt)
+                    prob.author = request.user
+                    prob.save()
+                    return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':prob}),'qt':qt})
+        else:
+            po.question_type = QuestionType.objects.get(question_type = qt)
+            po.save()
+            return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':po}),'qt':qt})
+    qt=po.question_type.question_type
+    if po.isProblem == 0:
+        if qt == 'short answer':
+            form = NewTestProblemObjectSAForm(instance = po)
+        if qt == 'multiple choice':
+            form = NewTestProblemObjectMCForm(instance = po)
+        if qt == 'proof':
+            form = NewTestProblemObjectPFForm(instance = po)
+        return JsonResponse({'form':render_to_string('teacher/originalproblemform.html',{'form':form}),'qt':qt,'qts':[1,1,1]})#qts: mc,sa,pf
+
+    form = EditTestProblemObjectForm(instance=po)
+    if po.problem.question_type_new.question_type == 'multiple choice':
+        qts=[1,0,1]
+    if po.problem.question_type_new.question_type == 'short answer':
+        qts=[0,1,1]
+    if po.problem.question_type_new.question_type == 'multiple choice short answer':
+        qts=[1,1,1]
+    if po.problem.question_type_new.question_type == 'proof':
+        qts=[0,0,1]
+    return JsonResponse({'form':render_to_string('teacher/originalproblemform.html',{'form':form}),'qts':qts,'qt':qt})
+
+@login_required
+def testnumprobsmatching(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such test in this unit.")
+    form = request.GET
+    typ = form.get('contest-type','')
+    desired_tag = form.get('contest-tags','')
+    curr_problems = test.test_problem_objects.filter(isProblem = 1)
+    P = Problem.objects.filter(type_new__type = typ).filter(newtags__in = NewTag.objects.filter(tag__startswith = desired_tag)).exclude(id__in = curr_problems.values('problem_id')).distinct()####check this once contest problems are in a problem set.
+    return JsonResponse({'num':str(P.count())})
+
+@login_required
+def testreviewmatchingproblems(request,pk,upk,ppk):
+    userprofile=request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
+        raise Http404("No such test in this unit.")
+    P = []
+    desired_tag = ''
+    if request.method == 'POST':
+        form = request.POST
+        if 'add-selected-problems' in form:
+            checked = form.getlist("chk")
+            top = test.test_problem_objects.count()
+            if len(checked)>0:
+                for i in range(0,len(checked)):
+                    p = Problem.objects.get(label=checked[i])
+                    po = TestProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value, test = test, isProblem=1,problem=p,question_type = p.question_type_new)
+                    po.save()
+                return redirect('../')
+            return redirect('../')
+        typ = form.get('contest-type','')
+        desired_tag = form.get('contest-tags','')
+        curr_problems = test.test_problem_objects.filter(isProblem=1)
+        P = Problem.objects.filter(type_new__type=typ).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).exclude(id__in=curr_problems.values('problem_id')).distinct().order_by("problem_number")
+    context={}
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['test'] = test
+    context['nbar'] = 'teacher'
+    context['rows'] = P
+    context['tag'] = desired_tag
+    return render(request,'teacher/add-tagged-problems.html',context)
+
+@login_required
+def testreviewproblemgroup(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    test = get_object_or_404(Test,pk = ppk)
+    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists()==False:
+        raise Http404("No such test in this unit.")
+    P = []
+    desired_tag = ''
+    if request.method == 'POST':
+        form = request.POST
+        if 'add-selected-problems' in form:
+            checked = form.getlist("chk")
+            top = test.test_problem_objects.count()
+            if len(checked)>0:
+                for i in range(0,len(checked)):
+                    p = Problem.objects.get(label=checked[i])
+                    po = TestProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value,isProblem=1,problem=p,question_type = p.question_type_new,test=test)
+                    po.save()
+                return redirect('../')
+            return redirect('../')
+        prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
+        curr_problems = test.test_problem_objects.filter(isProblem=1)
+        P = prob_group.problems.exclude(id__in=curr_problems.values('problem_id')).distinct()
+    context={}
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['test'] = test
     context['nbar'] = 'teacher'
     context['rows'] = P
     context['prob_group'] = prob_group
@@ -1697,3 +2135,167 @@ def move_response(request,**kwargs):
         resp.save()
         return JsonResponse({'success':1,'name':user_problemset.problemset.name,'resp_pk':resp_pk})
     return JsonResponse({'success':0,'name':''})
+
+
+
+
+@login_required
+def load_edit_duedate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        if problemset.due_date == None:
+            default_date = timezone.now()
+        else:
+            default_date = problemset.due_date
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-duedate.html',{'problemset' : problemset}),'date' : default_date})
+    elif data_type == "tst":
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        if test.due_date == None:
+            default_date = timezone.now()
+        else:
+            default_date = test.due_date
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-duedate.html',{'test' : test}),'date' : default_date})
+
+@login_required
+def save_duedate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('edps-pk'))
+        due_date = request.POST.get('due_date')
+        tz = pytz.timezone(request.user.userprofile.time_zone)
+        tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        problemset.due_date = tz_due_date
+        problemset.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
+        due_date = request.POST.get('due_date')
+        tz = pytz.timezone(request.user.userprofile.time_zone)
+        tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        test.due_date = tz_due_date
+        test.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test':test,'request':request})})
+    
+@login_required
+def delete_duedate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        problemset.due_date = None
+        problemset.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        test.due_date = None
+        test.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test' : test,'request':request})})
+
+
+@login_required
+def load_edit_startdate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        if problemset.start_date == None:
+            default_date = timezone.now()
+        else:
+            default_date = problemset.start_date
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-startdate.html',{'problemset' : problemset}),'date' : default_date})
+    elif data_type == "tst":
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        if test.start_date == None:
+            default_date = timezone.now()
+        else:
+            default_date = test.start_date
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-startdate.html',{'test' : test}),'date' : default_date})
+
+@login_required
+def save_startdate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('edps-pk'))
+        start_date = request.POST.get('start_date')
+        tz = pytz.timezone(request.user.userprofile.time_zone)
+        tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        problemset.start_date = tz_start_date
+        problemset.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
+        start_date = request.POST.get('start_date')
+        tz = pytz.timezone(request.user.userprofile.time_zone)
+        tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        test.start_date = tz_start_date
+        test.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test':test,'request':request})})
+    
+@login_required
+def delete_startdate(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        problemset.start_date = None
+        problemset.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        test.start_date = None
+        test.save()
+        return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test' : test,'request':request})})
+
+
+
+@login_required
+def load_edit_timelimit(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        if problemset.time_limit == None:
+            default_hours = 1
+            default_minutes = 0
+        else:
+            default_hours = problemset.time_limit.hour
+            default_minutes = problemset.time_limit.minute
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-timelimit.html',{'problemset' : problemset,'default_hours':default_hours,'default_minutes':default_minutes,'minuterange':[5*i for i in range(0,12)]})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        if test.time_limit == None:
+            default_hours = 1
+            default_minutes = 0
+        else:
+            default_hours = test.time_limit.hour
+            default_minutes = test.time_limit.minute
+        return JsonResponse({'modal-html':render_to_string('teacher/modal-edit-timelimit.html',{'test' : test,'default_hours':default_hours,'default_minutes':default_minutes,'minuterange':[5*i for i in range(0,12)]})})
+
+@login_required
+def save_timelimit(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('edps-pk'))
+        minutes = request.POST.get('minutes')
+        hours = request.POST.get('hours')
+        problemset.time_limit = time(hour=int(hours),minute=int(minutes))
+        problemset.save()
+        return JsonResponse({'time_snippet':render_to_string('teacher/time_limit_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
+        minutes = request.POST.get('minutes')
+        hours = request.POST.get('hours')
+        test.time_limit = time(hour=int(hours),minute=int(minutes))
+        test.save()
+        return JsonResponse({'time_snippet':render_to_string('teacher/time_limit_snippet.html',{'test':test,'request':request})})
+
+@login_required
+def delete_timelimit(request):
+    data_type = request.POST.get('uo')
+    if data_type == 'ps':
+        problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
+        problemset.time_limit = None
+        problemset.save()
+        return JsonResponse({'time_snippet':render_to_string('teacher/time_limit_snippet.html',{'problemset':problemset,'request':request})})
+    elif data_type == 'tst':
+        test = get_object_or_404(Test,pk=request.POST.get('pk'))
+        test.time_limit = None
+        test.save()
+        return JsonResponse({'time_snippet':render_to_string('teacher/time_limit_snippet.html',{'test':test,'request':request})})

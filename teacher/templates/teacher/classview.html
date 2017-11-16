@@ -76,9 +76,23 @@
                 </div>
               </a>
               {% endwith %}
-	      {% else %}
+	    {% elif unitobject.publishedtest %}
+              {% with test=unitobject.publishedtest %}
+              <a href="test/{{test.pk}}/" class="list-group-item">
+                <div class="row">
+                  <div class="col-xs-6">
+                    <b>Test {{forloop.parentloop.counter}}.{{unitobject.order}}:</b> {{test.name}}
+                  </div>
+                  <div class="col-xs-6" style="text-align:right">
+                    {{test.num_problems}} Problems, {{test.total_points}} Points
+
+                  </div>
+                </div>
+              </a>
+              {% endwith %}
+	    {% else %}
 ...
-              {% endif %}
+            {% endif %}
 	    {% endfor %}
 	  </div>
 	  {% endfor %}

@@ -9,6 +9,10 @@
 	      {% with pset=user_unitobject.userproblemset %}
               <td>{{pset.points_earned}}/{{pset.total_points}}</td>
 	      {% endwith %}
+	      {% elif user_unitobject.usertest %}
+	      {% with test=user_unitobject.usertest %}
+              <td>{{test.points_earned}}/{{test.total_points}}</td>
+	      {% endwith %}
 	      {% endif %}
               {% endfor %}
               {% endfor %}

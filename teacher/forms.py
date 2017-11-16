@@ -1,8 +1,10 @@
 from django import forms
 #from django.contrib.auth.models import User
-from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem
+from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem,ProblemSet
 from randomtest.utils import newtexcode
 from randomtest.models import NewTag
+
+from django.contrib.admin.widgets import AdminDateWidget 
 
 ANSWER_CHOICES = (
     ('A','Answer A'),
@@ -36,6 +38,7 @@ class EditProblemProblemObjectForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EditProblemProblemObjectForm, self).__init__(*args, **kwargs)
         self.fields['problem_id'].initial = str(self.instance.pk)
+
 
 class NewProblemObjectMCForm(forms.ModelForm):
     problem_id = forms.CharField(widget=forms.HiddenInput())
@@ -86,6 +89,7 @@ class NewProblemObjectPFForm(forms.ModelForm):
         super(NewProblemObjectPFForm, self).__init__(*args, **kwargs)
         self.fields['problem_code'].required = True
         self.fields['problem_id'].initial = str(self.instance.pk)
+
 
 
 class NewExampleProblemMCForm(forms.ModelForm):
@@ -145,12 +149,23 @@ class PointValueForm(forms.ModelForm):
     class Meta:
         model = ProblemObject
         fields = ('point_value',)
-#        widgets = {
-#            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
-#            }
+        widgets = {
+            'point_value': forms.NumberInput(attrs={'class' : 'form-control'}),
+            }
     def __init__(self, *args, **kwargs):
         super(PointValueForm, self).__init__(*args, **kwargs)
         self.fields['point_value'].required = True
+
+class BlankPointValueForm(forms.ModelForm):
+    class Meta:
+        model = ProblemObject
+        fields = ('blank_point_value',)
+        widgets = {
+            'blank_point_value': forms.NumberInput(attrs={'class' : 'form-control','step':'0.5'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(BlankPointValueForm, self).__init__(*args, **kwargs)
+        self.fields['blank_point_value'].required = True
 
 class SearchForm(forms.Form):
     keywords = forms.CharField(max_length=128)
@@ -246,3 +261,5 @@ class ImageForm(forms.Form):
 
 class LabelForm(forms.Form):
     label = forms.CharField(max_length=50);
+
+

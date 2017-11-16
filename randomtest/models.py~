@@ -7,7 +7,20 @@ from django.contrib.admin.models import LogEntry
 
 
 # Create your models here.
-
+TIMEZONES=[
+    "US/Alaska",
+    "US/Aleutian",
+    "US/Arizona",
+    "US/Central",
+    "US/East-Indiana",
+    "US/Eastern",
+    "US/Hawaii",
+    "US/Indiana-Starke",
+    "US/Michigan",
+    "US/Mountain",
+    "US/Pacific",
+    "US/Samoa",
+]
 class Dropboxurl(models.Model):
     url=models.CharField(max_length=100)
     def __str__(self):
@@ -302,6 +315,7 @@ class UserProfile(models.Model):
     my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
     my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
     my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='TA_userprofiles')
+    time_zone = models.CharField(max_length=100, blank=True, null=True, choices=TIMEZONES)
     def __str__(self):
         return self.user.username
 
@@ -328,6 +342,7 @@ class NewResponse(models.Model):
     order = models.IntegerField(default = 0)
     points = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
+    is_migrated = models.BooleanField(default = 0)
     def __str__(self):
         return self.problem_label+': '+self.response
 

@@ -41,6 +41,7 @@
           <ul class="dropdown-menu" role="menu">
             <li><a href="#slides" data-toggle="modal">Slides</a></li>
             <li><a href="#problemset" data-toggle="modal">Problem Set</a></li>
+            <li><a href="#test" data-toggle="modal">Test</a></li>
           </ul>
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
@@ -104,6 +105,36 @@
     </div>
   </div>
 
+  <div class="modal fade" id="test" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <form method="post" action="." id="test-form">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Add Test</h4>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+            <div class="form-group">
+              <label for="test-name" class="control-label">Name of Test</label>
+              <input type="text" class="form-control" id="test-name" name="test-name" required>
+	      <label for="test-default_point_value">Default Point Value</label>
+	      <input type="number" class="form-control" id="test-default_point_value" name="test-default_point_value" required>
+	      <label for="test-default_blank_value">Default Blank Point Value</label>
+	      <input type="number" step="0.5" class="form-control" id="test-default_blank_value" name="test-default_blank_value" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="submit" name="addtest" class="btn btn-primary">Add Test</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
 
 
 
@@ -150,6 +181,25 @@ $('#slides-form').on('submit',function(event) {
             $("#unitobjectList").append(result);
             $("#slides-name").val('');
 
+        }
+    });
+    return false;
+});
+
+$('#test-form').on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: 'add-test/',
+        data: $(this).serialize(),
+        dataType: 'html',
+        success: function(result) {
+            $("#test").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#unitobjectList").append(result);
+            $("#test-name").val('');
+            $("#test-default_point_value").val('');
+            $("#test-default_blank_value").val('');
         }
     });
     return false;

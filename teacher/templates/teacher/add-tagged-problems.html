@@ -68,7 +68,7 @@ function fixcolors() {
   <li><a href="../../../../../../../">My Classes</a></li>
   <li><a href="../../../../../">{{my_class.name}}</a></li>
   <li><a href="../../../">{{unit.name}}</a></li>
-  <li><a href="../">{{problemset.name}}</a></li>
+  <li><a href="../">{% if problemset %}{{problemset.name}}{% elif test %}{{test.name}}{% endif %}</a></li>
   <li class="active">Add Problems</li>
 </ol>
 
@@ -78,7 +78,7 @@ function fixcolors() {
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Add Tagged Problems to {{problemset.name}} (tag: {{tag}})</h2>
+      <h2>Add Tagged Problems to {% if problemset %}{{problemset.name}}{% elif test %}{{test.name}}{% endif %} (tag: {{tag}})</h2>
       <form action="." method="POST" id="problems">
 	{% csrf_token %}
         <p><input type="checkbox" id="toggler" onclick="togglemarked();fixcolors()" checked/> Select/Deselect All</p>

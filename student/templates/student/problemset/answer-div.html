@@ -1,0 +1,72 @@
+{% comment %} it is assumed that question_type is short answer or multiple choice {% endcomment %}
+
+		    {% if question_type == 'short answer' %}
+
+                      {% if resp.attempted %}
+                        {% if show_grades %}
+                          {% if answer == response %}
+{% comment %}
+[[[[is_graded]]], Correct answer];;;;; [attempted and correct; no time_limit; no due_date]
+Conditions:
+1. if no time_limit and no duedate;
+2. if due_date and is_graded; 
+3. if time_limit (time_is_up) and is_graded
+{% endcomment %}
+		            <div class="form-group has-success has-feedback">
+			      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+			      <span class="glyphicon glyphicon-ok form-control-feedback"></span>
+			    </div>
+			  {% else %}
+{% comment %}
+[[[[is_graded]]], Incorrect answer; (disabled if time_is_up)];;;;; [attempted and wrong]
+WHAT ABOUT AMC ANSWERS (left blank)
+
+{% endcomment %}
+			    <div class="form-group has-error has-feedback">
+	 		      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}{% if time_is_up and problemset.published_problemset.is_graded%} (Correct Answer: {{answer}}){% endif %}"{% if time_is_up %}disabled{% endif %}>
+			      <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+			    </div>
+                          {% endif %}
+                        {% else %}
+{% comment %}
+
+{% endcomment %}
+                          <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}">
+{% comment %}
+
+{% endcomment %}
+                          <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+                        {% endif %}
+		      {% else %}
+		        <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}">
+		      {% endif %}
+		    
+		    {% elif question_type == 'multiple choice' %}
+		      <div class="form-group" name="answers_{{prob_label}}"><!--mc_answer_choices-->
+			<label class="radio-inline{% if response == answer %} disabled{% endif %} answer_{{prob_label}}">
+			  <input type="radio" name="answer{{prob_label}}" value="A" {% if response == "A" %}checked="checked"{% endif %} {% if response == answer %} disabled{% endif %}> A
+			</label>
+			<label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+			  <input type="radio" name="answer{{prob_label}}" value="B" {% if response == "B" %}checked="checked"{% endif %} {% if response == answer %} disabled{% endif %}> B
+			</label>
+			<label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+			  <input type="radio" name="answer{{prob_label}}" value="C" {% if response == "C" %}checked="checked"{% endif %} {% if response == answer %} disabled{% endif %}> C
+			</label>
+			<label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+			  <input type="radio" name="answer{{prob_label}}" value="D" {% if response == "D" %}checked="checked"{% endif %} {% if response == answer %} disabled{% endif %}> D
+			</label>
+			<label class="radio-inline{% if username or response == resp.problem.mc_answer %} disabled{% endif %} answer_{{prob_label}}">
+			  <input type="radio" name="answer{{prob_label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} {% if response == answer %} disabled{% endif %}> E
+			  
+			</label>
+			<span id="answerstatus_{{prob_label}}">
+			  {% if resp.attempted %}
+			    {% if response == answer %}
+			      <span class="glyphicon glyphicon-ok" style="color:green"></span>
+			    {% else %}
+			      <span class="glyphicon glyphicon-remove" style="color:red"></span>
+			    {% endif %}
+			  {% endif %}
+			</span>
+		      </div><!--end mc_answer_choices-->
+		    {% endif %}

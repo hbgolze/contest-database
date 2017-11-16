@@ -1,0 +1,11 @@
+<b>Time Limit:</b> 
+{% if test.time_limit %}
+
+
+{% if test.time_limit.hour > 0 %} {{test.time_limit.hour}} hours, {% endif %}{{test.time_limit.minute}} minutes 
+<span class="edit-timelimit-link" id="edit-timelimit_{{test.pk}}" style="color:blue;cursor:pointer"><span class="glyphicon glyphicon-pencil"></span></span>
+<span class="delete-timelimit-link" id="delete-timelimit_{{test.pk}}" style="color:red;cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span>
+{% else %}
+No time limit set for this test.<span class="edit-timelimit-link" id="edit-timelimit_{{test.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
+{% endif %}
+

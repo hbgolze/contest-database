@@ -11,7 +11,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime,timedelta
 
 
-from student.models import UserProblemSet,Response,Sticky,UserResponse,UserSlides
+from student.models import UserProblemSet,Response,Sticky,UserResponse,UserSlides,UserTest
 from teacher.models import ProblemObject,PublishedProblemObject
 
 from randomtest.utils import pointsum,compileasy,newtexcode
@@ -55,6 +55,9 @@ def problemsetview(request,**kwargs):
         return HttpResponse('Unauthorized', status=401)
     if user_problemset.is_initialized == 0:
         user_problemset.response_initialize()
+    if user_problemset.published_problemset.due_date != None:
+        if user_problemset.published_problemset.due_date < timezone.now():
+            context['past_due'] = 1
     if request.method == "POST":
         form=request.POST
         P=user_problemset.response_set.all()
@@ -120,7 +123,7 @@ def problemsetview(request,**kwargs):
     context['problemset'] = user_problemset
     context['pk'] = pk
     context['nbar'] = 'student'
-    return render(request, 'student/problemsetview2.html',context)
+    return render(request, 'student/problemsetview.html',context)
 
 
 class SolutionView(DetailView):
@@ -233,7 +236,7 @@ def checkanswer(request,pk):
             user_problemset.userunitobject.user_unit.user_class.save()
 
     if tempanswer != None and tempanswer !='' and tempanswer != 'undefined':
-        mod_date = render_to_string("student/date-snippet.html",{'resp':r})
+        mod_date = render_to_string("student/problemset/date-snippet.html",{'resp':r})
         if tempanswer == answer:
             if problem_object.isProblem == True and problem_object.problem.solutions.count() > 0:
                 return JsonResponse({'blank':'false','correct' : 'true', 'has_solution' : 'true','prob_pk' : problem_object.pk,'mod-date':mod_date})
@@ -257,7 +260,7 @@ def load_proof_response(request,**kwargs):
     else:
         context['problem_display'] = resp.publishedproblem_object.problem_display
     context['resp'] = resp
-    return JsonResponse({'modal-html':render_to_string('student/modal-edit-proof.html',context)})
+    return JsonResponse({'modal-html':render_to_string('student/problemset/modal-edit-proof.html',context)})
 
 @login_required
 def save_proof_response(request,**kwargs):
@@ -270,8 +273,8 @@ def save_proof_response(request,**kwargs):
     resp.modified_date = timezone.now()
     resp.save()
     compileasy(resp.response_code,'response_'+str(resp.pk))
-    mod_date = render_to_string("student/date-snippet.html",{'resp':resp})
-    return JsonResponse({'display_response':render_to_string("student/proof-response-snippet.html",{'resp':resp,'problem_label':resp.publishedproblem_object.pk}),'po_pk':resp.publishedproblem_object.pk,'mod-date':mod_date})
+    mod_date = render_to_string("student/problemset/date-snippet.html",{'resp':resp})
+    return JsonResponse({'display_response':render_to_string("student/problemset/proof-response-snippet.html",{'resp':resp,'problem_label':resp.publishedproblem_object.pk}),'po_pk':resp.publishedproblem_object.pk,'mod-date':mod_date})
 
 @login_required
 def slidesview(request,**kwargs):
@@ -293,3 +296,84 @@ def slidesview(request,**kwargs):
         # If page is out of range (e.g. 9999), deliver last page of results.
         rows = paginator.page(paginator.num_pages)
     return render(request,'student/slidesview.html',{'slides':user_slides,'rows':rows})
+
+
+@login_required
+def testview(request,**kwargs): 
+    context={}
+    pk=kwargs['pk']
+    userprofile = request.user.userprofile
+    user_test = get_object_or_404(UserTest, pk=pk)
+    if user_test.userunitobject.user_unit.user_class.userprofile != userprofile:
+        return HttpResponse('Unauthorized', status=401)
+    if user_test.is_initialized == 0:
+        user_test.response_initialize()
+    if user_test.published_test.due_date != None:
+        if user_test.published_test.due_date < timezone.now():
+            context['past_due'] = 1
+    if request.method == "POST":
+        form=request.POST
+        P=user_test.response_set.all()
+
+        num_correct = 0
+        num_points = 0
+        for r in P:
+            tempanswer = form.get('answer'+str(r.publishedproblem_object.pk))
+            if tempanswer != None and tempanswer !='':
+                t=timezone.now()
+                r.attempted = 1
+                if r.response != tempanswer:
+                    if r.publishedtest_problem_object.isProblem:
+                        readable_label = r.publishedtest_problem_object.problem.readable_label
+                    else:
+                        readable_label = 'Problem #'+str(r.publishedtest_problem_object.order)
+                    ur=UserResponse(userprofile=userprofile, user_test = user_test,response=r,static_response=tempanswer,readable_label=readable_label,modified_date=t,point_value=r.point_value)
+                    ur.save()
+                    r.modified_date = t
+                    r.response = tempanswer
+                    r.save()
+
+                    if r.publishedtest_problem_object.question_type.question_type == "multiple choice":
+                        if r.publishedtest_problem_object.isProblem == True:
+                            answer = r.publishedtest_problem_object.problem.mc_answer
+                        else:
+                            answer = r.publishedtest_problem_object.mc_answer
+                        if r.response == answer:
+                            ur.correct = 1
+                            ur.save()
+                            r.points = r.point_value
+                            r.save()
+                            num_correct += 1
+                            num_points += r.point_value
+                    elif r.publishedtest_problem_object.question_type.question_type == "short answer":
+                        if r.publishedtest_problem_object.isProblem == True:
+                            answer = r.publishedtest_problem_object.problem.sa_answer
+                        else:
+                            answer = r.publishedtest_problem_object.sa_answer
+                        if r.response == answer:
+                            ur.correct = 1
+                            ur.save()
+                            r.points = r.point_value
+                            r.save()
+                            num_correct += 1
+                            num_points += r.point_value
+        user_test.num_correct = user_test.num_correct+num_correct
+        user_test.userunitobject.user_unit.num_correct = user_test.userunitobject.user_unit.num_correct+num_correct
+        user_test.userunitobject.user_unit.user_class.num_correct = user_test.userunitobject.user_unit.user_class.num_correct+num_correct
+        user_test.points_earned = user_test.points_earned+num_points
+        user_test.userunitobject.user_unit.points_earned = user_test.userunitobject.user_unit.points_earned+num_points
+        user_test.userunitobject.user_unit.user_class.points_earned = user_test.userunitobject.user_unit.user_class.points_earned+num_points
+        user_test.save()
+        user_test.userunitobject.user_unit.save()
+        user_test.userunitobject.user_unit.user_class.save()
+        return HttpResponse('')
+    rows = user_test.response_set.all()
+    context['rows'] = rows
+    response_rows = []
+    for i in range(0,int((rows.count()+14)/15)):
+        response_rows.append((rows[15*i:15*(i+1)],15*i))
+    context['response_rows'] = response_rows
+    context['test'] = user_test
+    context['pk'] = pk
+    context['nbar'] = 'student'
+    return render(request, 'student/problemsetview.html',context)

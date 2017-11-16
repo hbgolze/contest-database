@@ -6,10 +6,9 @@ from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from randomtest.models import UserProfile,QuestionType,UserProfile
-from teacher.models import PublishedClass,ProblemObject,Unit,ProblemSet,SlideGroup,PublishedProblemObject,PublishedUnit,PublishedProblemSet,PublishedSlideGroup
 # Create your models here.
 class UserClass(models.Model):
-    published_class = models.ForeignKey(PublishedClass)
+    published_class = models.ForeignKey('teacher.PublishedClass')
     userprofile = models.ForeignKey(UserProfile,related_name = 'userclasses')
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
@@ -39,8 +38,8 @@ class UserClass(models.Model):
             uu.response_initialize()
 
 class UserUnit(models.Model):
-    unit = models.ForeignKey(Unit,null=True)
-    published_unit = models.ForeignKey(PublishedUnit,null=True)
+    unit = models.ForeignKey('teacher.Unit',null=True)
+    published_unit = models.ForeignKey('teacher.PublishedUnit',null=True)
     user_class = models.ForeignKey(UserClass)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
@@ -92,14 +91,17 @@ class UserProblemSet(models.Model):
 #        primary_key=True,
         null = True,
     )
-    problemset = models.ForeignKey(ProblemSet,null=True)
-    published_problemset = models.ForeignKey(PublishedProblemSet,null=True)
+    problemset = models.ForeignKey('teacher.ProblemSet',null=True)
+    published_problemset = models.ForeignKey('teacher.PublishedProblemSet',null=True)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
     order = models.IntegerField(default = 0)
     num_problems = models.IntegerField(default=0)
     num_correct = models.IntegerField(default=0)
     is_initialized = models.BooleanField(default=0)
+    in_progress = models.BooleanField(default=0)
+    is_graded = models.BooleanField(default=0)
+    start_time = models.DateTimeField(null=True)
     class Meta:
         ordering = ['order']
     def update_stats(self):
@@ -144,17 +146,73 @@ class UserSlides(models.Model):
 #        primary_key=True,
         null = True,
     )
-    slides = models.ForeignKey(SlideGroup,null=True)
-    published_slides = models.ForeignKey(PublishedSlideGroup,null=True)
+    slides = models.ForeignKey('teacher.SlideGroup',null=True)
+    published_slides = models.ForeignKey('teacher.PublishedSlideGroup',null=True)
     order = models.IntegerField(default = 0)
     num_slides = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
 
+class UserTest(models.Model):
+    userunitobject = models.OneToOneField(
+        UserUnitObject,
+        on_delete=models.CASCADE,
+#        primary_key=True,
+        null = True,
+    )
+    test = models.ForeignKey('teacher.Test',null=True)
+    published_test = models.ForeignKey('teacher.PublishedTest',null=True)
+    total_points = models.IntegerField()
+    points_earned = models.IntegerField()
+    order = models.IntegerField(default = 0)
+    num_problems = models.IntegerField(default = 0)
+    num_correct = models.IntegerField(default = 0)
+    is_initialized = models.BooleanField(default = 0)
+    in_progress = models.BooleanField(default = 0)
+    is_graded = models.BooleanField(default = 0)
+    start_time = models.DateTimeField(null = True)
+    class Meta:
+        ordering = ['order']
+    def update_stats(self):
+        self.num_problems = self.published_test.test_problem_objects.count()
+        total_points = 0
+        for po in self.published_test.test_problem_objects.all():
+            total_points += po.point_value
+        points = 0
+        num_correct = 0
+        for r in self.response_set.all():
+            po = r.publishedtestproblem_object
+            if po.isProblem:
+                if po.question_type.question_type == 'multiple choice':
+                    if r.response == po.problem.mc_answer:
+                        num_correct += 1
+                        points += r.point_value
+                elif po.question_type.question_type == 'short answer':
+                    if r.response == po.problem.sa_answer:
+                        num_correct += 1
+                        points += r.point_value
+            else:
+                if r.response == po.answer:
+                    num_correct += 1
+                    points += r.point_value
+        self.points_earned = points
+        self.total_points = total_points
+        self.num_correct = num_correct
+        self.save()
+    def response_initialize(self):
+        R=self.response_set.all()
+        for p in self.published_test.test_problem_objects.all():
+            if R.filter(publishedtest_problem_object = p).exists()==False:
+                r = Response(publishedtest_problem_object = p, user_test = self,order=p.order,point_value = p.point_value,response="")
+                r.save()
+        self.is_initialized = True
+        self.save()
+
 class Response(models.Model):
-    problem_object = models.ForeignKey(ProblemObject,null=True)
-    publishedproblem_object = models.ForeignKey(PublishedProblemObject,null=True)
-    user_problemset = models.ForeignKey(UserProblemSet)
+    problem_object = models.ForeignKey('teacher.ProblemObject',null=True)
+    publishedproblem_object = models.ForeignKey('teacher.PublishedProblemObject',null=True)
+    user_problemset = models.ForeignKey(UserProblemSet,null=True)
+    user_test = models.ForeignKey(UserTest,null=True)
     response = models.CharField(max_length=50,blank=True)
     response_code = models.TextField(blank=True)
     display_response = models.TextField(blank=True)
@@ -163,6 +221,7 @@ class Response(models.Model):
     order = models.IntegerField(default = 0)
     points = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
+    blank_point_value = models.IntegerField(default = 0)
     is_graded = models.BooleanField(default = 0)
     modified_date = models.DateTimeField(default = timezone.now)
     class Meta:

@@ -47,5 +47,6 @@ urlpatterns = [
     url(r'^randomtest/profiles/(?P<username>\w+)/',views.profileview,name='profileview'),
     url(r'^randomtest/newcreatetest/$', views.newstartform, name='startform2'),
     url(r'^randomtest/editnewtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
-    url(r'^randomtest/addnewtest/(?P<pk>\w+)/$',views.addnewtestview,name='addnewtestview'),
+    url(r'^randomtest/edittimezone/$',views.changetimezoneview,name='changetimezoneview'),
+    
 ]

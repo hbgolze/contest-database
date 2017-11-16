@@ -4,6 +4,7 @@
 
 <head>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
@@ -57,6 +58,7 @@
           <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Account <span class="caret"></span></a>
           <ul class="dropdown-menu">
 	    <li><a href="{% url 'my_activity' %}">My Activity</a></li>
+	    <li><a href="{% url 'changetimezoneview' %}">Change Time Zone</a></li>
             <li><a href="{% url 'change_password' %}">Change Password</a></li>
             <li role="separator" class="divider"></li>
             <li><a href="{% url 'logout' %}">Logout</a></li>

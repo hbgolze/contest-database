@@ -81,6 +81,23 @@ document.write("</div>");
 	      </div>
 	    </a>
 	    {% endwith %}
+	    {% elif user_unitobject.usertest %}
+	    {% with test=user_unitobject.usertest %}
+	    <a href="test/{{test.pk}}" class="list-group-item">
+	      <div class="row">
+		<div class="col-xs-4">
+		  <b>Test:</b> {{test.published_test.name}}
+		</div>
+		<div class="col-xs-4">
+		  {{test.num_correct}}/{{test.num_problems}}
+		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{test.num_correct}}*100/Math.max({{test.num_problems}},1),{% if test.num_correct == test.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
+		</div>
+		<div class="col-xs-4" style="text-align:right">
+		  Points Earned: {{test.points_earned}}/{{test.total_points}}
+		</div>
+	      </div>
+	    </a>
+	    {% endwith %}
 	    {% endif %}
 	    {% endfor %}
 	  </div>

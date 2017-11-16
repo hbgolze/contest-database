@@ -71,7 +71,7 @@ $(function() {
 	      <a href="problemset/{{pset.pk}}/" class="list-group-item">
 		<div class="row">
 		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
+		    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}} {% if pset.published_problemset.time_limit %}<span class="glyphicon glyphicon-time"></span> ({{pset.published_problemset.time_limit.hour}}:{{pset.published_problemset.time_limit.minute}}){% endif %}
 		  </div>
 		  <div class="col-xs-4">
 		    {{pset.num_correct}}/{{pset.num_problems}} (<script>document.write(Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)));</script>%)
@@ -96,6 +96,23 @@ $(function() {
 		  </div>
 		  <div class="col-xs-4" style="text-align:right">
 		    {{slides.num_slides}} Slides
+		  </div>
+		</div>
+	      </a>
+	      {% endwith %}
+	      {% endif %}
+	      {% if user_unitobject.usertest %}
+	      {% with test=user_unitobject.usertest %}
+	      <a href="test/{{test.pk}}/" class="list-group-item">
+		<div class="row">
+		  <div class="col-xs-4">
+		    <span class="glyphicon glyphicon-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}
+		  </div>
+		  <div class="col-xs-4">
+		    
+		  </div>
+		  <div class="col-xs-4" style="text-align:right">
+		    {{test.num_problems}} Problems, {{test.total_points}} Points
 		  </div>
 		</div>
 	      </a>

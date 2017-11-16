@@ -12,6 +12,7 @@ document.write("</div>");
 {% endblock %}
 
 {% block content %}
+{% load tz %}
 
 
 {% if username %}
@@ -74,7 +75,7 @@ document.write("</div>");
         <td>{{ut.num_probs}}</td>
 	<td><div style="font-size:30%"><script language="javascript">drawprogressbar({{ut.num_correct}}*100/{{ut.num_probs}},{% if ut.num_correct == ut.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},50)</script></div></td>
 <!--'#C1E0D1'-->
-        <td>{{ut.test.created_date}}</td>
+        <td>{{ut.test.created_date|timezone:request.user.userprofile.time_zone}}</td>
 <!--	<td>
 	  <form action="edittest/{{tpk}}/" method="post">
 	    {% csrf_token %}
