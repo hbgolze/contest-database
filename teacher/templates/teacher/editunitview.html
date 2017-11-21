@@ -21,10 +21,10 @@
     <div class="col-sm-9 col-md-10 main">
       <h2>Edit Unit: {{unit.name}}</h2>
 
-      {% if unit.unit_objects.count > 0 %}
-      <p>Drag around units to reorder them.</p>
-      {% endif %}
 
+
+      <p>Drag around assignments to reorder them. If you reorder assignments or delete assignments, you must click "Save" to have the changes saved.</p>
+      <h3>Assignments</h3>
       <form action="." method="POST" id="units">
         {% csrf_token %}
         <div id="unitobjectList" class="list-group">
@@ -32,7 +32,8 @@
 	  {% include 'teacher/unitobjectsnippet.html' with forcount=forloop.counter unitobj=unitobj %}
           {% endfor %}
         </div>
-	
+
+	<div id="no-assignments">{% if unit.unit_objects.count == 0 %}<p><i>You don't have any assignments in this unit yet.</i></p>{% endif %}</div>	
 
 	<span class="dropup">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -123,7 +124,35 @@
 	      <input type="number" class="form-control" id="test-default_point_value" name="test-default_point_value" required>
 	      <label for="test-default_blank_value">Default Blank Point Value</label>
 	      <input type="number" step="0.5" class="form-control" id="test-default_blank_value" name="test-default_blank_value" required>
+	      <label for="time_limit_div">Time Limit</label>
+
+ <div class="row" id="time_limit_div">
+            <div class="col-xs-6">
+              <div class="form-group">
+<label for="hours">Hours</label>
+                <select class="form-control" id="hours" name="hours">
+                  {% for i in "xxxxxx" %}
+                  <option value="{{forloop.counter0}}"{% if default_hours == forloop.counter0 %}selected{% endif %}>{{forloop.counter0}}</option>
+                  {% endfor %}
+                </select>
+              </div>
             </div>
+            <div class="col-xs-6">
+              <div class="form-group">
+<label for="minutes">Minutes</label>
+  <select class="form-control" id="minutes" name="minutes">
+                  {% for min in minuterange %}
+                  <option value="{{min}}"{% if default_minutes == min %}selected{% endif %}>{{min}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+            </div>
+          </div>
+
+
+            </div>
+<div class="alert alert-danger" id="newtest-error" style="display:none;">
+</div>
           </div>
           <div class="modal-footer">
             <button type="submit" name="addtest" class="btn btn-primary">Add Test</button>
@@ -147,6 +176,9 @@ var editableList = Sortable.create(unitobjectList, {
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length==0) {
+      $("#no-assignments").html("<p><i>You don't have any assignmentss in this unit yet.</i></p>");
+    }
   }
 });
 
@@ -163,6 +195,7 @@ $('#problemset-form').on('submit',function(event) {
             $("#unitobjectList").append(result);
             $("#problemset-name").val('');
             $("#problemset-default_point_value").val('');
+            $("#no-assignments").empty();
         }
     });
     return false;
@@ -180,6 +213,7 @@ $('#slides-form').on('submit',function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#unitobjectList").append(result);
             $("#slides-name").val('');
+            $("#no-assignments").empty();
 
         }
     });
@@ -188,6 +222,10 @@ $('#slides-form').on('submit',function(event) {
 
 $('#test-form').on('submit',function(event) {
     event.preventDefault();
+    if ($("#hours").val()=='0' && $("#minutes").val()=='0') {
+        $("#newtest-error").html("Please enter a valid time limit");
+        $("#newtest-error").show();
+    } else {
     $.ajax({
         type: 'POST',
         url: 'add-test/',
@@ -200,8 +238,14 @@ $('#test-form').on('submit',function(event) {
             $("#test-name").val('');
             $("#test-default_point_value").val('');
             $("#test-default_blank_value").val('');
+            $("#minutes").val("0");
+            $("#hours").val("1");
+            $("#newtest-error").html("");
+            $("#newtest-error").hide();
+            $("#no-assignments").empty();
         }
     });
+    }
     return false;
 });
 </script>

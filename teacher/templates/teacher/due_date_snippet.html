@@ -1,6 +1,16 @@
 {% load tz %}
 {% if problemset %}
-<b>Due Date:</b> 
+<p>
+<b>Start Date:</b>
+{% if problemset.start_date %}
+{{problemset.start_date|timezone:request.user.userprofile.time_zone}} 
+<span class="edit-startdate-link" id="edit-startdate_{{problemset.pk}}" style="color:blue;cursor:pointer"><span class="glyphicon glyphicon-pencil"></span></span>
+<span class="delete-startdate-link" id="delete-startdate_{{problemset.pk}}" style="color:red;cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span>
+{% else %}
+No start date set for this assignment.<span class="edit-startdate-link" id="edit-startdate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
+{% endif %}
+</p>
+<p><b>Due Date:</b> 
 {% if problemset.due_date %}
 
 {{problemset.due_date|timezone:request.user.userprofile.time_zone}} 
@@ -9,6 +19,7 @@
 {% else %}
 No due date set for this assignment.<span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="glyphicon glyphicon-plus"></span></span>
 {% endif %}
+</p>
 {% else %}
 <p>
 <b>Start Date:</b>

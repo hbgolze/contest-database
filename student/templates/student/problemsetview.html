@@ -5,9 +5,16 @@
   <li><a href="../../">My Classes</a></li>
   <li class="active">{{problemset.userunitobject.user_unit.user_class.published_class.name}} > {{problemset.userunitobject.user_unit.published_unit.name}} > {{problemset.published_problemset.name}}</li>
 </ol>
-
+{% load tz %}
 <div class="container">
   <h2>{{problemset.published_problemset.name}}</h2>
+{% if too_early %}
+  <div class="row">
+    <p class="col-xs-12">
+      This problem set is not available yet. Please try again during the problem set period (beginning {{problemset.published_problemset.start_date|timezone:request.user.userprofile.time_zone}}).
+    </p>
+  </div>
+{% else %}
   <div class="row">
     <table class="table table-bordered">
       {% for response_row,start_index in response_rows %}
@@ -123,10 +130,13 @@
 
   <div class="modal fade" id="edit-response-modal" role="dialog">
   </div>
+{% endif %}
 </div>
 
 <script>
+{% if too_early %}
 
+{% else %}
 // using jQuery
 function getCookie(name) {
     var cookieValue = null;
@@ -158,7 +168,7 @@ $.ajaxSetup({
         }
     },
 });
-$(".solution-link").click(function(event) {
+$(document).on('click',".solution-link",function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
 
@@ -169,26 +179,13 @@ $(".solution-link").click(function(event) {
     });
 });
 
-function triggerModal()
-{
-   $(document.body).on('click', '.solution-link', function () {
- 
-      event.preventDefault();
-      var target = $(this).attr("href");
 
-
-      $("#solution-placeholder").load(target, function() {
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-        $("#solution-placeholder").modal("show");
-      });
-    });
-}
 $(document).on('click touch',".js-star-toggle",function(event) {
     event.preventDefault();
     $.ajax({
         type: 'POST',
         url: 'toggle_star/',
-        data: "&star_id="+$(this).attr('id'),
+        data: "&star_id="+$(this).attr('id')+"&data_type=ups&pk={{problemset.pk}}",
         dataType: 'json',
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
@@ -222,7 +219,6 @@ $(document).on('click',".js-check-mc-answer",function(event) {
                      $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
-                         triggerModal();
                      } else {
 	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
@@ -253,7 +249,6 @@ $(document).on('click',".js-check-answer",function(event) {
                      $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
 	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
-                         triggerModal();
                      } else {
 	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
@@ -272,7 +267,7 @@ $(document).on('click',".js-edit-proof",function(event) {
     var resp_pk = $(this).attr('id').split('-')[2];
     $.ajax({
         type: 'GET',
-        url: 'load-proof-response/',
+        url: '/student/ajax/load-proof-response/',
         data: "&resp_pk="+resp_pk,
         dataType: 'json',
         success: function(data) {
@@ -288,7 +283,7 @@ $(document).on('submit',"#edit-response-form",function(event) {
     event.preventDefault();
     $.ajax({
         type: 'POST',
-        url: 'save-proof-response/',
+        url: '/student/ajax/save-proof-response/',
         data: $(this).serialize(),
         dataType: 'json',
         success: function(data) {
@@ -322,9 +317,7 @@ $(document).on('click',"#submit-all",function(event) {
     return false;
 });
 
-//$(document).on('input',".answer-input", function(event) {
-//console.log('tell me I\'m unsaved'+$(this).attr('name'));
-//});
+{% endif %}
 </script>
 
 {% endblock %}

@@ -389,7 +389,7 @@ def teachertestview(request,**kwargs):
         raise Http404("Unauthorized.")
     if test.unit_object.unit not in my_class.pub_units.all():##
         raise Http404("Unauthorized.")
-    rows = test.test_problem_objects.all()
+    rows = test.problem_objects.all()
     context['rows'] = rows
 #    expanded_rows = []
 #    for po in rows:
@@ -533,6 +533,8 @@ def uniteditview(request,pk,upk):
     context['my_class'] = my_class
     context['unit'] = unit
     context['nbar'] = 'teacher'
+    context['minuterange'] = [5*i for i in range(0,12)]
+    context['default_hours'] = 1
     return render(request, 'teacher/editunitview.html',context)
 
 @login_required
@@ -566,7 +568,10 @@ def newtestview(request,pk,upk):
         form=request.POST
         u=UnitObject(unit=unit,order=unit.unit_objects.count()+1)
         u.save()
-        t=Test(name=form.get("test-name",""),default_point_value=form.get("test-default_point_value",""),default_blank_value = form.get("test-default_blank_value",""),unit_object = u)
+        minutes = request.POST.get('minutes')
+        hours = request.POST.get('hours')
+        time_limit = time(hour=int(hours),minute=int(minutes))
+        t=Test(name=form.get("test-name",""),default_point_value=form.get("test-default_point_value",""),default_blank_value = form.get("test-default_blank_value",""),unit_object = u,time_limit = time_limit)
         t.save()
         return HttpResponse(render_to_string('teacher/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()},request=request))
     return HttpResponse('')
@@ -1004,54 +1009,54 @@ def testeditview(request,pk,upk,tpk):
         form = request.POST
         if "addoriginalproblem" in form:###############
             qt = form.get('question-type','')
-            po = TestProblemObject()
+            po = ProblemObject()
             if qt == "multiple choice":
-                pform = NewTestProblemObjectMCForm(request.POST, instance = po)
+                pform = NewProblemObjectMCForm(request.POST, instance = po)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.point_value = test.default_point_value
                     prob.blank_point_value = test.default_blank_value
-                    prob.order = test.test_problem_objects.count() + 1
+                    prob.order = test.problem_objects.count() + 1
                     prob.test = test
                     prob.save()
             elif qt == "short answer":
-                pform = NewTestProblemObjectSAForm(request.POST, instance = po)
+                pform = NewProblemObjectSAForm(request.POST, instance = po)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.blank_point_value = test.default_blank_value
-                    prob.order = test.test_problem_objects.count() + 1
+                    prob.order = test.problem_objects.count() + 1
                     prob.test = test
                     prob.save()
             elif qt == "proof":
-                pform = NewTestProblemObjectPFForm(request.POST, instance = po)
+                pform = NewProblemObjectPFForm(request.POST, instance = po)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.blank_point_value = test.default_blank_value
-                    prob.order = test.test_problem_objects.count() + 1
+                    prob.order = test.problem_objects.count() + 1
                     prob.test = test
                     prob.save()
                     
         if 'save' in form:
-            prob_objs = list(test.test_problem_objects.all())
+            prob_objs = list(test.problem_objects.all())
             prob_objs = sorted(prob_objs,key = lambda x:x.order)###
             prob_obj_inputs = form.getlist('problemobjectinput')#could be an issue if no units
             for p in prob_objs:
                 if 'problemobject_'+str(p.pk) not in prob_obj_inputs:
                     p.delete()
             for i in range(0,len(prob_obj_inputs)):
-                p = test.test_problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
+                p = test.problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
                 p.order = i+1
                 p.save()
     context={}
@@ -1065,29 +1070,29 @@ def testeditview(request,pk,upk,tpk):
 @login_required
 def testloadoriginalproblemform(request,**kwargs):
     qt = request.GET.get('qt','')
-    po = TestProblemObject()
+    po = ProblemObject()
     if qt == 'sa':
-        form = NewTestProblemObjectSAForm(instance = po)
+        form = NewProblemObjectSAForm(instance = po)
     if qt == 'mc':
-        form = NewTestProblemObjectMCForm(instance = po)
+        form = NewProblemObjectMCForm(instance = po)
     if qt == 'pf':
-        form = NewTestProblemObjectPFForm(instance = po)
+        form = NewProblemObjectPFForm(instance = po)
     return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
 
 @login_required
 def testloadcqtoriginalproblemform(request,**kwargs):
     qt = request.GET.get('qt','')
     pk = request.GET.get('pk','')
-    po = get_object_or_404(TestProblemObject,pk = pk)
+    po = get_object_or_404(ProblemObject,pk = pk)
     if po.isProblem == 0:
         if qt == 'sa':
-            form = NewTestProblemObjectSAForm(instance = po)
+            form = NewProblemObjectSAForm(instance = po)
         if qt == 'mc':
-            form = NewTestProblemObjectMCForm(instance = po)
+            form = NewProblemObjectMCForm(instance = po)
         if qt == 'pf':
-            form = NewTestProblemObjectPFForm(instance = po)
+            form = NewProblemObjectPFForm(instance = po)
         return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
-    form = EditTestProblemObjectForm(instance = po)
+    form = EditProblemProblemObjectForm(instance = po)
     return HttpResponse(render_to_string('teacher/originalproblemform.html',{'form':form}))
 
 @login_required
@@ -1105,49 +1110,49 @@ def testaddoriginalproblem(request,pk,upk,ppk):
     if request.method == "POST":
         form = request.POST
         qt = form.get('question-type','')
-        po = TestProblemObject()
+        po = ProblemObject()
         if qt == "multiple choice":
-            pform = NewTestProblemObjectMCForm(request.POST, instance = po)
+            pform = NewProblemObjectMCForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
-                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
                 prob.blank_point_value = test.default_blank_value
-                prob.order = test.test_problem_objects.count()+1
+                prob.order = test.problem_objects.count()+1
                 prob.test = test
                 prob.save()
-                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
         elif qt == "short answer":
-            pform = NewTestProblemObjectSAForm(request.POST, instance = po)
+            pform = NewProblemObjectSAForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
                 prob.blank_point_value = test.default_blank_value
-                prob.order = test.test_problem_objects.count() + 1
+                prob.order = test.problem_objects.count() + 1
                 prob.test = test
                 prob.save()
-                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
         elif qt == "proof":
-            pform = NewTestProblemObjectPFForm(request.POST, instance = po)
+            pform = NewProblemObjectPFForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
                 prob.blank_point_value = test.default_blank_value
-                prob.order = test.test_problem_objects.count() + 1
+                prob.order = test.problem_objects.count() + 1
                 prob.test = test
                 prob.save()
-                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.test_problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
 @login_required
@@ -1162,9 +1167,9 @@ def testupdate_point_value(request,pk,upk,ppk,pppk):
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
-    po = get_object_or_404(TestProblemObject,pk = pppk)
+    po = get_object_or_404(ProblemObject,pk = pppk)
     if request.method == 'POST':
-        form = TestPointValueForm(request.POST,instance=po)
+        form = PointValueForm(request.POST,instance=po)
         if form.is_valid():
             form.save()
             data = {
@@ -1172,7 +1177,7 @@ def testupdate_point_value(request,pk,upk,ppk,pppk):
                 'point_value':form.instance.point_value,
             }
             return JsonResponse(data)
-    form = TestPointValueForm(instance = po)
+    form = PointValueForm(instance = po)
     return render(request,'teacher/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
 
 @login_required
@@ -1187,9 +1192,9 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
-    po = get_object_or_404(TestProblemObject,pk = pppk)
+    po = get_object_or_404(ProblemObject,pk = pppk)
     if request.method == 'POST':
-        form = TestBlankPointValueForm(request.POST,instance=po)
+        form = BlankPointValueForm(request.POST,instance=po)
         if form.is_valid():
             form.save()
             data = {
@@ -1197,7 +1202,7 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
                 'blank_point_value':form.instance.blank_point_value,
             }
             return JsonResponse(data)
-    form = TestBlankPointValueForm(instance = po)
+    form = BlankPointValueForm(instance = po)
     return render(request,'teacher/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
 
 @login_required
@@ -1212,37 +1217,37 @@ def testeditquestiontype(request,pk,upk,ppk,pppk):
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
-    po = get_object_or_404(TestProblemObject,pk = pppk)
+    po = get_object_or_404(ProblemObject,pk = pppk)
     if request.method == "POST":
         form = request.POST
         qt = form.get('cqt-question-type','')
         if po.isProblem == 0:
             if qt == "multiple choice":
-                pform = NewTestProblemObjectMCForm(request.POST, instance=po)
+                pform = NewProblemObjectMCForm(request.POST, instance=po)
                 if pform.is_valid():
                     prob=pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.save()
                     return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':prob}),'qt':qt})
             elif qt == "short answer":
-                pform = NewTestProblemObjectSAForm(request.POST, instance=po)
+                pform = NewProblemObjectSAForm(request.POST, instance=po)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.save()
                     return JsonResponse({'prob':render_to_string('teacher/problemsnippet.html',{'probobj':prob}),'qt':qt})
             elif qt == "proof":
-                pform = NewTestProblemObjectPFForm(request.POST, instance=po)
+                pform = NewProblemObjectPFForm(request.POST, instance=po)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originaltestproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originaltestproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type=qt)
                     prob.author = request.user
                     prob.save()
@@ -1254,14 +1259,14 @@ def testeditquestiontype(request,pk,upk,ppk,pppk):
     qt=po.question_type.question_type
     if po.isProblem == 0:
         if qt == 'short answer':
-            form = NewTestProblemObjectSAForm(instance = po)
+            form = NewProblemObjectSAForm(instance = po)
         if qt == 'multiple choice':
-            form = NewTestProblemObjectMCForm(instance = po)
+            form = NewProblemObjectMCForm(instance = po)
         if qt == 'proof':
-            form = NewTestProblemObjectPFForm(instance = po)
+            form = NewProblemObjectPFForm(instance = po)
         return JsonResponse({'form':render_to_string('teacher/originalproblemform.html',{'form':form}),'qt':qt,'qts':[1,1,1]})#qts: mc,sa,pf
 
-    form = EditTestProblemObjectForm(instance=po)
+    form = EditProblemProblemObjectForm(instance=po)
     if po.problem.question_type_new.question_type == 'multiple choice':
         qts=[1,0,1]
     if po.problem.question_type_new.question_type == 'short answer':
@@ -1287,7 +1292,7 @@ def testnumprobsmatching(request,pk,upk,ppk):
     form = request.GET
     typ = form.get('contest-type','')
     desired_tag = form.get('contest-tags','')
-    curr_problems = test.test_problem_objects.filter(isProblem = 1)
+    curr_problems = test.problem_objects.filter(isProblem = 1)
     P = Problem.objects.filter(type_new__type = typ).filter(newtags__in = NewTag.objects.filter(tag__startswith = desired_tag)).exclude(id__in = curr_problems.values('problem_id')).distinct()####check this once contest problems are in a problem set.
     return JsonResponse({'num':str(P.count())})
 
@@ -1309,17 +1314,17 @@ def testreviewmatchingproblems(request,pk,upk,ppk):
         form = request.POST
         if 'add-selected-problems' in form:
             checked = form.getlist("chk")
-            top = test.test_problem_objects.count()
+            top = test.problem_objects.count()
             if len(checked)>0:
                 for i in range(0,len(checked)):
                     p = Problem.objects.get(label=checked[i])
-                    po = TestProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value, test = test, isProblem=1,problem=p,question_type = p.question_type_new)
+                    po = ProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value, test = test, isProblem=1,problem=p,question_type = p.question_type_new)
                     po.save()
                 return redirect('../')
             return redirect('../')
         typ = form.get('contest-type','')
         desired_tag = form.get('contest-tags','')
-        curr_problems = test.test_problem_objects.filter(isProblem=1)
+        curr_problems = test.problem_objects.filter(isProblem=1)
         P = Problem.objects.filter(type_new__type=typ).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).exclude(id__in=curr_problems.values('problem_id')).distinct().order_by("problem_number")
     context={}
     context['my_class'] = my_class
@@ -1348,16 +1353,16 @@ def testreviewproblemgroup(request,pk,upk,ppk):
         form = request.POST
         if 'add-selected-problems' in form:
             checked = form.getlist("chk")
-            top = test.test_problem_objects.count()
+            top = test.problem_objects.count()
             if len(checked)>0:
                 for i in range(0,len(checked)):
                     p = Problem.objects.get(label=checked[i])
-                    po = TestProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value,isProblem=1,problem=p,question_type = p.question_type_new,test=test)
+                    po = ProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value,isProblem=1,problem=p,question_type = p.question_type_new,test=test)
                     po.save()
                 return redirect('../')
             return redirect('../')
         prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
-        curr_problems = test.test_problem_objects.filter(isProblem=1)
+        curr_problems = test.problem_objects.filter(isProblem=1)
         P = prob_group.problems.exclude(id__in=curr_problems.values('problem_id')).distinct()
     context={}
     context['my_class'] = my_class
@@ -2165,6 +2170,9 @@ def save_duedate(request):
         due_date = request.POST.get('due_date')
         tz = pytz.timezone(request.user.userprofile.time_zone)
         tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        if problemset.start_date != None:
+            if problemset.start_date >= tz_due_date:
+                return JsonResponse({'error': 'Due date is before start date'})
         problemset.due_date = tz_due_date
         problemset.save()
         return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
@@ -2173,6 +2181,9 @@ def save_duedate(request):
         due_date = request.POST.get('due_date')
         tz = pytz.timezone(request.user.userprofile.time_zone)
         tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        if test.start_date != None:
+            if test.start_date >= tz_due_date:
+                return JsonResponse({'error': 'Due date is before start date'})
         test.due_date = tz_due_date
         test.save()
         return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test':test,'request':request})})
@@ -2218,6 +2229,9 @@ def save_startdate(request):
         start_date = request.POST.get('start_date')
         tz = pytz.timezone(request.user.userprofile.time_zone)
         tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        if problemset.due_date != None:
+            if problemset.due_date <= tz_start_date:
+                return JsonResponse({'error': 'Start date is after end date'})
         problemset.start_date = tz_start_date
         problemset.save()
         return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'problemset':problemset,'request':request})})
@@ -2226,6 +2240,9 @@ def save_startdate(request):
         start_date = request.POST.get('start_date')
         tz = pytz.timezone(request.user.userprofile.time_zone)
         tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        if test.due_date != None:
+            if test.due_date <= tz_start_date:
+                return JsonResponse({'error': 'Start date is after end date'})
         test.start_date = tz_start_date
         test.save()
         return JsonResponse({'date_snippet':render_to_string('teacher/due_date_snippet.html',{'test':test,'request':request})})

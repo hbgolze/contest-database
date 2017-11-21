@@ -36,6 +36,7 @@ class NewTag(models.Model):
     label = models.CharField(max_length=50)
     level = models.IntegerField(default=0)
     parent = models.ForeignKey("self",null=True,related_name="children")
+    description = models.TextField(blank = True)
     def __str__(self):
         if self.level > 1:
             return str(self.parent)+'>'+self.label
@@ -303,7 +304,8 @@ class UserProfile(models.Model):
     timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='userprofiles')
     folders = models.ManyToManyField(Folder,blank = True,related_name='userprofiles')
-    students = models.ManyToManyField(User,blank = True,related_name='userprofiles')
+    students = models.ManyToManyField(User,blank = True,related_name='teacher_profiles')
+    collaborators = models.ManyToManyField(User,blank = True, related_name = 'collaborators')
     allresponses = models.ManyToManyField(Responses,blank=True,related_name='userprofiles')
     responselog = models.ManyToManyField(UserResponse,blank=True)
     stickies = models.ManyToManyField(Sticky,blank=True)

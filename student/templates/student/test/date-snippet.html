@@ -1,0 +1,4 @@
+{% load tz %}
+                    <div align="right">
+                      <small>Last saved: {{resp.modified_date|timezone:request.user.userprofile.time_zone}}</small>
+                    </div>

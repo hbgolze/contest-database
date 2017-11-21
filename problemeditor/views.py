@@ -213,37 +213,50 @@ def typeview(request):
 
 @login_required
 def tagview(request,type):
-    typ=get_object_or_404(Type, type=type)
+    typ = get_object_or_404(Type, type=type)
     newtags = NewTag.objects.all().exclude(label='root').order_by('tag')
-    rows=[]
-    probsoftype=Problem.objects.filter(type_new=typ)
-    untagged=probsoftype.filter(newtags__isnull=True)
+    rows = []
+    probsoftype = Problem.objects.filter(type_new=typ)
+    untagged = probsoftype.filter(newtags__isnull=True)
     num_untagged = untagged.count()
     for tag in newtags:#i
         T = tag.problems.filter(type_new=typ)#probsoftype.filter(newtags__in=[tag])
-        num_problems=T.count()
+        num_problems = T.count()
         num_nosolutions = T.filter(solutions__isnull=True).count()
-        if num_problems>0:
+        if num_problems > 0:
             rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
-    template=loader.get_template('problemeditor/tagview.html')
-    context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'bytag'}
-    return HttpResponse(template.render(context,request))
 
-@login_required
-def CMtagview(request,type):
-    typ=get_object_or_404(Type, type=type)
-    newtags=NewTag.objects.all().exclude(label='root').order_by('tag')
-    rows=[]
-    probsoftype=Problem.objects.filter(type_new=typ)
-    num_untagged=probsoftype.filter(newtags__isnull=True).count()
-    for tag in newtags:
-        T = tag.problems.filter(type_new=typ)
-        num_problems=T.count()
+    root_tag = NewTag.objects.get(label='root')
+    rows1 = []
+    for c1 in root_tag.children.all():
+        T_startswith = probsoftype.filter(newtags__in=NewTag.objects.filter(tag__startswith = c1.tag))
+        T = c1.problems.filter(type_new=typ)
+        num_probs_sw = T_startswith.count()
+        num_nosolutions_sw = T_startswith.filter(solutions__isnull=True).count()
+        num_probs = T.count()
         num_nosolutions = T.filter(solutions__isnull=True).count()
-        if num_problems>0:
-            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
-    template=loader.get_template('problemeditor/CMtagview.html')
-    context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'CMbytag'}
+        if num_probs_sw > 0:
+            rows2 = []
+            for c2 in c1.children.all():
+                T_startswith2 = probsoftype.filter(newtags__in=NewTag.objects.filter(tag__startswith = c2.tag))
+                T2 = c2.problems.filter(type_new=typ)
+                num_probs_sw2 = T_startswith2.count()
+                num_nosolutions_sw2 = T_startswith2.filter(solutions__isnull=True).count()
+                num_probs2 = T2.count()
+                num_nosolutions2 = T2.filter(solutions__isnull=True).count()
+                if num_probs_sw2 > 0:
+                    rows3 = []
+                    for c3 in c2.children.all():
+                        T3 = c3.problems.filter(type_new=typ)
+                        num_probs3 = T3.count()
+                        num_nosolutions3 = T3.filter(solutions__isnull=True).count()
+                        if num_probs3 > 0:
+                            rows3.append((goodurl(str(c3)),c3,num_nosolutions3,num_probs3))
+                    rows2.append((rows3,goodurl(str(c2)),c2,num_nosolutions_sw2,num_probs_sw2,num_nosolutions2,num_probs2))
+            rows1.append((rows2,goodurl(str(c1)),c1,num_nosolutions_sw,num_probs_sw,num_nosolutions,num_probs))
+    
+    template=loader.get_template('problemeditor/tagview.html')
+    context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'bytag','rows1' : rows1}
     return HttpResponse(template.render(context,request))
 
 @login_required

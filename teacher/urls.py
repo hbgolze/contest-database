@@ -83,6 +83,7 @@ urlpatterns = [
     url(r'^class/(?P<pk>\d+)/problemset/(?P<pspk>\w+)/alpha/(?P<popk>\w+)/save_grade/$', views.save_grade, name='alphasavegrade'),
     url(r'^class/(?P<pk>\d+)/problemset/(?P<pspk>\w+)/alpha/(?P<popk>\w+)/change_grade/$', views.change_grade, name='alphachangegrade'),
     url(r'^class/(?P<pk>\d+)/test/(?P<tpk>\w+)/$', views.teachertestview, name='teachertestview'),
+    url(r'^class/(?P<pk>\w+)/test/(?P<tpk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='teacher_load_solution3'),
 ##^^Needs basically the same stuff as problemset,but need to decide if new response environment needed first...^^##
     url(r'^migrate_response/(?P<username>\w+)/(?P<npk>\w+)/$',views.migrate_response,name="migrate_response"),
     url(r'^migrate_response/(?P<username>\w+)/(?P<npk>\w+)/add_response/$',views.move_response,name="move_response"),

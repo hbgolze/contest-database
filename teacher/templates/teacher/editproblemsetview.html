@@ -32,22 +32,15 @@
 	</div>
       </div>
 
-      {% if problemset.problem_objects.count > 0 %}
-      <p>Drag problems around to reorder them, then click "Save".</p>
-      {% endif %}
+      <p>Drag problems around to reorder them. If you reorder or delete problems, you must click "Save" for your changes to apply.</p>
       <form action="." method="POST" id="problemobjects">
         {% csrf_token %}
         <div id="problemobjectList" class="list-group">
-	  {% if problemset.problem_objects.count > 0 %}
           {% for probobj in problemset.problem_objects.all %}
-
 {% include 'teacher/problemobjectsnippet.html' with forcount=forloop.counter %}
-
           {% endfor %}
-	  {% else %}
-	  <div id="msg-no-problems"><p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p></div>
-	  {% endif %}
         </div>
+	  <div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>{% endif %}</div>
 	
 	
 	<span class="dropup">
@@ -246,7 +239,7 @@
 
 </div>
 
-<div class="modal fade" id="edit-timelimit-modal" tabindex="-1" role="dialog">
+<div class="modal fade" id="edit-startdate-modal" tabindex="-1" role="dialog">
 
 </div>
 
@@ -486,6 +479,9 @@ var editableList = Sortable.create(problemobjectList, {
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length == 0 ) {
+      $("#msg-no-problems").html("<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>");
+    }
   }
 });
 
@@ -541,6 +537,60 @@ $(document).on('click',".delete-duedate-link",function(event) {
     return false;
 });
 
+$(document).on('click',".edit-startdate-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/load-edit-startdate/',
+        data: "pk="+ps_pk+"&uo=ps",
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-startdate-modal").html(result['modal-html']);
+ $(function() {
+   $('#datetimepicker2').datetimepicker({defaultDate:result['date']});
+ });
+            $("#edit-startdate-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit-startdate-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/save-startdate/',
+        data: $(this).serialize()+"&uo=ps",
+        dataType: 'json',
+        success: function(result) {
+           if ('error' in result) {
+               $("#start_date_error").html(result['error']);
+               $("#start_date_error").attr('style','display:block;');
+           } else {
+               $("#due_date_div").html(result['date_snippet']);
+               $("#edit-startdate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+           }
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".delete-startdate-link",function(event) {
+    event.preventDefault();
+    var ps_pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/teacher/ajax/delete-startdate/',
+        data: "pk="+ps_pk+"&uo=ps",
+        dataType: 'json',
+        success: function(result) {
+           $("#due_date_div").html(result['date_snippet']);
+        }
+    });
+    return false;
+});
 
 </script>
 

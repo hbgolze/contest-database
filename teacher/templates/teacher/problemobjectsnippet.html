@@ -8,7 +8,7 @@
     <div class="col-sm-8 col-md-9" id="problemtext_{{probobj.pk}}">
       {% if probobj.problem %}
       {% with prob=probobj.problem %}
-      {% if probobj.question_type == "multiple choice" %}
+      {% if probobj.question_type.question_type == "multiple choice" %}
       <p>
         {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
       </p>
@@ -25,7 +25,7 @@
       {% endif %}
     </div>
     <div class="col-sm-3 col-md-2" style="text-align:right">
-      <div><span class="js-remove" style="color:red; cursor:pointer">✖</span></div>
+      <div><span class="js-remove" style="color:red; cursor:pointer"><span class="glyphicon glyphicon-remove"></span></span></div>
       <div>
         <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
         <span id="pointvalue_{{probobj.pk}}">

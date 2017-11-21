@@ -53,6 +53,13 @@ def problemsetview(request,**kwargs):
     user_problemset = get_object_or_404(UserProblemSet, pk=pk)
     if user_problemset.userunitobject.user_unit.user_class.userprofile != userprofile:
         return HttpResponse('Unauthorized', status=401)
+    if user_problemset.published_problemset.start_date != None:
+        if user_problemset.published_problemset.start_date > timezone.now():
+            context['problemset'] = user_problemset
+            context['pk'] = pk
+            context['nbar'] = 'student'
+            context['too_early'] = 1
+            return render(request,'student/problemsetview.html',context)
     if user_problemset.is_initialized == 0:
         user_problemset.response_initialize()
     if user_problemset.published_problemset.due_date != None:
@@ -138,11 +145,18 @@ class SolutionView(DetailView):
         return get_object_or_404(PublishedProblemObject, pk=self.item_id)
 
 @login_required
-def toggle_star(request,pk):
+def toggle_star(request,**kwargs):
     userprofile = request.user.userprofile
-    user_problemset = get_object_or_404(UserProblemSet, pk=pk)
-    if user_problemset.userunitobject.user_unit.user_class.userprofile != userprofile:
-        return HttpResponse('Unauthorized', status=401)
+    data_type = request.POST.get('data_type','')
+    pk = request.POST.get('pk','')
+    if data_type == 'ups':
+        user_problemset = get_object_or_404(UserProblemSet, pk=pk)
+        if user_problemset.userunitobject.user_unit.user_class.userprofile != userprofile:
+            return HttpResponse('Unauthorized', status=401)
+    elif data_type == 'ut':
+        user_test = get_object_or_404(UserTest, pk=pk)
+        if user_test.userunitobject.user_unit.user_class.userprofile != userprofile:
+            return HttpResponse('Unauthorized', status=401)
     star_tag = request.POST.get('star_id','')
     star_list = star_tag.split('_')
     response_pk = star_list[1]
@@ -166,8 +180,12 @@ def toggle_star(request,pk):
             readable_label = response.publishedproblem_object.problem.readable_label
         else:
             readable_label = 'Problem #'+str(response.publishedproblem_object.order)
-        s=Sticky(response = response, problemset = user_problemset, userprofile = userprofile, readable_label=readable_label)
-        s.save()
+        if data_type == 'ups':
+            s=Sticky(response = response, problemset = user_problemset, userprofile = userprofile, readable_label=readable_label)
+            s.save()
+        elif data_type == 'ut':
+            s=Sticky(response = response, test = user_test, userprofile = userprofile, readable_label=readable_label)
+            s.save()
         response.stickied = True
         response.save()
         return JsonResponse({
@@ -306,67 +324,44 @@ def testview(request,**kwargs):
     user_test = get_object_or_404(UserTest, pk=pk)
     if user_test.userunitobject.user_unit.user_class.userprofile != userprofile:
         return HttpResponse('Unauthorized', status=401)
+    if user_test.published_test.start_date != None:
+        if user_test.published_test.start_date > timezone.now():
+            context['test'] = user_test
+            context['pk'] = pk
+            context['nbar'] = 'student'
+            context['too_early'] = 1
+            return render(request,'student/testview.html',context)
     if user_test.is_initialized == 0:
         user_test.response_initialize()
     if user_test.published_test.due_date != None:
         if user_test.published_test.due_date < timezone.now():
             context['past_due'] = 1
+    if user_test.start_time !=None:
+        if user_test.start_time+timedelta(hours=user_test.published_test.time_limit.hour,minutes = user_test.published_test.time_limit.minute) < timezone.now():#if current time is past due_date or past time_limit
+            context['past_due'] = 1
+    if user_test.is_graded == 0:
+        context['not_graded'] = 1
+    if user_test.in_progress == False:
+        user_test.start_time = timezone.now()
+        user_test.in_progress = True
+        user_test.save()
     if request.method == "POST":
         form=request.POST
         P=user_test.response_set.all()
-
-        num_correct = 0
-        num_points = 0
         for r in P:
             tempanswer = form.get('answer'+str(r.publishedproblem_object.pk))
             if tempanswer != None and tempanswer !='':
                 t=timezone.now()
                 r.attempted = 1
-                if r.response != tempanswer:
-                    if r.publishedtest_problem_object.isProblem:
-                        readable_label = r.publishedtest_problem_object.problem.readable_label
-                    else:
-                        readable_label = 'Problem #'+str(r.publishedtest_problem_object.order)
-                    ur=UserResponse(userprofile=userprofile, user_test = user_test,response=r,static_response=tempanswer,readable_label=readable_label,modified_date=t,point_value=r.point_value)
-                    ur.save()
+                if r.response != tempanswer:# if new answer
                     r.modified_date = t
                     r.response = tempanswer
                     r.save()
-
-                    if r.publishedtest_problem_object.question_type.question_type == "multiple choice":
-                        if r.publishedtest_problem_object.isProblem == True:
-                            answer = r.publishedtest_problem_object.problem.mc_answer
-                        else:
-                            answer = r.publishedtest_problem_object.mc_answer
-                        if r.response == answer:
-                            ur.correct = 1
-                            ur.save()
-                            r.points = r.point_value
-                            r.save()
-                            num_correct += 1
-                            num_points += r.point_value
-                    elif r.publishedtest_problem_object.question_type.question_type == "short answer":
-                        if r.publishedtest_problem_object.isProblem == True:
-                            answer = r.publishedtest_problem_object.problem.sa_answer
-                        else:
-                            answer = r.publishedtest_problem_object.sa_answer
-                        if r.response == answer:
-                            ur.correct = 1
-                            ur.save()
-                            r.points = r.point_value
-                            r.save()
-                            num_correct += 1
-                            num_points += r.point_value
-        user_test.num_correct = user_test.num_correct+num_correct
-        user_test.userunitobject.user_unit.num_correct = user_test.userunitobject.user_unit.num_correct+num_correct
-        user_test.userunitobject.user_unit.user_class.num_correct = user_test.userunitobject.user_unit.user_class.num_correct+num_correct
-        user_test.points_earned = user_test.points_earned+num_points
-        user_test.userunitobject.user_unit.points_earned = user_test.userunitobject.user_unit.points_earned+num_points
-        user_test.userunitobject.user_unit.user_class.points_earned = user_test.userunitobject.user_unit.user_class.points_earned+num_points
-        user_test.save()
-        user_test.userunitobject.user_unit.save()
-        user_test.userunitobject.user_unit.user_class.save()
-        return HttpResponse('')
+            else:
+                r.attempted = 0
+                r.response = ''
+                r.save()
+        return HttpResponse('')#The jquery does location.reload
     rows = user_test.response_set.all()
     context['rows'] = rows
     response_rows = []
@@ -376,4 +371,89 @@ def testview(request,**kwargs):
     context['test'] = user_test
     context['pk'] = pk
     context['nbar'] = 'student'
-    return render(request, 'student/problemsetview.html',context)
+    return render(request, 'student/testview.html',context)
+
+
+@login_required
+def saveresponse(request,pk):
+    userprofile = request.user.userprofile
+    user_test = get_object_or_404(UserTest, pk=pk)
+    if user_test.userunitobject.user_unit.user_class.userprofile != userprofile:
+        return HttpResponse('Unauthorized', status=401)
+
+    response_label=request.POST.get('response_id','')
+    problem_label = response_label.split('-')[2]
+    problem_object = get_object_or_404(PublishedProblemObject,pk=problem_label)
+
+    tempanswer = request.POST.get('answer','')
+    
+    r = user_test.response_set.get(publishedproblem_object = problem_object)
+    t = timezone.now()
+    if t > user_test.start_time+timedelta(hours=user_test.published_test.time_limit.hour,minutes=user_test.published_test.time_limit.minute):
+        return JsonResponse({'error':'Time is up!'})
+    if user_test.published_test.due_date != None:
+        if t > user_test.published_test.due_date:
+            return JsonResponse({'error':'Test is due!!'})
+    r.attempted = 1
+    if r.response != tempanswer:#....if new response
+        if tempanswer == "" or tempanswer == None or tempanswer == "undefined":
+            r.attempted = 0
+            r.response = ""
+            r.save()
+            return JsonResponse({'prob_pk':problem_object.pk,'mod-date':"",'newly_blank':1})
+        r.modified_date = t
+        r.response = tempanswer
+        r.save()
+#DO NOT ADJUST ANY STATS UNTIL GRADING!!!!
+        mod_date = render_to_string("student/test/date-snippet.html",{'resp':r,'request':request})
+        return JsonResponse({'prob_pk':problem_object.pk,'mod-date':mod_date})
+    return JsonResponse({'prob_pk':problem_object.pk,'no_change':1})
+
+@login_required
+def grade_test(request,**kwargs):
+    pk=kwargs['pk']
+    userprofile = request.user.userprofile
+    user_test = get_object_or_404(UserTest, pk=pk)
+    if user_test.userunitobject.user_unit.user_class.userprofile != userprofile:
+        return HttpResponse('Unauthorized', status=401)
+    t=timezone.now()
+
+    if t <= user_test.start_time+timedelta(hours=user_test.published_test.time_limit.hour,minutes=user_test.published_test.time_limit.minute):
+        return JsonResponse({'error':'Please wait for the time limit to expire!'})
+    if user_test.is_graded == False:
+        P = user_test.response_set.all()
+        points_earned = 0
+        correct_problems = 0
+        for r in P:
+            if r.publishedproblem_object.question_type.question_type == 'short answer' or r.publishedproblem_object.question_type.question_type == 'multiple choice':
+                if r.attempted:
+                    print('attempted')
+                    if r.publishedproblem_object.question_type.question_type =='short answer':
+                        if r.publishedproblem_object.isProblem ==1:
+                            answer = r.publishedproblem_object.problem.sa_answer
+                        else:
+                            answer = r.publishedproblem_object.sa_answer
+                    else:
+                        if r.problem_object.isProblem ==1:
+                            answer = r.publishedproblem_object.problem.mc_answer
+                        else:
+                            answer = r.publishedproblem_object.mc_answer
+                    if r.response == answer:
+                        correct_problems += 1
+                        points_earned += r.publishedproblem_object.point_value
+                        r.points = r.publishedproblem_object.point_value
+                        r.is_graded = 1
+                        r.save()
+                else:
+                    print('blank')
+                    r.points = r.publishedproblem_object.blank_point_value
+                    points_earned += r.publishedproblem_object.blank_point_value
+                    r.is_graded = 1
+                    r.save()
+            else:
+                print('sad')
+        user_test.points_earned = points_earned
+        user_test.num_correct = correct_problems
+        user_test.is_graded = 1
+        user_test.save()
+    return JsonResponse({})

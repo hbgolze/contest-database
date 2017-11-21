@@ -50,23 +50,23 @@ def searchresults(request):
 #        return HttpResponseRedirect(next)
     if request.method=='GET':
         page = request.GET.get('page')
-        z=request.GET.copy()
+        z = request.GET.copy()
         if 'page' in z:
             del(z['page'])
-        current_url=z.urlencode()
-        form=request.GET
-        if form.get('searchform','')=="start":
+        current_url = z.urlencode()
+        form = request.GET
+        if form.get('searchform','') == "start":
             testtype = form.get('testtype','')
 
             searchterm = form.get('keywords','')
-            if searchterm is None or searchterm==u'':
-                keywords=[]
+            if searchterm is None or searchterm == u'':
+                keywords = []
             else:
-                keywords=searchterm.split(' ')
+                keywords = searchterm.split(' ')
 
-            tag=form.get('tag','')
-            if tag=="Unspecified":
-                tag=''
+            tag = form.get('tag','')
+            if tag == "Unspecified":
+                tag = ''
 
             probbegin=form.get('probbegin','')
             if probbegin is None or probbegin==u'':

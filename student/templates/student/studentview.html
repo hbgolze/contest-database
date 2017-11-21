@@ -22,6 +22,7 @@ $(function() {
 {% endblock %}
 
 {% block content %}
+{% load tz %}
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-9 main">
@@ -71,14 +72,20 @@ $(function() {
 	      <a href="problemset/{{pset.pk}}/" class="list-group-item">
 		<div class="row">
 		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}} {% if pset.published_problemset.time_limit %}<span class="glyphicon glyphicon-time"></span> ({{pset.published_problemset.time_limit.hour}}:{{pset.published_problemset.time_limit.minute}}){% endif %}
+		    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
 		  </div>
 		  <div class="col-xs-4">
 		    {{pset.num_correct}}/{{pset.num_problems}} (<script>document.write(Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)));</script>%)
 		    <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
 		  </div>
 		  <div class="col-xs-4" style="text-align:right">
-		    Points Earned: {{pset.points_earned}}/{{pset.total_points}}
+		    <p>Points Earned: {{pset.points_earned}}/{{pset.total_points}}</p>
+		    {% if pset.published_problemset.start_date %}
+		    <p>Start Date: {{pset.published_problemset.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		    {% if pset.published_problemset.due_date %}
+		    <p>Due Date: {{pset.published_problemset.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
 		  </div>
 		</div>
 	      </a>
@@ -106,13 +113,19 @@ $(function() {
 	      <a href="test/{{test.pk}}/" class="list-group-item">
 		<div class="row">
 		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}
+		    <span class="glyphicon glyphicon-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}{% if test.is_in_progress %}<p>(In progress, start time: {{test.start_time|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}})</p>{% elif test.completed and not test.is_graded %}<p>(Completed, ungraded)</p>{% elif test.completed and test.is_graded %}<p>(Completed, graded)</p>{% endif %}
 		  </div>
 		  <div class="col-xs-4">
-		    
+		    {% if test.is_graded %}{{test.num_correct}}/{% endif %}{{test.num_problems}} Problems, {% if test.is_graded %}{{test.points_earned}}/{% endif %}{{test.total_points}} Points
 		  </div>
 		  <div class="col-xs-4" style="text-align:right">
-		    {{test.num_problems}} Problems, {{test.total_points}} Points
+		    <p>Time Limit: {% if test.published_test.time_limit.hour > 0 %}{{test.published_test.time_limit.hour}} hours, {% endif %}{{test.published_test.time_limit.minute}} minutes</p>
+		    {% if test.published_test.start_date %}
+		    <p>Start Date: {{test.published_test.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		    {% if test.published_test.due_date %}
+		    <p>Due Date: {{test.published_test.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
 		  </div>
 		</div>
 	      </a>
@@ -172,7 +185,11 @@ $(function() {
 	<tbody>
 	  {% for sticky in stickies %}
 	  <tr>
+	    {% if sticky.problemset %}
             <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.problemset.published_problemset.name}}</a>: {{sticky.readable_label}}</small></td>
+	    {% elif sticky.test %}
+            <td><small><a href="test/{{sticky.test.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.test.published_test.name}}</a>: {{sticky.readable_label}}</small></td>
+	    {% endif %}
 	    <td>
 	      <small>{{sticky.sticky_date}}</small>
 	    </td>

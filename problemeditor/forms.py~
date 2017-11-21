@@ -59,18 +59,6 @@ class ApprovalForm(forms.ModelForm):
         self.fields['author_name'].required = True
         self.fields['approval_status'].required = True
 
-class MCAnswerForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = ('mc_answer',)
-        widgets = {
-            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES)
-        }
-
-class SAAnswerForm(forms.ModelForm):
-    class Meta:
-        model = Problem
-        fields = ('sa_answer',)
 
 
 class AddProblemForm1(forms.Form):
@@ -264,16 +252,18 @@ class UploadContestForm(forms.Form):
 class NewTagForm(forms.ModelForm):
     class Meta:
         model = NewTag
-        fields = ('label',)
+        fields = ('label','description',)
         widgets = {
             'label': forms.TextInput(attrs={'class':'form-control'}),
+            'description': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 5,'class':'form-control'}),
             }
 class AddNewTagForm(forms.ModelForm):
     class Meta:
         model = NewTag
-        fields = ('label','parent',)
+        fields = ('label','parent','description',)
         widgets = {
             'label': forms.TextInput(attrs={'class':'form-control'}),
+            'description': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 5,'class':'form-control'}),
             }
     def __init__(self,*args, **kwargs):
         super(AddNewTagForm, self).__init__(*args, **kwargs)

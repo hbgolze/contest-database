@@ -1,6 +1,7 @@
 from django.db import models
 
 from django.utils import timezone
+from datetime import timedelta
 
 from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
@@ -163,7 +164,7 @@ class UserTest(models.Model):
     test = models.ForeignKey('teacher.Test',null=True)
     published_test = models.ForeignKey('teacher.PublishedTest',null=True)
     total_points = models.IntegerField()
-    points_earned = models.IntegerField()
+    points_earned = models.FloatField()
     order = models.IntegerField(default = 0)
     num_problems = models.IntegerField(default = 0)
     num_correct = models.IntegerField(default = 0)
@@ -173,15 +174,31 @@ class UserTest(models.Model):
     start_time = models.DateTimeField(null = True)
     class Meta:
         ordering = ['order']
+    def is_in_progress(self):
+        if self.start_time == None:
+            return False
+        t=timezone.now()
+        if t > self.start_time+timedelta(hours=self.published_test.time_limit.hour, minutes = self.published_test.time_limit.minute):
+            return False
+        return True
+    def end_time(self):
+        return self.start_time+timedelta(hours=self.published_test.time_limit.hour, minutes = self.published_test.time_limit.minute)
+    def completed(self):
+        if self.start_time == None:
+            return False
+        t=timezone.now()
+        if t <= self.start_time+timedelta(hours=self.published_test.time_limit.hour, minutes = self.published_test.time_limit.minute):
+            return False
+        return True
     def update_stats(self):
-        self.num_problems = self.published_test.test_problem_objects.count()
+        self.num_problems = self.published_test.problem_objects.count()
         total_points = 0
-        for po in self.published_test.test_problem_objects.all():
+        for po in self.published_test.problem_objects.all():
             total_points += po.point_value
         points = 0
         num_correct = 0
         for r in self.response_set.all():
-            po = r.publishedtestproblem_object
+            po = r.publishedproblem_object
             if po.isProblem:
                 if po.question_type.question_type == 'multiple choice':
                     if r.response == po.problem.mc_answer:
@@ -201,9 +218,9 @@ class UserTest(models.Model):
         self.save()
     def response_initialize(self):
         R=self.response_set.all()
-        for p in self.published_test.test_problem_objects.all():
-            if R.filter(publishedtest_problem_object = p).exists()==False:
-                r = Response(publishedtest_problem_object = p, user_test = self,order=p.order,point_value = p.point_value,response="")
+        for p in self.published_test.problem_objects.all():
+            if R.filter(publishedproblem_object = p).exists()==False:
+                r = Response(publishedproblem_object = p, user_test = self,order=p.order,point_value = p.point_value,response="")
                 r.save()
         self.is_initialized = True
         self.save()
@@ -230,7 +247,8 @@ class Response(models.Model):
 class Sticky(models.Model):
     response = models.ForeignKey(Response)
     sticky_date = models.DateTimeField(default = timezone.now)
-    problemset = models.ForeignKey(UserProblemSet)
+    problemset = models.ForeignKey(UserProblemSet,null=True)
+    test = models.ForeignKey(UserTest,null=True)
     userprofile = models.ForeignKey(UserProfile,related_name = "student_stickies",null=True)
     readable_label = models.CharField(max_length=30,blank=True)
     def __str__(self):

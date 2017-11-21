@@ -21,6 +21,8 @@
                                 {% endfor %}
                                 </ul>
                             {% endif %}
+
+{% if field.name == 'label' %}
                             {{ field.label_tag }} 
 				<table>
 				  <tr>
@@ -41,6 +43,11 @@
 				    </td>
 				  </tr>
 				</table>
+{% else %}
+{{field.label_tag }}
+{{field}}
+{% endif %}
+
                             {% if field.help_text %}<div class="form-helptext">{{ field.help_text }}</div>{% endif %}
                         </div>
 			{% else %}

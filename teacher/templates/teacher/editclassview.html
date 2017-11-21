@@ -19,7 +19,7 @@
     </div>
     <div class="col-sm-9 col-md-10 main">
       <h2>Edit Class: {{my_class.name}}</h2>
-      <p>Drag around problems to reorder them (then click save before making any further changes).</p>
+      <p>Drag around units to reorder them. If you reorder units or delete units, you must click "Save" to have the changes saved.</p>
       <h3>Units:</h3>
       <form action="." method="POST" id="units">
         {% csrf_token %}
@@ -52,15 +52,14 @@
 		{% endif %}
               </div>
               <div class="col-sm-1 col-md-1 col-lg-1">
-                <div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+                <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
               </div>
             </div>
           </div>
           {% endfor %}
-	  {% else %}
-	  <div id="no-units"><p><i>You don't have any units in this class yet.</i></p></div>
 	  {% endif %}
-        </div>
+        </div><!--listgroup-->
+	<div id="no-units">{% if my_class.units.count == 0 %}<p><i>You don't have any units in this class yet.</i></p>{% endif %}</div>
 	
         <button type="button" class="btn btn-default" data-toggle="modal" data-target="#newunit">New Unit</button>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
@@ -104,11 +103,11 @@ var editableList = Sortable.create(unitList, {
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length==0) {
+      $("#no-units").html("<p><i>You don't have any units in this class yet.</i></p>");
+    }
   }
 });
-
-
-
 
 
 $('#newunit-form').on('submit',function(event) {

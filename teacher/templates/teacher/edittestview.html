@@ -35,14 +35,14 @@
 </div>
 </div>
 
-      {% if test.test_problem_objects.count > 0 %}
+      {% if test.problem_objects.count > 0 %}
       <p>Drag problems around to reorder them, then click "Save".</p>
       {% endif %}
       <form action="." method="POST" id="testproblemobjects">
         {% csrf_token %}
         <div id="testproblemobjectList" class="list-group">
-	  {% if test.test_problem_objects.count > 0 %}
-          {% for probobj in test.test_problem_objects.all %}
+	  {% if test.problem_objects.count > 0 %}
+          {% for probobj in test.problem_objects.all %}
           <div class="list-group-item">
             <input type="hidden" name="problemobjectinput" value="problemobject_{{probobj.pk}}">
             <div class="row">
@@ -69,7 +69,7 @@
 		{% endif %}
 	      </div>
 	      <div class="col-sm-3 col-md-2" style="text-align:right">
-                <div><span class="js-remove" style="color:red; cursor:pointer">✖</span></div>
+                <div><span class="js-remove glyphicon glyphicon-remove" style="color:red; cursor:pointer"></span></div>
 		<div>
 		  <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
 		  <span id="pointvalue_{{probobj.pk}}">
@@ -94,7 +94,7 @@
           </div>
           {% endfor %}
 	  {% else %}
-	  <div id="msg-no-problems"><p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p></div>
+	  <div id="msg-no-problems"><p><i>You don't have any problems in this test yet. Click the button below to add problems</i></p></div>
 	  {% endif %}
         </div>
 	
@@ -626,9 +626,14 @@ $(document).on('submit',"#edit-duedate-form",function(event) {
         data: $(this).serialize()+"&uo=tst",
         dataType: 'json',
         success: function(result) {
-           $("#due_date_div").html(result['date_snippet']);
-           $("#edit-duedate-modal").hide();
-           $("[data-dismiss=modal]").trigger({ type: "click" });
+           if ('error' in result) {
+               $("#due_date_error").html(result['error']);
+               $("#due_date_error").attr('style','display:block;');
+           } else {
+               $("#due_date_div").html(result['date_snippet']);
+               $("#edit-duedate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+           }
         }
     });
     return false;
@@ -676,9 +681,14 @@ $(document).on('submit',"#edit-startdate-form",function(event) {
         data: $(this).serialize()+"&uo=tst",
         dataType: 'json',
         success: function(result) {
-           $("#due_date_div").html(result['date_snippet']);
-           $("#edit-startdate-modal").hide();
-           $("[data-dismiss=modal]").trigger({ type: "click" });
+           if ('error' in result) {
+               $("#start_date_error").html(result['error']);
+               $("#start_date_error").attr('style','display:block;');
+           } else {
+               $("#due_date_div").html(result['date_snippet']);
+               $("#edit-startdate-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+           }
         }
     });
     return false;
@@ -733,20 +743,6 @@ $(document).on('submit',"#edit-timelimit-form",function(event) {
     return false;
 });
 
-$(document).on('click',".delete-timelimit-link",function(event) {
-    event.preventDefault();
-    var ps_pk = $(this).attr("id").split('_')[1];
-    $.ajax({
-        type: 'POST',
-        url: '/teacher/ajax/delete-timelimit/',
-        data: "pk="+ps_pk+"&uo=tst",
-        dataType: 'json',
-        success: function(result) {
-           $("#time_limit_div").html(result['time_snippet']);
-        }
-    });
-    return false;
-});
 
 
 </script>

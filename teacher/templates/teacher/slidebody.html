@@ -1,5 +1,5 @@
 <div class="list-group-item">
-  <h3>{{forcount}}. {{slide.title}}</h3>
+  <h3>{{forcount}}. <a href="edit-slide/{{slide.pk}}/">{{slide.title}}</a></h3>
   <input type="hidden" name="slideinput" value="slide_{{slide.pk}}">
   <div class="row">
     <div class="col-sm-11 col-md-11 col-lg-11">
@@ -43,7 +43,7 @@
       </div>	
     </div>
     <div class="col-sm-1 col-md-1 col-lg-1">
-      <div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+      <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
       <a href="edit-slide/{{slide.pk}}/"><span class="glyphicon glyphicon-pencil"></span></a>
     </div>
   </div>

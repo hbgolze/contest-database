@@ -1,5 +1,18 @@
-{% extends "./base.html" %}
+{% extends "randomtest/base.html" %}
 {% block title %}Choose a Tag{% endblock %}
+{% block head %}
+<script>
+$(function() {
+
+  $('.list-group-item').on('click', function() {
+    $('.glg', this)
+      .toggleClass('glyphicon-chevron-right')
+      .toggleClass('glyphicon-chevron-down');
+  });
+
+});
+</script>
+{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -8,27 +21,89 @@
 </ol>
 <h2>Problem Editor</h2>
 Tag the <a href="untagged/">{{num_untagged}} untagged problems</a>. <br>
-Please select a tag.
-<div class="content">
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Tag</th>
-	<th>Number of Tagged Problems with no Solutions</th>
-	<th>Number of Problems with Tag</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for urltag,tag,unsolution,num in rows %}
-      
-      <tr>
-        <td><a href="{{urltag}}">{{tag}}</a></td>
-        <td>{{unsolution}}</td>
-        <td>{{num}}</td>
-      </tr>
+Click on a box to expand a tag.
+
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      {% for rows2,urltag,tag,unsolution,num,unsolution_specific,num_specific in rows1 %}
+      <div class="list-group list-group-root well">
+        <div href="#tag_{{tag.pk}}" class="list-group-item" data-toggle="collapse">
+          <div class="row">
+            <div class="col-xs-6">
+              <i class="glyphicon glyphicon-chevron-right glg"></i>
+	      {% if num_specific > 0 %}
+              <a class="inner-link" href="{{urltag}}/">{{tag}}</a>
+	      {% else %}
+	      {{tag}}
+	      {% endif %}
+	      <span class="glyphicon glyphicon-info-sign tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag.pk}}/"></span> ({{num}} matches, {{num_specific}} exact matches)
+            </div>
+            <div class="col-xs-6">
+	      # problems with no solution: {{unsolution}} ({{unsolution_specific}} for problems matching specific tag)
+            </div>
+          </div>
+	</div>
+        <div class="list-group collapse" id="tag_{{tag.pk}}">
+          {% for rows3,urltag2,tag2,unsolution2,num2,unsolution_specific2,num_specific2 in rows2 %}
+          <div href="#subtag_{{tag2.pk}}" class="list-group-item" {% if num2 > num_specific2 %}data-toggle="collapse"{% endif %}>
+            <div class="row">
+              <div class="col-xs-6">
+		{% if num2 > num_specific2 %}
+                <i class="glyphicon glyphicon-chevron-right glg"></i>
+		{% else %}
+		<i class="glyphicon glyphicon-asterisk"></i>
+		{% endif %}
+		{% if num_specific2 > 0 %} 
+		<a class="inner-link" href="{{urltag2}}">{{tag2}}</a>
+		{% else %}
+		{{tag2}}
+		{% endif %}
+		<span class="glyphicon glyphicon-info-sign tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag2.pk}}/"></span> ({{num2}} matches, {{num_specific2}} exact matches)
+              </div>
+              <div class="col-xs-6">
+		# problems with no solution: {{unsolution2}} ({{unsolution_specific2}} for problems matching specific tag)
+              </div>
+            </div>
+          </div>
+	  <div class="list-group collapse" id="subtag_{{tag2.pk}}">
+            {% for urltag3,tag3,unsolution3,num3 in rows3 %}
+            <div class="list-group-item">
+              <div class="row">
+		<div class="col-xs-6">
+		  <i class="glyphicon glyphicon-asterisk"></i> 
+                  <a href="{{urltag3}}">{{tag3}}</a> <span class="glyphicon glyphicon-info-sign tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag3.pk}}/"></span> ({{num3}} matches)
+		</div>
+		<div class="col-xs-6">
+		  # problems with no solution: {{unsolution3}}
+		</div>
+              </div>
+            </div>
+	    {% endfor %}
+	    </div>
+	  {% endfor %}
+	</div>
+      </div>
       {% endfor %}
-    </tbody>
-  </table>
+    </div>
+  </div>
 </div>
+<div class="modal fade" id="tag-info-placeholder" role="dialog">
+
+</div>
+<script>
+$(".inner-link").on('click',function(e) {
+    e.stopPropagation();
+});
+
+$(document).on('click',".tag-info",function(e) {
+    e.stopPropagation();
+    var target = "/problemeditor/tags/"+$(this).attr("id");
+
+    $("#tag-info-placeholder").load(target, function() {
+         $("#tag-info-placeholder").modal("show");
+    });
+});
+</script>
 
 {% endblock %}

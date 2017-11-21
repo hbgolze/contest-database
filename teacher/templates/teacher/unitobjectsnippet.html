@@ -10,11 +10,11 @@
                 {% elif unitobj.problemset %}
                 <a href="problemset/{{unitobj.problemset.pk}}/">Problem Set: {{unitobj.problemset.name}}</a> ({{unitobj.problemset.problem_objects.count}} problems)
                 {% elif unitobj.test %}
-                <a href="test/{{unitobj.test.pk}}/">Test: {{unitobj.test.name}}</a> ({{unitobj.test.test_problem_objects.count}} problems)
+                <a href="test/{{unitobj.test.pk}}/">Test: {{unitobj.test.name}}</a> ({{unitobj.test.problem_objects.count}} problems)
                 {% endif %}
               </div>
               <div class="col-sm-1 col-md-1 col-lg-1">
-                <div class="js-remove"><span style="color:red; cursor:pointer">✖</span></div>
+                <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
               </div>
             </div>
           </div>

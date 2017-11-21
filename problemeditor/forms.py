@@ -252,20 +252,23 @@ class UploadContestForm(forms.Form):
 class NewTagForm(forms.ModelForm):
     class Meta:
         model = NewTag
-        fields = ('label',)
+        fields = ('label','description',)
         widgets = {
             'label': forms.TextInput(attrs={'class':'form-control'}),
+            'description': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 5,'class':'form-control'}),
             }
 class AddNewTagForm(forms.ModelForm):
     class Meta:
         model = NewTag
-        fields = ('label','parent',)
+        fields = ('label','parent','description',)
         widgets = {
             'label': forms.TextInput(attrs={'class':'form-control'}),
+            'description': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 5,'class':'form-control'}),
             }
     def __init__(self,*args, **kwargs):
         super(AddNewTagForm, self).__init__(*args, **kwargs)
         self.fields['parent'].widget = HiddenInput()
+        self.fields['description'].required = True
 #    def clean(self):
 #        cleaned_data = super(AddNewTagForm,self).clean()
 #        label_clean = cleaned_data.get('label')

@@ -678,15 +678,16 @@ class ProblemSet(models.Model):#like NewTest
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
+    start_date = models.DateTimeField(null = True)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
-        new_problemset = PublishedProblemSet(name = self.name,default_point_value = self.default_point_value,unit_object = published_unit_object, parent_problemset = self, due_date = self.due_date)
+        new_problemset = PublishedProblemSet(name = self.name,default_point_value = self.default_point_value,unit_object = published_unit_object, parent_problemset = self, due_date = self.due_date, start_date = self.start_date)
         new_problemset.save()
         total_points=0
         for po in self.problem_objects.all():
-            new_po = po.publish(new_problemset)
-            new_problemset.problem_objects.add(new_po)
+            po.publish(published_pset=new_problemset)
+#            new_problemset.problem_objects.add(new_po)
             total_points += po.point_value
         new_problemset.total_points = total_points
         new_problemset.num_problems = new_problemset.problem_objects.count()
@@ -723,6 +724,7 @@ class PublishedProblemSet(models.Model):#like NewTest
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
+    start_date = models.DateTimeField(null = True)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -758,18 +760,19 @@ class Test(models.Model):#like NewTest
     start_date = models.DateTimeField(null = True)
     due_date = models.DateTimeField(null = True)
     time_limit = models.TimeField(null = True)
+    student_gradeable = models.BooleanField(default = True)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
-        new_test = PublishedTest(name = self.name,default_point_value = self.default_point_value,default_blank_value = self.default_blank_value,unit_object = published_unit_object, parent_test = self, due_date = self.due_date,time_limit = self.time_limit, start_date = self.start_date)
+        new_test = PublishedTest(name = self.name,default_point_value = self.default_point_value,default_blank_value = self.default_blank_value,unit_object = published_unit_object, parent_test = self, due_date = self.due_date,time_limit = self.time_limit, start_date = self.start_date,student_gradeable = self.student_gradeable)
         new_test.save()
         total_points=0
-        for po in self.test_problem_objects.all():
-            new_po = po.publish(new_test)
-            new_test.test_problem_objects.add(new_po)
+        for po in self.problem_objects.all():
+            po.publish(published_test=new_test)
+#            new_test.test_problem_objects.add(new_po)
             total_points += po.point_value
         new_test.total_points = total_points
-        new_test.num_problems = new_test.test_problem_objects.count()
+        new_test.num_problems = new_test.problem_objects.count()
         new_test.save()
 
 class PublishedTest(models.Model):#like NewTest
@@ -789,6 +792,7 @@ class PublishedTest(models.Model):#like NewTest
     due_date = models.DateTimeField(null = True)
     start_date = models.DateTimeField(null = True)
     time_limit = models.TimeField(null = True)
+    student_gradeable = models.BooleanField(default = True)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -799,17 +803,17 @@ class PublishedTest(models.Model):#like NewTest
         self.start_date = self.parent_test.start_date
         self.save()
         parent_po_pks=[]
-        for po in self.test_problem_objects.all():
-            if po.parent_testproblemobject not in self.parent_test.test_problem_objects().all():
-                po.testresponse_set.delete()
+        for po in self.problem_objects.all():
+            if po.parent_problemobject not in self.parent_test.problem_objects().all():
+                po.response_set.delete()
                 po.delete()
             else:
                 po.sync_to_parent(self)
-                parent_po_pks.append(po.parent_test_problem_object.pk)
-        for po in self.parent_test.test_problem_objects.exclude(pk__in=parent_po_pks):
+                parent_po_pks.append(po.parent_problem_object.pk)
+        for po in self.parent_test.problem_objects.exclude(pk__in=parent_po_pks):
             new_po=po.publish(self)
             for ut in self.usertest_set.all():
-                r=TestResponse(test_problem_object = new_po,user_test = ut,order = new_po.order,point_value = new_po.point_value)
+                r=Response(problem_object = new_po,user_test = ut,order = new_po.order,point_value = new_po.point_value)
                 r.save()
 
 class ProblemObject(models.Model):
@@ -853,8 +857,8 @@ class ProblemObject(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
-    def publish(self,published_pset):
-        new_po = PublishedProblemObject(order = self.order,point_value=self.point_value,problem_code = self.problem_code,problem_display="",isProblem=self.isProblem, problem=self.problem,question_type=self.question_type,mc_answer = self.mc_answer,sa_answer = self.sa_answer,answer_A = self.answer_A,answer_B = self.answer_B,answer_C = self.answer_C,answer_D = self.answer_D,answer_E = self.answer_E,author=self.author,parent_problemobject = self)
+    def publish(self,published_test=None,published_pset=None):
+        new_po = PublishedProblemObject(order = self.order,point_value=self.point_value,problem_code = self.problem_code,problem_display="",isProblem=self.isProblem, problem=self.problem,question_type=self.question_type,mc_answer = self.mc_answer,sa_answer = self.sa_answer,answer_A = self.answer_A,answer_B = self.answer_B,answer_C = self.answer_C,answer_D = self.answer_D,answer_E = self.answer_E,author=self.author,parent_problemobject = self,problemset = published_pset, test = published_test,blank_point_value = self.blank_point_value)
         new_po.save()
         if new_po.isProblem == 0:
             if new_po.question_type.question_type =='multiple choice':
