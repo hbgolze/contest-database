@@ -1,0 +1,80 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<ol class="breadcrumb">
+  <li><a href="../../../../">My Classes</a></li>
+  <li><a href="../../">{{class.name}}</a></li>
+  <li class="active">{{class.name}} > {{problemset.unit_object.unit.name}} >  {{problemset.name}}</li>
+</ol>
+
+<div class="container">
+  <h2>{{problemset.name}}</h2>
+  <div class="row">
+    <table class="table table-bordered">
+      {% for po_row,start_index in po_rows %}
+      <tr>
+	{% for po in po_row %}
+	<td style="text-align:center">
+	  <a href="#{{po.pk}}">{{forloop.counter|add:start_index}}</a>
+	</td>
+	{% endfor %}
+      </tr>
+      {% endfor %}
+    </table>
+  </div>
+
+  <div class="row">
+    <form action="." method="POST">
+      {% csrf_token %}
+      <table>
+	{% for problem_object,attempted_num,graded_num in rows %}
+	{% if problem_object.isProblem %}
+	{% if problem_object.question_type.question_type == "multiple choice" %}
+	
+	{% include "teacher/publishedclasses/tv-problemset-panel.html" with question_type=problem_object.question_type.question_type prob_label=problem_object.pk problem_display=problem_object.problem.display_mc_problem_text readable_label=problem_object.problem.readable_label answer=problem_object.problem.mc_answer %}
+	
+	{% else %}
+	
+	{% include "teacher/publishedclasses//tv-problemset-panel.html" with question_type=problem_object.question_type.question_type prob_label=problem_object.pk problem_display=problem_object.problem.display_problem_text readable_label=problem_object.problem.readable_label answer=problem_object.problem.sa_answer %}
+	
+	{% endif %}
+	{% else %}
+	
+	{% if problem_object.question_type.question_type == "multiple choice" %}
+	{% include "teacher/publishedclasses/tv-problemset-panel.html" with question_type=problem_object.question_type.question_type prob_label=problem_object.pk problem_display=problem_object.problem_display answer=problem_object.mc_answer %}
+	
+	{% elif problem_object.question_type.question_type == "short answer" %}
+	{% include "teacher/publishedclasses/tv-problemset-panel.html" with question_type=problem_object.question_type.question_type prob_label=problem_object.pk problem_display=problem_object.problem_display answer=problem_object.sa_answer %}
+
+	
+	{% else %}
+	{% include "teacher/publishedclasses/tv-problemset-panel.html" with question_type=problem_object.question_type.question_type prob_label=problem_object.pk problem_display=problem_object.problem_display %}
+
+	{% endif %}
+	{% endif %}
+	{% endfor %}
+      </table>
+    </form>
+  </div>
+  <div id="solution-placeholder" class="modal fade" role="dialog">
+  </div>
+
+</div>
+
+<script>
+
+
+$(document).on('click',".solution-link",function(event) {
+    event.preventDefault();
+    var target = $(this).attr("href");
+
+
+    $("#solution-placeholder").load(target, function() {
+         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+         $("#solution-placeholder").modal("show");
+    });
+});
+</script>
+
+{% endblock %}

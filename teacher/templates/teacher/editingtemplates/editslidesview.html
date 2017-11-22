@@ -29,7 +29,7 @@
       <form action="." method="POST" id="slides">
         {% csrf_token %}
         <div id="slideList" class="list-group">
-	  {% include "teacher/slidelist.html" with slides=slides %}
+	  {% include "teacher/editingtemplates/editslides/slidelist.html" with slides=slides %}
         </div>
 	<div id="save-msg"></div>
 	<a href="#add-slide-modal" class="btn btn-default add-slide-link" data-toggle="modal">Add Slide</a>

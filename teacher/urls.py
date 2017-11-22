@@ -61,6 +61,7 @@ urlpatterns = [
     url(r'^mystudents/(?P<username>\w+)/problemset/(?P<upk>\w+)/load_grade/$', views.load_grade, name='load_grade'),
     url(r'^mystudents/(?P<username>\w+)/problemset/(?P<upk>\w+)/save_grade/$', views.save_grade, name='save_grade'),
     url(r'^mystudents/(?P<username>\w+)/problemset/(?P<upk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='teacher_load_solution'),
+    url(r'^mystudents/(?P<username>\w+)/slides/(?P<uspk>\w+)/$', views.slidesview, name='userslidesview'),
     url(r'^publishclass/(?P<pk>\d+)/$', views.publishview, name='publishview'),
     url(r'^class/(?P<pk>\d+)/$', views.currentclassview, name='currentclass'),
     url(r'^class/(?P<pk>\d+)/roster/$', views.rosterview, name='rosterview'),

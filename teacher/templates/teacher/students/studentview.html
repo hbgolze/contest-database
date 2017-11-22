@@ -28,7 +28,7 @@ $(function() {
 
 </ol>
 
-
+{% load tz %}
 <div class="container-fluid">
   <div class="row">
     <div class="col-sm-9 main">
@@ -109,6 +109,33 @@ $(function() {
               </a>
               {% endwith %}
               {% endif %}
+
+              {% if user_unitobject.usertest %}
+              {% with test=user_unitobject.usertest %}
+              <a href="test/{{test.pk}}/" class="list-group-item">
+                <div class="row">
+                  <div class="col-xs-4">
+                    <span class="glyphicon glyphicon-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}{% if test.is_in_progress %}<p>(In progress, start time: {{test.start_time|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}})</p>{% elif test.completed and not test.is_graded %}<p>(Completed, ungraded)</p>{% elif test.completed and test.is_graded %}<p>(Completed, graded)</p>{% endif %}
+                  </div>
+                  <div class="col-xs-4">
+                    {% if test.is_graded %}{{test.num_correct}}/{% endif %}{{test.num_problems}} Problems, {% if test.is_graded %}{{test.points_earned}}/{% endif %}{{test.total_points}} Points
+                  </div>
+                  <div class="col-xs-4" style="text-align:right">
+                    <p>Time Limit: {% if test.published_test.time_limit.hour > 0 %}{{test.published_test.time_limit.hour}} hours, {% endif %}{{test.published_test.time_limit.minute}} minutes</p>
+                    {% if test.published_test.start_date %}
+                    <p>Start Date: {{test.published_test.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+                    {% endif %}
+                    {% if test.published_test.due_date %}
+                    <p>Due Date: {{test.published_test.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+                    {% endif %}
+                  </div>
+                </div>
+              </a>
+              {% endwith %}
+              {% endif %}
+
+
+
               {% endfor %}
             </div>
 
@@ -167,7 +194,7 @@ $(function() {
 	<tbody>
 	  {% for sticky in stickies %}
 	  <tr>
-            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.problem_object.pk}}">{{sticky.problemset.problemset.name}}</a>: {{sticky.readable_label}}</small></td>
+            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.problemset.problemset.name}}</a>: {{sticky.readable_label}}</small></td>
 	    <td>
 	      <small>{{sticky.sticky_date}}</small>
 	    </td>
@@ -186,7 +213,7 @@ $(function() {
 	<tbody>
 	  {% for resp in responselog %}
 	  <tr>
-            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.problem_object.pk}}">{{resp.user_problemset.problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
+            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.publishedproblem_object.pk}}">{{resp.user_problemset.problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
 	    <td>
 	      <small>{{resp.modified_date}}</small>
 	    </td>

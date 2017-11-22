@@ -1,0 +1,3 @@
+          {% for slide in slides.slides.all %}
+          {% include "teacher/editingtemplates/editslides/slidebody.html" with slide=slide forcount=forloop.counter %}
+          {% endfor %}

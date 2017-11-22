@@ -29,7 +29,7 @@
         {% csrf_token %}
         <div id="unitobjectList" class="list-group">
           {% for unitobj in unit.unit_objects.all %}
-	  {% include 'teacher/unitobjectsnippet.html' with forcount=forloop.counter unitobj=unitobj %}
+	  {% include 'teacher/editingtemplates/unitobjectsnippet.html' with forcount=forloop.counter unitobj=unitobj %}
           {% endfor %}
         </div>
 

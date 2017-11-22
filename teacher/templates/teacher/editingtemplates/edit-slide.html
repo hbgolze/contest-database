@@ -32,7 +32,7 @@
         <div id="slideobjectList" class="list-group">
 
 	  {% for s in slide.slide_objects.all %}
-	    {% include "teacher/slideobject.html" with s=s %}
+	    {% include "teacher/editingtemplates/edit-slide/slideobject.html" with s=s %}
 	  {% endfor %}
 	</div><!--list-group-->
 

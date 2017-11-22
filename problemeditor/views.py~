@@ -260,23 +260,6 @@ def tagview(request,type):
     return HttpResponse(template.render(context,request))
 
 @login_required
-def CMtagview(request,type):
-    typ=get_object_or_404(Type, type=type)
-    newtags=NewTag.objects.all().exclude(label='root').order_by('tag')
-    rows=[]
-    probsoftype=Problem.objects.filter(type_new=typ)
-    num_untagged=probsoftype.filter(newtags__isnull=True).count()
-    for tag in newtags:
-        T = tag.problems.filter(type_new=typ)
-        num_problems=T.count()
-        num_nosolutions = T.filter(solutions__isnull=True).count()
-        if num_problems>0:
-            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
-    template=loader.get_template('problemeditor/CMtagview.html')
-    context= {'rows': rows, 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','prefix':'CMbytag'}
-    return HttpResponse(template.render(context,request))
-
-@login_required
 def testview(request,type):
     typ=get_object_or_404(Type, type=type)
     probsoftype=Problem.objects.filter(type_new=typ)

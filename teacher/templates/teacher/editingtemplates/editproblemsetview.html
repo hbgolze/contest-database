@@ -28,7 +28,7 @@
 
       <div class="row">
 	<div class="col-xs-6" id="duedatediv">
-	  {% include 'teacher/editduedate.html' %}
+	  {% include 'teacher/editingtemplates/editduedate.html' %}
 	</div>
       </div>
 
@@ -37,7 +37,7 @@
         {% csrf_token %}
         <div id="problemobjectList" class="list-group">
           {% for probobj in problemset.problem_objects.all %}
-{% include 'teacher/problemobjectsnippet.html' with forcount=forloop.counter %}
+{% include 'teacher/editingtemplates/problemobjectsnippet.html' with forcount=forloop.counter %}
           {% endfor %}
         </div>
 	  <div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>{% endif %}</div>

@@ -105,24 +105,24 @@
 	{% if resp.publishedproblem_object.isProblem %}
 	{% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
 	
-	{% include "teacher/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_mc_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.mc_answer %}
+	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_mc_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.mc_answer %}
 	
 	{% else %}
 	
-	{% include "teacher/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.sa_answer %}
+	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.sa_answer %}
 	
 	{% endif %}
 	{% else %}
 	
 	{% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
-	{% include "teacher/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.mc_answer %}
+	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.mc_answer %}
 	
 	{% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
-	{% include "teacher/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.sa_answer %}
+	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.sa_answer %}
 
 	
 	{% else %}
-	{% include "teacher/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display %}
+	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display %}
 
 	{% endif %}
 	{% endif %}
@@ -140,7 +140,7 @@
 <script>
 
 
-$(".solution-link").click(function(event) {
+$(document).on('click',".solution-link",function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
 
@@ -150,21 +150,6 @@ $(".solution-link").click(function(event) {
          $("#solution-placeholder").modal("show");
     });
 });
-
-function triggerModal()
-{
-   $(document.body).on('click', '.solution-link', function () {
- 
-      event.preventDefault();
-      var target = $(this).attr("href");
-
-
-      $("#solution-placeholder").load(target, function() {
-        MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-        $("#solution-placeholder").modal("show");
-      });
-    });
-}
 
 $(document).on('click',".grade-link",function(event) {
     event.preventDefault();
