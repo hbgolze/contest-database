@@ -19,11 +19,15 @@ $(function() {
   <li><a href="/problemeditor/">Select Type</a></li>
   <li class="active">{{typelabel}}</li>
 </ol>
-<h2>Problem Editor</h2>
-Tag the <a href="untagged/">{{num_untagged}} untagged problems</a>. <br>
-Click on a box to expand a tag.
 
 <div class="container-fluid">
+  <div class="row">
+    <div class="col-xs-12">
+      <h2>Problem Editor</h2>
+      <p>Tag the <a href="untagged/">{{num_untagged}} untagged problems</a>.</p>
+      <p>Click on a box to expand a tag.</p>
+    </div>
+  </div>
   <div class="row">
     <div class="col-xs-12">
       {% for rows2,urltag,tag,unsolution,num,unsolution_specific,num_specific in rows1 %}

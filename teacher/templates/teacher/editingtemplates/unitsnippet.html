@@ -14,6 +14,8 @@
 		  <li>Slides: {{unitobj.slidegroup.name}}</li>
 		  {% elif unitobj.problemset %}
 		  <li>Problem Set: {{unitobj.problemset.name}}</li>
+                  {% elif unitobj.test %}
+                  <li>Test: {{unitobj.test.name}}</li>
 		  {% endif %}
 		  {% endfor %}
 		</ul>
@@ -26,4 +28,4 @@
               </div>
             </div>
           </div>
-	
+

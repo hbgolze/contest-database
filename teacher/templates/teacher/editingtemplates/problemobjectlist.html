@@ -1,0 +1,9 @@
+{% if problemset %}
+{% for probobj in problemset.problem_objects.all %}
+{% include 'teacher/editingtemplates/problemobjectsnippet.html' with forcount=forloop.counter %}
+{% endfor %}
+{% elif test %}
+{% for probobj in test.problem_objects.all %}
+{% include 'teacher/editingtemplates/problemobjectsnippet.html' with forcount=forloop.counter %}
+{% endfor %}
+{% endif %}

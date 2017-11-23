@@ -1,0 +1,3 @@
+{% for unit in my_class.units.all %}
+{% include 'teacher/editingtemplates/unitsnippet.html' with forcount=forloop.counter %}
+{% endfor %}

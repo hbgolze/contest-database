@@ -19,7 +19,7 @@ urlpatterns = [
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/add-tagged-problems/$', views.reviewmatchingproblems, name='reviewmatchingproblems'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/review-problem-group/$', views.reviewproblemgroup, name='reviewproblemgroup'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/edit-point-value/(?P<pppk>\d+)/$', views.update_point_value, name='edit-point-value'),
-    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.editquestiontype, name='edit-question-type'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.editquestiontype, name='edit-question-type'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/change-qt-original-problem/$', views.loadcqtoriginalproblemform, name='loadcqtoriginalproblemform'),
 #slides
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slides/(?P<spk>\d+)/$', views.slideseditview, name='slideseditview'),
@@ -47,7 +47,7 @@ urlpatterns = [
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/review-problem-group/$', views.testreviewproblemgroup, name='testreviewproblemgroup'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-point-value/(?P<pppk>\d+)/$', views.testupdate_point_value, name='testedit-point-value'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-blank-point-value/(?P<pppk>\d+)/$', views.testupdate_blank_value, name='testedit-blank-value'),
-    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.testeditquestiontype, name='testedit-question-type'),
+#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.testeditquestiontype, name='testedit-question-type'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/change-qt-original-problem/$', views.testloadcqtoriginalproblemform, name='testloadcqtoriginalproblemform'),
 
 #problemgroups
@@ -97,6 +97,8 @@ urlpatterns = [
     url(r'^ajax/load-edit-timelimit/$',views.load_edit_timelimit, name="load_edit_timelimit"),
     url(r'^ajax/save-timelimit/$',views.save_timelimit, name="save_timelimit"),
     url(r'^ajax/delete-timelimit/$',views.delete_timelimit, name="delete_timelimit"),
+    url(r'^ajax/problemobject/load-edit-questiontype/$',views.loadeditquestiontype, name="po_load_edit_qt"),
+    url(r'^ajax/problemobject/save-questiontype/$',views.savequestiontype, name="po_save_qt"),
 #    url(r'^edit/(?P<pk>\d+)/edit_section/(?P<spk>\d+)/$', login_required(views.SectionUpdateView.as_view()),name="update_section"),
 #    url(r'^edit/(?P<pk>\d+)/edit_subsection/(?P<spk>\d+)/$', login_required(views.SubsectionUpdateView.as_view()),name="update_subsection"),
 #    url(r'^edit/(?P<pk>\d+)/edit_textblock/(?P<spk>\d+)/$', login_required(views.TextBlockUpdateView.as_view()),name="update_textblock"),

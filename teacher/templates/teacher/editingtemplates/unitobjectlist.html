@@ -1,0 +1,3 @@
+          {% for unitobj in unit.unit_objects.all %}
+          {% include 'teacher/editingtemplates/unitobjectsnippet.html' with forcount=forloop.counter unitobj=unitobj %}
+          {% endfor %}

@@ -1,18 +1,5 @@
 {% extends "randomtest/base.html" %}
 {% block title %}Choose a Tag{% endblock %}
-{% block head %}
-<script>
-$(function() {
-
-  $('.list-group-item').on('click', function() {
-    $('.glg', this)
-      .toggleClass('glyphicon-chevron-right')
-      .toggleClass('glyphicon-chevron-down');
-  });
-
-});
-</script>
-{% endblock %}
 
 {% block content %}
 <ol class="breadcrumb">
@@ -35,7 +22,11 @@ $(function() {
         <div href="#tag_{{tag.pk}}" class="list-group-item" data-toggle="collapse">
           <div class="row">
             <div class="col-xs-6">
+	      {% if num > num_specific %}
               <i class="glyphicon glyphicon-chevron-right glg"></i>
+	      {% else %}
+	      <i class="glyphicon glyphicon-asterisk"></i>
+	      {% endif %}
 	      {% if num_specific > 0 %}
               <a class="inner-link" href="{{urltag}}/">{{tag}}</a>
 	      {% else %}
@@ -100,6 +91,8 @@ $(".inner-link").on('click',function(e) {
     e.stopPropagation();
 });
 
+
+
 $(document).on('click',".tag-info",function(e) {
     e.stopPropagation();
     var target = "/problemeditor/tags/"+$(this).attr("id");
@@ -107,7 +100,16 @@ $(document).on('click',".tag-info",function(e) {
     $("#tag-info-placeholder").load(target, function() {
          $("#tag-info-placeholder").modal("show");
     });
+
 });
+
+$(document).on('click', ".list-group-item",function() {
+    $('.glg', this)
+      .toggleClass('glyphicon-chevron-right')
+      .toggleClass('glyphicon-chevron-down');
+});
+
+
 </script>
 
 {% endblock %}

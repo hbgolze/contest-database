@@ -31,7 +31,7 @@
         <span id="pointvalue_{{probobj.pk}}">
           {{probobj.point_value}}
         </span>
-        (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+        (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
       </div>
 {% if probobj.blank_point_value %}
       <div>
@@ -39,13 +39,13 @@
         <span id="blankpointvalue_{{probobj.pk}}">
           {{probobj.blank_point_value}}
         </span>
-        (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+        (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
       </div>
 {% endif %}
       <div>
         <label for="qt_{{probobj.pk}}">Question Type:</label>
         <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
-        (<small><a data-target="#edit-question-type" class="edit-qt-link" href="edit-question-type/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
+        (<small><a data-target="#edit-question-type" class="edit-qt-link" href="#/" data-toggle="modal" id="edit-qt_{{probobj.pk}}">Edit</a></small>)
       </div>
     </div>
   </div>

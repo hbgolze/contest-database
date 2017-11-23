@@ -36,13 +36,10 @@
       <form action="." method="POST" id="problemobjects">
         {% csrf_token %}
         <div id="problemobjectList" class="list-group">
-          {% for probobj in problemset.problem_objects.all %}
-{% include 'teacher/editingtemplates/problemobjectsnippet.html' with forcount=forloop.counter %}
-          {% endfor %}
+{% include 'teacher/editingtemplates/problemobjectlist.html' %}
         </div>
-	  <div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>{% endif %}</div>
-	
-	
+	<div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>{% endif %}</div>
+        <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>	
 	<span class="dropup">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             Add <span class="caret"></span>
@@ -58,6 +55,12 @@
       
     </div>
   </div>
+</div>
+
+<div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
+<div class="alert alert-warning">
+You have unsaved changes! Please click "Save" before navigating away.</div>
+</div>
 </div>
 
 
@@ -277,14 +280,14 @@ $.ajaxSetup({
     },
 });
 
-
-$(".edit-qt-link").click(function(event) {
+$(document).on('click',".edit-qt-link",function(event) {
     event.preventDefault();
-    var target = $(this).attr("href");
+    var popk = $(this).attr("id").split('_')[1];
     $.ajax({
-        type: 'GET',
-        url: target,
+        type: 'POST',
+        url: "/teacher/ajax/problemobject/load-edit-questiontype/",
         dataType: 'json',
+        data: "popk="+popk,
         success: function(result) {
             $('#cqt-question-type').empty();
             if (result['qts'][0] == 1) {
@@ -423,6 +426,7 @@ $("#form-add-original-problem").on('submit',function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#problemobjectList").append(result['problem_text']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problemtext_"+result['pk']]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -433,7 +437,7 @@ $("#form-change-question-type").on('submit',function(event) {
     var prob_id=$("#id_problem_id").val();
     $.ajax({
         type: 'POST',
-        url: 'edit-question-type/'+prob_id+'/',
+        url: "/teacher/ajax/problemobject/save-questiontype/",
         data: $(this).serialize(),
         dataType: 'json',
         success: function(result) {
@@ -482,6 +486,12 @@ var editableList = Sortable.create(problemobjectList, {
     if (editableList.toArray().length == 0 ) {
       $("#msg-no-problems").html("<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>");
     }
+    $("#save-message").hide();
+    $("#unsaved-message").show();
+  },
+  onUpdate: function (evt) {
+    $("#save-message").hide();
+    $("#unsaved-message").show();
   }
 });
 
@@ -590,6 +600,26 @@ $(document).on('click',".delete-startdate-link",function(event) {
         }
     });
     return false;
+});
+
+$(document).on('submit',"#problemobjects",function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '.',
+    data: $(this).serialize()+'&save=',
+    dataType: 'json',
+    success: function(result) {
+      $("#unsaved-message").fadeOut();
+      $("#save-message").show();
+      $("#problemobjectList").html(result['problemobject-list']);
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problemobjectList"]);
+      setTimeout(function() {
+        $("#save-message").fadeOut();
+      },5000);
+    }
+  });
+  return false;
 });
 
 </script>

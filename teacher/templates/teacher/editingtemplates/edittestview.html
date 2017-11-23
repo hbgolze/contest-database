@@ -35,69 +35,14 @@
 </div>
 </div>
 
-      {% if test.problem_objects.count > 0 %}
       <p>Drag problems around to reorder them, then click "Save".</p>
-      {% endif %}
       <form action="." method="POST" id="testproblemobjects">
         {% csrf_token %}
         <div id="testproblemobjectList" class="list-group">
-	  {% if test.problem_objects.count > 0 %}
-          {% for probobj in test.problem_objects.all %}
-          <div class="list-group-item">
-            <input type="hidden" name="problemobjectinput" value="problemobject_{{probobj.pk}}">
-            <div class="row">
-              <div class="col-sm-1">
-                {{forloop.counter}}.
-              </div>
-              <div class="col-sm-8 col-md-9" id="problemtext_{{probobj.pk}}">
-		{% if probobj.isProblem == 1 %}
-		{% with prob=probobj.problem %}
-		{% if probobj.question_type.question_type == "multiple choice" %}
-		<p>
-		  {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
-		</p>
-		{% else %}
-		<p>
-		  {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
-		</p>
-		{% endif %}
-		{% endwith %}
-		{% else %}
-		<p>
-		  {% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}
-		</p>
-		{% endif %}
-	      </div>
-	      <div class="col-sm-3 col-md-2" style="text-align:right">
-                <div><span class="js-remove glyphicon glyphicon-remove" style="color:red; cursor:pointer"></span></div>
-		<div>
-		  <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
-		  <span id="pointvalue_{{probobj.pk}}">
-		    {{probobj.point_value}}
-		  </span>
-		  (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
-		</div>
-		<div>
-		  <label for="blankpointvalue_{{probobj.pk}}">Blank Point Value:</label>
-		  <span id="blankpointvalue_{{probobj.pk}}">
-		    {{probobj.blank_point_value}}
-		  </span>
-		  (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
-		</div>
-		<div>
-		  <label for="qt_{{probobj.pk}}">Question Type:</label>
-		  <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
-		  (<small><a data-target="#edit-question-type" class="edit-qt-link" href="edit-question-type/{{probobj.pk}}" data-toggle="modal">Edit</a></small>)
-		</div>		
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-	  {% else %}
-	  <div id="msg-no-problems"><p><i>You don't have any problems in this test yet. Click the button below to add problems</i></p></div>
-	  {% endif %}
+{% include 'teacher/editingtemplates/problemobjectlist.html' %}
         </div>
-	
+	<div id="msg-no-problems">{% if test.problem_objects.count == 0 %}<p><i>You don't have any problems in this test yet. Click the button below to add problems</i></p>{% endif %}</div>
+        <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>	
 	
 	<span class="dropup">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -116,6 +61,11 @@
   </div>
 </div>
 
+<div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
+<div class="alert alert-warning">
+You have unsaved changes! Please click "Save" before navigating away.</div>
+</div>
+</div>
 
 <div class="modal fade" id="edit-qt-placeholder" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
@@ -365,13 +315,14 @@ $.ajaxSetup({
 });
 
 
-$(".edit-qt-link").click(function(event) {
+$(document).on('click',".edit-qt-link",function(event) {
     event.preventDefault();
-    var target = $(this).attr("href");
+    var popk = $(this).attr("id").split('_')[1];
     $.ajax({
-        type: 'GET',
-        url: target,
+        type: 'POST',
+        url: "/teacher/ajax/problemobject/load-edit-questiontype/",
         dataType: 'json',
+        data: "popk="+popk,
         success: function(result) {
             $('#cqt-question-type').empty();
             if (result['qts'][0] == 1) {
@@ -538,6 +489,7 @@ $("#form-add-original-problem").on('submit',function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#testproblemobjectList").append(result['problem_text']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problemtext_"+result['pk']]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -548,7 +500,7 @@ $("#form-change-question-type").on('submit',function(event) {
     var prob_id=$("#id_problem_id").val();
     $.ajax({
         type: 'POST',
-        url: 'edit-question-type/'+prob_id+'/',
+        url: "/teacher/ajax/problemobject/save-questiontype/",
         data: $(this).serialize(),
         dataType: 'json',
         success: function(result) {
@@ -594,6 +546,15 @@ var editableList = Sortable.create(testproblemobjectList, {
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length==0) {
+      $("#msg-no-problems").html("<p><i>You don't have any problems in this test yet. Click the button below to add problems</i></p>");
+    }
+    $("#unsaved-message").show();
+    $("#save-message").hide();
+  },
+  onUpdate: function (evt) {
+    $("#unsaved-message").show();
+    $("#save-message").hide();
   }
 });
 
@@ -743,7 +704,25 @@ $(document).on('submit',"#edit-timelimit-form",function(event) {
     return false;
 });
 
-
+$(document).on('submit',"#testproblemobjects",function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '.',
+    data: $(this).serialize()+'&save=',
+    dataType: 'json',
+    success: function(result) {
+      $("#unsaved-message").fadeOut();
+      $("#save-message").show();
+      $("#testproblemobjectList").html(result['problemobject-list']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#testproblemobjectList"]);
+      setTimeout(function() {
+	$("#save-message").fadeOut();
+      },5000);
+    }
+  });
+  return false;
+});
 
 </script>
 

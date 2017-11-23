@@ -58,110 +58,6 @@ def publishview(request,pk):
     p=my_class.publish(userprofile)
     return JsonResponse({'newrow':render_to_string('teacher/publishedclasses/publishedclassrow.html',{'cls':p})})
 
-@login_required
-def publishview2(request,pk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
-        raise Http404("Unauthorized.")
-    p=PublishedClass(name=my_class.name,parent_class = my_class)
-    p.save()
-    class_points = 0
-    class_prob_num = 0
-    for u in my_class.units.all():
-        new_unit = Unit(name=u.name,order=u.order)
-        new_unit.save()
-        p.units.add(new_unit)
-        unit_points = 0
-        unit_prob_num = 0
-        num_problemsets = 0
-        for uo in u.unit_objects.all():
-            try:
-                sg = uo.slidegroup
-#            if uo.slidegroup:#####fix this
-                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
-                new_unit_object.save()
-                new_slide_group = SlideGroup(name = uo.slidegroup.name,num_slides = uo.slidegroup.slides.count(),unit_object = new_unit_object)
-                new_slide_group.save()
-                for s in uo.slidegroup.slides.all():
-                    new_slide = Slide(title=s.title,order=s.order, slidegroup=new_slide_group,top_order_number=s.top_order_number)
-                    new_slide.save()
-                    for so in s.slide_objects.all():
-                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'textblock'):
-                            new_textblock = TextBlock(text_code = so.content_object.text_code,text_display="")
-                            new_textblock.save()
-                            new_textblock.text_display = newtexcode(so.content_object.text_code, 'textblock_'+str(new_textblock.pk), "")
-                            new_textblock.save()
-                            compileasy(new_textblock.text_code,'textblock_'+str(new_textblock.pk))
-                            new_so=SlideObject(content_object=new_textblock,slide=new_slide,order=so.order)
-                            new_so.save()
-                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'proof'):
-                            new_proof = Proof(prefix=so.content_object.prefix,proof_code = so.content_object.proof_code,proof_display="")
-                            new_proof.save()
-                            new_proof.proof_display = newtexcode(so.content_object.proof_code, 'proofblock_'+str(new_proof.pk), "")
-                            new_proof.save()
-                            compileasy(new_proof.proof_code,'proofblock_'+str(new_proof.pk))
-                            new_so=SlideObject(content_object=new_proof,slide=new_slide,order=so.order)
-                            new_so.save()
-                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'theorem'):
-                            new_theorem = Theorem(name=so.content_object.name,prefix=so.content_object.prefix,theorem_code = so.content_object.theorem_code,theorem_display="")
-                            new_theorem.save()
-                            new_theorem.theorem_display = newtexcode(so.content_object.theorem_code, 'theoremblock_'+str(new_theorem.pk), "")
-                            new_theorem.save()
-                            compileasy(new_theorem.theorem_code,'theoremblock_'+str(new_theorem.pk))
-                            new_so=SlideObject(content_object=new_theorem,slide=new_slide,order=so.order)
-                            new_so.save()
-                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem'):
-                            new_example = ExampleProblem(name=so.content_object.name,prefix=so.content_object.prefix,problem_code = so.content_object.problem_code,problem_display="",isProblem=so.content_object.isProblem, problem=so.content_object.problem,question_type=so.content_object.question_type,mc_answer = so.content_object.mc_answer,sa_answer = so.content_object.sa_answer,answer_A = so.content_object.answer_A,answer_B = so.content_object.answer_B,answer_C = so.content_object.answer_C,answer_D = so.content_object.answer_D,answer_E = so.content_object.answer_E,author=so.content_object.author)
-                            new_example.save()
-                            new_example.problem_display = newtexcode(so.content_object.problem_code, 'exampleproblem_'+str(new_example.pk), "")
-                            new_example.save()
-                            compileasy(new_example.problem_code,'exampleproblem_'+str(new_example.pk))
-                            new_so=SlideObject(content_object=new_example,slide=new_slide,order=so.order)
-                            new_so.save()
-                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'imagemodel'):
-                            new_image = ImageModel(image = so.content_object.image)
-                            new_image.save()
-                            new_so=SlideObject(content_object=new_image,slide=new_slide,order=so.order)
-                            new_so.save()
-            except SlideGroup.DoesNotExist:
-                pset = uo.problemset
-#            if uo.problemset:################
-                num_problemsets += 1
-                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
-                new_unit_object.save()
-                new_problemset = ProblemSet(name = uo.problemset.name,default_point_value = uo.problemset.default_point_value,unit_object = new_unit_object)
-                new_problemset.save()
-                total_points=0
-                for po in uo.problemset.problem_objects.all():
-                    new_po = ProblemObject(order = po.order,point_value=po.point_value,problem_code = po.problem_code,problem_display="",isProblem=po.isProblem, problem=po.problem,question_type=po.question_type,mc_answer = po.mc_answer,sa_answer = po.sa_answer,answer_A = po.answer_A,answer_B = po.answer_B,answer_C = po.answer_C,answer_D = po.answer_D,answer_E = po.answer_E,author=po.author)
-                    new_po.save()
-                    if new_po.isProblem == 0:
-                        if new_po.question_type.question_type =='multiple choice':
-                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), new_po.answers())
-                        else:
-                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), "")
-                        new_po.save()
-                        compileasy(new_po.problem_code,'originalproblem_'+str(new_po.pk))
-                    new_problemset.problem_objects.add(new_po)
-                    total_points += po.point_value
-                new_problemset.total_points = total_points
-                new_problemset.num_problems = new_problemset.problem_objects.count()
-                new_problemset.save()
-                unit_points += total_points
-                unit_prob_num += new_problemset.num_problems
-        new_unit.total_points = unit_points
-        new_unit.num_problems = unit_prob_num
-        new_unit.num_problemsets = num_problemsets
-        new_unit.save()
-        class_points += unit_points
-        class_prob_num += new_unit.num_problems
-    p.total_points = class_points
-    p.num_problems = class_prob_num
-    p.save()
-    userprofile.my_published_classes.add(p)
-    userprofile.save()
-    return JsonResponse({'newrow':render_to_string('teacher/publishedclasses/publishedclassrow.html',{'cls':p})})
 
 @login_required
 def rosterview(request,pk):
@@ -482,6 +378,7 @@ def classeditview(request,pk):
                 u = my_class.units.get(pk=unit_inputs[i].split('_')[1])
                 u.order = i+1
                 u.save()
+            return JsonResponse({'unit-list' : render_to_string('teacher/editingtemplates/unit-list.html',{'my_class':my_class})})
     context={}
     context['my_class'] = my_class
     context['nbar'] = 'teacher'
@@ -515,16 +412,6 @@ def uniteditview(request,pk,upk):
 
     if request.method == "POST":
         form = request.POST
-        if "addslides" in form:
-            u = UnitObject(unit = unit,order = unit.unit_objects.count()+1)
-            u.save()
-            s = SlideGroup(name = form.get("slides-name",""),unit_object = u)
-            s.save()
-        if "addproblemset" in form:
-            u = UnitObject(unit = unit,order = unit.unit_objects.count()+1)
-            u.save()
-            p = ProblemSet(name = form.get("problemset-name",""),default_point_value = form.get("problemset-default_point_value",""),unit_object = u)
-            p.save()
         if 'save' in form:
             unit_objs = list(unit.unit_objects.all())
             unit_objs = sorted(unit_objs,key = lambda x:x.order)###
@@ -536,6 +423,7 @@ def uniteditview(request,pk,upk):
                 u = unit.unit_objects.get(pk = unit_obj_inputs[i].split('_')[1])
                 u.order = i+1
                 u.save()
+            return JsonResponse({'unit-object-list' : render_to_string('teacher/editingtemplates/unitobjectlist.html',{'unit':unit})})
     context = {}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -616,49 +504,6 @@ def problemseteditview(request,pk,upk,ppk):
         raise Http404("No such problem set in this unit.")
     if request.method == "POST":
         form=request.POST
-        if "addoriginalproblem" in form:###############
-            qt = form.get('question-type','')
-            po=ProblemObject()
-            if qt == "multiple choice":
-                pform=NewProblemObjectMCForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.author = request.user
-                    prob.point_value = problemset.default_point_value
-                    prob.order = problemset.problem_objects.count()+1
-                    prob.save()
-                    problemset.problem_objects.add(prob)
-                    problemset.save()
-            elif qt == "short answer":
-                pform=NewProblemObjectSAForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.author = request.user
-                    prob.point_value = problemset.default_point_value
-                    prob.order = problemset.problem_objects.count()+1
-                    prob.save()
-                    problemset.problem_objects.add(prob)
-                    problemset.save()
-            elif qt == "proof":
-                pform=NewProblemObjectPFForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.author = request.user
-                    prob.point_value = problemset.default_point_value
-                    prob.order = problemset.problem_objects.count()+1
-                    prob.save()
-                    problemset.problem_objects.add(prob)
-                    problemset.save()
-                    
         if 'save' in form:
             prob_objs=list(problemset.problem_objects.all())
             prob_objs=sorted(prob_objs,key=lambda x:x.order)###
@@ -670,6 +515,7 @@ def problemseteditview(request,pk,upk,ppk):
                 p = problemset.problem_objects.get(pk=prob_obj_inputs[i].split('_')[1])
                 p.order = i+1
                 p.save()
+            return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'problemset':problemset})})
     context={}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -759,9 +605,8 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
                 prob.order = problemset.problem_objects.count()+1
+                prob.problemset = problemset
                 prob.save()
-                problemset.problem_objects.add(prob)
-                problemset.save()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "short answer":
             pform=NewProblemObjectSAForm(request.POST, instance=po)
@@ -773,9 +618,8 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
                 prob.order = problemset.problem_objects.count()+1
+                prob.problemset = problemset
                 prob.save()
-                problemset.problem_objects.add(prob)
-                problemset.save()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "proof":
             pform=NewProblemObjectPFForm(request.POST, instance=po)
@@ -787,9 +631,8 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
                 prob.order = problemset.problem_objects.count()+1
+                prob.problemset = problemset
                 prob.save()
-                problemset.problem_objects.add(prob)
-                problemset.save()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
@@ -819,54 +662,19 @@ def update_point_value(request,pk,upk,ppk,pppk):
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
 
 @login_required
-def editquestiontype(request,pk,upk,ppk,pppk):
+def loadeditquestiontype(request,**kwargs):
+    print('sf')
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
-        raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
-        raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
-        raise Http404("No such problem set in this unit.")
-    po = get_object_or_404(ProblemObject,pk=pppk)
-    if request.method == "POST":
-        form=request.POST
-        qt = form.get('cqt-question-type','')
-        if po.isProblem == 0:
-            if qt == "multiple choice":
-                pform=NewProblemObjectMCForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.author = request.user
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-            elif qt == "short answer":
-                pform=NewProblemObjectSAForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-            elif qt == "proof":
-                pform=NewProblemObjectPFForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-        else:
-            po.question_type=QuestionType.objects.get(question_type=qt)
-            po.save()
-            return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
+    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+    print('sf2')
+    if po.test != None:
+        if po.test.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+            raise Http404("Unauthorized.")
+    elif po.problemset!=None:
+        if po.problemset.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
     qt=po.question_type.question_type
     if po.isProblem == 0:
         if qt == 'short answer':
@@ -887,6 +695,56 @@ def editquestiontype(request,pk,upk,ppk,pppk):
     if po.problem.question_type_new.question_type == 'proof':
         qts=[0,0,1]
     return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qts':qts,'qt':qt})
+
+@login_required
+def savequestiontype(request,**kwargs):
+    userprofile = request.user.userprofile
+    form=request.POST
+    qt = form.get('cqt-question-type','')
+    po = get_object_or_404(ProblemObject,pk=form.get('problem_id',''))
+    if po.test != None:
+        if po.test.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+            raise Http404("Unauthorized.")
+    elif po.problemset!=None:
+        if po.problemset.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    if po.isProblem == 0:
+        if qt == "multiple choice":
+            pform = NewProblemObjectMCForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.author = request.user
+                prob.save()
+                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
+        elif qt == "short answer":
+            pform = NewProblemObjectSAForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.save()
+                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
+        elif qt == "proof":
+            pform = NewProblemObjectPFForm(request.POST, instance = po)
+            if pform.is_valid():
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.save()
+                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
+    else:
+        po.question_type = QuestionType.objects.get(question_type = qt)
+        po.save()
+        return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
+
+
 
 @login_required
 def numprobsmatching(request,pk,upk,ppk):
@@ -930,9 +788,8 @@ def reviewmatchingproblems(request,pk,upk,ppk):
                 for i in range(0,len(checked)):
                     p=Problem.objects.get(label=checked[i])
                     po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem=1,problem=p,question_type = p.question_type_new)
+                    po.problemset = problemset
                     po.save()
-                    problemset.problem_objects.add(po)
-                    problemset.save()
                 return redirect('../')
             return redirect('../')
         typ = form.get('contest-type','')
@@ -971,9 +828,8 @@ def reviewproblemgroup(request,pk,upk,ppk):
                 for i in range(0,len(checked)):
                     p=Problem.objects.get(label=checked[i])
                     po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem=1,problem=p,question_type = p.question_type_new)
+                    po.problemset = problemset
                     po.save()
-                    problemset.problem_objects.add(po)
-                    problemset.save()
                 return redirect('../')
             return redirect('../')
         prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
@@ -1013,48 +869,7 @@ def testeditview(request,pk,upk,tpk):
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
     if request.method == "POST":
-        form = request.POST
-        if "addoriginalproblem" in form:###############
-            qt = form.get('question-type','')
-            po = ProblemObject()
-            if qt == "multiple choice":
-                pform = NewProblemObjectMCForm(request.POST, instance = po)
-                if pform.is_valid():
-                    prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
-                    prob.author = request.user
-                    prob.point_value = test.default_point_value
-                    prob.blank_point_value = test.default_blank_value
-                    prob.order = test.problem_objects.count() + 1
-                    prob.test = test
-                    prob.save()
-            elif qt == "short answer":
-                pform = NewProblemObjectSAForm(request.POST, instance = po)
-                if pform.is_valid():
-                    prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
-                    prob.author = request.user
-                    prob.blank_point_value = test.default_blank_value
-                    prob.order = test.problem_objects.count() + 1
-                    prob.test = test
-                    prob.save()
-            elif qt == "proof":
-                pform = NewProblemObjectPFForm(request.POST, instance = po)
-                if pform.is_valid():
-                    prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
-                    prob.author = request.user
-                    prob.blank_point_value = test.default_blank_value
-                    prob.order = test.problem_objects.count() + 1
-                    prob.test = test
-                    prob.save()
-                    
+        form = request.POST                    
         if 'save' in form:
             prob_objs = list(test.problem_objects.all())
             prob_objs = sorted(prob_objs,key = lambda x:x.order)###
@@ -1066,6 +881,7 @@ def testeditview(request,pk,upk,tpk):
                 p = test.problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
                 p.order = i+1
                 p.save()
+            return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'test':test})})
     context={}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -1211,78 +1027,6 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
             return JsonResponse(data)
     form = BlankPointValueForm(instance = po)
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
-
-@login_required
-def testeditquestiontype(request,pk,upk,ppk,pppk):
-    userprofile = request.user.userprofile
-    my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
-        raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
-        raise Http404("No such unit in this class.")
-    test = get_object_or_404(Test,pk = ppk)
-    if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
-        raise Http404("No such problem set in this unit.")
-    po = get_object_or_404(ProblemObject,pk = pppk)
-    if request.method == "POST":
-        form = request.POST
-        qt = form.get('cqt-question-type','')
-        if po.isProblem == 0:
-            if qt == "multiple choice":
-                pform = NewProblemObjectMCForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
-                    prob.author = request.user
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-            elif qt == "short answer":
-                pform = NewProblemObjectSAForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
-                    prob.author = request.user
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-            elif qt == "proof":
-                pform = NewProblemObjectPFForm(request.POST, instance=po)
-                if pform.is_valid():
-                    prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
-                    prob.author = request.user
-                    prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-        else:
-            po.question_type = QuestionType.objects.get(question_type = qt)
-            po.save()
-            return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
-    qt=po.question_type.question_type
-    if po.isProblem == 0:
-        if qt == 'short answer':
-            form = NewProblemObjectSAForm(instance = po)
-        if qt == 'multiple choice':
-            form = NewProblemObjectMCForm(instance = po)
-        if qt == 'proof':
-            form = NewProblemObjectPFForm(instance = po)
-        return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qt':qt,'qts':[1,1,1]})#qts: mc,sa,pf
-
-    form = EditProblemProblemObjectForm(instance=po)
-    if po.problem.question_type_new.question_type == 'multiple choice':
-        qts=[1,0,1]
-    if po.problem.question_type_new.question_type == 'short answer':
-        qts=[0,1,1]
-    if po.problem.question_type_new.question_type == 'multiple choice short answer':
-        qts=[1,1,1]
-    if po.problem.question_type_new.question_type == 'proof':
-        qts=[0,0,1]
-    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qts':qts,'qt':qt})
 
 @login_required
 def testnumprobsmatching(request,pk,upk,ppk):
