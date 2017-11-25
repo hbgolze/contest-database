@@ -324,6 +324,7 @@ var editableList = Sortable.create(slideobjectList, {
     el && el.parentNode.removeChild(el);
     if (editableList.toArray().length == 0 ) {
       $("#msg-no-problems").html("<p><i>You don't have anything on this slide yet. Click the button below to add elements.</i></p>");
+$("#msg-no-problems").show();
     }
     $("#save-message").hide();
     $("#unsaved-message").show();
@@ -606,6 +607,8 @@ $("#add-example-form").on('submit',function(event) {
                 $("#addproblem").attr('disabled','true');
 
                 MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#msg-no-problems").hide();
+
             }
         }
     });
@@ -692,7 +695,7 @@ $(document).on('change',"#example-contest-type",function(event) {
 
 
 
-$(".edit-exampleproblem-link").click(function(event) {
+$(document).on('click',".edit-exampleproblem-link",function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
     $.ajax({
@@ -712,7 +715,7 @@ $(".edit-exampleproblem-link").click(function(event) {
 });
 
 
-$('#cqt-question-type').change(function(event) {
+$(document).on('change','#cqt-question-type',function(event) {
     event.preventDefault();
     if ($(this).val()=='short answer') {
     $.ajax({
@@ -803,7 +806,7 @@ $(document).on('submit',"#edit-slide-title-form",function(e) {
   return false;
 });
 
-$(document).on('submit',"#theorem-update-form",function(e) {
+$(document).on('submit',"#theorem_update_form",function(e) {
   e.preventDefault();
   $.ajax({
     type: 'POST',
@@ -811,9 +814,43 @@ $(document).on('submit',"#theorem-update-form",function(e) {
     data: $(this).serialize(),
     dataType: 'json',
     success: function(result) {
-      $("#slide-title").html(result['slide-title']);
-      $("#bc-slide-title").html(result['slide-title']);
-      $("#edit-title-placeholder").hide();
+      $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+      $("#edit-theorem-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#proof_update_form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: $(this).attr('action'),
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+      $("#edit-proof-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#textblock_update_form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: $(this).attr('action'),
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+      $("#edit-textblock-placeholder").hide();
       $("[data-dismiss=modal]").trigger({ type: "click" });
     }
   });

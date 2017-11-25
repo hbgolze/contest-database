@@ -117,6 +117,7 @@ var editableList = Sortable.create(slideList, {
     el && el.parentNode.removeChild(el);
     if (editableList.toArray().length==0) {
       $("#msg-no-slides").html("<p><i>You don't have any slides yet. Click the button below to add slides.</i></p>");
+      $("#msg-no-slides").show();
     }
     $("#unsaved-message").show();
     $("#save-message").hide();

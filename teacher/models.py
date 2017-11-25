@@ -338,9 +338,6 @@ class PublishedSlide(models.Model):#(i.e., slide 1...etc)
 
 class SlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
     slide = models.ForeignKey(Slide,related_name='slide_objects')
     class Meta:
         ordering = ['order']

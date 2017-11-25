@@ -172,7 +172,7 @@ def studentproblemsetview(request,**kwargs):
 
 class SolutionView(DetailView):
     model = PublishedProblemObject
-    template_name = 'teacher/publishedclass/load_sol.html'
+    template_name = 'teacher/publishedclasses/load_sol.html'
 
     def dispatch(self, *args, **kwargs):
         self.item_id = kwargs['ppk']
@@ -1235,8 +1235,8 @@ def slideseditview(request,pk,upk,spk):
             slide_inputs = form.getlist('slideinput')
             for s in slides:
                 if 'slide_'+str(s.pk) not in slide_inputs:
-                    for so in s.slide_objects.all():
-                        so.content_object.delete()
+#                    for so in s.slide_objects.all():
+#                        so.content_object.delete()#I think that slide_objects are now automatically deleted
                     s.delete()
             for i in range(0,len(slide_inputs)):
                 s = slidegroup.slides.get(pk=slide_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
@@ -1310,50 +1310,50 @@ def editslideview(request,pk,upk,spk,sspk):
     if request.method == "POST":
         form=request.POST
         if "addtextblock" in form:
+            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s.save()
             textbl = form.get("codetextblock","")
-            tb = TextBlock(text_code = textbl, text_display="")
+            tb = TextBlock(slide_object = s, text_code = textbl, text_display="")
             tb.save()
             tb.text_display = newtexcode(textbl, 'textblock_'+str(tb.pk), "")
             tb.save()
             compileasy(tb.text_code,'textblock_'+str(tb.pk))
-            s=SlideObject(content_object=tb,slide=slide,order=slide.top_order_number+1)
-            s.save()
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             return JsonResponse({'textblock':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addtheorem" in form:
+            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s.save()
             thmbl = form.get("codetheoremblock","")
             prefix = form.get("theorem-prefix","")
             thmname = form.get("theorem-name","")
-            th = Theorem(theorem_code = thmbl, theorem_display="",prefix=prefix,name=thmname)
+            th = Theorem(slide_object = s,theorem_code = thmbl, theorem_display="",prefix=prefix,name=thmname)
             th.save()
             th.theorem_display = newtexcode(thmbl, 'theoremblock_'+str(th.pk), "")
             th.save()
-            s=SlideObject(content_object=th,slide=slide,order=slide.top_order_number+1)
-            s.save()
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             return JsonResponse({'theorem':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addproof" in form:
+            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s.save()
             proofbl = form.get("codeproofblock","")
             prefix = form.get("proof-prefix","")
-            pf = Proof(proof_code = proofbl, proof_display="",prefix=prefix)
+            pf = Proof(slide_object = s, proof_code = proofbl, proof_display="",prefix=prefix)
             pf.save()
             pf.proof_display = newtexcode(proofbl, 'proofblock_'+str(pf.pk), "")
             pf.save()
             compileasy(pf.proof_code,'proofblock_'+str(pf.pk))#######Check
-            s=SlideObject(content_object=pf,slide=slide,order=slide.top_order_number+1)
-            s.save()
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             return JsonResponse({'proof':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addimage" in form:
             form = ImageForm(request.POST, request.FILES)
             if form.is_valid():
-                m = ImageModel(image=form.cleaned_data['image'])
-                m.save()
-                s = SlideObject(content_object=m,slide=slide,order=slide.top_order_number+1)
+                s = SlideObject(slide=slide,order=slide.top_order_number+1)
                 s.save()
+                m = ImageModel(slide_object = s,image=form.cleaned_data['image'])
+                m.save()
                 slide.top_order_number = slide.top_order_number +1
                 slide.save()
                 return JsonResponse({'image':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
@@ -1365,10 +1365,10 @@ def editslideview(request,pk,upk,spk,sspk):
                 if Problem.objects.filter(label = problem_label).exists():
                     p = Problem.objects.get(label = problem_label)
                     if p.type_new in userprofile.user_type_new.allowed_types.all():
-                        ep = ExampleProblem(isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
-                        ep.save()
-                        s = SlideObject(content_object=ep,slide=slide,order=slide.top_order_number+1)
+                        s = SlideObject(slide=slide,order=slide.top_order_number+1)
                         s.save()
+                        ep = ExampleProblem(slide_object = s,isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
+                        ep.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
                         return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
@@ -1380,58 +1380,53 @@ def editslideview(request,pk,upk,spk,sspk):
 #                pass
             elif source == "original":
                 qt = form.get('question-type','')
-                s = SlideObject()
-                ep = ExampleProblem()
+                s = SlideObject(slide = slide,order = slide.top_order_number + 1)
+                s.save()
+                ep = ExampleProblem(slide_object = s)
                 if qt == "multiple choice":
-                    pform = NewExampleProblemMCForm(request.POST, instance=ep)
+                    pform = NewExampleProblemMCForm(request.POST, instance = ep)
                     if pform.is_valid():
-                        prob=pform.save()
-                        prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
+                        prob = pform.save()
+                        prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                        prob.question_type = QuestionType.objects.get(question_type=qt)
+                        prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
-                        s = SlideObject(content_object=ep,slide=slide,order=slide.top_order_number+1)
-                        s.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
                 elif qt == "short answer":
-                    pform=NewExampleProblemSAForm(request.POST, instance=ep)
+                    pform = NewExampleProblemSAForm(request.POST, instance = ep)
                     if pform.is_valid():
-                        prob=pform.save()
-                        prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
+                        prob = pform.save()
+                        prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                        prob.question_type = QuestionType.objects.get(question_type=qt)
+                        prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
-                        s = SlideObject(content_object=ep,slide=slide,order=slide.top_order_number+1)
-                        s.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
                 elif qt == "proof":
-                    pform=NewExampleProblemPFForm(request.POST, instance=ep)
+                    pform = NewExampleProblemPFForm(request.POST, instance = ep)
                     if pform.is_valid():
-                        prob=pform.save()
-                        prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
+                        prob = pform.save()
+                        prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                        prob.question_type = QuestionType.objects.get(question_type=qt)
+                        prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
-                        s = SlideObject(content_object=ep,slide=slide,order=slide.top_order_number+1)
-                        s.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
                 return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if 'save' in form:
-            slide_objs=list(slide.slide_objects.all())
-            slide_objs=sorted(slide_objs,key=lambda x:x.order)
+            slide_objs = list(slide.slide_objects.all())
+            slide_objs = sorted(slide_objs,key=lambda x:x.order)
             slide_obj_inputs = form.getlist('slideobjectinput')
             for s in slide_objs:
                 if 'slideobject_'+str(s.pk) not in slide_obj_inputs:
-                    s.content_object.delete()# wouldn't this delete s???(copied comment from u)
+#                    s.content_object.delete()# wouldn't this delete s???(copied comment from u)
                     s.delete()
             for i in range(0,len(slide_obj_inputs)):
                 s = slide.slide_objects.get(pk=slide_obj_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
@@ -1452,9 +1447,9 @@ def editslideview(request,pk,upk,spk,sspk):
 def editslidetitle(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
-    slide = get_object_or_404(Slide,pk=pk)
+    slide = get_object_or_404(Slide,pk = pk)
     my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    if userprofile.my_classes.filter(pk = my_class.pk).exists() == False:
         raise Http404("Unauthorized.")
     form = EditSlideTitleForm(instance = slide)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-slide-title.html',{'form':form})})
@@ -1501,10 +1496,10 @@ def exampleaddproblem(request,**kwargs):
     form = request.GET
     prefix = form.get("example-prefix","")
     p = Problem.objects.get(pk=form.get('pk',''))
-    ep = ExampleProblem(isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
-    ep.save()
-    s = SlideObject(content_object=ep,slide=slide,order=slide.top_order_number+1)
+    s = SlideObject(slide=slide,order=slide.top_order_number+1)
     s.save()
+    ep = ExampleProblem(slide_object = s, isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
+    ep.save()
     slide.top_order_number = slide.top_order_number + 1
     slide.save()
     return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
@@ -1526,7 +1521,7 @@ def examplebytag(request,**kwargs):
 @login_required
 def examplebytagproblems(request,**kwargs):
     form = request.GET
-    problems = Problem.objects.filter(type_new__type=form.get('example-contest-type','')).filter(newtags__in=NewTag.objects.filter(tag__startswith=NewTag.objects.get(pk=form.get('example-tag',''))))
+    problems = Problem.objects.filter(type_new__type = form.get('example-contest-type','')).filter(newtags__in = NewTag.objects.filter(tag__startswith = NewTag.objects.get(pk = form.get('example-tag',''))))
     return JsonResponse({'problems':render_to_string('teacher/editingtemplates/example-bytag-problems.html',{'rows':problems})})
 
 @login_required
@@ -1545,41 +1540,41 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
     if slidegroup.slides.filter(pk=slide.pk).exists()==False:
         raise Http404("No such slide in the slide group.")
     ep = get_object_or_404(ExampleProblem,pk=sopk)
-    if slide.slide_objects.filter(content_type=ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem')).filter(object_id=ep.pk).exists()==False:
+    if slide.slide_objects.exclude(exampleproblem = None).filter(exampleproblem__id = ep.pk).exists() == False:
         raise Http404("No such object in slide.")
-    so = slide.slide_objects.filter(content_type=ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem')).get(object_id=ep.pk)
+    so = slide.slide_objects.exclude(exampleproblem = None).get(exampleproblem__id = ep.pk)
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         qt = form.get('cqt-question-type','')
         if ep.isProblem == 0:
             if qt == "multiple choice":
-                pform=NewExampleProblemMCForm(request.POST, instance=ep)
+                pform = NewExampleProblemMCForm(request.POST, instance = ep)
                 if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':so}),'qt':qt,'sopk':so.pk})
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
             elif qt == "short answer":
-                pform=NewExampleProblemSAForm(request.POST, instance=ep)
+                pform = NewExampleProblemSAForm(request.POST, instance = ep)
                 if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':so}),'qt':qt,'sopk':so.pk})
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
             elif qt == "proof":
-                pform=NewExampleProblemPFForm(request.POST, instance=ep)
+                pform = NewExampleProblemPFForm(request.POST, instance = ep)
                 if pform.is_valid():
-                    prob=pform.save()
-                    prob.problem_display=newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type=qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.save()
-                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':so}),'qt':qt,'sopk':so.pk})
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
     qt=ep.question_type.question_type
     if qt == 'short answer':
         form = NewExampleProblemSAForm(instance=ep)
@@ -1607,7 +1602,7 @@ class TextBlockUpdateView(UpdateView):
         textblock = TextBlock.objects.get(id=self.textblock_id)
         textblock.text_display = newtexcode(textblock.text_code, 'textblock_'+str(textblock.pk), "")
         compileasy(textblock.text_code,'textblock_'+str(textblock.pk))
-        return redirect('../../')
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':textblock.slide_object}),'sopk':textblock.slide_object.pk})
 
     def get_object(self, queryset=None):
         return get_object_or_404(TextBlock, pk=self.textblock_id)
@@ -1637,8 +1632,7 @@ class TheoremUpdateView(UpdateView):
         theorem = Theorem.objects.get(id=self.theorem_id)
         theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
         compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
-#        return JsonResponse({'slide-code':render_to_string('teacher/edit-slide/slideobjectbody.html',{'s':theorem.slide_object})})
-        return redirect('../../')
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':theorem.slide_object}),'sopk':theorem.slide_object.pk})
 
     def get_object(self, queryset=None):
         return get_object_or_404(Theorem, pk=self.theorem_id)
@@ -1668,7 +1662,8 @@ class ProofUpdateView(UpdateView):
         proof = Proof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
         compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
-        return redirect('../../')
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':proof.slide_object}),'sopk':proof.slide_object.pk})
+
 
     def get_object(self, queryset=None):
         return get_object_or_404(Proof, pk=self.proof_id)
@@ -1714,55 +1709,6 @@ def alphagrade(request,**kwargs):
 
 
 
-
-class AjaxableResponseMixin(object):
-    """
-    Mixin to add AJAX support to a form.
-    Must be used with an object-based FormView (e.g. CreateView)
-    """
-    def form_invalid(self, form):
-        response = super(AjaxableResponseMixin, self).form_invalid(form)
-        if self.request.is_ajax():
-            return JsonResponse(form.errors, status=400)
-        else:
-            return response
-
-    def form_valid(self, form):
-        # We make sure to call the parent's form_valid() method because
-        # it might do some processing (in the case of CreateView, it will
-        # call form.save() for example).
-        response = super(AjaxableResponseMixin, self).form_valid(form)
-        if self.request.is_ajax():
-            data = {
-                'pk': self.object.pk,
-            }
-            return JsonResponse(data)
-        else:
-            return response
-
-'''
-class UnitUpdateView(AjaxableResponseMixin,UpdateView):
-    model = Unit
-    form_class = UnitForm
-    template_name = 'teacher/classview/unit_edit_form.html'
-
-    def dispatch(self, *args, **kwargs):
-        self.unit_id = kwargs['upk']
-        self.class_id = kwargs['pk']
-        return super(UnitUpdateView, self).dispatch(*args, **kwargs)
-
-    def form_valid(self, form):
-        form.save()
-        unit = Unit.objects.get(id=self.unit_id)
-        return redirect('/teacher/classes/'+str(self.class_id)+'/')
-
-    def get_object(self, queryset=None):
-        return get_object_or_404(Unit, pk=self.unit_id)
-    def get_context_data(self, *args, **kwargs):
-        context = super(UnitUpdateView, self).get_context_data(*args, **kwargs)
-        context['class'] = self.class_id
-        return context
-'''
 
 
 #######PROBLEM GROUPS#######
@@ -1870,110 +1816,6 @@ def deletegroup(request,pk):
         else:
             userprofile.problem_groups.remove(pg)
     return redirect('/teacher/problemgroups/')
-
-#@login_required
-#def sync_class(request,pk):
-#    p = get_object_or_404(PublishedClass,pk=pk)
-#    userprofile=request.user.userprofile
-#    my_class = pub_class.parent_class
-#    if userprofile.my_published_classes.filter(pk=pk).exists()==False:
-#        raise Http404("Unauthorized.")
-#    class_points = 0
-#    class_prob_num = 0
-#    for u in my_class.units.all():
-#        new_unit = Unit(name=u.name,order=u.order)
-#        new_unit.save()
-#        p.units.add(new_unit)
-#        unit_points = 0
-#        unit_prob_num = 0
-#        num_problemsets = 0
-#        for uo in u.unit_objects.all():
-#            try:
-#                sg = uo.slidegroup
-#                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
-#                new_unit_object.save()
-#                new_slide_group = SlideGroup(name = uo.slidegroup.name,num_slides = uo.slidegroup.slides.count(),unit_object = new_unit_object)
-#                new_slide_group.save()
-#                for s in uo.slidegroup.slides.all():
-#                    new_slide = Slide(title=s.title,order=s.order, slidegroup=new_slide_group,top_order_number=s.top_order_number)
-#                    new_slide.save()
-#                    for so in s.slide_objects.all():
-#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'textblock'):
-#                            new_textblock = TextBlock(text_code = so.content_object.text_code,text_display="")
-#                            new_textblock.save()
-#                            new_textblock.text_display = newtexcode(so.content_object.text_code, 'textblock_'+str(new_textblock.pk), "")
-#                            new_textblock.save()
-#                            compileasy(new_textblock.text_code,'textblock_'+str(new_textblock.pk))
-#                            new_so=SlideObject(content_object=new_textblock,slide=new_slide,order=so.order)
-#                            new_so.save()
-#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'proof'):
-#                            new_proof = Proof(prefix=so.content_object.prefix,proof_code = so.content_object.proof_code,proof_display="")
-#                            new_proof.save()
-#                            new_proof.proof_display = newtexcode(so.content_object.proof_code, 'proofblock_'+str(new_proof.pk), "")
-#                            new_proof.save()
-#                            compileasy(new_proof.proof_code,'proofblock_'+str(new_proof.pk))
-#                            new_so=SlideObject(content_object=new_proof,slide=new_slide,order=so.order)
-#                            new_so.save()
-#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'theorem'):
-#                            new_theorem = Theorem(name=so.content_object.name,prefix=so.content_object.prefix,theorem_code = so.content_object.theorem_code,theorem_display="")
-#                            new_theorem.save()
-#                            new_theorem.theorem_display = newtexcode(so.content_object.theorem_code, 'theoremblock_'+str(new_theorem.pk), "")
-#                            new_theorem.save()
-#                            compileasy(new_theorem.theorem_code,'theoremblock_'+str(new_theorem.pk))
-#                            new_so=SlideObject(content_object=new_theorem,slide=new_slide,order=so.order)
-#                            new_so.save()
-#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem'):
-#                            new_example = ExampleProblem(name=so.content_object.name,prefix=so.content_object.prefix,problem_code = so.content_object.problem_code,problem_display="",isProblem=so.content_object.isProblem, problem=so.content_object.problem,question_type=so.content_object.question_type,mc_answer = so.content_object.mc_answer,sa_answer = so.content_object.sa_answer,answer_A = so.content_object.answer_A,answer_B = so.content_object.answer_B,answer_C = so.content_object.answer_C,answer_D = so.content_object.answer_D,answer_E = so.content_object.answer_E,author=so.content_object.author)
-#                            new_example.save()
-#                            new_example.problem_display = newtexcode(so.content_object.problem_code, 'exampleproblem_'+str(new_example.pk), "")
-#                            new_example.save()
-#                            compileasy(new_example.problem_code,'exampleproblem_'+str(new_example.pk))
-#                            new_so=SlideObject(content_object=new_example,slide=new_slide,order=so.order)
-#                            new_so.save()
-#                        if so.content_type == ContentType.objects.get(app_label = 'teacher', model = 'imagemodel'):
-#                            new_image = ImageModel(image = so.content_object.image)
-#                            new_image.save()
-#                            new_so=SlideObject(content_object=new_image,slide=new_slide,order=so.order)
-#                            new_so.save()
-#            except:
-#                pset = uo.problemset
-#                num_problemsets += 1
-#                new_unit_object = UnitObject(unit = new_unit,order = uo.order)
-#                new_unit_object.save()
-#                new_problemset = ProblemSet(name = uo.problemset.name,default_point_value = uo.problemset.default_point_value,unit_object = new_unit_object)
-#                new_problemset.save()
-#                total_points=0
-#                for po in uo.problemset.problem_objects.all():
-#                    new_po = ProblemObject(order = po.order,point_value=po.point_value,problem_code = po.problem_code,problem_display="",isProblem=po.isProblem, problem=po.problem,question_type=po.question_type,mc_answer = po.mc_answer,sa_answer = po.sa_answer,answer_A = po.answer_A,answer_B = po.answer_B,answer_C = po.answer_C,answer_D = po.answer_D,answer_E = po.answer_E,author=po.author)
-#                    new_po.save()
-#                    if new_po.isProblem == 0:
-#                        if new_po.question_type.question_type =='multiple choice':
-#                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), new_po.answers())
-#                        else:
-#                            new_po.problem_display = newtexcode(po.problem_code, 'originalproblem_'+str(new_po.pk), "")
-#                        new_po.save()
-#                        compileasy(new_po.problem_code,'originalproblem_'+str(new_po.pk))
-#                    new_problemset.problem_objects.add(new_po)
-#                    total_points += po.point_value
-#                new_problemset.total_points = total_points
-#                new_problemset.num_problems = new_problemset.problem_objects.count()
-#                new_problemset.save()
-#                unit_points += total_points
-#                unit_prob_num += new_problemset.num_problems
-#        new_unit.total_points = unit_points
-#        new_unit.num_problems = unit_prob_num
-#        new_unit.num_problemsets = num_problemsets
-#        new_unit.save()
-#        class_points += unit_points
-#        class_prob_num += new_unit.num_problems
-#    p.total_points = class_points
-#    p.num_problems = class_prob_num
-#    p.save()
-#    userprofile.my_published_classes.add(p)
-#    userprofile.save()
-
-    
-    
 
 
 @login_required

@@ -487,6 +487,7 @@ var editableList = Sortable.create(problemobjectList, {
     el && el.parentNode.removeChild(el);
     if (editableList.toArray().length == 0 ) {
       $("#msg-no-problems").html("<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>");
+      $("#msg-no-problems").show();
     }
     $("#save-message").hide();
     $("#unsaved-message").show();
