@@ -9,7 +9,7 @@
   <li><a href="../../../../../../">My Classes</a></li>
   <li><a href="../../../../">{{my_class.name}}</a></li>
   <li><a href="../../">{{unit.name}}</a></li>
-  <li class="active">{{slides.name}}</li>
+  <li class="active"><span id="bc-slides-name">{{slides.name}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -20,18 +20,17 @@
       </ul>
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Slides: {{slides.name}}</h2>
+      <h2>Edit Slides: <span id="slides-name">{{slides.name}}</span> <a href="#" id="edit-slides-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
 
-      {% if slides.slides.count > 0 %}
-      <p>Drag around slides to reorder them.</p>
-      {% endif %}
+      <p>Drag slides around to reorder them. If you reorder or delete slides, you must click "Save" for your changes to apply.</p>
 
       <form action="." method="POST" id="slides">
         {% csrf_token %}
         <div id="slideList" class="list-group">
 	  {% include "teacher/editingtemplates/editslides/slidelist.html" with slides=slides %}
         </div>
-	<div id="save-msg"></div>
+	<div id="msg-no-slides">{% if slides.slides.count == 0 %}<p><i>You don't have any slides yet. Click the button below to add slides.</i></p>{% endif %}</div>
+        <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<a href="#add-slide-modal" class="btn btn-default add-slide-link" data-toggle="modal">Add Slide</a>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
 
@@ -41,6 +40,11 @@
   </div>
 </div>
 
+<div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
+  <div class="alert alert-warning">
+    You have unsaved changes! Please click "Save" before navigating away.
+  </div>
+</div>
 
 <div class="modal fade" id="add-slide-modal" role="dialog">
   <div class="modal-dialog" role="document">
@@ -68,14 +72,58 @@
   </div>
 </div>
 
+<div class="modal fade" id="edit-name-placeholder" role="dialog">
+</div>
+
 
 	      
 <script type="text/javascript">
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+
 var editableList = Sortable.create(slideList, {
   filter: '.js-remove',
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length==0) {
+      $("#msg-no-slides").html("<p><i>You don't have any slides yet. Click the button below to add slides.</i></p>");
+    }
+    $("#unsaved-message").show();
+    $("#save-message").hide();
+  },
+  onUpdate: function (evt) {
+    $("#unsaved-message").show();
+    $("#save-message").hide();
   }
 });
 
@@ -91,6 +139,7 @@ $('#add-slide-form').on('submit',function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#slideList").append(result['slide-body']);
             $("#slide-title").val('');
+            $("#msg-no-slides").hide();
         }
     });
     return false;
@@ -104,18 +153,50 @@ $('#slides').on('submit',function(event) {
         data: $(this).serialize()+'&save',
         dataType: 'json',
         success: function(result) {
+            $("#unsaved-message").fadeOut();
+            $("#save-message").show();
             $("#slideList").html(result['slidelist']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideList"]);
-            $("#save-msg").html("<div class='alert alert-success' role='alert'>Save Successful.</div>");
-            $("#save-msg").show();
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideList"]);
             setTimeout(function() {
-                $("#save-msg").fadeOut().empty();
+                $("#save-message").fadeOut();
             },5000);
         }
     });
     return false;
 });
 
+$(document).on('click',"#edit-slides-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-slidegroup-name/',
+    data: "&pk={{slides.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-slidegroup-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-slidegroup-name/',
+    data: $(this).serialize()+"&pk={{slides.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#slides-name").html(result['slidegroup-name']);
+      $("#bc-slides-name").html(result['slidegroup-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
 </script>
 
 {% endblock %}

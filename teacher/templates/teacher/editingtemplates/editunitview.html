@@ -8,7 +8,7 @@
 <ol class="breadcrumb">
   <li><a href="../../../../">My Classes</a></li>
   <li><a href="../../">{{my_class.name}}</a></li>
-  <li class="active">{{unit.name}}</li>
+  <li class="active"><span id="bc-unit-name">{{unit.name}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -19,10 +19,8 @@
       </ul>
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Unit: {{unit.name}}</h2>
-
-
-
+      <h2>Edit Unit: <span id="unit-name">{{unit.name}}</span> <a href="#" id="edit-unit-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
+      
       <p>Drag around assignments to reorder them. If you reorder assignments or delete assignments, you must click "Save" to have the changes saved.</p>
       <h3>Assignments</h3>
       <form action="." method="POST" id="units">
@@ -30,7 +28,7 @@
         <div id="unitobjectList" class="list-group">
 	  {% include 'teacher/editingtemplates/unitobjectlist.html' %}
         </div>
-
+	
 	<div id="no-assignments">{% if unit.unit_objects.count == 0 %}<p><i>You don't have any assignments in this unit yet.</i></p>{% endif %}</div>	
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<span class="dropup">
@@ -45,134 +43,161 @@
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
       </form>
-
+      
     </div>
   </div>
 </div>
 <div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
-<div class="alert alert-warning">
-You have unsaved changes! Please click "Save" before navigating away.</div>
-</div>
-</div>
-
-  <div class="modal fade" id="slides" role="dialog">
-    <div class="modal-dialog" role="document">
-
-      <div class="modal-content">
-        <form method="post" action="." id="slides-form">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add Slides</h4>
-          </div>
-          <div class="modal-body">
-            {% csrf_token %}
-            <div class="form-group">
-              <label for="slides-name" class="control-label">Name of Slides</label>
-              <input type="text" class="form-control" id="slides-name" name="slides-name" required>
-            </div>	    
-          </div>
-          <div class="modal-footer">
-            <button type="submit" name="addslides" class="btn btn-primary">Add Slides</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </form>
-      </div>
-      
-    </div>
+  <div class="alert alert-warning">
+    You have unsaved changes! Please click "Save" before navigating away.
   </div>
-  <div class="modal fade" id="problemset" role="dialog">
-    <div class="modal-dialog" role="document">
+</div>
 
-      <div class="modal-content">
-        <form method="post" action="." id="problemset-form">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add Problem Set</h4>
+<div class="modal fade" id="slides" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." id="slides-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Slides</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="slides-name" class="control-label">Name of Slides</label>
+            <input type="text" class="form-control" id="slides-name" name="slides-name" required>
+          </div>	    
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addslides" class="btn btn-primary">Add Slides</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+<div class="modal fade" id="problemset" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." id="problemset-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Problem Set</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="problemset-name" class="control-label">Name of Problem Set</label>
+            <input type="text" class="form-control" id="problemset-name" name="problemset-name" required>
+	    <label for="problemset-default_point_value">Default Point Value</label>
+	    <input type="number" class="form-control" id="problemset-default_point_value" name="problemset-default_point_value" required>
           </div>
-          <div class="modal-body">
-            {% csrf_token %}
-            <div class="form-group">
-              <label for="problemset-name" class="control-label">Name of Problem Set</label>
-              <input type="text" class="form-control" id="problemset-name" name="problemset-name" required>
-	      <label for="problemset-default_point_value">Default Point Value</label>
-	      <input type="number" class="form-control" id="problemset-default_point_value" name="problemset-default_point_value" required>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addproblemset" class="btn btn-primary">Add Problem Set</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+    
+  </div>
+</div>
+
+<div class="modal fade" id="test" role="dialog">
+  <div class="modal-dialog" role="document">
+    
+    <div class="modal-content">
+      <form method="post" action="." id="test-form">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title">Add Test</h4>
+        </div>
+        <div class="modal-body">
+          {% csrf_token %}
+          <div class="form-group">
+            <label for="test-name" class="control-label">Name of Test</label>
+            <input type="text" class="form-control" id="test-name" name="test-name" required>
+	    <label for="test-default_point_value">Default Point Value</label>
+	    <input type="number" class="form-control" id="test-default_point_value" name="test-default_point_value" required>
+	    <label for="test-default_blank_value">Default Blank Point Value</label>
+	    <input type="number" step="0.5" class="form-control" id="test-default_blank_value" name="test-default_blank_value" required>
+	    <label for="time_limit_div">Time Limit</label>
+	    <div class="row" id="time_limit_div">
+	      <div class="col-xs-6">
+		<div class="form-group">
+		  <label for="hours">Hours</label>
+                  <select class="form-control" id="hours" name="hours">
+                    {% for i in "xxxxxx" %}
+                    <option value="{{forloop.counter0}}"{% if default_hours == forloop.counter0 %}selected{% endif %}>{{forloop.counter0}}</option>
+                    {% endfor %}
+                  </select>
+		</div>
+	      </div>
+	      <div class="col-xs-6">
+		<div class="form-group">
+		  <label for="minutes">Minutes</label>
+		  <select class="form-control" id="minutes" name="minutes">
+                    {% for min in minuterange %}
+                    <option value="{{min}}"{% if default_minutes == min %}selected{% endif %}>{{min}}</option>
+                    {% endfor %}
+                  </select>
+		</div>
+	      </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="submit" name="addproblemset" class="btn btn-primary">Add Problem Set</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </form>
-      </div>
-
+	  <div class="alert alert-danger" id="newtest-error" style="display:none;">
+	  </div>
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addtest" class="btn btn-primary">Add Test</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </form>
     </div>
   </div>
-
-  <div class="modal fade" id="test" role="dialog">
-    <div class="modal-dialog" role="document">
-
-      <div class="modal-content">
-        <form method="post" action="." id="test-form">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add Test</h4>
-          </div>
-          <div class="modal-body">
-            {% csrf_token %}
-            <div class="form-group">
-              <label for="test-name" class="control-label">Name of Test</label>
-              <input type="text" class="form-control" id="test-name" name="test-name" required>
-	      <label for="test-default_point_value">Default Point Value</label>
-	      <input type="number" class="form-control" id="test-default_point_value" name="test-default_point_value" required>
-	      <label for="test-default_blank_value">Default Blank Point Value</label>
-	      <input type="number" step="0.5" class="form-control" id="test-default_blank_value" name="test-default_blank_value" required>
-	      <label for="time_limit_div">Time Limit</label>
-
-	      <div class="row" id="time_limit_div">
-		<div class="col-xs-6">
-		  <div class="form-group">
-		    <label for="hours">Hours</label>
-                    <select class="form-control" id="hours" name="hours">
-                      {% for i in "xxxxxx" %}
-                      <option value="{{forloop.counter0}}"{% if default_hours == forloop.counter0 %}selected{% endif %}>{{forloop.counter0}}</option>
-                      {% endfor %}
-                    </select>
-		  </div>
-		</div>
-		<div class="col-xs-6">
-		  <div class="form-group">
-		    <label for="minutes">Minutes</label>
-		    <select class="form-control" id="minutes" name="minutes">
-                      {% for min in minuterange %}
-                      <option value="{{min}}"{% if default_minutes == min %}selected{% endif %}>{{min}}</option>
-                      {% endfor %}
-                    </select>
-		  </div>
-		</div>
-              </div>
-	      
-
-            </div>
-<div class="alert alert-danger" id="newtest-error" style="display:none;">
 </div>
-          </div>
-          <div class="modal-footer">
-            <button type="submit" name="addtest" class="btn btn-primary">Add Test</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-          </div>
-        </form>
-      </div>
 
-    </div>
-  </div>
-
-
-
+<div class="modal fade" id="edit-name-placeholder" role="dialog">
+</div>
 
 
 
 	      
 <script type="text/javascript">
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
 var editableList = Sortable.create(unitobjectList, {
   filter: '.js-remove',
   onFilter: function (evt) {
@@ -276,6 +301,38 @@ $(document).on('submit',"#units",function(event) {
 });
 
 
+$(document).on('click',"#edit-unit-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-unit-name/',
+    data: "&pk={{unit.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-unit-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-unit-name/',
+    data: $(this).serialize()+"&pk={{unit.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#unit-name").html(result['unit-name']);
+      $("#bc-unit-name").html(result['unit-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
 </script>
 
 {% endblock %}

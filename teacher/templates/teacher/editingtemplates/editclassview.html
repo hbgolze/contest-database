@@ -7,7 +7,7 @@
 
 <ol class="breadcrumb">
   <li><a href="../../">My Classes</a></li>
-  <li class="active">{{my_class.name}}</li>
+  <li class="active"><span id="bc-class-name">{{my_class.name}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -18,7 +18,7 @@
       </ul>
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Class: {{my_class.name}}</h2>
+      <h2>Edit Class: <span id="class-name">{{my_class.name}}</span> <a href="#" id="edit-class-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
       <p>Drag around units to reorder them. If you reorder units or delete units, you must click "Save" to have the changes saved.</p>
       <h3>Units:</h3>
       <form action="." method="POST" id="units">
@@ -67,8 +67,42 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
   </div>
 </div>
 
+<div class="modal fade" id="edit-name-placeholder" role="dialog">
+</div>
+
 	      
 <script type="text/javascript">
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
 var editableList = Sortable.create(unitList, {
   filter: '.js-remove',
   onFilter: function (evt) {
@@ -86,21 +120,21 @@ var editableList = Sortable.create(unitList, {
 
 
 $('#newunit-form').on('submit',function(event) {
-    event.preventDefault();
-    $.ajax({
-        type: 'POST',
-        url: 'add-unit/',
-        data: $(this).serialize(),
-        dataType: 'html',
-        success: function(result) {
-            $("#newunit").hide();
-            $("[data-dismiss=modal]").trigger({ type: "click" });
-            $("#no-units").empty()
-            $("#unitList").append(result);
-            $("#unit-name").val('');
-        }
-    });
-    return false;
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: 'add-unit/',
+    data: $(this).serialize(),
+    dataType: 'html',
+    success: function(result) {
+      $("#newunit").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+      $("#no-units").empty()
+      $("#unitList").append(result);
+      $("#unit-name").val('');
+    }
+  });
+  return false;
 });
 
 $(document).on('submit',"#units",function(event) {
@@ -122,8 +156,38 @@ $(document).on('submit',"#units",function(event) {
   return false;
 });
 
+$(document).on('click',"#edit-class-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-class-name/',
+    data: "&pk={{my_class.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
 
 
+$(document).on('submit',"#edit-class-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-class-name/',
+    data: $(this).serialize()+"&pk={{my_class.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#class-name").html(result['class-name']);
+      $("#bc-class-name").html(result['class-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
 </script>
 
 {% endblock %}

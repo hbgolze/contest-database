@@ -19,7 +19,7 @@ from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewRespon
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
 from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest
-from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm
+from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm,EditClassNameForm,EditUnitNameForm,EditProblemSetNameForm,EditTestNameForm,EditSlideGroupNameForm,EditSlideTitleForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
 
@@ -401,6 +401,27 @@ def newunitview(request,pk):
     return HttpResponse('')
 
 @login_required
+def editclassname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    my_class = get_object_or_404(Class,pk=pk)
+    if userprofile.my_classes.filter(pk=pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditClassNameForm(instance = my_class)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-class-name.html',{'form':form})})
+
+@login_required
+def saveclassname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    my_class = get_object_or_404(Class,pk=pk)
+    if userprofile.my_classes.filter(pk=pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditClassNameForm(request.POST,instance = my_class)
+    form.save()
+    return JsonResponse({'class-name':form.instance.name})
+
+@login_required
 def uniteditview(request,pk,upk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
@@ -431,6 +452,29 @@ def uniteditview(request,pk,upk):
     context['minuterange'] = [5*i for i in range(0,12)]
     context['default_hours'] = 1
     return render(request, 'teacher/editingtemplates/editunitview.html',context)
+
+@login_required
+def editunitname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    unit = get_object_or_404(Unit,pk=pk)
+    my_class = unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditUnitNameForm(instance = unit)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-unit-name.html',{'form':form})})
+
+@login_required
+def saveunitname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    unit = get_object_or_404(Unit,pk=pk)
+    my_class = unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditUnitNameForm(request.POST,instance = unit)
+    form.save()
+    return JsonResponse({'unit-name':form.instance.name})
 
 @login_required
 def newproblemsetview(request,pk,upk):
@@ -525,6 +569,29 @@ def problemseteditview(request,pk,upk,ppk):
     return render(request, 'teacher/editingtemplates/editproblemsetview.html',context)
 
 @login_required
+def editproblemsetname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    problemset = get_object_or_404(ProblemSet,pk=pk)
+    my_class = problemset.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditProblemSetNameForm(instance = problemset)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-problemset-name.html',{'form':form})})
+
+@login_required
+def saveproblemsetname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    problemset = get_object_or_404(ProblemSet,pk=pk)
+    my_class = problemset.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditProblemSetNameForm(request.POST,instance = problemset)
+    form.save()
+    return JsonResponse({'problemset-name':form.instance.name})
+
+@login_required
 def loadoriginalproblemform(request,**kwargs):
     qt=request.GET.get('qt','')
     po=ProblemObject()
@@ -592,14 +659,14 @@ def addoriginalproblem(request,pk,upk,ppk):
     if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
         raise Http404("No such problem set in this unit.")
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         qt = form.get('question-type','')
-        po=ProblemObject()
+        po = ProblemObject()
         if qt == "multiple choice":
-            pform=NewProblemObjectMCForm(request.POST, instance=po)
+            pform = NewProblemObjectMCForm(request.POST, instance=po)
             if pform.is_valid():
-                prob=pform.save()
-                prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
@@ -609,10 +676,10 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.save()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "short answer":
-            pform=NewProblemObjectSAForm(request.POST, instance=po)
+            pform = NewProblemObjectSAForm(request.POST, instance=po)
             if pform.is_valid():
-                prob=pform.save()
-                prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
@@ -622,10 +689,10 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.save()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "proof":
-            pform=NewProblemObjectPFForm(request.POST, instance=po)
+            pform = NewProblemObjectPFForm(request.POST, instance=po)
             if pform.is_valid():
-                prob=pform.save()
-                prob.problem_display=newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                prob = pform.save()
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
@@ -639,14 +706,14 @@ def addoriginalproblem(request,pk,upk,ppk):
 @login_required
 def update_point_value(request,pk,upk,ppk,pppk):
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
     po = get_object_or_404(ProblemObject,pk=pppk)
     if request.method == 'POST':
@@ -658,7 +725,7 @@ def update_point_value(request,pk,upk,ppk,pppk):
                 'point_value':form.instance.point_value,
             }
             return JsonResponse(data)
-    form = PointValueForm(instance=po)
+    form = PointValueForm(instance = po)
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
 
 @login_required
@@ -889,6 +956,29 @@ def testeditview(request,pk,upk,tpk):
     context['tags'] = NewTag.objects.exclude(tag='root')
     context['nbar'] = 'teacher'
     return render(request, 'teacher/editingtemplates/edittestview.html',context)
+
+@login_required
+def edittestname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    test = get_object_or_404(Test,pk=pk)
+    my_class = test.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditTestNameForm(instance = test)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-test-name.html',{'form':form})})
+
+@login_required
+def savetestname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    test = get_object_or_404(Test,pk=pk)
+    my_class = test.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditTestNameForm(request.POST,instance = test)
+    form.save()
+    return JsonResponse({'test-name':form.instance.name})
 
 @login_required
 def testloadoriginalproblemform(request,**kwargs):
@@ -1160,7 +1250,29 @@ def slideseditview(request,pk,upk,spk):
     context['nbar'] = 'teacher'
     return render(request,'teacher/editingtemplates/editslidesview.html',context)
 
-    
+@login_required
+def editslidegroupname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    slidegroup = get_object_or_404(SlideGroup,pk=pk)
+    my_class = slidegroup.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditSlideGroupNameForm(instance = slidegroup)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-slidegroup-name.html',{'form':form})})
+
+@login_required
+def saveslidegroupname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    slidegroup = get_object_or_404(SlideGroup,pk=pk)
+    my_class = slidegroup.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditSlideGroupNameForm(request.POST,instance = slidegroup)
+    form.save()
+    return JsonResponse({'slidegroup-name':form.instance.name})
+
 @login_required
 def newslideview(request,pk,upk,spk):
     userprofile=request.user.userprofile
@@ -1337,6 +1449,29 @@ def editslideview(request,pk,upk,spk,sspk):
     return render(request,'teacher/editingtemplates/edit-slide.html',context)
 
 @login_required
+def editslidetitle(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    slide = get_object_or_404(Slide,pk=pk)
+    my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditSlideTitleForm(instance = slide)
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-slide-title.html',{'form':form})})
+
+@login_required
+def saveslidetitle(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    slide = get_object_or_404(Slide,pk=pk)
+    my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
+    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+        raise Http404("Unauthorized.")
+    form = EditSlideTitleForm(request.POST,instance = slide)
+    form.save()
+    return JsonResponse({'slide-title':form.instance.title})
+
+@login_required
 def exampleoriginalqt(request,**kwargs):
     return JsonResponse({'qt-form':render_to_string('teacher/editingtemplates/example-original-question-type.html')})
 
@@ -1502,6 +1637,7 @@ class TheoremUpdateView(UpdateView):
         theorem = Theorem.objects.get(id=self.theorem_id)
         theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
         compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
+#        return JsonResponse({'slide-code':render_to_string('teacher/edit-slide/slideobjectbody.html',{'s':theorem.slide_object})})
         return redirect('../../')
 
     def get_object(self, queryset=None):

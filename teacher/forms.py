@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem,ProblemSet
+from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem,ProblemSet,Class,Unit,SlideGroup,Test,Slide
 from randomtest.utils import newtexcode
 from randomtest.models import NewTag
 
@@ -262,4 +262,52 @@ class ImageForm(forms.Form):
 class LabelForm(forms.Form):
     label = forms.CharField(max_length=50);
 
+
+class EditClassNameForm(forms.ModelForm):
+    class Meta:
+        model = Class
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
+class EditUnitNameForm(forms.ModelForm):
+    class Meta:
+        model = Unit
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
+
+class EditProblemSetNameForm(forms.ModelForm):
+    class Meta:
+        model = ProblemSet
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
+
+class EditTestNameForm(forms.ModelForm):
+    class Meta:
+        model = Test
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
+
+class EditSlideGroupNameForm(forms.ModelForm):
+    class Meta:
+        model = SlideGroup
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+            }
+
+
+class EditSlideTitleForm(forms.ModelForm):
+    class Meta:
+        model = Slide
+        fields = ('title',)
+        widgets = {
+            'title': forms.TextInput(attrs={'class':'form-control'}),
+            }
 

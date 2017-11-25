@@ -10,7 +10,7 @@
   <li><a href="../../../../../../">{{my_class.name}}</a></li>
   <li><a href="../../../../">{{unit.name}}</a></li>
   <li><a href="../../">{{slides.name}}</a></li>
-  <li class="active">{{slide.title}}</li>
+  <li class="active"><span id="bc-slide-title">{{slide.title}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -21,11 +21,9 @@
       </ul>
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Slide: {{slide.title}}</h2>
+      <h2>Edit Slide: <span id="slide-title">{{slide.title}}</span> <a href="#" id="edit-slide-title"><span class="glyphicon glyphicon-pencil"></span></a></h2>
 
-      {% if slide.slide_objects.count > 0 %}
-      <p>Drag around elements to reorder them.</p>
-      {% endif %}
+      <p>Drag elements around to reorder them. If you reorder or delete elements, you must click "Save" for your changes to apply.</p>
 
       <form action="." method="POST" id="slides">
         {% csrf_token %}
@@ -35,8 +33,8 @@
 	    {% include "teacher/editingtemplates/edit-slide/slideobject.html" with s=s %}
 	  {% endfor %}
 	</div><!--list-group-->
-
-	<div id="save-msg"></div>
+        <div id="msg-no-problems">{% if slide.slide_objects.count == 0 %}<p><i>You don't have anything on this slide yet. Click the button below to add elements.</i></p>{% endif %}</div>
+        <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 
         <span class="dropup">
           <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -56,6 +54,11 @@
   </div>
 </div>
 
+<div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
+  <div class="alert alert-warning">
+    You have unsaved changes! Please click "Save" before navigating away.
+  </div>
+</div>
 
 <div class="modal fade" id="textblock" role="dialog">
   <div class="modal-dialog" role="document">
@@ -278,13 +281,56 @@
   </div>
 </div>
 
+<div class="modal fade" id="edit-title-placeholder" role="dialog">
+</div>
 
 <script type="text/javascript">
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
 var editableList = Sortable.create(slideobjectList, {
   filter: '.js-remove',
   onFilter: function (evt) {
     var el = editableList.closest(evt.item); // get dragged item
     el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length == 0 ) {
+      $("#msg-no-problems").html("<p><i>You don't have anything on this slide yet. Click the button below to add elements.</i></p>");
+    }
+    $("#save-message").hide();
+    $("#unsaved-message").show();
+  },
+  onUpdate: function (evt) {
+    $("#save-message").hide();
+    $("#unsaved-message").show();
   }
 });
 
@@ -305,6 +351,7 @@ $('#add-theorem-form').on('submit',function(event) {
             $("#theorem-name").val('');
             $("#codetheoremblock").val('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -322,6 +369,7 @@ $('#add-textblock-form').on('submit',function(event) {
             $("#slideobjectList").append(result['textblock']);
             $("#codetextblock").val('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -340,6 +388,7 @@ $('#add-proof-form').on('submit',function(event) {
             $("#proof-prefix").val('Proof');
             $("#codeproofblock").val('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -363,6 +412,7 @@ $('#add-image-form').on('submit',function(event) {
             $("#proof-prefix").val('Proof');
             $("#codeproofblock").val('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
+            $("#msg-no-problems").hide();
         }
     });
     return false;
@@ -376,12 +426,12 @@ $('#slides').on('submit',function(event) {
         data: $(this).serialize()+'&save',
         dataType: 'json',
         success: function(result) {
-            $("#slideobjectList").html(result['slideobjectlist']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobjectList"]);
-            $("#save-msg").html("<div class='alert alert-success' role='alert'>Save Successful.</div>");
-            $("#save-msg").show();
+            $("#unsaved-message").fadeOut();
+            $("#save-message").show();
+            $("#slideobjectList").html(result['slideobject-list']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobjectList"]);
             setTimeout(function() {
-                $("#save-msg").fadeOut().empty();
+              $("#save-message").fadeOut();
             },5000);
         }
     });
@@ -718,6 +768,56 @@ $("#form-change-question-type").on('submit',function(event) {
         }
     });
     return false;
+});
+
+$(document).on('click',"#edit-slide-title",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-slide-title/',
+    data: "&pk={{slide.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-title-placeholder").html(result['modal-html']);
+      $("#edit-title-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-slide-title-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-slide-title/',
+    data: $(this).serialize()+"&pk={{slide.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#slide-title").html(result['slide-title']);
+      $("#bc-slide-title").html(result['slide-title']);
+      $("#edit-title-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#theorem-update-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: $(this).attr('action'),
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      $("#slide-title").html(result['slide-title']);
+      $("#bc-slide-title").html(result['slide-title']);
+      $("#edit-title-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
 });
 </script>
 	  

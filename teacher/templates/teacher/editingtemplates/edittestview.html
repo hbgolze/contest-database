@@ -14,7 +14,7 @@
   <li><a href="../../../../../../">My Classes</a></li>
   <li><a href="../../../../">{{my_class.name}}</a></li>
   <li><a href="../../">{{unit.name}}</a></li>
-  <li class="active">{{test.name}}</li>
+  <li class="active"><span id="bc-test-name">{{test.name}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -23,7 +23,7 @@
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Test: {{test.name}}</h2>
+      <h2>Edit Test: <span id="test-name">{{test.name}}</span> <a href="#" id="edit-test-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
 
 
 <div class="row">
@@ -278,6 +278,8 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
 
 <div class="modal fade" id="edit-timelimit-modal" tabindex="-1" role="dialog">
 
+</div>
+<div class="modal fade" id="edit-name-placeholder" role="dialog">
 </div>
 
 <script type="text/javascript">
@@ -724,6 +726,38 @@ $(document).on('submit',"#testproblemobjects",function(event) {
   return false;
 });
 
+$(document).on('click',"#edit-test-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-test-name/',
+    data: "&pk={{test.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-test-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-test-name/',
+    data: $(this).serialize()+"&pk={{test.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#test-name").html(result['test-name']);
+      $("#bc-test-name").html(result['test-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
 </script>
 
 {% endblock %}

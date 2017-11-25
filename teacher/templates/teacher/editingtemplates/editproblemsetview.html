@@ -14,7 +14,7 @@
   <li><a href="../../../../../../">My Classes</a></li>
   <li><a href="../../../../">{{my_class.name}}</a></li>
   <li><a href="../../">{{unit.name}}</a></li>
-  <li class="active">{{problemset.name}}</li>
+  <li class="active"><span id="bc-problemset-name">{{problemset.name}}</span></li>
 </ol>
 
 <div class="container-fluid">
@@ -23,7 +23,7 @@
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Problem Set: {{problemset.name}}</h2>
+      <h2>Edit Problem Set: <span id="problemset-name">{{problemset.name}}</span> <a href="#" id="edit-problemset-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
 
 
       <div class="row">
@@ -244,6 +244,8 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
 
 <div class="modal fade" id="edit-startdate-modal" tabindex="-1" role="dialog">
 
+</div>
+<div class="modal fade" id="edit-name-placeholder" role="dialog">
 </div>
 
 <script type="text/javascript">
@@ -622,6 +624,38 @@ $(document).on('submit',"#problemobjects",function(event) {
   return false;
 });
 
+$(document).on('click',"#edit-problemset-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-problemset-name/',
+    data: "&pk={{problemset.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-problemset-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/save-problemset-name/',
+    data: $(this).serialize()+"&pk={{problemset.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#problemset-name").html(result['problemset-name']);
+      $("#bc-problemset-name").html(result['problemset-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
 </script>
 
 {% endblock %}

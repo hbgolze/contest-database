@@ -421,6 +421,11 @@ class PublishedSlideObject(models.Model):#placeholder for components
 class TextBlock(models.Model):
     text_code = models.TextField(blank=True)
     text_display = models.TextField(blank=True)
+    slide_object = models.OneToOneField(
+        SlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def publish(self):
         new_textblock = PublishedTextBlock(text_code = self.text_code,text_display="",parent_textblock = self)
         new_textblock.save()
@@ -439,6 +444,11 @@ class PublishedTextBlock(models.Model):
     parent_textblock = models.ForeignKey(TextBlock,null=True,on_delete=models.SET_NULL)
     text_code = models.TextField(blank=True)
     text_display = models.TextField(blank=True)
+    slide_object = models.OneToOneField(
+        PublishedSlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def sync_to_parent(self):
         self.text_code = self.parent_textblock.text_code
         self.save()
@@ -452,6 +462,11 @@ class Proof(models.Model):
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
     solution = models.ForeignKey(Solution,blank=True,null=True)
+    slide_object = models.OneToOneField(
+        SlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def publish(self):
         new_proof = PublishedProof(prefix=self.prefix,proof_code = self.proof_code,proof_display="",parent_proof=self)
         new_proof.save()
@@ -474,6 +489,11 @@ class PublishedProof(models.Model):
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
     solution = models.ForeignKey(Solution,blank=True,null=True)
+    slide_object = models.OneToOneField(
+        PublishedSlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def sync_to_parent(self):
         self.proof_code = self.parent_proof.proof_code
         self.prefix = self.parent_proof.prefix
@@ -487,6 +507,11 @@ class Theorem(models.Model):
     prefix = models.CharField(max_length=20)#Theorem, Proposition, Lemma, Corollary
     theorem_code = models.TextField(blank=True)
     theorem_display = models.TextField(blank=True)
+    slide_object = models.OneToOneField(
+        SlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def __str__(self):
         return self.name
     def publish(self):
@@ -512,6 +537,11 @@ class PublishedTheorem(models.Model):
     prefix = models.CharField(max_length=20)#Theorem, Proposition, Lemma, Corollary
     theorem_code = models.TextField(blank=True)
     theorem_display = models.TextField(blank=True)
+    slide_object = models.OneToOneField(
+        PublishedSlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -540,6 +570,11 @@ class ExampleProblem(models.Model):
     answer_E = models.CharField(max_length=500,blank=True)
     author = models.ForeignKey(User,related_name='example_problem',blank=True,null=True)
     created_date = models.DateTimeField(default = timezone.now)
+    slide_object = models.OneToOneField(
+        SlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def __str__(self):
         return self.name
     def answers(self):
@@ -607,6 +642,11 @@ class PublishedExampleProblem(models.Model):
     answer_E = models.CharField(max_length=500,blank=True)
     author = models.ForeignKey(User,related_name='published_example_problem',blank=True,null=True)
     created_date = models.DateTimeField(default = timezone.now)
+    slide_object = models.OneToOneField(
+        PublishedSlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def __str__(self):
         return self.name
     def answers(self):
@@ -650,6 +690,11 @@ class PublishedExampleProblem(models.Model):
 
 class ImageModel(models.Model):
     image = models.ImageField(upload_to='images')
+    slide_object = models.OneToOneField(
+        SlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def publish(self):
         new_image = PublishedImageModel(image = self.image,parent_image = self)
         new_image.save()
@@ -661,6 +706,11 @@ class ImageModel(models.Model):
 class PublishedImageModel(models.Model):
     parent_image = models.ForeignKey(ImageModel,null=True,on_delete=models.SET_NULL)
     image = models.ImageField(upload_to='images')
+    slide_object = models.OneToOneField(
+        PublishedSlideObject,
+        on_delete=models.CASCADE,
+        null = True,
+    )
     def sync_to_parent(self):
         self.image = self.parent_image.image
         self.save()
