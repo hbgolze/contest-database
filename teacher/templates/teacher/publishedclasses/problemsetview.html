@@ -134,16 +134,14 @@
   </div>
   <div id="grade-placeholder" class="modal fade" role="dialog">
   </div>
-
 </div>
 
 <script>
 
 
-$(document).on('click',".solution-link",(function(event) {
+$(document).on('click',".solution-link",function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
-
 
     $("#solution-placeholder").load(target, function() {
          MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
