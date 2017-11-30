@@ -4,17 +4,19 @@
 {% block title %}Problem: {{prob.readable_label}}{% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="/problemeditor/">Select Type</a></li>
-{% for breadurl,breadlabel in breadcrumbs %}
-  <li><a href="{{breadurl}}">{{breadlabel}}</a></li>
-{% endfor %}
-  <li class="active">{{prob.readable_label}}</li>
-</ol>
-    <h1>{{prob.readable_label}}</h1>
-<div class="container-fluid">
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    {% for breadurl,breadlabel in breadcrumbs %}
+    <li class="breadcrumb-item"><a href="{{breadurl}}">{{breadlabel}}</a></li>
+    {% endfor %}
+    <li class="breadcrumb-item active">{{prob.readable_label}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h1>{{prob.readable_label}}</h1>
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
       {% include 'problemeditor/problem-snippets/CM-problem-item.html' with no_link=1 %}
     </div>
   </div>
@@ -26,22 +28,22 @@
     <div class="modal-content">
 
         <div class="modal-header">
+          <h5 class="modal-title">Difficulty Guide</h5>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Difficulty Guide</h4>
         </div>
         <div class="modal-body">
-<ul>
-<li>500-700 - AMC 8 Problems 1--10
-<li>700-900 - AMC 10 Problems 1--10
-<li>900-1100 - AMC 10 Problems 11--20
-<li>1100-1300 - AIME Problems 1--4
-<li>1300-1500 - AIME Problems 5--8
-<li>1500-1700 - AIME Problems 9--12
-<li>1700-1900 - AIME Problems 13--15
-</ul>
+	  <ul>
+	    <li>500-700 - AMC 8 Problems 1--10
+	    <li>700-900 - AMC 10 Problems 1--10
+	    <li>900-1100 - AMC 10 Problems 11--20
+	    <li>1100-1300 - AIME Problems 1--4
+	    <li>1300-1500 - AIME Problems 5--8
+	    <li>1500-1700 - AIME Problems 9--12
+	    <li>1700-1900 - AIME Problems 13--15
+	  </ul>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
     </div>
 

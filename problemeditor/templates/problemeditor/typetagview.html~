@@ -2,62 +2,64 @@
 {% block title %}Choose a Problem{% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="/problemeditor/">Select Type</a></li>
-  <li><a href="../">{{typelabel}}</a></li>
-  <li class="active">{{tag}}</li>
-</ol>
-<h2>Problem Editor: {{tag}}</h2>
-
-<div class="container-fluid">
-
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    <li class="breadcrumb-item"><a href="../">{{typelabel}}</a></li>
+    <li class="breadcrumb-item active">{{tag}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problem Editor: {{tag}}</h2>
   <div class="row">
-    <table class="table table-bordered">
-      <tr>
-	<td>
-	  Problem
-	</td>
-	{% for prob in rows %}
-	<td style="text-align:center">
-	  <a href="#problem_{{prob.pk}}">{% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}{% else %}{{forloop.counter}}{% endif %}</a>
-	</td>
-	{% endfor %}
-      </tr>
-      <tr>
-	<td>
-	  # Solutions
-	</td>
-	{% for prob in rows %}
-	<td style="text-align:center">
-	  <span id="num_solutions-{{prob.pk}}">
-	    {{prob.solutions.count}}
-	  </span>
-	</td>
-	{% endfor%}
-      </tr>
-      <tr>
-	<td>
-	  Tagged
-	</td>
-	{% for prob in rows %}
-	<td style="text-align:center">
-	  <span id="tagged-{{prob.pk}}">
-	    {% if prob.newtags.count > 0 %}
-	    <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	    {% else %}
-	    -
-	    {% endif %}
-	  </span>
-	</td>
-	{% endfor%}
-      </tr>
-    </table>
+    <div class="col">
+      <table class="table table-bordered">
+	<tr>
+	  <td>
+	    Problem
+	  </td>
+	  {% for prob in rows %}
+	  <td style="text-align:center">
+	    <a href="#problem_{{prob.pk}}">{% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}{% else %}{{forloop.counter}}{% endif %}</a>
+	  </td>
+	  {% endfor %}
+	</tr>
+	<tr>
+	  <td>
+	    # Solutions
+	  </td>
+	  {% for prob in rows %}
+	  <td style="text-align:center">
+	    <span id="num_solutions-{{prob.pk}}">
+	      {{prob.solutions.count}}
+	    </span>
+	  </td>
+	  {% endfor%}
+	</tr>
+	<tr>
+	  <td>
+	    Tagged
+	  </td>
+	  {% for prob in rows %}
+	  <td style="text-align:center">
+	    <span id="tagged-{{prob.pk}}">
+	      {% if prob.newtags.count > 0 %}
+	      <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	      {% else %}
+	      -
+	      {% endif %}
+	    </span>
+	  </td>
+	  {% endfor%}
+	</tr>
+      </table>
+    </div>
+  </div>
+    
+    {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' %}
   </div>
 
-  {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' %}
-</div>
-
-{% include 'problemeditor/paginatedproblemscripts.html' %}
+{% include 'problemeditor/problem-snippets/scripts/problemscripts.html' %}
 
 {% endblock %}
 

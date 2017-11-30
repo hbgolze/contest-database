@@ -5,52 +5,46 @@ Contest Collections: {{name}}
 {% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../">Choose a Contest</a></li>
-  <li class="active">{{name}}</li>
-</ol>
-<h2>{{name}}</h2>
-<p>(<a href="pdf">Link to PDF</a>)</p>
-{% csrf_token %}
-<input type="hidden" name="startform" value="{{pk}}">
-
-<table>
-{% for prob in rows %}
-<tr>
-<td>
-<a name="{{prob.label}}"></a>
-
-<div class="panel panel-default">
-  <div class="panel-heading">
-    <h3 class="panel-title">Problem {{forloop.counter}}</h3>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">Choose a Contest</a></li>
+    <li class="breadcrumb-item active">{{name}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>{{name}}</h2>
+  <div class="row">
+    <div class="col">
+      <p>(<a href="pdf">Link to PDF</a>)</p>
+    </div>
   </div>
-  <div class="panel-body">
-{% if prob.question_type_new.question_type == 'multiple choice' %}
-{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{prob.readable_label}}]</span><br>
-{% else %}
-{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  <span class="pull-right">[{{prob.readable_label}}]</span><br>
-{% endif %}
+  {% for prob in rows %}
+  <div class="row">
+    <div class="col-lg-9">
+      <a name="{{prob.label}}"></a>
+      
+      <div class="card mb-3">
+	<div class="card-header">
+	  <h3>Problem {{forloop.counter}}</h3>
+	</div>
+	<div class="card-body">
+	  {% if prob.question_type_new.question_type == 'multiple choice' %}
+	  {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{prob.readable_label}}]</span><br>
+	  {% else %}
+	  {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  <span class="pull-right">[{{prob.readable_label}}]</span><br>
+	  {% endif %}
+	</div>
+	<div class="card-footer">
+	  ({% if prob.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{prob.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %}) 
+	  (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Problem Tags/Solutions</a>) 
+	  
+	</div>
+      </div>
+    </div>
   </div>
+  {% endfor %}
+  
 </div>
-
-<p>
-({% if prob.solutions.count > 0 %}<a data-target="#solution-placeholder" class="solution-link" id="solution-link" href="load_sol/{{prob.pk}}/">Solution</a>{% else %}<span style="color:red">Solution</span>{% endif %}) 
-(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Problem Tags/Solutions</a>) 
-{% if request.user.userprofile.user_type_new.name == "super" %}
-(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/edittext/">Edit LaTeX</a>) 
-<!--<a href="{{prob.pk}}">Solution</a>-->
-{% endif %}
-
-
-</p>
-
-
-
-</td>
-</tr>
-{% endfor %}
-</table>
-
 <div id="solution-placeholder" class="modal fade" role="dialog">
 
 </div>

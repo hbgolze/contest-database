@@ -132,14 +132,14 @@ def test_as_pdf(request,pk):
                 })
         template = get_template('randomtest/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
-        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
         ftex.close()
         for i in range(1):
             process = Popen(
                 ['pdflatex', 'texput.tex'],
-                stdin=PIPE,
-                stdout=PIPE,
+                stdin = PIPE,
+                stdout = PIPE,
                 cwd = tempdir,
             )
             stdout_value = process.communicate()[0]

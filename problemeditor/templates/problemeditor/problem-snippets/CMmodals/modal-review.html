@@ -4,8 +4,8 @@
   <div class="modal-content">
     <form method="post" action="." id="{% if edit_review %}edit{% else %}new{% endif %}-review-form_{{form.instance.pk}}_{{prob.pk}}" class="{% if edit_review %}edit{% else %}new{% endif %}-review-form">
       <div class="modal-header">
+	<h5 class="modal-title">{% if edit_review %}Edit{% else %}New{% endif %} Review</h5>
 	<button type="button" class="close" data-dismiss="modal">&times;</button>
-	<h4 class="modal-title">{% if edit_review %}Edit{% else %}New{% endif %} Review</h4>
       </div>
       <div class="modal-body">
 	{% if edit_review %}<input type="hidden" id="rv_pk" name="rv_pk" value="{{form.instance.pk}}">{% endif %}
@@ -13,7 +13,7 @@
       </div>
       <div class="modal-footer">
 	<button type="submit" class="btn btn-primary" id="difficulty-save">Save</button>
-	<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+	<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
       </div>
     </form>
   </div>

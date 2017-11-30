@@ -2,75 +2,98 @@
 {% block title %}Choose a Problem{% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="/problemeditor/">Select Type</a></li>
-  <li class="active">{{typelabel}} Problems</li>
-</ol>
-<h2>Problem Editor</h2>
-Please select a problem
-<div class="content">
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Label</th>
-	<th>Current Tags</th>
-	<th>Number of Solutions</th>
-	<th>Edit</th>
-	<th>Approvals</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for prob in rows %}
-      
-      <tr>
-        <td>{{prob.label}}</td>
-        <td>{% for tagg in prob.newtags.all %}<span class="label label-default">{{tagg}}</span> {% endfor %}</td>
-        <td>{{prob.solutions.count}}</td>
-	<td><a href="{{prob.pk}}/">Edit</a></td>
-	<td>
-	  {% for app in prob.approvals.all %}
-	  {% if app.approval_status == "AP" %}
-	  <span class="glyphicon glyphicon-ok-sign">
-	  {% elif app.approval_status == "MN" %}
-	  <span class="glyphicon glyphicon-edit">
-	  {% elif app.approval_status == "MJ" %}
-	  <span class="glyphicon glyphicon-exclamation-sign">
-	  {% elif app.approval_status == "DE" %}
-	  <span class="glyphicon glyphicon-remove-sign">
-	  {% endif %}
-          {% endfor %}
-	  {% if apps.count == 0 %}
-	  N/A
-	  {% endif %}
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-</div>
-
-{% if rows.has_other_pages %}
-<ul class="pagination">
-        {% if rows.has_previous %}
-            <li><a href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
-	    {% else %}
-	<li class="disabled"><span>&laquo;</span></li>
-        {% endif %}
-        {% for i in rows.paginator.page_range %}
-          {% if rows.number == i %}
-            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    <li class="breadcrumb-item active">{{typelabel}} Problems</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problem Editor</h2>
+  <div class="row">
+    <div class="col">
+      <p>Please select a problem</p>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Label</th>
+	    <th>Current Tags</th>
+	    <th>Number of Solutions</th>
+	    <th>Edit</th>
+	    <th>Approvals</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for prob in rows %}
+	  
+	  <tr>
+            <td>{{prob.label}}</td>
+            <td>{% for tagg in prob.newtags.all %}<span class="badge badge-success">{{tagg}}</span> {% endfor %}</td>
+            <td>{{prob.solutions.count}}</td>
+	    <td><a href="{{prob.pk}}/">Edit</a></td>
+	    <td>
+	      {% for app in prob.approvals.all %}
+	      {% if app.approval_status == "AP" %}
+	      <span class="fa fa-check-circle" style="color:green"></span>
+	      {% elif app.approval_status == "MN" %}
+	      <span class="fa fa-edit" style="color:blue"></span>
+	      {% elif app.approval_status == "MJ" %}
+	      <span class="fa fa-exclamation-circle text-warning"></span>
+	      {% elif app.approval_status == "DE" %}
+	      <span class="fa fa-times-circle" style="color:red"></span>
+	      {% endif %}
+	      {% endfor %}
+	      {% if apps.count == 0 %}
+	      N/A
+	      {% endif %}
+	      
+            </td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      {% if rows.has_other_pages %}
+      <nav aria-label="Search result pages">
+        <ul class="pagination">
+          {% if rows.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
           {% else %}
-            <li><a href="?page={{ i }}">{{ i }}</a></li>
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
           {% endif %}
-        {% endfor %}
+          {% for i in rows.paginator.page_range %}
+          {% if rows.number == i %}
+          <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+	  {% if rows.number|add:-3 < i and rows.number|add:3 > i %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	    {% elif forloop.last %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	    {% elif forloop.first %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	    {% elif i == 2 %}
+	    <li class="page-item disabled"><span class="page-link">...</span></li>
+	    {% elif i == rows.paginator.page_range|length|add:-1 %}
+	    <li class="page-item disabled"><span class="page-link">...</span></li>
+	    {% endif %}
+            {% endif %}
+          {% endfor %}
+	    
+	    
+            {% if rows.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}">&raquo;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
 
-
-        {% if rows.has_next %}
-        <li><a href="?page={{ rows.next_page_number }}">&raquo;</a></li>
-	{% else %}
-	<li class="disabled"><span>&raquo;</span></li>
-        {% endif %}
-</ul>
-{% endif %}
-
+      
+    </div>
+  </div>
+</div>
 {% endblock %}

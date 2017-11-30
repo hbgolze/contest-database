@@ -3,8 +3,8 @@
     <div class="modal-content">
         <form id="tag_update_form" method='post' class="form" role="form" action='{% url 'add_new_tag' parent_tag.pk %}'>
               <div class="modal-header">
+                <h5 class="modal-title" id="myModalLabel">Add Tag</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                <h4 class="modal-title" id="myModalLabel">Add Tag</h4>
               </div>
               <div class="modal-body">
                     {% csrf_token %}
@@ -56,7 +56,7 @@
                     {% endfor %}
               </div>
               <div class="modal-footer">
-                <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
+                <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
                 <input type="submit" class="btn btn-primary" value="Save" style="margin-bottom: 5px;" />
               </div>
         </form>

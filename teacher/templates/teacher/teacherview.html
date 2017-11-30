@@ -13,16 +13,20 @@ document.write("</div>");
 
 {% block content %}
 
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">My Classes</li>
+  </ol>
+</nav>
 
-
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
-      <ul class="nav nav-sidebar">
+    <nav class="col-sm-3 sidebar">
+      <ul class="nav nav-pills flex-column">
 	{% include 'teacher/sidebar.html' with activenav="myclasses" %}
       </ul>
-    </div>
-    <div class="col-sm-9 col-md-10 main">
+    </nav>
+    <div class="col-sm-9 main">
       <div id="status_message">
       </div>
       <div id="my_published_classes"{% if my_published_classes.count == 0 %} style="display:none"{% endif %}>
@@ -95,8 +99,8 @@ document.write("</div>");
         <form method="post" action="." id="add-class-form">
           {% csrf_token %}
           <div class="modal-header">
+            <h5 class="modal-title">Add a New Class</h5>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add a New Class</h4>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -106,7 +110,7 @@ document.write("</div>");
           </div>
           <div class="modal-footer">
 	    <button type="submit" name="newclass" class="btn btn-primary">Add Class</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
         </form>
       </div>

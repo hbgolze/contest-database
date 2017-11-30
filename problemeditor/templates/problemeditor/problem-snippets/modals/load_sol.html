@@ -3,8 +3,8 @@
   <!-- Modal content-->
   <div class="modal-content">
     <div class="modal-header">
+      <h5 class="modal-title">Solutions to {{object.readable_label}}</h5>
       <button type="button" class="close" data-dismiss="modal">&times;</button>
-      <h4 class="modal-title">Solutions to {{object.readable_label}}</h4>
     </div>
     <div class="modal-body">
       {% with object as prob %}
@@ -15,7 +15,7 @@
       {% for solution in object.solutions.all %}
       <div id="sol_{{solution.pk}}">
 	<label>Solution {{forloop.counter}}:</label>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
-	<span class="delete-sol-link" id="deletesol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:red;">&#10006;</span> <span class="edit-sol-link" id="editsol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:blue"><span class="glyphicon glyphicon-pencil"></span></span>
+	<span class="delete-sol-link" id="deletesol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:red;">&#10006;</span> <span class="edit-sol-link" id="editsol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:blue"><span class="fa fa-pencil"></span></span>
 	{% endif %}
 	<div id="soltext_{{solution.pk}}">
           {% include 'problemeditor/problem-snippets/modals/soltext.html' %}
@@ -30,7 +30,7 @@
       {% endif %}
     </div>
     <div class="modal-footer">
-      <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     </div>
   </div>
   

@@ -1,19 +1,19 @@
 
 
             <a name="{{prob_label}}"></a>
-	    <div class="panel panel-default">
-	      <div class="panel-heading"><!--heading-->
-		<h3 class="panel-title">Problem {{forloop.counter}} ({{problem_object.point_value}} Points)</h3>
+	    <div class="card mb-3">
+	      <div class="card-header"><!--heading-->
+		<h3>Problem {{forloop.counter}} ({{problem_object.point_value}} Points)</h3>
 	      </div><!--end heading-->
 
-	      <div class="panel-body"><!--body-->
+	      <div class="card-body"><!--body-->
                 {% autoescape off %}{{problem_display|linebreaks}} {% endautoescape %}{% if readable_label %} <span class="pull-right"> [{{readable_label}}]</span>{% endif %}<br>		
 	      </div><!--endbody-->
 
-	      <div class="panel-footer"><!--footer-->
+	      <div class="card-footer"><!--footer-->
 		<div class="row">
 
-		  <div class="col-xs-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
+		  <div class="col-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
 		    {% if question_type == 'short answer' %}
 		    <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="(Correct Answer: {{answer}})" disabled>
 		    {% elif question_type == 'multiple choice' %}
@@ -37,22 +37,31 @@
 		    </div><!--end mc_answer_choices-->
 		    {% endif %}
 		  </div><!--Answer input-->
-		  <div class="col-xs-6" id="check-button-{{prob_label}}" align="right"><!--button div-->
-		    
+		  {% if problem_object.question_type.question_type == 'short answer' or problem_object.question_type.question_type == 'multiple choice' %}
+		  <div class="col-6" id="check-button-{{prob_label}}" align="right"><!--button div-->  
 		    {% if problem_object.isProblem == 1 and problem_object.problem.solutions.count > 0 %}
-		    <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{problem_object.pk}}/">Solution</button>
+		    <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{problem_object.pk}}/">Solution</button>
 		    {% else %}
-		    <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		    <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		    {% endif %}
 		    
 		  </div><!--button div-->
+{% endif %}
 {% if problem_object.question_type.question_type == 'proof' %}
-		  <div class="col-xs-6">
+		</div>
+		<div class="row">
+		  <div class="col-6">
 		    {{graded_num}} graded/{{attempted_num}} submitted
 		  </div>
-		  <div class="col-xs-6" style="text-align:right">
-		    <button class="btn btn-default" onclick="location.href='alpha/{{problem_object.pk}}/'" type="button">Grade (alphabetical)</a>
-		    <button class="btn btn-default" onclick="location.href='blind/{{problem_object.pk}}/'" type="button">Grade (blind)</a>
+		  <div class="col-6" style="text-align:right">
+		    <button class="btn btn-secondary" onclick="location.href='alpha/{{problem_object.pk}}/'" type="button">Grade (alphabetical)</button>
+		    <button class="btn btn-secondary" onclick="location.href='blind/{{problem_object.pk}}/'" type="button">Grade (blind)</button>
+
+		    {% if problem_object.isProblem == 1 and problem_object.problem.solutions.count > 0 %}
+		    <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{problem_object.pk}}/">Solution</button>
+		    {% else %}
+		    <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		    {% endif %}
 		  </div>
 {% endif %}
 		</div><!--row-->

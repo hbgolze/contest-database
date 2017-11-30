@@ -1,6 +1,6 @@
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
             <div class="row">
-              <div class="col-sm-11 col-md-11 col-lg-11">
+              <div class="col-11">
                 {% if s.textblock %}
                 {% autoescape off %}{{s.textblock.text_display|linebreaks}}{% endautoescape %}
                 {% endif %}
@@ -36,25 +36,25 @@
                 <img class="img-responsive center-block" src="/{{s.imagemodel.image.url }}/"/>
                 {% endif %}
               </div>
-              <div class="col-sm-1 col-md-1 col-lg-1">
-                <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
+              <div class="col-1">
+                <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
 
                 {% if s.textblock %}
-                <a href="edit-textblock/{{s.textblock.pk}}" class="edit-textblock-link"><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="edit-textblock/{{s.textblock.pk}}" class="edit-textblock-link"><span class="fa fa-pencil"></span></a>
                 {% endif %}
                 {% if s.proof %}
-                <a href="edit-proof/{{s.proof.pk}}" class="edit-proof-link"><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="edit-proof/{{s.proof.pk}}" class="edit-proof-link"><span class="fa fa-pencil"></span></a>
                 {% endif %}
                 {% if s.theorem %}
-                <a href="edit-theorem/{{s.theorem.pk}}"  class="edit-theorem-link"><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="edit-theorem/{{s.theorem.pk}}"  class="edit-theorem-link"><span class="fa fa-pencil"></span></a>
                 {% endif %}
                 {% if s.exampleproblem %}
 {% if s.exampleproblem.isProblem == False %}
-                <a href="edit-exampleproblem/{{s.exampleproblem.pk}}" class="edit-exampleproblem-link"><span class="glyphicon glyphicon-pencil"></span></a>
+                <a href="edit-exampleproblem/{{s.exampleproblem.pk}}" class="edit-exampleproblem-link"><span class="fa fa-pencil"></span></a>
 {% endif %}
                 {% endif %}
                 {% if s.imagemodel %}
-<!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="glyphicon glyphicon-pencil"></span></a>-->
+<!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
                 {% endif %}
 
               </div>

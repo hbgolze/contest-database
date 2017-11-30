@@ -2,133 +2,141 @@
 
 {% block content %}
 {% if oneclass %}
-<ol class="breadcrumb">
-  <li><a href="../../../../../../">My Classes</a></li>
-  <li><a href="../../../../">{{test.userunitobject.user_unit.user_class.published_class.name}}</a></li>
-  <li><a href="../../../">Roster</a></li>
-  <li><a href="../../">View Class ({{username}})</a></li>
-  <li class="active">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_problemset.name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../../../">{{test.userunitobject.user_unit.user_class.published_class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../../">Roster</a></li>
+    <li class="breadcrumb-item"><a href="../../">View Class ({{username}})</a></li>
+    <li class="active breadcrumb-item">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_problemset.name}}</li>
+  </ol>
+</nav>
 {% else %}
-<ol class="breadcrumb">
-  <li><a href="../../../">My Students</a></li>
-  <li><a href="../../">{{username}}'s Classes</a></li>
-  <li class="active">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_problemset.name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../">My Students</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{username}}'s Classes</a></li>
+    <li class="active breadcrumb-item">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_problemset.name}}</li>
+  </ol>
+</nav>
 {% endif %}
 
 <div class="container">
   <h2>{{test.published_test.name}} ({{username}})</h2>
   <div class="row">
-    <table class="table table-bordered">
-      {% for response_row,start_index in response_rows %}
-      {% if not forloop.first %}
-      <tr>
-	<td style="border-left: 0px solid;{% if not forloop.last %}border-right: 0px solid{% endif %}" colspan="{{response_row|length|add:1}}"></td>
-      </tr>
-      {% endif %}
-      <tr>
-	<td>
-	  Problem
-	</td>
-	{% for resp in response_row %}
-	<td style="text-align:center">
-	  <a href="#{{resp.publishedproblem_object.pk}}">{{forloop.counter|add:start_index}}</a>
-	</td>
-	{% endfor %}
-      </tr>
-      <tr>
-	<td>
-	  Status
-	</td>
-	{% for resp in response_row %}
-	<td style="text-align:center">
-	  <span id="table-problem-status-{{resp.publishedproblem_object.pk}}">
-	    {% if resp.attempted %}
-	     {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
+    <div class="col">
+      <table class="table table-bordered">
+	{% for response_row,start_index in response_rows %}
+	{% if not forloop.first %}
+	<tr>
+	  <td style="border-left: 0px solid;{% if not forloop.last %}border-right: 0px solid{% endif %}" colspan="{{response_row|length|add:1}}"></td>
+	</tr>
+	{% endif %}
+	<tr>
+	  <td>
+	    Problem
+	  </td>
+	  {% for resp in response_row %}
+	  <td style="text-align:center">
+	    <a href="#{{resp.publishedproblem_object.pk}}">{{forloop.counter|add:start_index}}</a>
+	  </td>
+	  {% endfor %}
+	</tr>
+	<tr>
+	  <td>
+	    Status
+	  </td>
+	  {% for resp in response_row %}
+	  <td style="text-align:center">
+	    <span id="table-problem-status-{{resp.publishedproblem_object.pk}}">
+	      {% if resp.attempted %}
+	      {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
 	      {% if resp.publishedproblem_object.isProblem == 0 %}
-	       {% if resp.response == resp.publishedproblem_object.mc_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      {% if resp.response == resp.publishedproblem_object.mc_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
 	      {% else %}
-	       {% if resp.response == resp.publishedproblem_object.problem.mc_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      <span class="fa fa-remove" style="color:red"></span>
 	      {% endif %}
-	     {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
+	      {% else %}
+	      {% if resp.response == resp.publishedproblem_object.problem.mc_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% endif %}
+	      {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
 	      {% if resp.publishedproblem_object.isProblem == 0 %}
-	       {% if resp.response == resp.publishedproblem_object.sa_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      {% if resp.response == resp.publishedproblem_object.sa_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
 	      {% else %}
-	       {% if resp.response == resp.publishedproblem_object.problem.sa_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      <span class="fa fa-remove" style="color:red"></span>
 	      {% endif %}
-             {% elif resp.publishedproblem_object.question_type.question_type == "proof" %}
+	      {% else %}
+	      {% if resp.response == resp.publishedproblem_object.problem.sa_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% endif %}
+              {% elif resp.publishedproblem_object.question_type.question_type == "proof" %}
               {% if resp.is_graded %}
-		{{resp.points}}/{{resp.point_value}}
+	      {{resp.points}}/{{resp.point_value}}
               {% else %}
-	        <span class="glyphicon glyphicon-hourglass" style="color:orange"></span>
+	      <span class="fa fa-hourglass" style="color:orange"></span>
               {% endif %}
-	     {% endif %}
-	    {% else %}
-	    -
-	    {% endif %}
-	  </span>
-	  <span id="table-star-status-{{resp.publishedproblem_object.pk}}">
-	    {% if resp.stickied %}
-	     (<span class="glyphicon glyphicon-star" style="color:#FFD700"></span>)
-	    {% endif %}
-	  </span>
-	</td>
+	      {% endif %}
+	      {% else %}
+	      -
+	      {% endif %}
+	    </span>
+	    <span id="table-star-status-{{resp.publishedproblem_object.pk}}">
+	      {% if resp.stickied %}
+	      (<span class="fa fa-star" style="color:#FFD700"></span>)
+	      {% endif %}
+	    </span>
+	  </td>
+	  {% endfor %}
+	</tr>
 	{% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
+      </table>
+    </div>
   </div>
 
   <div class="row">
-    <form action="." method="POST">
-      {% csrf_token %}
-      <input type="hidden" name="startform" value="{{pk}}">
-      <table>
-	{% for resp in rows %}
-	{% if resp.publishedproblem_object.isProblem %}
-	{% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
-	
-	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_mc_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.mc_answer %}
-	
-	{% else %}
-	
-	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.sa_answer %}
-	
-	{% endif %}
-	{% else %}
-	
-	{% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
-	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.mc_answer %}
-	
-	{% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
-	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.sa_answer %}
-
-	
-	{% else %}
-	{% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display %}
-
-	{% endif %}
-	{% endif %}
-	{% endfor %}
-      </table>
-    </form>
+    <div class="col">
+      <form action="." method="POST">
+	{% csrf_token %}
+	<input type="hidden" name="startform" value="{{pk}}">
+	<table>
+	  {% for resp in rows %}
+	  {% if resp.publishedproblem_object.isProblem %}
+	  {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
+	  
+	  {% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_mc_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.mc_answer %}
+	  
+	  {% else %}
+	  
+	  {% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem.display_problem_text readable_label=resp.publishedproblem_object.problem.readable_label answer=resp.publishedproblem_object.problem.sa_answer %}
+	  
+	  {% endif %}
+	  {% else %}
+	  
+	  {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
+	  {% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.mc_answer %}
+	  
+	  {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
+	  {% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display answer=resp.publishedproblem_object.sa_answer %}
+	  
+	  
+	  {% else %}
+	  {% include "teacher/publishedclasses/problemset-panel.html" with question_type=resp.publishedproblem_object.question_type.question_type prob_label=resp.publishedproblem_object.pk response=resp.response resp=resp problem_display=resp.publishedproblem_object.problem_display %}
+	  
+	  {% endif %}
+	  {% endif %}
+	  {% endfor %}
+	</table>
+      </form>
+    </div>
   </div>
   <div id="solution-placeholder" class="modal fade" role="dialog">
   </div>

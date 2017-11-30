@@ -3,23 +3,24 @@
 
 {% block content %}
 
-
-<ol class="breadcrumb">
-  <li><a href="../../../../../../">My Classes</a></li>
-  <li><a href="../../../../">{{class.name}}</a></li>
-  <li><a href="../../">{{class.name}} > {{problemset.unit_object.unit.name}} >  {{problemset.name}}</a></li>
-  <li class="active">Blind Grading (Problem {{problem_object.order}})</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../../../">{{class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{class.name}} > {{problemset.unit_object.unit.name}} >  {{problemset.name}}</a></li>
+    <li class="active breadcrumb-item">Blind Grading (Problem {{problem_object.order}})</li>
+  </ol>
+</div>
 <div class="container">
   <h2>Blind Grading (Problem {{problem_object.order}})</h2>
   <div class="row">
-    <div class="col-xs-12">
-      <div class="panel panel-default">
-	<div class="panel-heading"><!--heading-->
-	  <h3 class="panel-title">Problem {{problem_object.order}} ({{problem_object.point_value}} Points)</h3>
+    <div class="col-12">
+      <div class="card mb-3">
+	<div class="card-header"><!--heading-->
+	  <h3>Problem {{problem_object.order}} ({{problem_object.point_value}} Points)</h3>
 	</div><!--end heading-->
 	
-	<div class="panel-body"><!--body-->
+	<div class="card-body"><!--body-->
 	  {% if problem_object.isProblem == 1 %}
 	  {% if problem_object.question_type.question_type == "multiple choice" %}
 	  {% with problem_display=problem_object.problem.display_mc_problem_text readable_label=problem_object.problem.readable_label %}
@@ -37,25 +38,25 @@
       </div><!--panel-->
 
       {% for resp in responses %}
-      <div class="panel panel-default">
-	<div class="panel-heading">
-	  <h3 class="panel-title">Student Response<span id="grading-status-{{resp.pk}}">{% if resp.is_graded %} ({{resp.points}}/{{resp.point_value}} Points){% else %} (Ungraded){% endif %}</span>:</h3>
+      <div class="card mb-3">
+	<div class="card-header">
+	  <h3>Student Response<span id="grading-status-{{resp.pk}}">{% if resp.is_graded %} ({{resp.points}}/{{resp.point_value}} Points){% else %} (Ungraded){% endif %}</span>:</h3>
 	</div>
 	
-	<div class="panel-body"><!--body-->
+	<div class="card-body"><!--body-->
 	  <div class="row">
-	    <div class="col-xs-12" id="proof-text-div-{{resp.pk}}">
+	    <div class="col-12" id="proof-text-div-{{resp.pk}}">
               {% autoescape off %}{{resp.display_response}}{% endautoescape %}
 	    </div>
 	  </div>
 	</div><!--body-->
-	<div class="panel-footer">
+	<div class="card-footer">
 	  <div class="row">
-<!--	  <div class="col-xs-12" style="text-align:right">
+<!--	  <div class="col-12" style="text-align:right">
             <button class="btn btn-primary grade-link" id="grade_{{resp.pk}}">Change Grade</button>
 	  </div>-->
 
-	  <div class="col-xs-6">
+	  <div class="col-6">
             <form action="." method="post" class="js-grade-form">
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request}}">

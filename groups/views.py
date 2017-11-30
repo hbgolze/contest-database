@@ -1,5 +1,5 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
-from django.http import HttpResponse,HttpResponseRedirect
+from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
 from django.template.loader import get_template
@@ -67,52 +67,12 @@ def viewproblemgroup(request,pk):
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
     if prob_group not in userprofile.problem_groups.all():
         return HttpResponse('Unauthorized', status=401)
-    if request.method=='POST':
-        if request.POST.get("remove"):
-            form=request.POST
-            P=prob_group.problems.all()
-            checked=form.getlist("chk")
-            for i in P:
-                if i.label not in checked:
-                    prob_group.problems.remove(i)
-        elif request.POST.get("newtest"):
-            form = request.POST
-            if "chk" in form:
-                checked=form.getlist("chk")
-                if len(checked)>0:
-#                P = prob_group.problems.all()
-                    testname = form.get('testname','')
-                
-                    t = Test(name = testname)
-                    t.save()
-                    for i in checked:
-                        p=Problem.objects.get(label=i)
-                        t.problems.add(p)
-                    t.save()
-                    userprofile.tests.add(t)
-                    ti=TestTimeStamp(test_pk=t.pk)
-                    ti.save()
-                    userprofile.timestamps.add(ti)
-                    ut=UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof=userprofile)
-                    ut.save()
-                    for i in t.problems.all():
-                        r=NewResponse(response='',problem_label=i.label,problem=i,usertest=ut)
-                        r.save()
-                    t.save()
-#                    userprofile.usertests.add(ut)
-                    userprofile.save()            
-                    return redirect('/test/'+str(ut.pk)+'/')
-
     P = prob_group.problems.all()
-
-
     name = prob_group.name
     context = {}
-    context['rows'] = P
-    context['name'] = name
     context['nbar'] = 'groups'
-    context['pk'] = pk
-    template=loader.get_template('groups/probgroupview.html')
+    context['prob_group'] = prob_group
+    template = loader.get_template('groups/probgroupview.html')
     return HttpResponse(template.render(context,request))
 
 
@@ -120,12 +80,12 @@ def viewproblemgroup(request,pk):
 def viewtaggroup(request,pk):
     userprofile = get_or_create_up(request.user)
     tag = get_object_or_404(NewTag,pk=pk)
-    if request.method=='POST':
+    if request.method == 'POST':
         if request.POST.get("newtest"):
             form = request.POST
 
             if "chk" in form:
-                checked=form.getlist("chk")
+                checked = form.getlist("chk")
                 if len(checked)>0:
 #                P = prob_group.problems.all()
                     testname = form.get('testname','')
@@ -133,32 +93,32 @@ def viewtaggroup(request,pk):
                     t = Test(name = testname)
                     t.save()
                     for i in checked:
-                        p=Problem.objects.get(label=i)
+                        p = Problem.objects.get(label = i)
                         t.problems.add(p)
                     t.save()
                     userprofile.tests.add(t)
-                    ti=TestTimeStamp(test_pk=t.pk)
+                    ti = TestTimeStamp(test_pk = t.pk)
                     ti.save()
                     userprofile.timestamps.add(ti)
-                    ut=UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof=userprofile)
+                    ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
                     ut.save()
                     for i in t.problems.all():
-                        r=NewResponse(response='',problem_label=i.label,problem=i,usertest=ut)
+                        r = NewResponse(response = '',problem_label = i.label,problem = i,usertest = ut)
                         r.save()
                     t.save()
 #                    userprofile.usertests.add(ut)
                     userprofile.save()            
                     return redirect('/test/'+str(ut.pk)+'/')
-    P = tag.problems.filter(type_new__in=userprofile.user_type_new.allowed_types.all())
+    P = tag.problems.filter(type_new__in = userprofile.user_type_new.allowed_types.all())
+    context = {}
     if request.method == 'GET':
         if "updatetypes" in request.GET:
-            form=request.GET
+            form = request.GET
             include_types_names = form.getlist('includetypes')
-            include_types = Type.objects.filter(type__in=include_types_names)
-            P=P.filter(type_new__in=include_types)
-
+            include_types = Type.objects.filter(type__in = include_types_names)
+            P = P.filter(type_new__in = include_types)
+            context['include_types'] = include_types
     name = tag.tag
-    context = {}
     context['rows'] = P
     context['name'] = name
     context['nbar'] = 'groups'
@@ -185,3 +145,43 @@ def deletegroup(request,pk):
 #add to installed apps
 #migrations
 
+@login_required
+def savegroup(request,**kwargs):
+    form = request.POST
+    prob_group = get_object_or_404(ProblemGroup,pk = form.get('startform'))
+    userprofile = request.user.userprofile
+    if prob_group in userprofile.problem_groups.all():
+        P = prob_group.problems.all()
+        checked = form.getlist("chk")
+        for i in P:
+            if i.label not in checked:
+                prob_group.problems.remove(i)
+    return JsonResponse({})
+
+@login_required
+def create_test(request,**kwargs):
+    form = request.POST
+    userprofile = request.user.userprofile
+    if "chk" in form:
+        checked = form.getlist("chk")
+        if len(checked)>0:
+            testname = form.get('testname','')
+            t = Test(name = testname)
+            t.save()
+            for i in checked:
+                p = Problem.objects.get(label = i)
+                t.problems.add(p)
+            t.save()
+            userprofile.tests.add(t)
+            ti = TestTimeStamp(test_pk = t.pk)
+            ti.save()
+            userprofile.timestamps.add(ti)
+            ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
+            ut.save()
+            for i in t.problems.all():
+                r = NewResponse(response = '',problem_label = i.label,problem = i,usertest = ut)
+                r.save()
+            t.save()
+            userprofile.save()            
+            return JsonResponse({'url':'/randomtest/test/'+str(ut.pk)+'/'})
+    return JsonResponse({'error-message':'No problems checked!'})

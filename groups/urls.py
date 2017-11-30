@@ -9,4 +9,6 @@ urlpatterns = [
     url(r'^tags/(?P<pk>\d+)/$', views.viewtaggroup, name='viewtaggroup'),
     url(r'^(?P<pk>\d+)/$', views.viewproblemgroup, name='viewproblemgroup'),
     url(r'^(?P<pk>\d+)/delete/$', views.deletegroup, name='deletegroup'),
+    url(r'^ajax/savegroup/$', views.savegroup, name='savegroup'),
+    url(r'^ajax/create-test/$', views.create_test, name='g_createtest'),
 ]

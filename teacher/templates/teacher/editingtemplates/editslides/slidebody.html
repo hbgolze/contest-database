@@ -1,21 +1,21 @@
 <div class="list-group-item">
   <div class="row">
-    <div class="col-xs-11">
+    <div class="col-11">
       <h3>{{forcount}}. <a href="edit-slide/{{slide.pk}}/">{{slide.title}}</a></h3>
     </div>
-    <div class="col-xs-1" style="text-align:right">
-      <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
+    <div class="col-1" style="text-align:right">
+      <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
     </div>
   </div>
   <input type="hidden" name="slideinput" value="slide_{{slide.pk}}">
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
       <div id="slide_object_List" class="list-group">
 	{% for s in slide.slide_objects.all %}
 	<div class="list-group-item">
 	  <input type="hidden" name="slideobjectinput" value="element_{{s.pk}}">
 	  <div class="row">
-	    <div class="col-sm-11 col-md-11 col-lg-11">
+	    <div class="col-11">
 	      {% if s.textblock %}
 	      {% autoescape off %}{{s.textblock.text_display|linebreaks}}{% endautoescape %}
 	      {% endif %}

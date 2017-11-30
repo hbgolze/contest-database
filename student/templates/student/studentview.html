@@ -1,29 +1,15 @@
 {% extends "randomtest/base.html" %}
 
-{% block head %}
-<script language="javascript">
-function drawprogressbar(percent,color,barwidth) {
-var numpixels=barwidth*percent/100;
-document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
-document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
-document.write("</div>");
-}
-
-$(function() {
-        
-  $('.list-group-item').on('click', function() {
-    $('.glg', this)
-      .toggleClass('glyphicon-chevron-right')
-      .toggleClass('glyphicon-chevron-down');
-  });
-
-});
-</script>
-{% endblock %}
 
 {% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">My Classes</li>
+  </ol>
+</nav>
+
 {% load tz %}
-<div class="container-fluid">
+<div class="container">
   <div class="row">
     <div class="col-sm-9 main">
       <div id="status_message">
@@ -31,111 +17,7 @@ $(function() {
       <div id="my_classes">
 	<h2>My Classes</h2>
 	{% for class in classes %}
-	<div class="list-group list-group-root">
-	  <a href="#class_{{class.pk}}" class="list-group-item" data-toggle="collapse" style="background-color:lightgray">
-	    <div class="row">
-	      <div class="col-xs-4">
-		<i class="glyphicon glyphicon-chevron-right glg"></i>
-		{{class.published_class.name}} ({{class.published_class.pub_units.count}} units)
-	      </div>
-	      <div class="col-xs-4">
-		{{class.num_correct}}/{{class.num_problems}} (<script>document.write(Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)));</script>%)
-		<span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-	      </div>
-	      <div class="col-xs-4" style="text-align:right">
-		Points Earned: {{class.points_earned}}/{{class.total_points}}
-	      </div>
-	    </div>
-	  </a>
-	  <div class="list-group collapse" id="class_{{class.pk}}">
-	    {% for unit in class.userunit_set.all %}
-	    <a href="#unit_{{unit.pk}}" class="list-group-item" data-toggle="collapse">
-	      <div class="row">
-		<div class="col-xs-4">
-		  <i class="glyphicon glyphicon-chevron-right glg"></i>
-		  <b>Unit {{forloop.counter}}:</b> 
-		  {{unit.published_unit.name}} ({{unit.num_problemsets}} problem sets)
-		</div>
-		<div class="col-xs-4">
-		  {{unit.num_correct}}/{{unit.num_problems}} (<script>document.write(Math.round({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1)));</script>%)
-		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-		</div>
-		<div class="col-xs-4" style="text-align:right">
-		  Points Earned: {{unit.points_earned}}/{{unit.total_points}}
-		</div>
-	      </div>
-	    </a>
-	    <div class="list-group collapse" id="unit_{{unit.pk}}">
-	      {% for user_unitobject in unit.userunitobject_set.all %}
-	      {% if user_unitobject.userproblemset %}
-	      {% with pset=user_unitobject.userproblemset %}
-	      <a href="problemset/{{pset.pk}}/" class="list-group-item">
-		<div class="row">
-		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
-		  </div>
-		  <div class="col-xs-4">
-		    {{pset.num_correct}}/{{pset.num_problems}} (<script>document.write(Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)));</script>%)
-		    <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_problems %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-		  </div>
-		  <div class="col-xs-4" style="text-align:right">
-		    <p>Points Earned: {{pset.points_earned}}/{{pset.total_points}}</p>
-		    {% if pset.published_problemset.start_date %}
-		    <p>Start Date: {{pset.published_problemset.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
-		    {% endif %}
-		    {% if pset.published_problemset.due_date %}
-		    <p>Due Date: {{pset.published_problemset.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
-		    {% endif %}
-		  </div>
-		</div>
-	      </a>
-	      {% endwith %}
-	      {% endif %}
-	      {% if user_unitobject.userslides %}
-	      {% with slides=user_unitobject.userslides %}
-	      <a href="slides/{{slides.pk}}/" class="list-group-item">
-		<div class="row">
-		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-blackboard"></span> <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.published_slides.name}}
-		  </div>
-		  <div class="col-xs-4">
-		    
-		  </div>
-		  <div class="col-xs-4" style="text-align:right">
-		    {{slides.num_slides}} Slides
-		  </div>
-		</div>
-	      </a>
-	      {% endwith %}
-	      {% endif %}
-	      {% if user_unitobject.usertest %}
-	      {% with test=user_unitobject.usertest %}
-	      <a href="test/{{test.pk}}/" class="list-group-item">
-		<div class="row">
-		  <div class="col-xs-4">
-		    <span class="glyphicon glyphicon-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}{% if test.is_in_progress %}<p>(In progress, start time: {{test.start_time|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}})</p>{% elif test.completed and not test.is_graded %}<p>(Completed, ungraded)</p>{% elif test.completed and test.is_graded %}<p>(Completed, graded)</p>{% endif %}
-		  </div>
-		  <div class="col-xs-4">
-		    {% if test.is_graded %}{{test.num_correct}}/{% endif %}{{test.num_problems}} Problems, {% if test.is_graded %}{{test.points_earned}}/{% endif %}{{test.total_points}} Points
-		  </div>
-		  <div class="col-xs-4" style="text-align:right">
-		    <p>Time Limit: {% if test.published_test.time_limit.hour > 0 %}{{test.published_test.time_limit.hour}} hours, {% endif %}{{test.published_test.time_limit.minute}} minutes</p>
-		    {% if test.published_test.start_date %}
-		    <p>Start Date: {{test.published_test.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
-		    {% endif %}
-		    {% if test.published_test.due_date %}
-		    <p>Due Date: {{test.published_test.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
-		    {% endif %}
-		  </div>
-		</div>
-	      </a>
-	      {% endwith %}
-	      {% endif %}
-	      {% endfor %}
-	    </div>
-	    {% endfor %}
-	  </div>
-	</div>
+{% include 'student/classcard.html' with collapse=1 %}
 	{% endfor %}
       </div>
     </div>
@@ -191,7 +73,7 @@ $(function() {
             <td><small><a href="test/{{sticky.test.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.test.published_test.name}}</a>: {{sticky.readable_label}}</small></td>
 	    {% endif %}
 	    <td>
-	      <small>{{sticky.sticky_date}}</small>
+	      <small>{{sticky.sticky_date|timezone:request.user.userprofile.time_zone|date:"m/d/y, h:i a"}}</small>
 	    </td>
 	  </tr>
 	  {% endfor %}
@@ -210,7 +92,7 @@ $(function() {
 	  <tr>
             <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.publishedproblem_object.pk}}">{{resp.user_problemset.published_problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
 	    <td>
-	      <small>{{resp.modified_date}}</small>
+	      <small>{{resp.modified_date|timezone:request.user.userprofile.time_zone|date:"m/d/y, h:i a"}}</small>
 	    </td>
 	  </tr>
 	  {% endfor %}

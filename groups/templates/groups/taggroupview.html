@@ -50,70 +50,165 @@ function fixchecks(prefixname,formname,togglename) {
 }
 </script>
 
-<ol class="breadcrumb">
-  <li><a href="/problemgroups/">Problem Groups</a></li>
-  <li><a href="/problemgroups/tags">Tags</a></li>
-  <li class="active">{{name}}</li>
-</ol>
 
-<h2>{{name}}</h2>
-{% if rows|length > 0 %}
-<h3>Possible Types</h3>
-<form action="." method="GET" id="typeform">
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemgroups/">My Problem Groups</a></li>
+    <li class="breadcrumb-item"><a href="/problemgroups/tags">Tags</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{name}}</li>
+  </ol>
+</nav>
 
-<div class="checkbox">
- <label>
- <input type="checkbox" id="toggletype" onclick="togglemarked('includetypes','typeform')" checked/>Select/Deselect All
- </label>
-</div>
-        {% for typ in userprofile.user_type_new.allowed_types.all %}
-        <div class="checkbox">
-          <label>
-            <input type="checkbox" name="includetypes" value="{{typ.type}}" onclick="fixchecks('includetypes','typeform','toggletype')" checked>{{typ.label}}
-          </label>
+<div class="container">
+  <h2>View Tag as Problem Group: {{name}}</h2>
+  <div class="row">
+    <div class="col">
+      <div class="card mb-3">
+	<div class="card-header">
+	<h3>Possible Types</h3>
 	</div>
-        {% endfor %}
-<button type="submit" class="btn btn-default" name="updatetypes">Update Types</button>
-</form>
+	<div class="card-body">
+	  <form action="." method="GET" id="typeform">
+	    <div class="row">
+	    <div class="col-12">
+	    <div class="checkbox">
+	      <label>
+		<input type="checkbox" id="toggletype" onclick="togglemarked('includetypes','typeform')" checked/>Select/Deselect All
+	      </label>
+	    </div>
+	    </div>
+            {% for typ in userprofile.user_type_new.allowed_types.all %}
+	    {% if include_types %}
+	    <div class="col-3">
+              <div class="checkbox">
+		<label>
+		  <input type="checkbox" name="includetypes" value="{{typ.type}}" onclick="fixchecks('includetypes','typeform','toggletype')" {% if typ in include_types %}checked{% endif %}>{{typ.label}}
+		</label>
+	      </div>
+	    </div>
+	    {% else %}
+	    <div class="col-3">
+              <div class="checkbox">
+		<label>
+		  <input type="checkbox" name="includetypes" value="{{typ.type}}" onclick="fixchecks('includetypes','typeform','toggletype')" checked>{{typ.label}}
+		</label>
+	      </div>
+	    </div>
+	    {% endif %}
+            {% endfor %}
+	    </div>
+	    <button type="submit" class="btn btn-secondary" name="updatetypes">Update Types</button>
+	  </form>
+	</div>
+      </div>
+    </div>
+  </div>
 
+  <div class="row">
+    <div class="col">
+      <h3>Problems</h3>
+      <form action="." method="POST" id="problems">
+	{% csrf_token %}
+	<p><input type="checkbox" id="toggler" onclick="togglemarked('chk','problems')" checked> Select/Deselect All</p>
+	<input type="hidden" name="startform" value="{{pk}}">
+	<div class="list-group mb-3">	  
+	  {% for prob in rows %}
+	  <div class="list-group-item">
+	  <div class="row">
+	    <div class="col-1">
+	      {{forloop.counter}}.<br>
+	      <input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks('chk','problems','toggler')" checked>
+	    </div>
+	    <div class="col-11">
+	      {% if prob.question_type_new.question_type == 'multiple choice' %}
+	      {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+	      {% else %}
+	      {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
+	      {% endif %}
+	    </div>
+	  </div>
+	  </div>
+	  {% endfor %}
+	</div>	
+      </form>
+  {% if rows|length == 0 %}
+  There are currently no problems with this tag.
+  {% endif %}
+      <h3>Create a Test from Selected Problems</h3>
+      <form action="." method="POST" id="new-test-form">
+	{% csrf_token %}
+	<p>
+	  <label for="testname">Name of test:</label>
+          <input type="text" name="testname" value="New Test" class="form-control">
+	</p>
+	<div id="error-message" style="display:none">
+	  <div class="alert alert-danger">
+	    No problems checked!
+	  </div>
+	</div>
+	<p><button type="submit" class="btn btn-primary" name="newtest" value="newtest">Create Test</button><span class="fa fa-spinner fa-spin fa-3x fa-fw" style="display:none" id="loading"></span></p>
+      </form>
+      
+    </div>
+  </div>
+</div>
 
-<h3>Problems</h3>
-<form action="." method="POST" id="problems">
-{% csrf_token %}
-<input type="hidden" name="startform" value="{{pk}}">
-<table class="table">
-<tr>
-<td>
- <input type="checkbox" id="toggler" onclick="togglemarked('chk','problems')" checked/>
-</td>
-<th>
-Problem
-</th>
-</tr>
+<script>
+fixchecks('includetypes','typeform','toggletype');
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+            }
+        }
+    }
+    return cookieValue;
+}
 
-{% for prob in rows %}
-<tr>
-<td valign="top"><br>
-{{forloop.counter}}.<br>
-<input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks('chk','problems','toggler')" checked/>
-</td>
-<td>
-{% if prob.question_type_new.question_type == 'multiple choice' %}
-{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
-{% else %}
-{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
-{% endif %}
-</td>
-</tr>
-{% endfor %}
-</table>
+var csrftoken = getCookie('csrftoken');
 
-<p>
-Name of test: <input type="text" name="testname" value="New Test" /></p>
-<p><button type="submit" class="btn btn-primary" name="newtest" value="newtest">Create test with selected problems</button></p>
-</form>
-{% else %}
-There are currently no problems with this tag.
-{% endif %}
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
 
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('submit',"#new-test-form",function(e) {
+  e.preventDefault();
+$("#loading").show();
+  $.ajax({
+    type: 'POST',
+    url: "/problemgroups/ajax/create-test/",
+    data: $("#problems").serialize()+'&'+$("#new-test-form").serialize(),
+    dataType: 'json',
+    success: function(result) {
+      if ('error-message' in result) {
+        $("#loading").hide();
+        $("#error-message").show();
+        setTimeout(function() {
+          $("#error-message").fadeOut();
+        },5000);
+      } else {
+        if ('url' in result) {
+          window.location.href = result['url'];
+        }
+      }
+    }
+  });
+  return false;
+});
+</script>
 {% endblock %}

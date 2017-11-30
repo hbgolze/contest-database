@@ -1,39 +1,52 @@
 <div class="row">
-  <div class="col-xs-12">
+  <div class="col-12">
     <div id="problemtext_{{prob.pk}}">
       {% include "problemeditor/problem-snippets/CMcomponents/problemtext.html" %}
     </div>
   </div>
-  {% if not no_cqt %}
-  <div class="col-xs-12">
+</div>
+{% if not no_cqt %}
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/CMcomponents/changeqt.html" %}
   </div>
-  {% endif %}
-  {% if not no_difficulty %}
-  <div class="col-xs-12">
+</div>
+{% endif %}
+{% if not no_difficulty %}
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/CMcomponents/difficulty.html" %}
   </div>
+</div>
   {% endif %}
   {% if not no_approvals %}
-  <div class="col-xs-12">
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/CMcomponents/approvals.html" %}
   </div>
+</div>
   {% endif %}
   {% if not no_tags %}
-  <div class="col-xs-12">
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/components/currenttags.html" %}
     {% include "problemeditor/problem-snippets/components/addtagform.html" %}
   </div>
+</div>
   {% endif %}
   {% if not no_solutions %}
-  <div class="col-xs-12">
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/components/solutiondiv.html" %}
   </div>
+</div>
   {% endif %}
   {% if not no_comments %}
-  <div class="col-xs-12">
+<div class="row">
+  <div class="col-12">
     {% include "problemeditor/problem-snippets/CMcomponents/comments.html" %}
   </div>
-  {% endif %}
 </div>
+  {% endif %}
+
 

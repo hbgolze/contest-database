@@ -157,7 +157,7 @@ class PublishedUnit(models.Model):
             new_user_unitobject.save()
             try:
                 slidegroup = unit_object.publishedslidegroup
-                user_slides = UserSlides(published_slides = slidegroup,order=unit_object.order,userunitobject = user_unitobject,num_slides = slidegroup.slides.count())
+                user_slides = UserSlides(published_slides = slidegroup,order=unit_object.order,userunitobject = new_user_unitobject,num_slides = slidegroup.slides.count())
                 user_slides.save()
             except PublishedSlideGroup.DoesNotExist:
                 try:
@@ -342,9 +342,24 @@ class SlideObject(models.Model):#placeholder for components
     class Meta:
         ordering = ['order']
     def publish(self,published_slide):
-        published_object = self.content_object.publish()
-        new_so = PublishedSlideObject(content_object= published_object, slide = published_slide, order = self.order, parent_slideobject = self)
+        new_so = PublishedSlideObject(slide = published_slide, order = self.order, parent_slideobject = self)
         new_so.save()
+        try:
+            obj = self.textblock
+        except TextBlock.DoesNotExist:
+            try:
+                obj = self.theorem
+            except Theorem.DoesNotExist:
+                try:
+                    obj = self.proof
+                except Proof.DoesNotExist:
+                    try:
+                        obj = self.exampleproblem
+                    except ExampleProblem.DoesNotExist:
+                        obj = self.imagemodel
+        obj.publish(new_so)
+        return new_so
+
     def sync_to_parent(self):
         self.order = self.parent_slideobject.order
         self.save()
@@ -377,9 +392,6 @@ class SlideObject(models.Model):#placeholder for components
 class PublishedSlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
     parent_slideobject = models.ForeignKey(SlideObject,null=True,on_delete=models.SET_NULL)
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
     slide = models.ForeignKey(PublishedSlide,related_name='slide_objects')
     class Meta:
         ordering = ['order']
@@ -423,8 +435,8 @@ class TextBlock(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
-    def publish(self):
-        new_textblock = PublishedTextBlock(text_code = self.text_code,text_display="",parent_textblock = self)
+    def publish(self,so):
+        new_textblock = PublishedTextBlock(text_code = self.text_code,text_display="",parent_textblock = self,slide_object = so)
         new_textblock.save()
         new_textblock.text_display = newtexcode(new_textblock.text_code, 'publishedtextblock_'+str(new_textblock.pk), "")
         new_textblock.save()
@@ -464,8 +476,8 @@ class Proof(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
-    def publish(self):
-        new_proof = PublishedProof(prefix=self.prefix,proof_code = self.proof_code,proof_display="",parent_proof=self)
+    def publish(self,so):
+        new_proof = PublishedProof(prefix=self.prefix,proof_code = self.proof_code,proof_display="",parent_proof=self,slide_object = so)
         new_proof.save()
         new_proof.proof_display = newtexcode(new_proof.proof_code, 'publishedproofblock_'+str(new_proof.pk), "")
         new_proof.save()
@@ -511,8 +523,8 @@ class Theorem(models.Model):
     )
     def __str__(self):
         return self.name
-    def publish(self):
-        new_theorem = PublishedTheorem(name=self.name,prefix=self.prefix,theorem_code = self.theorem_code,theorem_display="",parent_theorem = self)
+    def publish(self,so):
+        new_theorem = PublishedTheorem(name=self.name,prefix=self.prefix,theorem_code = self.theorem_code,theorem_display="",parent_theorem = self,slide_object = so)
         new_theorem.save()
         new_theorem.theorem_display = newtexcode(new_theorem.theorem_code, 'publishedtheoremblock_'+str(new_theorem.pk), "")
         new_theorem.save()
@@ -593,8 +605,8 @@ class ExampleProblem(models.Model):
         else:
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
-    def publish(self):
-        new_example = PublishedExampleProblem(name=self.name,prefix=self.prefix,problem_code = self.problem_code,problem_display="",isProblem=self.isProblem, problem=self.problem,question_type=self.question_type,mc_answer = self.mc_answer,sa_answer = self.sa_answer,answer_A = self.answer_A,answer_B = self.answer_B,answer_C = self.answer_C,answer_D = self.answer_D,answer_E = self.answer_E,author=self.author,parent_exampleproblem = self)
+    def publish(self,so):
+        new_example = PublishedExampleProblem(name=self.name,prefix=self.prefix,problem_code = self.problem_code,problem_display="",isProblem=self.isProblem, problem=self.problem,question_type=self.question_type,mc_answer = self.mc_answer,sa_answer = self.sa_answer,answer_A = self.answer_A,answer_B = self.answer_B,answer_C = self.answer_C,answer_D = self.answer_D,answer_E = self.answer_E,author=self.author,parent_exampleproblem = self,slide_object = so)
         new_example.save()
         new_example.problem_display = newtexcode(new_example.problem_code, 'publishedexampleproblem_'+str(new_example.pk), "")
         new_example.save()
@@ -692,8 +704,8 @@ class ImageModel(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
-    def publish(self):
-        new_image = PublishedImageModel(image = self.image,parent_image = self)
+    def publish(self,so):
+        new_image = PublishedImageModel(image = self.image,parent_image = self,slide_object = so)
         new_image.save()
         return new_image
     def sync_to_parent(self):

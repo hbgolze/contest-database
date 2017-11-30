@@ -1,0 +1,153 @@
+{% load tz %}
+{% if collapse %}
+<script language="javascript">
+
+$(function() {
+
+  $('.list-group-item').on('click', function() {
+    $('.glg', this)
+      .toggleClass('fa-chevron-right')
+      .toggleClass('fa-chevron-down');
+  });
+
+});
+</script>
+{% endif %}
+	<div class="list-group list-group-root card mb-3">
+{% if collapse %}
+          <a href="#class_{{class.pk}}" class="list-group-item" data-toggle="collapse" style="background-color:#bbbbbb">
+{% else %}
+<div class="list-group-item" style="background-color:#bbbbbb">
+{% endif %}
+	    <div class="row">
+	      <div class="col-sm-4">
+		<i class="fa fa-chevron-right glg"></i>
+		{{class.published_class.name}} ({{class.published_class.pub_units.count}} unit{% if class.published_class.pub_units.count == 1 %}{% else %}s{% endif %})
+	      </div>
+	      <div class="col-sm-4 text-right">
+		{{class.num_correct}}/{{class.num_problems}} Problems (<script>document.write(Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)));</script>%)
+
+<div class="progress">
+<script>document.write("<div class='progress-bar{% if class.num_correct != class.num_problems %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)).toString()+"%' aria-valuenow='"+Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+</div>
+
+	      </div>
+	      <div class="col-sm-4" style="text-align:right">
+		Points Earned: {{class.points_earned}}/{{class.total_points}}
+	      </div>
+	    </div>
+{% if collapse %}
+	  </a>
+{% else %}
+	  </div>
+{% endif %}
+
+	  <div {% if collapse %}class="collapse"{% endif %} id="class_{{class.pk}}">
+
+	    <div class="list-group">
+	    {% for unit in class.userunit_set.all %}
+{% if collapse %}
+	    <a href="#unit_{{unit.pk}}" class="list-group-item" data-toggle="collapse" style="background-color:lightgray">
+{% else %}
+	    <div class="list-group-item" style="background-color:lightgray">
+{% endif %}
+	      <div class="row pl-2">
+		<div class="col-sm-4">
+		  <i class="fa fa-chevron-right glg"></i>
+		  <b>Unit {{forloop.counter}}:</b> 
+		  {{unit.published_unit.name}} ({{unit.num_problemsets}} problem set{% if unit.num_problemsets == 1 %}{% else %}s{% endif %})
+		</div>
+		<div class="col-sm-4 text-right">
+		  {{unit.num_correct}}/{{unit.num_problems}} Problems (<script>document.write(Math.round({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1)));</script>%)
+
+<div class="progress">
+<script>document.write("<div class='progress-bar{% if unit.num_correct != unit.num_problems %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1)).toString()+"%' aria-valuenow='"+Math.round({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+</div>
+		</div>
+		<div class="col-sm-4" style="text-align:right">
+		  Points Earned: {{unit.points_earned}}/{{unit.total_points}}
+		</div>
+	      </div>
+{% if collapse %}
+	    </a>
+{% else %}
+	    </div>
+{% endif %}
+	    <div {% if collapse %}class="collapse" {% endif %}id="unit_{{unit.pk}}">
+	      <div class="list-group">
+	      {% for user_unitobject in unit.userunitobject_set.all %}
+	      {% if user_unitobject.userproblemset %}
+	      {% with pset=user_unitobject.userproblemset %}
+	      <a href="problemset/{{pset.pk}}/" class="list-group-item">
+		<div class="row pl-4">
+		  <div class="col-sm-4">
+		    <span class="fa fa-pencil"></span> <b>Problem Set {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{pset.published_problemset.name}}
+		  </div>
+		  <div class="col-sm-4 text-right">
+		    {{pset.num_correct}}/{{pset.num_problems}} Problems (<script>document.write(Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)));</script>%)
+
+<div class="progress">
+<script>document.write("<div class='progress-bar{% if pset.num_correct != pset.num_problems %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)).toString()+"%' aria-valuenow='"+Math.round({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+</div>
+
+		  </div>
+		  <div class="col-sm-4" style="text-align:right">
+		    <p>Points Earned: {{pset.points_earned}}/{{pset.total_points}}</p>
+		    {% if pset.published_problemset.start_date %}
+		    <p>Start Date: {{pset.published_problemset.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		    {% if pset.published_problemset.due_date %}
+		    <p>Due Date: {{pset.published_problemset.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		  </div>
+		</div>
+	      </a>
+	      {% endwith %}
+	      {% endif %}
+	      {% if user_unitobject.userslides %}
+	      {% with slides=user_unitobject.userslides %}
+	      <a href="slides/{{slides.pk}}/" class="list-group-item">
+		<div class="row pl-4">
+		  <div class="col-sm-4">
+		    <span class="fa fa-book"></span> <b>Lesson {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{slides.published_slides.name}}
+		  </div>
+		  <div class="col-sm-4">
+		    
+		  </div>
+		  <div class="col-sm-4" style="text-align:right">
+		    {{slides.num_slides}} Slides
+		  </div>
+		</div>
+	      </a>
+	      {% endwith %}
+	      {% endif %}
+	      {% if user_unitobject.usertest %}
+	      {% with test=user_unitobject.usertest %}
+	      <a href="test/{{test.pk}}/" class="list-group-item">
+		<div class="row pl-4">
+		  <div class="col-sm-4">
+		    <span class="fa fa-file"></span> <b>Test {{forloop.parentloop.counter}}.{{user_unitobject.order}}:</b> {{test.published_test.name}}{% if test.is_in_progress %}<p>(In progress, start time: {{test.start_time|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}})</p>{% elif test.completed and not test.is_graded %}<p>(Completed, ungraded)</p>{% elif test.completed and test.is_graded %}<p>(Completed, graded)</p>{% endif %}
+		  </div>
+		  <div class="col-sm-4">
+		    {% if test.is_graded %}{{test.num_correct}}/{% endif %}{{test.num_problems}} Problems, {% if test.is_graded %}{{test.points_earned}}/{% endif %}{{test.total_points}} Points
+		  </div>
+		  <div class="col-sm-4" style="text-align:right">
+		    <p>Time Limit: {% if test.published_test.time_limit.hour > 0 %}{{test.published_test.time_limit.hour}} hours, {% endif %}{{test.published_test.time_limit.minute}} minutes</p>
+		    {% if test.published_test.start_date %}
+		    <p>Start Date: {{test.published_test.start_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		    {% if test.published_test.due_date %}
+		    <p>Due Date: {{test.published_test.due_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</p>
+		    {% endif %}
+		  </div>
+		</div>
+	      </a>
+	      {% endwith %}
+	      {% endif %}
+	      {% endfor %}
+	    </div>
+</div>
+	    {% endfor %}
+	  </div>
+	  </div>
+	</div>

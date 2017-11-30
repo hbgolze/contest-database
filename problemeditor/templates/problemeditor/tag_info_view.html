@@ -2,20 +2,20 @@
 <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h4 class="modal-title" id="myModalLabel">Info for Tag: {{tag}}</h4>
+        <h5 class="modal-title" id="myModalLabel">Info for Tag: {{tag}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
       </div>
       <div class="modal-body">
 	{% if tag.description %}
 	<div class="row">
-	  <div class="col-xs-12">
+	  <div class="col-12">
 	    <label for="desc">Description:</label>
 	    <div>{{tag.description}}</div>
 	  </div>
 	</div>
 	{% endif %}
 	<div class="row">
-	  <div class="col-xs-12">
+	  <div class="col-12">
 	    <table class="table">
 	      <thead>
 		<tr>
@@ -44,7 +44,7 @@
 	</div>
       </div>
       <div class="modal-footer">
-        <input type="button" class="btn btn-default" data-dismiss="modal" value="Close" />
+        <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
       </div>
     </div><!-- /.modal-content -->
 </div><!-- /.modal-dialog -->

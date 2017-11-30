@@ -2,11 +2,11 @@
 
     <div class="modal-content">
       <form method="get" action="." id="new-solution-form">
-
+	
         <div class="modal-header">
+          <h5 class="modal-title">New Solution</h5>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">New Solution</h4>
-	  </div>
+	</div>
         <div class="modal-body">
 	  <input type="hidden" name="ns-pk" id="ns-pk" value="{{prob.pk}}">
           <div class="form-group">
@@ -18,8 +18,8 @@
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           <button type="submit" name="addsolution" class="btn btn-primary">Add Solution</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </form>
     </div>

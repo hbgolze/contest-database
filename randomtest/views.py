@@ -754,27 +754,33 @@ def UpdatePassword(request):
     })
 
 @login_required
-def latexview(request,pk):
-    test = get_object_or_404(Test, pk=pk)
-    P=list(test.problems.all())
-    rows=[]
+def latexview(request,**kwargs):
+    test = get_object_or_404(Test, pk = kwargs['pk'])
+    P = list(test.problems.all())
+    rows = []
     include_problem_labels = True
     for i in range(0,len(P)):
-        ptext=''
-        if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-            ptext=P[i].mc_problem_text
+        ptext = ''
+        if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
+            ptext = P[i].mc_problem_text
             rows.append((ptext,P[i].readable_label,P[i].answers()))
         else:
-            ptext=P[i].problem_text
+            ptext = P[i].problem_text
             rows.append((ptext,P[i].readable_label,''))
     if request.method == "GET":
-        if request.GET.get('problemlabels')=='no':
+        if request.GET.get('problemlabels') == 'no':
             include_problem_labels = False
-    return render(request, 'randomtest/latexview.html',{'name': test.name,'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'include_problem_labels' : include_problem_labels})
+    context = {}
+    context['test'] = test
+    context['nbar'] = 'viewmytests'
+    if 'username' in kwargs:
+        context['username'] = kwargs['username']
+    context['include_problem_labels'] = include_problem_labels
+    return render(request, 'randomtest/latexview.html',context)
 
 @login_required
-def latexsolview(request,pk):
-    test = get_object_or_404(Test, pk=pk)
+def latexsolview(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
     P=list(test.problems.all())
     rows=[]
     include_problem_labels = True
@@ -789,7 +795,13 @@ def latexsolview(request,pk):
     if request.method == "GET":
         if request.GET.get('problemlabels')=='no':
             include_problem_labels = False
-    return render(request, 'randomtest/latexsolview.html',{'name': test.name,'rows': rows,'pk' : pk,'nbar': 'viewmytests', 'include_problem_labels' : include_problem_labels})
+    context = {}
+    context['test'] = test
+    context['nbar'] = 'viewmytests'
+    if 'username' in kwargs:
+        context['username'] = kwargs['username']
+    context['include_problem_labels'] = include_problem_labels
+    return render(request, 'randomtest/latexsolview.html',context)
 
 @login_required
 def readme(request):
@@ -798,19 +810,19 @@ def readme(request):
 @login_required
 def test_as_pdf(request, pk):
     test = get_object_or_404(Test, pk=pk)
-    P=list(test.problems.all())
+    P = list(test.problems.all())
     rows=[]
     include_problem_labels = True
     for i in range(0,len(P)):
-        ptext=''
-        if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
-            ptext=P[i].mc_problem_text
+        ptext = ''
+        if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
+            ptext = P[i].mc_problem_text
             rows.append((ptext,P[i].readable_label,P[i].answers()))
         else:
-            ptext=P[i].problem_text
+            ptext = P[i].problem_text
             rows.append((ptext,P[i].readable_label,''))
     if request.method == "GET":
-        if request.GET.get('problemlabels')=='no':
+        if request.GET.get('problemlabels') == 'no':
             include_problem_labels = False
     context = Context({  
             'name':test.name,
@@ -966,21 +978,6 @@ def test_sol_as_pdf(request, pk):
     r = HttpResponse(content_type='application/pdf')  
     r.write(pdf)
     return r
-
-@login_required
-def solutionview(request,**kwargs):
-    context={}
-    if 'username' in kwargs:
-        context['username'] = kwargs['username']
-    testpk = kwargs['testpk']
-    pk = kwargs['pk']
-    prob = get_object_or_404(Problem, pk=pk)
-    usertest = get_object_or_404(UserTest, pk=testpk)
-    context['problem']=prob
-    context['testpk']=testpk
-    context['testname']=usertest.test.name
-    context['nbar']='viewmytests'
-    return render(request, 'randomtest/solview.html', context)
 
 @login_required
 def archiveview(request,tpk):
@@ -1188,14 +1185,14 @@ def toggle_star(request,pk):
             s.delete()
         except Sticky.DoesNotExist:
             s=None
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",'problem_label':response.problem.label})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='fa fa-star-o'></span>",'problem_label':response.problem.label})
     else:
         s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)######
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
         response.save()
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>",'problem_label':response.problem.label})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='fa fa-star'></span>",'problem_label':response.problem.label})
 
 @login_required
 def new_toggle_star(request,pk):
@@ -1213,14 +1210,14 @@ def new_toggle_star(request,pk):
             s.delete()
         except Sticky.DoesNotExist:
             s=None
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",'problem_label':response.problem.label})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='fa fa-star-o'></span>",'problem_label':response.problem.label})
     else:
         s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.newtest.name)######
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
         response.save()
-        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='glyphicon glyphicon-star'></span>",'problem_label':response.problem.label})
+        return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'true','response_code' : "<span class='fa fa-star'></span>",'problem_label':response.problem.label})
 
 @login_required
 def checkanswer(request,pk):

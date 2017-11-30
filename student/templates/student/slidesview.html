@@ -1,64 +1,79 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../">My Classes</a></li>
-  <li class="active">{{slides.userunitobject.user_unit.user_class.published_class.name}} > {{slides.userunitobject.user_unit.published_unit.name}} > {{slides.published_slides.name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">My Classes</a></li>
+    <li class="breadcrumb-item active">{{slides.userunitobject.user_unit.user_class.published_class.name}} > {{slides.userunitobject.user_unit.published_unit.name}} > {{slides.published_slides.name}}</li>
+  </ol>
+</nav>
 
 <div class="container">
   <h2>{{slides.published_slides.name}}</h2>
   <div class="row">
-    <div class="col-xs-12" style="text-align:center">
-    {% if rows.has_other_pages %}
-    <ul class="pagination">
-      {% if rows.has_previous %}
-      <li><a href="?page={{ rows.previous_page_number }}&{{current_url}}">&laquo;</a></li>
-      {% else %}
-      <li class="disabled"><span>&laquo;</span></li>
+    <div class="col-12">
+      {% if rows.has_other_pages %}
+      <nav aria-label="Slides">
+        <ul class="pagination" style="justify-content:center">
+          {% if rows.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
+          {% endif %}
+          {% for i in rows.paginator.page_range %}
+          {% if rows.number == i %}
+          <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+	  {% if rows.number|add:-3 < i and i < rows.number|add:3 %}
+					       
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	  {% elif forloop.last %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	  {% elif forloop.first %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+	  {% elif i == 2 %}
+	  <li class="page-item disabled"><span class="page-link">...</span></li>
+	  {% elif i == rows.paginator.page_range|length|add:-1 %}
+	  <li class="page-item disabled"><span class="page-link">...</span></li>
+	  {% endif %}
+          {% endif %}
+          {% endfor %}
+	  
+	  
+          {% if rows.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}">&raquo;</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
       {% endif %}
-      {% for i in rows.paginator.page_range %}
-      {% if rows.number == i %}
-      <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
-      {% else %}
-      <li><a href="?page={{ i }}&{{current_url}}">{{ i }}</a></li>
-      {% endif %}
-      {% endfor %}
-      
-      
-      {% if rows.has_next %}
-      <li><a href="?page={{ rows.next_page_number }}&{{current_url}}">&raquo;</a></li>
-      {% else %}
-      <li class="disabled"><span>&raquo;</span></li>
-      {% endif %}
-    </ul>
-    {% endif %}
     </div>
   </div>
 
   <div class="row">
-    <div class="col-xs-1">
+    <div class="col-1">
       <ul class="pagination">
 	{% if rows.has_previous %}
-	<li><a href="?page={{ rows.previous_page_number }}&{{current_url}}">&laquo;</a></li>
+	<li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
 	{% else %}
-	<li class="disabled"><span>&laquo;</span></li>
+	<li class="page-item disabled"><span class="page-link">&laquo;</span></li>
 	{% endif %}
       </ul>
     </div>
-    <div class="col-xs-10">
+    <div class="col-10">
       {% for slide in rows %}
       <div id="slide-placeholder">
 	{% include "student/slide-panel.html" %}
       </div>
       {% endfor %}
     </div>
-    <div class="col-xs-1">
+    <div class="col-1">
       <ul class="pagination">
 	{% if rows.has_next %}
-	<li><a href="?page={{ rows.next_page_number }}&{{current_url}}">&raquo;</a></li>
+	<li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}">&raquo;</a></li>
 	{% else %}
-	<li class="disabled"><span>&raquo;</span></li>
+	<li class="page-item disabled"><span class="page-link">&raquo;</span></li>
 	{% endif %}
       </ul>
     </div>

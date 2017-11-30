@@ -1,98 +1,103 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../">My Classes</a></li>
-  <li class="active">{{problemset.userunitobject.user_unit.user_class.published_class.name}} > {{problemset.userunitobject.user_unit.published_unit.name}} > {{problemset.published_problemset.name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">My Classes</a></li>
+    <li class="breadcrumb-item active">{{problemset.userunitobject.user_unit.user_class.published_class.name}} > {{problemset.userunitobject.user_unit.published_unit.name}} > {{problemset.published_problemset.name}}</li>
+  </ol>
+</nav>
 {% load tz %}
 <div class="container">
   <h2>{{problemset.published_problemset.name}}</h2>
 {% if too_early %}
   <div class="row">
-    <p class="col-xs-12">
+    <p class="col-12">
       This problem set is not available yet. Please try again during the problem set period (beginning {{problemset.published_problemset.start_date|timezone:request.user.userprofile.time_zone}}).
     </p>
   </div>
 {% else %}
   <div class="row">
-    <table class="table table-bordered">
-      {% for response_row,start_index in response_rows %}
-      {% if not forloop.first %}
-      <tr>
-	<td style="border-left: 0px solid;{% if not forloop.last %}border-right: 0px solid{% endif %}" colspan="{{response_row|length|add:1}}"></td>
-      </tr>
-      {% endif %}
-      <tr>
-	<td>
-	  Problem
-	</td>
-	{% for resp in response_row %}
-	<td style="text-align:center">
-	  <a href="#{{resp.publishedproblem_object.pk}}">{{forloop.counter|add:start_index}}</a>
-	</td>
-	{% endfor %}
-      </tr>
-      <tr>
-	<td>
-	  Status
-	</td>
-	{% for resp in response_row %}
-	<td style="text-align:center">
-	  <span id="table-problem-status-{{resp.publishedproblem_object.pk}}">
-	    {% if resp.attempted %}
-	     {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
+    <div class="col">
+      <table class="table table-bordered">
+	{% for response_row,start_index in response_rows %}
+	{% if not forloop.first %}
+	<tr>
+	  <td style="border-left: 0px solid;{% if not forloop.last %}border-right: 0px solid{% endif %}" colspan="{{response_row|length|add:1}}"></td>
+	</tr>
+	{% endif %}
+	<tr>
+	  <td>
+	    Problem
+	  </td>
+	  {% for resp in response_row %}
+	  <td style="text-align:center">
+	    <a href="#{{resp.publishedproblem_object.pk}}">{{forloop.counter|add:start_index}}</a>
+	  </td>
+	  {% endfor %}
+	</tr>
+	<tr>
+	  <td>
+	    Status
+	  </td>
+	  {% for resp in response_row %}
+	  <td style="text-align:center">
+	    <span id="table-problem-status-{{resp.publishedproblem_object.pk}}">
+	      {% if resp.attempted %}
+	      {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
 	      {% if resp.publishedproblem_object.isProblem == 0 %}
-	       {% if resp.response == resp.publishedproblem_object.mc_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      {% if resp.response == resp.publishedproblem_object.mc_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
 	      {% else %}
-	       {% if resp.response == resp.publishedproblem_object.problem.mc_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      <span class="fa fa-remove" style="color:red"></span>
 	      {% endif %}
-	     {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
+	      {% else %}
+	      {% if resp.response == resp.publishedproblem_object.problem.mc_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% endif %}
+	      {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
 	      {% if resp.publishedproblem_object.isProblem == 0 %}
-	       {% if resp.response == resp.publishedproblem_object.sa_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      {% if resp.response == resp.publishedproblem_object.sa_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
 	      {% else %}
-	       {% if resp.response == resp.publishedproblem_object.problem.sa_answer %}
-	        <span class="glyphicon glyphicon-ok" style="color:green"></span>
-	       {% else %}
-	        <span class="glyphicon glyphicon-remove" style="color:red"></span>
-	       {% endif %}
+	      <span class="fa fa-remove" style="color:red"></span>
 	      {% endif %}
-             {% elif resp.publishedproblem_object.question_type.question_type == "proof" %}
+	      {% else %}
+	      {% if resp.response == resp.publishedproblem_object.problem.sa_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% endif %}
+              {% elif resp.publishedproblem_object.question_type.question_type == "proof" %}
               {% if resp.is_graded %}
-		{{resp.points}}/{{resp.point_value}}
+	      {{resp.points}}/{{resp.point_value}}
               {% else %}
-	        <span class="glyphicon glyphicon-hourglass" style="color:orange"></span>
+	      <span class="fa fa-hourglass" style="color:orange"></span>
               {% endif %}
-	     {% endif %}
-	    {% else %}
-	    -
-	    {% endif %}
-	  </span>
-	  <span id="table-star-status-{{resp.publishedproblem_object.pk}}">
-	    {% if resp.stickied %}
-	     (<span class="glyphicon glyphicon-star" style="color:#FFD700"></span>)
-	    {% endif %}
-	  </span>
-	</td>
+	      {% endif %}
+	      {% else %}
+	      -
+	      {% endif %}
+	    </span>
+	    <span id="table-star-status-{{resp.publishedproblem_object.pk}}">
+	      {% if resp.stickied %}
+	      (<span class="fa fa-star" style="color:#FFD700"></span>)
+	      {% endif %}
+	    </span>
+	  </td>
+	  {% endfor %}
+	</tr>
 	{% endfor %}
-      </tr>
-      {% endfor %}
-    </table>
+      </table>
+    </div>
   </div>
 
   <div class="row">
+    <div class="col">
       {% csrf_token %}
       <input type="hidden" name="startform" value="{{pk}}">
       <table>
@@ -124,10 +129,10 @@
 	{% endfor %}
       </table>
       <button type="submit" class="btn btn-primary" id="submit-all" value="Submit Answers">Submit Answers</button>
+    </div>
   </div>
   <div id="solution-placeholder" class="modal fade" role="dialog">
   </div>
-
   <div class="modal fade" id="edit-response-modal" role="dialog">
   </div>
 {% endif %}
@@ -190,7 +195,7 @@ $(document).on('click touch',".js-star-toggle",function(event) {
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
             if (data['is_stickied']=='true') {
-                $("#table-star-status-"+data['problem_label']).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
+                $("#table-star-status-"+data['problem_label']).html("(<span class='fa fa-star' style='color:#FFD700'></span>)");
             } else {
                 $("#table-star-status-"+data['problem_label']).html("");
             }
@@ -201,7 +206,7 @@ $(document).on('click touch',".js-star-toggle",function(event) {
 
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();
-    var problem_label=$(this).attr('id').split('-')[2];<!--//problem_label...resp.problem_object.pk-->
+    var problem_label=$(this).attr('id').split('-')[2];//problem_label...resp.problem_object.pk
     $.ajax({
         type: 'POST',
         url: '{% url 'student_checkanswer' pk %}',
@@ -211,20 +216,20 @@ $(document).on('click',".js-check-mc-answer",function(event) {
             if (data['blank'] == 'false') {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 if (data['correct'] == 'true') {
-                    $("#answerstatus_"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+                    $("#answerstatus_"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
 	            $('input[name=answer'+problem_label+']').attr('disabled', true);
 	            $('.answer_'+problem_label).each(function(i,obj) {
                         $(this).addClass('disabled');
                     });
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
+	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
-                    $("#answerstatus_"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+                    $("#answerstatus_"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
                 }
             }
         }
@@ -245,16 +250,25 @@ $(document).on('click',".js-check-answer",function(event) {
             if (data['blank'] == 'false') {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 if (data['correct'] == 'true') {
-	             $("#answer-input-"+problem_label).html("<div class='form-group has-success has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"' disabled><span class='glyphicon glyphicon-ok form-control-feedback'></span></div>");
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+
+$("#answer"+problem_label).removeClass("is-invalid");
+$("#answer"+problem_label).addClass("is-valid");
+$("#answer"+problem_label).attr("disabled", true);
+$("#icon"+problem_label).remove();
+$("#sa-input-"+problem_label).prepend("<span class='fa fa-check' style='color:green' id='icon"+problem_label+"'></span>");
+
+
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
+	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
-	             $("#answer-input-"+problem_label).html("<div class='form-group has-error has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'><span class='glyphicon glyphicon-remove form-control-feedback'></span></div>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+$("#answer"+problem_label).addClass("is-invalid");
+$("#icon"+problem_label).remove();
+$("#sa-input-"+problem_label).prepend("<span class='fa fa-remove' style='color:red' id='icon"+problem_label+"'></span>");
                 }
             }
         }
@@ -288,7 +302,7 @@ $(document).on('submit',"#edit-response-form",function(event) {
         dataType: 'json',
         success: function(data) {
             $("#proof-text-div-"+data['po_pk']).html(data['display_response']);
-            $("#table-problem-status-"+data['po_pk']).html("<span class='glyphicon glyphicon-hourglass' style='color:orange'></span>");
+            $("#table-problem-status-"+data['po_pk']).html("<span class='fa fa-hourglass' style='color:orange'></span>");
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"proof-text-div-"+data['po_pk']]);
 	    $("#attempted-date-"+data['po_pk']).html(data['mod-date']);
 	    $("#edit-response-modal").hide();
@@ -317,6 +331,11 @@ $(document).on('click',"#submit-all",function(event) {
     return false;
 });
 
+$(document).on('input',".answer-input", function(event) {
+  $(this).removeClass('is-invalid');
+  problem_label = $(this).attr('name').replace('answer','');
+  $("#icon"+problem_label).remove();
+});
 {% endif %}
 </script>
 

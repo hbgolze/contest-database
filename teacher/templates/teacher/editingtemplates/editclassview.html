@@ -4,31 +4,32 @@
 {% block content %}
 
 <script src="//rubaxa.github.io/Sortable/Sortable.js"></script>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">My Classes</a></li>
+    <li class="breadcrumb-item active"><span id="bc-class-name">{{my_class.name}}</span></li>
+  </ol>
+</nav>
 
-<ol class="breadcrumb">
-  <li><a href="../../">My Classes</a></li>
-  <li class="active"><span id="bc-class-name">{{my_class.name}}</span></li>
-</ol>
-
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
-      <ul class="nav nav-sidebar">
-	{% include 'teacher/sidebar.html' with activenav="myclasses" %}
+    <div class="col-sm-3 sidebar">
+      <ul class="nav nav-pills flex-column">
+        {% include 'teacher/sidebar.html' with activenav="myclasses" %}
       </ul>
     </div>
-    <div class="col-sm-9 col-md-10 main">
-      <h2>Edit Class: <span id="class-name">{{my_class.name}}</span> <a href="#" id="edit-class-name"><span class="glyphicon glyphicon-pencil"></span></a></h2>
+    <div class="col-sm-9 main">
+      <h2>Edit Class: <span id="class-name">{{my_class.name}}</span> <a href="#" id="edit-class-name"><span class="fa fa-pencil"></span></a></h2>
       <p>Drag around units to reorder them. If you reorder units or delete units, you must click "Save" to have the changes saved.</p>
       <h3>Units:</h3>
       <form action="." method="POST" id="units">
         {% csrf_token %}
-        <div id="unitList" class="list-group">
+        <div id="unitList" class="list-group mb-3">
 {% include 'teacher/editingtemplates/unit-list.html' %}
         </div><!--listgroup-->
 	<div id="no-units">{% if my_class.units.count == 0 %}<p><i>You don't have any units in this class yet.</i></p>{% endif %}</div>
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
-        <button type="button" class="btn btn-default" data-toggle="modal" data-target="#newunit">New Unit</button>
+        <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#newunit">New Unit</button>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
       </form>
 
@@ -45,13 +46,13 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
   <div class="modal-dialog" role="document">
     <form class="modal-content" method="post" action="." id="newunit-form">
       <div class="modal-header">
+        <h5 class="modal-title">New Unit</h5>
         <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">New Unit</h4>
       </div>
       <div class="modal-body">
         {% csrf_token %}
 	<div class="row">
-	  <div class="col-xs-12">
+	  <div class="col-12">
 	    <div class="form-group">
               <label for="unit-name" class="control-label">Unit Name</label>
               <input type="text" class="form-control" id="unit-name" name="unit-name">
@@ -60,7 +61,7 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
 	</div>
         <div class="modal-footer">
           <button type="submit" name="newunit"  class="btn btn-primary">New Unit</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </div>
     </form>    

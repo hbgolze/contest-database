@@ -3,35 +3,40 @@
 
 {% block content %}
 {% if username %}
-<ol class="breadcrumb">
-  <li><a href="/randomtest/">My Tests & Students</a></li>
-  <li><a href="/randomtest/student/{{username}}/">{{username}}'s Tests</a></li>
-  <li class="active">High Scores</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests & Students</a></li>
+    <li class="breadcrumb-item"><a href="/randomtest/student/{{username}}/">{{username}}'s Tests</a></li>
+    <li class="breadcrumb-item active">High Scores</li>
+  </ol>
+</div>
 {% else %}
-<ol class="breadcrumb">
-  <li><a href="/randomtest/">My Tests</a></li>
-  <li class="active">High Scores</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests</a></li>
+    <li class="breadcrumb-item active">High Scores</li>
+  </ol>
+</div>
 {% endif %}
-
-<h2>High Scores</h2>
-<div class="col-md-9">
-<table class="table table-striped">
-    <thead>
-      <tr>
-	<th>Place</th><th>Date</th><th>Number Solved</th><th>Points Earned</th>
-      </tr>
-     </thead>
-    <tbody>
-      {% for date,num,point in daycorrect %}
-      <tr>
-	<td>{{forloop.counter}}</td><td>{{date}}</td><td>{{num}}</td><td>{{point}}</td>
-      </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-	  
-
+<div class="container">
+  <h2>High Scores</h2>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Place</th><th>Date</th><th>Number Solved</th><th>Points Earned</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for date,num,point in daycorrect %}
+	  <tr>
+	    <td>{{forloop.counter}}</td><td>{{date}}</td><td>{{num}}</td><td>{{point}}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}

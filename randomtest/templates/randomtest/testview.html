@@ -1,87 +1,88 @@
 {% extends "./base.html" %}
 
 {% block content %}
-<ol class="breadcrumb">
-{% if username %}
-  <li><a href="/randomtest/">My Tests & Students</a></li>
-  <li><a href="../">{{username}}'s Tests</a></li>
-{% else %}
-  <li><a href="/randomtest/">My Tests</a></li>
-{% endif %}
-  <li class="active">{{name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    {% if username %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests & Students</a></li>
+    <li class="breadcrumb-item"><a href="../">{{username}}'s Tests</a></li>
+    {% else %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active">{{name}}</li>
+  </ol>
+</nav>
 
 <div class="container">
+  <h2>{{name}}</h2>
+  <div class="row">
+    <div class="col-lg-9">
+      <table class="table table-bordered">
+	<tr>
+	  <td>
+	    Problem
+	  </td>
+	  {% for resp in rows %}
+	  <td style="text-align:center">
+	    <a href="#{{resp.problem.label}}">{{forloop.counter}}</a>
+	  </td>
+	  {% endfor %}
+	</tr>
+	<tr>
+	  <td>
+	    Status
+	  </td>
+	  {% for resp in rows %}
+	  <td style="text-align:center">
+	    <span id="table-problem-status-{{resp.problem.label}}">
+	      {% if resp.attempted %}
+	      {% if resp.problem.question_type_new.question_type == "multiple choice" %}
+	      {% if resp.response == resp.problem.mc_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% elif resp.problem.question_type_new.question_type == "short answer" %}
+	      {% if resp.response == resp.problem.sa_answer %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      <span class="fa fa-remove" style="color:red"></span>
+	      {% endif %}
+	      {% endif %}
+	      {% else %}
+	      -
+	      {% endif %}
+	    </span>
+	    <span id="table-star-status-{{resp.problem.label}}">
+	      {% if resp.stickied %}
+	      (<span class="fa fa-star" style="color:#FFD700"></span>)
+	      {% endif %}
+	    </span>
+	  </td>
+	  {% endfor%}
 
-<h2>{{name}}</h2>
-<div class="row">
-<table class="table table-bordered">
-<tr>
-<td>
-Problem
-</td>
-{% for resp in rows %}
-<td style="text-align:center">
-<a href="#{{resp.problem.label}}">{{forloop.counter}}</a>
-</td>
-{% endfor %}
-</tr>
-<tr>
-<td>
-Status
-</td>
-{% for resp in rows %}
-<td style="text-align:center">
-<span id="table-problem-status-{{resp.problem.label}}">
-{% if resp.attempted %}
- {% if resp.problem.question_type_new.question_type == "multiple choice" %}
-  {% if resp.response == resp.problem.mc_answer %}
-   <span class="glyphicon glyphicon-ok" style="color:green"></span>
-  {% else %}
-   <span class="glyphicon glyphicon-remove" style="color:red"></span>
-  {% endif %}
- {% elif resp.problem.question_type_new.question_type == "short answer" %}
-  {% if resp.response == resp.problem.sa_answer %}
-   <span class="glyphicon glyphicon-ok" style="color:green"></span>
-  {% else %}
-   <span class="glyphicon glyphicon-remove" style="color:red"></span>
-  {% endif %}
- {% endif %}
-{% else %}
--
-{% endif %}
-</span>
-<span id="table-star-status-{{resp.problem.label}}">
-{% if resp.stickied %}
- (<span class="glyphicon glyphicon-star" style="color:#FFD700"></span>)
-{% endif %}
-</span>
-</td>
-{% endfor%}
 
-
-</tr>
-</table>
-</div>
-<div class="row">
-{% if username %}{% else %}
-<form action="." method="POST">
-  {% csrf_token %}
-  <input type="hidden" name="startform" value="{{pk}}">
-  {% endif %}
-  <table>
-
-    {% for resp in rows %}
-    {% with question_type=resp.problem.question_type_new.question_type prob_label=resp.problem_label response=resp.response %}
-    <tr>
-      <td>
+	</tr>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-9">
+      {% if username %}{% else %}
+      <form action="." method="POST">
+	{% csrf_token %}
+	<input type="hidden" name="startform" value="{{pk}}">
+	{% endif %}
+	
+	{% for resp in rows %}
+	{% with question_type=resp.problem.question_type_new.question_type prob_label=resp.problem_label response=resp.response %}
 	<a name="{{prob_label}}"></a>
 	
-	<div class="panel panel-default">
-	  <div class="panel-heading">
-	    <h3 class="panel-title">Problem {{forloop.counter}} <span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="glyphicon glyphicon-star"></span>{% else %}<span class="glyphicon glyphicon-star-empty"></span>{% endif %}</span></h3>
+	<div class="card mb-3">
+	  <div class="card-header">
+	    <h3>Problem {{forloop.counter}} <span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="fa fa-star"></span>{% else %}<span class="fa fa-star-o"></span>{% endif %}</span></h3>
 	  </div>
-	  <div class="panel-body">
+	  <div class="card-body">
 	    {% if question_type == 'short answer' or question_type == 'proof' or question_type == 'multiple choice short answer' %}
 	    {% autoescape off %}{{resp.problem.display_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{resp.problem.readable_label}}]</span><br>
 	    {% else %}
@@ -90,25 +91,30 @@ Status
 	    
 	  </div>
 	  
-	  <div class="panel-footer">
+	  <div class="card-footer">
 	    {% if question_type == 'short answer' or question_type == 'multiple choice' %}
 	    <div class="row">
-	      <div class="col-xs-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
+	      <div class="col-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
 		{% if question_type == 'short answer' %}
 		{% if resp.attempted %}
 		{% if resp.problem.sa_answer == response %}
-		<div class="form-group has-success has-feedback">
-		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
-		  <span class="glyphicon glyphicon-ok form-control-feedback"></span>
-		</div>
-		{% else %}
-		<div class="form-group has-error has-feedback">
-		  <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value={% if username %}"{{response}} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% else %}"{{response}}"{% endif %}>
-		  <span class="glyphicon glyphicon-remove form-control-feedback"></span>
-		</div>
+
+                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+                      <span class="fa fa-check" style="color:green" id="icon{{prob_label}}"></span>
+                      <input type="text" class="form-control answer-input is-valid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+                    </div>
+                        {% else %}
+                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+                      <span class="fa fa-remove" style="color:red" id="icon{{prob_label}}"></span>
+                      <input type="text" class="form-control answer-input is-invalid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value={% if username %}"{{response}} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% else %}"{{response}}"{% endif %}>
+                    </div>
+
+
 		{% endif %}
 		{% else %}
-		<input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+		      <input type="text" class="form-control" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+		    </div>
 		{% endif %}
 		
 		{% elif question_type == 'multiple choice' %}
@@ -132,16 +138,16 @@ Status
 		  <span id="answerstatus_{{prob_label}}">
 		    {% if resp.attempted %}
 		    {% if response == resp.problem.mc_answer %}
-		    <span class="glyphicon glyphicon-ok" style="color:green"></span>
+		    <span class="fa fa-check" style="color:green"></span>
 		    {% else %}
-		    <span class="glyphicon glyphicon-remove" style="color:red"></span>
+		    <span class="fa fa-remove" style="color:red"></span>
 		    {% endif %}
 		    {% endif %}
 		  </span>
 		</div>
 		{% endif %}
 	      </div><!--Answer input-->
-	      <div class="col-xs-6" id="check-button-{{prob_label}}" align="right"><!--button div-->
+	      <div class="col-6" id="check-button-{{prob_label}}" style="text-align:right"><!--button div-->
 		{% if username %}
 		{% else %}
 		
@@ -159,25 +165,25 @@ Status
 		{% if question_type == "multiple choice" %}
 		 {% if resp.problem.mc_answer == response or username %}
 		  {% if resp.problem.solutions.count > 0 %}
-		   <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		   <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
 		  {% else %}
-		   <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		   <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		  {% endif %}
 
 		 {% endif %}
 		{% elif question_type == "short answer" %}
 		 {% if resp.problem.sa_answer == response or username %}
 		  {% if resp.problem.solutions.count > 0 %}
-		   <button data-target="#solution-placeholder" class="btn btn-default solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
+		   <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{resp.problem.pk}}/">Solution</button>
 		  {% else %}
-		   <button class="btn btn-default" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
+		   <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		  {% endif %}
 
 		 {% endif %}
 		{% endif %}
 
 	      </div><!--button div-->
-	      <div class="col-xs-12 pull-right attemped-date-{{prob_label}}"><!--tracker-->
+	      <div class="col-12 pull-right attemped-date-{{prob_label}}"><!--tracker-->
 		{% if resp.attempted %}
 		<div align="right">
 		  <small>Last Attempted: {{resp.modified_date}}</small>
@@ -191,11 +197,8 @@ Status
 
   
 
-      </td>
-    </tr>
     {% endwith %}
     {% endfor %}
-  </table>
   {% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
@@ -238,7 +241,7 @@ $.ajaxSetup({
         }
     },
 });
-$(".solution-link").click(function(event) {
+$(document).on('click',".solution-link",function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
 
@@ -249,21 +252,6 @@ $(".solution-link").click(function(event) {
     });
 });
 
-function triggerModal()
-{
-   $(document.body).on('click', '.solution-link', function () {
-
-    event.preventDefault();
-    var target = $(this).attr("href");
-
-
-    $("#solution-placeholder").load(target, function() {
-         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-         $("#solution-placeholder").modal("show");
-    });
-//        $('.solution-link').modalEffects();
-    });
-}
 {% if username %}
 {% else %}
 $(document).on('click',".js-star-toggle",function(event) {
@@ -276,7 +264,7 @@ $(document).on('click',".js-star-toggle",function(event) {
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
             if (data['is_stickied']=='true') {
-                $("#table-star-status-"+data['problem_label']).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
+                $("#table-star-status-"+data['problem_label']).html("(<span class='fa fa-star' style='color:#FFD700'></span>)");
             } else {
                 $("#table-star-status-"+data['problem_label']).html("");
             }
@@ -296,21 +284,20 @@ $(document).on('click',".js-check-mc-answer",function(event) {
         success: function(data) {
             if (data['blank'] == 'false') {
                 if (data['correct'] == 'true') {
-                    $("#answerstatus_"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+                    $("#answerstatus_"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
 	            $('input[name=answer'+problem_label+']').attr('disabled', true);
 	            $('.answer_'+problem_label).each(function(i,obj) {
                         $(this).addClass('disabled');
                     });
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
-                         triggerModal();
+	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
-                    $("#answerstatus_"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+                    $("#answerstatus_"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
                 }
             }
         }
@@ -330,23 +317,38 @@ $(document).on('click',".js-check-answer",function(event) {
         success: function(data) {
             if (data['blank'] == 'false') {
                 if (data['correct'] == 'true') {
-	             $("#answer-input-"+problem_label).html("<div class='form-group has-success has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"' disabled><span class='glyphicon glyphicon-ok form-control-feedback'></span></div>");
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+$("#answer"+problem_label).removeClass("is-invalid");
+$("#answer"+problem_label).addClass("is-valid");
+$("#answer"+problem_label).attr("disabled", true);
+$("#icon"+problem_label).remove();
+$("#sa-input-"+problem_label).prepend("<span class='fa fa-check' style='color:green' id='icon"+problem_label+"'></span>");
+//	             $("#answer-input-"+problem_label).html("<div class='inner-addon right-addon'><span class='fa fa-check' style='color:green'></span><input type='text' class='form-control is-valid' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"' disabled></div>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
                      if (data['has_solution'] == 'true') {
-	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-default solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
-                         triggerModal();
+	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
                      } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-default' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+	                 $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
                      }
                 } else {
-                     $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-remove' style='color:red'></span>");
-	             $("#answer-input-"+problem_label).html("<div class='form-group has-error has-feedback'><input type='text' class='form-control' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'><span class='glyphicon glyphicon-remove form-control-feedback'></span></div>");
+$("#answer"+problem_label).addClass("is-invalid");
+$("#icon"+problem_label).remove();
+$("#sa-input-"+problem_label).prepend("<span class='fa fa-remove' style='color:red' id='icon"+problem_label+"'></span>");
+                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+//	             $("#answer-input-"+problem_label).html("<div class='inner-addon right-addon'><span class='fa fa-remove' style='color:red'></span><input type='text' class='form-control is-invalid' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'></div>");
                 }
             }
         }
     });
     return false;
 });
+
+
+$(document).on('input',".answer-input", function(event) {
+  $(this).removeClass('is-invalid');
+  problem_label = $(this).attr('name').replace('answer','');
+  $("#icon"+problem_label).remove();
+});
+
 {% endif %}
 </script>
 

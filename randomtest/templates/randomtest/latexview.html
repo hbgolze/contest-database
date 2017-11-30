@@ -1,25 +1,45 @@
 {% extends "./base.html" %}
 
+{% load randomtest_extras %}
 {% block content %}
-<h2>LaTeX Code for "{{name}}"</h2>
-<input type="hidden" name="startform" value="{{pk}}">
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    {% if username %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests & Students</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{username}}'s Tests</a></li>
+    {% else %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active">View LaTeX Code: {{test.name}}</li>
+  </ol>
+</nav>
 
-<h3>Options</h3>
-<form action="." method="get">
-Include Problem Labels?<br>
-{% if include_problem_labels %}
-<input type="radio" name="problemlabels" value="yes" checked="checked"> Yes
-<input type="radio" name="problemlabels" value="no"> No
-{% else %}
-<input type="radio" name="problemlabels" value="yes"> Yes
-<input type="radio" name="problemlabels" value="no" checked="checked"> No
-{% endif %}
-<br><br>
-<input type="submit" value="Refresh Code">
-</form>
-
-
-<pre><code>
+<div class="container">
+  <h2>LaTeX Code for "{{test.name}}"</h2>
+  <div class="row mb-3">
+    <div class="col">
+      <input type="hidden" name="startform" value="{{test.pk}}">
+      
+      <h3>Options</h3>
+      <form action="." method="get">
+	Include Problem Labels?<br>
+	{% if include_problem_labels %}
+	<input type="radio" name="problemlabels" value="yes" checked="checked"> Yes
+	<input type="radio" name="problemlabels" value="no"> No
+	{% else %}
+	<input type="radio" name="problemlabels" value="yes"> Yes
+	<input type="radio" name="problemlabels" value="no" checked="checked"> No
+	{% endif %}
+	<br><br>
+	<input class="btn btn-primary" type="submit" value="Refresh Code">
+      </form>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div class="card pl-2" style="background-color:#dddddd">
+	<div class="card-body">
+	<pre><code>
 \documentclass{article}
 \usepackage{amsmath}
 \usepackage{enumerate}
@@ -46,13 +66,22 @@ Include Problem Labels?<br>
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
 \begin{document}
 \begin{enumerate}
-{% for problemcode,problemlabel,answerchoices in rows %}
-\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel}}]{% endif %}
+{% for prob in test.problems.all %}
+\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
 
-{{answerchoices}}
+{% if prob.question_type_new.question_type == "multiple choice" %}
+{{prob.answers|linebreaks}}
+{% endif %}
+
 {% endfor %}
 \end{enumerate}
 \end{document}
-</pre>
-</code>
+
+	</code>
+	</pre>
+</div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

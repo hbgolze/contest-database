@@ -1,4 +1,4 @@
-
+{% load randomtest_extras %}
 {% autoescape off %}
 \documentclass{article}
 \usepackage{amsmath}
@@ -32,7 +32,7 @@
 \maketitle
 \begin{enumerate}
 {% for problemcode,problemlabel,answerchoices,solutions in rows %}
-\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel}}]{% endif %}
+\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
 
 \vspace{3mm}
 

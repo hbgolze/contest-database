@@ -12,49 +12,47 @@ document.write("</div>");
 {% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../../">My Classes</a></li>
-  <li><a href="../">{{my_class.name}}</a></li>
-  <li class="active">Roster</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../">{{my_class.name}}</a></li>
+    <li class="active breadcrumb-item">Roster</li>
+  </ol>
+</nav>
 
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
-      <ul class="nav nav-sidebar">
-	{% include 'teacher/sidebar.html' with activenav="myclasses" %}
+    <div class="col-sm-3 sidebar">
+      <ul class="nav nav-pills flex-column">
+        {% include 'teacher/sidebar.html' with activenav="myclasses" %}
       </ul>
     </div>
-    <div class="col-sm-9 col-md-10 main">
-      <div id="status_message">
-      </div>
-      <div id="course-roster">
-	<h2>Course Roster</h2>
-	<table class="table table-striped table-bordered" id="students-table">
-	  <thead>
-	    <tr>
-	      <th>Student Name</th>
-	      {% for unit in my_class.pub_units.all %}
-	      <th style="border-left: 1px solid;border-right: 1px solid;">Total for Unit: {{unit.name}}</th>
-	      {% for unit_object in unit.unit_objects.all %}
-	      {% if unit_object.publishedproblemset %}
-	      <th>Problem Set: {{unit_object.publishedproblemset.name}}</th>
-	      {% elif unit_object.publishedtest%}
-	      <th>Test: {{unit_object.publishedtest.name}}</th>
-	      {% endif %}
-	      {% endfor %}
-	      {% endfor %}
-	    </tr>
-	  </thead>
-	  <tbody>
-	    {% for student_class in student_classes %}
-	    {% include "teacher/publishedclasses/roster/roster-studentrow.html" %}
+    <div class="col-sm-9 main">
+      <h2>Course Roster</h2>
+      <table class="table table-striped table-bordered" id="students-table">
+	<thead>
+	  <tr>
+	    <th>Student Name</th>
+	    {% for unit in my_class.pub_units.all %}
+	    <th style="border-left: 1px solid;border-right: 1px solid;">Total for Unit: {{unit.name}}</th>
+	    {% for unit_object in unit.unit_objects.all %}
+	    {% if unit_object.publishedproblemset %}
+	    <th>Problem Set: {{unit_object.publishedproblemset.name}}</th>
+	    {% elif unit_object.publishedtest%}
+	    <th>Test: {{unit_object.publishedtest.name}}</th>
+	    {% endif %}
 	    {% endfor %}
-	  </tbody>
-	</table>
-      </div>
-      <button class="btn btn-primary add-student-link">Add Student</button>
+	    {% endfor %}
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for student_class in student_classes %}
+	  {% include "teacher/publishedclasses/roster/roster-studentrow.html" %}
+	  {% endfor %}
+	</tbody>
+      </table>
+    <button class="btn btn-primary add-student-link">Add Student</button>
     </div>
   </div>
 </div>
@@ -66,8 +64,8 @@ document.write("</div>");
     <div class="modal-content">
       <form method="post" action="." id="add-student-form">
         <div class="modal-header">
+          <h5 class="modal-title">Add Student to Class</h5>
           <button type="button" class="close" data-dismiss="modal">&times;</button>
-          <h4 class="modal-title">Add Student to Class</h4>
         </div>
         <div class="modal-body">
           {% csrf_token %}
@@ -76,7 +74,7 @@ document.write("</div>");
 	</div>
         <div class="modal-footer">
           <button type="submit" name="addstudentbutton" id="addstudentbutton" class="btn btn-primary" disabled>Add Student</button>
-          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 	  </div>
       </form>
     </div>

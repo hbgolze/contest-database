@@ -63,8 +63,11 @@ class ApprovalForm(forms.ModelForm):
 
 class AddProblemForm1(forms.Form):
     question_type = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
-    type=forms.ModelChoiceField(widget = forms.RadioSelect(),queryset=Type.objects.filter(type__startswith="CM"),required=True,empty_label=None)
+    type = forms.ModelChoiceField(widget = forms.RadioSelect(),queryset=Type.objects.filter(type__startswith="CM"),required=True,empty_label=None)
     author_name = forms.CharField()
+    def __init__(self, *args, **kwargs):
+        super(AddProblemForm1, self).__init__(*args, **kwargs)
+        self.fields['author_name'].widget.attrs['class'] = 'form-control col-md-6'
 
 class AddProblemForm2MC(forms.Form):
     mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
@@ -75,11 +78,22 @@ class AddProblemForm2MC(forms.Form):
     answer_E = forms.CharField()
     correct_multiple_choice_answer = forms.ChoiceField(widget = forms.RadioSelect(),choices=ANSWER_CHOICES)
     mc = forms.CharField(required=False)
+    def __init__(self, *args, **kwargs):
+        super(AddProblemForm2MC, self).__init__(*args, **kwargs)
+        self.fields['answer_A'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_B'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_C'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_D'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_E'].widget.attrs['class'] = 'form-control col-md-6'
 
 class AddProblemForm2SA(forms.Form):
     problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
     correct_short_answer_answer = forms.CharField()
     sa = forms.CharField(required=False)
+    def __init__(self, *args, **kwargs):
+        super(AddProblemForm2SA, self).__init__(*args, **kwargs)
+        self.fields['correct_short_answer_answer'].widget.attrs['class'] = 'form-control col-md-6'
+
 
 class AddProblemForm2PF(forms.Form):
     problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
@@ -96,9 +110,17 @@ class AddProblemForm2MCSA(forms.Form):
     answer_E = forms.CharField()
     correct_multiple_choice_answer = forms.ChoiceField(widget = forms.RadioSelect(),choices=ANSWER_CHOICES)
     mcsa = forms.CharField(required=False)
+    def __init__(self, *args, **kwargs):
+        super(AddProblemForm2MCSA, self).__init__(*args, **kwargs)
+        self.fields['answer_A'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_B'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_C'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_D'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['answer_E'].widget.attrs['class'] = 'form-control col-md-6'
+        self.fields['correct_short_answer_answer'].widget.attrs['class'] = 'form-control col-md-6'
 
 class AddProblemForm3(forms.Form):
-    solution_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    solution_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     
 class ChangeQuestionTypeForm1(forms.ModelForm):
 #    question_type_new = forms.ModelChoiceField(widget = forms.RadioSelect(), queryset = QuestionType.objects.all(),required=True,empty_label=None)
@@ -268,6 +290,7 @@ class AddNewTagForm(forms.ModelForm):
     def __init__(self,*args, **kwargs):
         super(AddNewTagForm, self).__init__(*args, **kwargs)
         self.fields['parent'].widget = HiddenInput()
+        self.fields['description'].required = True
 #    def clean(self):
 #        cleaned_data = super(AddNewTagForm,self).clean()
 #        label_clean = cleaned_data.get('label')

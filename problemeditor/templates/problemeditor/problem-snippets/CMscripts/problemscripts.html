@@ -50,7 +50,7 @@ $(document).on("change","select.js-add-tag-select",function(event) {
                     $("#tagging-status-"+data['prob_pk']).fadeOut().empty();
                 },5000);
                 $("#problem-tags-"+data['prob_pk']).html(data['tag_list']);
-                $("#tagged-"+data['prob_pk']).html("<span class='glyphicon glyphicon-ok' style='color:green'></span>");
+                $("#tagged-"+data['prob_pk']).html("<span class='fa fa-check' style='color:green'></span>");
 
             } else {
                 $("#tagging-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem already has tag.</div>");

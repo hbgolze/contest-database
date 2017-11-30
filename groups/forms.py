@@ -8,5 +8,6 @@ class GroupModelForm(forms.ModelForm):
     class Meta:
         model = ProblemGroup
         fields = ('name',)
-
-
+        widgets = {
+            'name': forms.TextInput(attrs={"class":"form-control"}),
+        }

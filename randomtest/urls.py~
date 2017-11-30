@@ -29,6 +29,8 @@ urlpatterns = [
     url(r'^randomtest/student/(?P<username>\w+)/$', views.tableview, name='studenttableview'),
     url(r'^randomtest/student/(?P<username>\w+)/addtest/(?P<pk>\w+)/$', views.addtestview, name='addstudenttestview'),
     url(r'^randomtest/student/(?P<username>\w+)/(?P<pk>\w+)/$', views.testview, name='studenttestview'),
+    url(r'^randomtest/student/(?P<username>\w+)/viewlatex/(?P<pk>\d+)/$', views.latexview, name='view_latex'),
+    url(r'^randomtest/student/(?P<username>\w+)/viewlatexsol/(?P<pk>\d+)/$', views.latexsolview, name='view_latex_sol'),
     url(r'^randomtest/student/(?P<username>\w+)/(?P<pk>\d+)/load_sol/(?P<ppk>\d+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
     url(r'^randomtest/student/(?P<username>\w+)/archive/(?P<tpk>\d+)/$', views.archivestudentview, name='archivestudentview'),
     url(r'^randomtest/student/(?P<username>\w+)/unarchive/(?P<tpk>\d+)/$', views.unarchivestudentview, name='unarchivestudentview'),
@@ -47,6 +49,6 @@ urlpatterns = [
     url(r'^randomtest/profiles/(?P<username>\w+)/',views.profileview,name='profileview'),
     url(r'^randomtest/newcreatetest/$', views.newstartform, name='startform2'),
     url(r'^randomtest/editnewtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
-    url(r'^randomtest/edittimezone$',views.changetimezoneview,name='changetimezoneview'),
+    url(r'^randomtest/edittimezone/$',views.changetimezoneview,name='changetimezoneview'),
     
 ]

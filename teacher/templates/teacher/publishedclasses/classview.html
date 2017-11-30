@@ -3,16 +3,17 @@
 
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../">My Classes</a></li>
-  <li class="active">{{class.name}}</li>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">My Classes</a></li>
+    <li class="active breadcrumb-item">{{class.name}}</li>
+  </ol>
+</nav>
 
-</ol>
 
-
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
+    <div class="col-sm-3 sidebar">
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 main">
@@ -21,42 +22,42 @@
       <div id="my_classes">
 	<h2>{{class.name}}</h2>
 <p><a href="roster">Roster</a></p>
-	<div class="list-group">
+	<div class="list-group mb-3">
 	  <div class="list-group-item" style="background-color:lightgray">
 	    <div class="row">
-	      <div class="col-xs-6">
+	      <div class="col-6">
 		Class Summary: {{class.pub_units.count}} unit(s)
 	      </div>
-	      <div class="col-xs-6" style="text-align:right">
+	      <div class="col-6" style="text-align:right">
 		{{class.num_problems}} Problems, {{class.total_points}} Points
 	      </div>
 	    </div>
 	  </div>
 	</div>
-	<div class="list-group">
+	<div class="list-group mb-3">
 	  {% for unit in class.pub_units.all %}
 	  <div href="#unit_{{unit.pk}}" class="list-group-item" style="background-color:lightgray">
 	    <div class="row">
-	      <div class="col-xs-6">
+	      <div class="col-6">
 		<b>Unit {{forloop.counter}}:</b> 
 		{{unit.name}} ({{unit.num_problemsets}} problem set(s))
 	      </div>
-	      <div class="col-xs-6" style="text-align:right">
+	      <div class="col-6" style="text-align:right">
 		{{unit.num_problems}} Problems, {{unit.total_points}} Points
 	      </div>
 	    </div>
 	  </div>
 
-	  <div class="list-group" id="unit_{{unit.pk}}">
+	  <div class="list-group mb-3" id="unit_{{unit.pk}}">
 	    {% for unitobject in unit.unit_objects.all %}
 	    {% if unitobject.publishedproblemset %}
 	    {% with pset=unitobject.publishedproblemset %}
 	    <a href="problemset/{{pset.pk}}" class="list-group-item">
 	      <div class="row">
-		<div class="col-xs-6">
+		<div class="col-6">
 		  <b>Problem Set {{forloop.parentloop.counter}}.{{unitobject.order}}:</b> {{pset.name}}
 		</div>
-		<div class="col-xs-6" style="text-align:right">
+		<div class="col-6" style="text-align:right">
 		  {{pset.num_problems}} Problems, {{pset.total_points}} Points
 		</div>
 	      </div>
@@ -66,10 +67,10 @@
               {% with slides=unitobject.publishedslidegroup %}
               <a href="slides/{{slides.pk}}/" class="list-group-item">
                 <div class="row">
-                  <div class="col-xs-6">
+                  <div class="col-6">
                     <b>Lesson {{forloop.parentloop.counter}}.{{unitobject.order}}:</b> {{slides.name}}
                   </div>
-                  <div class="col-xs-6" style="text-align:right">
+                  <div class="col-6" style="text-align:right">
                     {{slides.num_slides}} Slides 
 
                   </div>
@@ -80,10 +81,10 @@
               {% with test=unitobject.publishedtest %}
               <a href="test/{{test.pk}}/" class="list-group-item">
                 <div class="row">
-                  <div class="col-xs-6">
+                  <div class="col-6">
                     <b>Test {{forloop.parentloop.counter}}.{{unitobject.order}}:</b> {{test.name}}
                   </div>
-                  <div class="col-xs-6" style="text-align:right">
+                  <div class="col-6" style="text-align:right">
                     {{test.num_problems}} Problems, {{test.total_points}} Points
 
                   </div>

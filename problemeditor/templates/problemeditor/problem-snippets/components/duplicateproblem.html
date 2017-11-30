@@ -5,7 +5,7 @@
 
               {% if request.user.is_superuser %}
               <p>
-                <a class="btn btn-default add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
+                <a class="btn btn-secondary add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
               </p>
               <div id="duplicate-status-{{prob.pk}}"></div>
               {% endif %}

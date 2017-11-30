@@ -1,10 +1,10 @@
           <div class="list-group-item">
             <input type="hidden" name="unitinput" value="unit_{{unit.pk}}">
             <div class="row">
-              <div class="col-sm-1 col-md-1 col-lg-1">
+              <div class="col-1">
                 {{forcount}}.
               </div>
-              <div class="col-sm-10 col-md-10 col-lg-10">
+              <div class="col-10">
 
 		<a href="units/{{unit.pk}}/">{{unit.name}}</a>
 		{% if unit.unit_objects.count > 0 %}
@@ -23,8 +23,8 @@
 		<p><i>You haven't added anything to this unit yet.</i></p>
 		{% endif %}
               </div>
-              <div class="col-sm-1 col-md-1 col-lg-1">
-                <div class="js-remove"><span style="color:red; cursor:pointer" class="glyphicon glyphicon-remove"></span></div>
+              <div class="col-1">
+                <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
               </div>
             </div>
           </div>

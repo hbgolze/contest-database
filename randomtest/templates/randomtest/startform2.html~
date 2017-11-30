@@ -17,7 +17,7 @@ else { document.getElementById(d).style.display = "none"; }
 
 {% block content %}
 <ol class="breadcrumb">
-  <li><a href="/">My Tests</a></li>
+  <li><a href="/randomtest/">My Tests</a></li>
   <li class="active">New Test</li>
 </ol>
 <div class="container">
@@ -61,7 +61,7 @@ else { document.getElementById(d).style.display = "none"; }
   
   <div class="row">
     <div class="form-group col-lg-5" id="taglist">
-      <label for="tag" class="control-label">Desired Tag (<a href="/tagcounts/">Tag Counts</a>):</label>
+      <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
       <select name="tag" class="form-control">
 	<option value="">Unspecified</option>
 	{% for t in tags %}

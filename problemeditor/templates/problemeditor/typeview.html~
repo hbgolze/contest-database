@@ -9,12 +9,12 @@
 {% block content %}
 <h2>Problem Editor</h2>
 <div class="content">
-
-<div class="pull-right"><a href="tags" class="btn btn-primary">Tags</a></div>
-
-<p>Please select a test category.</p>
-{% if rows|length > 0 %}
-<table class="table table-striped">
+  
+  <div class="pull-right"><a href="tags" class="btn btn-primary">Tags</a></div>
+  
+  <p>Please select a test category.</p>
+  {% if rows|length > 0 %}
+  <table class="table table-striped">
     <thead>
       <tr>
         <th>Test Category</th>
@@ -31,7 +31,7 @@
 	<td>{{type.label}}</td>
         <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% else %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% endif %}</td>
         <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">View by Test</a></td>{% else %}<a href="CM/bytopic/{{type.type}}">View Problems</a>{% endif %}
-
+	
         
         <td>{{untagged}}/{{type.problems.count}}</td>
         <td>{{unsolution}}/{{type.problems.count}}</td>
@@ -39,33 +39,7 @@
       {% endfor %}
     </tbody>
   </table>
-{% endif %}
-<!--
-{% if rows2|length > 0 %}
-<table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Test Category</th>
-	<th>View by Tag</th>
-	<th>View Problems</th>
-        <th>Number of Untagged Problems</th>
-	<th>Number of Problems with no Solution</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for type,label,untagged,unsolution,num in rows2 %}
-      
-      <tr>
-	<td>{{label}}</td>
-        <td><a href="CM/bytag/{{type}}">View by Tag</a></td>
-        <td><a href="CM/bytopic/{{type}}">View Problems</a></td>
-        <td> {{untagged}}/{{num}}</td>
-        <td>{{unsolution}}/{{num}}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
--->
+  {% endif %}
 {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" %}
 <a class="btn btn-primary" href="addproblemform/">Add a problem</a>
 {% endif %}

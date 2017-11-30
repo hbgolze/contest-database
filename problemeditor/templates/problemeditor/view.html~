@@ -1,6 +1,6 @@
 {% extends 'randomtest/base.html' %}
 
-{% block title %}Problem: {{form.instance.label}}{% endblock %}
+{% block title %}Problem: {{prob.label}}{% endblock %}
 
 {% block content %}
 
@@ -8,14 +8,14 @@
   <li><a href="/problemeditor/">Select Type</a></li>
   <li><a href="../../">{{typelabel}}</a></li>
   <li><a href="../">{{tag}}</a></li>
-  <li class="active">{{form.instance.readable_label}}</li>
+  <li class="active">{{prob.readable_label}}</li>
 </ol>
-<h2>Edit Problem</h2>
+<h2>Edit Problem: {{prob.readable_label}}</h2>
 
 <div class="container-fluid">
   <div class="row">
     <div class="col-xs-12">  
-    {% include 'problemeditor/problem-snippets/problem-item.html' with prob=form.instance no_link=1 %}
+    {% include 'problemeditor/problem-snippets/problem-item.html' with no_link=1 %}
     </div>
   </div>
 

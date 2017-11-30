@@ -4,14 +4,16 @@
 
 {% block content %}
 
-<ol class="breadcrumb">
-  <li><a href="/problemeditor/">Problem Editor</a></li>
-  <li><a href="/problemeditor/tags/">Edit Tags</a></li>
-  <li class="active">{{tag.tag}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Problem Editor</a></li>
+    <li class="breadcrumb-item"><a href="/problemeditor/tags/">Edit Tags</a></li>
+    <li class="breadcrumb-item active">{{tag.tag}}</li>
+  </ol>
+</div>
+<div class="container">
 <h2>Problems with tag: {{tag.tag}}</h2>
 
-<div class="container-fluid">
 
   {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' with rows=page_obj %}
 </div>

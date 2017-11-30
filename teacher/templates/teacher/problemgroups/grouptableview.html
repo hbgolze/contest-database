@@ -3,19 +3,24 @@
 
 {% block content %}
 
-<div class="container-fluid">
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">My Problem Groups</li>
+  </ol>
+</nav>
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
+    <div class="col-sm-3 sidebar">
       {% include 'teacher/sidebar.html' with activenav="myproblemgroups" %}
     </div>
-    <div class="col-sm-9 col-md-10 main">
-
+    <div class="col-sm-9 main">
       <h2>My Problem Groups</h2>
+      <div id="empty-message">
       {% if probgroups.count == 0 %}
       You don't have any problem groups yet.
       {% endif  %}
-
-      {% if probgroups.count > 0 %}
+      </div>
+      
       <table class="table table-striped">
 	<thead>
 	  <tr>
@@ -25,21 +30,15 @@
 	    <th>Remove</th>
 	  </tr>
 	</thead>
-	<tbody>
+	<tbody id="group-row-table">
 	  {% for pg in probgroups %}
-	  <tr>
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
-            <td>{{pg.problems.count}}</td>
-            <td>{{pg.created_date}}</td>
-	    <td><a href="{{pg.pk}}/delete/"><span class="glyphicon glyphicon-remove" style="color:#ff0000"></span></a></td>
-	  </tr>
+	  {% include 'teacher/problemgroups/grouptablerow.html' %}
 	  {% endfor %}
 	</tbody>
       </table>
-      
-      {% endif %}
-      <p>Start a new problem group.</p>
-      <form action="." method="post">
+
+      <h2>Start a New Problem Group</h2>
+      <form action="." method="post" id="new-group-form">
 	{% csrf_token %}
 	<p>{{form}}</p>
 	<p><button type="submit" class="btn btn-primary" value="New Group">New Group</button></p>
@@ -49,6 +48,23 @@
   </div>
 </div>
 
+<script>
+$(document).on('submit',"#new-group-form",function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/new-problemgroup/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(data) {
+      $("#group-row-table").append(data['group-row']);
+      $("#id_name").val("");
+      $("#empty-message").empty();
+    }
+  });
+  return false;
+});
+</script>
 
 
 {% endblock %}

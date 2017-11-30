@@ -3,62 +3,82 @@
 {% block title %}My Activity{% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li class="active">My Activity</li>
-</ol>
-<h2>My Activity</h2>
-
-<div class="content">
-{% if log|length == 0 %}
-No actions yet.
-{% else %}
-
-  <div class="list-group">
-    {% for entry,islinked in log %}
-      {% if islinked == True %}
-         {% if entry.content_type.name == "solution" %}
-           <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
-         {% elif entry.content_type.name == "problem" %}
-           <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
-         {% elif entry.content_type.name == "problem approval" %}
-           <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
-         {% endif %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">My Activity</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>My Activity</h2>
+  <div class="row">
+    <div class="col">
+      {% if log|length == 0 %}
+      No actions yet.
       {% else %}
-         {% if entry.content_type.name == "solution" %}
-           <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
-         {% elif entry.content_type.name == "problem" %}
-           <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
-         {% elif entry.content_type.name == "problem approval" %}
-           <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
-         {% endif %}
-      {% endif %}
-    {% endfor %}
+      
+      <div class="list-group mb-3">
+	{% for entry,islinked in log %}
+	{% if islinked == True %}
+        {% if entry.content_type.name == "solution" %}
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        {% elif entry.content_type.name == "problem" %}
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        {% elif entry.content_type.name == "problem approval" %}
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        {% endif %}
+	{% else %}
+        {% if entry.content_type.name == "solution" %}
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        {% elif entry.content_type.name == "problem" %}
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        {% elif entry.content_type.name == "problem approval" %}
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        {% endif %}
+	{% endif %}
+	{% endfor %}
+      </div>
+    </div>
   </div>
-
-{% if log.has_other_pages %}
-<ul class="pagination">
-        {% if log.has_previous %}
-            <li><a href="?page={{ log.previous_page_number }}">&laquo;</a></li>
-            {% else %}
-        <li class="disabled"><span>&laquo;</span></li>
-        {% endif %}
-        {% for i in log.paginator.page_range %}
-          {% if log.number == i %}
-            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+  {% endif %}
+  {% if log.has_other_pages %}
+  <div class="row">
+    <div class="col">
+      <nav aria-label="Search result pages">
+        <ul class="pagination">
+          {% if log.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ log.previous_page_number }}">&laquo;</a></li>
           {% else %}
-            <li><a href="?page={{ i }}">{{ i }}</a></li>
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
           {% endif %}
-        {% endfor %}
+          {% for i in log.paginator.page_range %}
+          {% if log.number == i %}
+          <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+          {% if log.number|add:-3 < i and log.number|add:3 > i %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% elif forloop.last %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% elif forloop.first %}
+            <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% elif i == 2 %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% elif i == log.paginator.page_range|length|add:-1 %}
+            <li class="page-item disabled"><span class="page-link">...</span></li>
+            {% endif %}
+            {% endif %}
+          {% endfor %}
 
 
-        {% if log.has_next %}
-        <li><a href="?page={{ log.next_page_number }}">&raquo;</a></li>
-        {% else %}
-        <li class="disabled"><span>&raquo;</span></li>
-        {% endif %}
-</ul>
-{% endif %}
-{% endif %}
+            {% if log.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ log.next_page_number }}">&raquo;</a></li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
 {% endblock %}

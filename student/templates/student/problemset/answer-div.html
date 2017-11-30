@@ -14,7 +14,7 @@ Conditions:
 {% endcomment %}
 		            <div class="form-group has-success has-feedback">
 			      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
-			      <span class="glyphicon glyphicon-ok form-control-feedback"></span>
+			      <span class="fa fa-check form-control-feedback"></span>
 			    </div>
 			  {% else %}
 {% comment %}
@@ -24,7 +24,7 @@ WHAT ABOUT AMC ANSWERS (left blank)
 {% endcomment %}
 			    <div class="form-group has-error has-feedback">
 	 		      <input type="text" class="form-control answer-input" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}{% if time_is_up and problemset.published_problemset.is_graded%} (Correct Answer: {{answer}}){% endif %}"{% if time_is_up %}disabled{% endif %}>
-			      <span class="glyphicon glyphicon-remove form-control-feedback"></span>
+			      <span class="fa fa-remove form-control-feedback"></span>
 			    </div>
                           {% endif %}
                         {% else %}
@@ -62,9 +62,9 @@ WHAT ABOUT AMC ANSWERS (left blank)
 			<span id="answerstatus_{{prob_label}}">
 			  {% if resp.attempted %}
 			    {% if response == answer %}
-			      <span class="glyphicon glyphicon-ok" style="color:green"></span>
+			      <span class="fa fa-check" style="color:green"></span>
 			    {% else %}
-			      <span class="glyphicon glyphicon-remove" style="color:red"></span>
+			      <span class="fa fa-remove" style="color:red"></span>
 			    {% endif %}
 			  {% endif %}
 			</span>

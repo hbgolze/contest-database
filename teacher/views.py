@@ -260,7 +260,7 @@ def slidesview(request,**kwargs):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         rows = paginator.page(paginator.num_pages)
-    return render(request,'teacher/publishedclasses/slidesview.html',{'slides':slidegroup,'rows':rows,'class':pub_class})
+    return render(request,'teacher/publishedclasses/slidesview.html',{'slides':slidegroup,'rows':rows,'class':pub_class,'nbar':'teacher'})
 
 def teacherproblemsetview(request,**kwargs):
     context={}
@@ -705,7 +705,7 @@ def addoriginalproblem(request,pk,upk,ppk):
 
 @login_required
 def update_point_value(request,pk,upk,ppk,pppk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
     if userprofile.my_classes.filter(pk = pk).exists() == False:
         raise Http404("Unauthorized.")
@@ -730,10 +730,8 @@ def update_point_value(request,pk,upk,ppk,pppk):
 
 @login_required
 def loadeditquestiontype(request,**kwargs):
-    print('sf')
     userprofile=request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
-    print('sf2')
     if po.test != None:
         if po.test.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
             raise Http404("Unauthorized.")
@@ -814,42 +812,48 @@ def savequestiontype(request,**kwargs):
 
 
 @login_required
-def numprobsmatching(request,pk,upk,ppk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+def numprobsmatching(request,pk,upk,ppk):#changing tag to pk
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
     form = request.GET
     typ = form.get('contest-type','')
-    desired_tag = form.get('contest-tags','')
-    curr_problems = problemset.problem_objects.filter(isProblem=1)
-    P=Problem.objects.filter(type_new__type=typ).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).exclude(id__in=curr_problems.values('problem_id')).distinct()####check this once contest problems are in a problem set.
+    desired_tag = get_object_or_404(NewTag,pk = form.get('contest-tags',''))
+    curr_problems = problemset.problem_objects.filter(isProblem = 1)
+    P = Problem.objects.filter(type_new__type = typ).filter(newtags__in = NewTag.objects.filter(tag__startswith = desired_tag)).exclude(id__in = curr_problems.values('problem_id')).distinct()####check this once contest problems are in a problem set.
     return JsonResponse({'num':str(P.count())})
 
 @login_required
-def reviewmatchingproblems(request,pk,upk,ppk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
-    P=[]
+    P = []
     desired_tag = ''
+    if request.method == 'GET':
+        form = request.GET
+        typ = form.get('contest-type','')
+        desired_tag = get_object_or_404(NewTag,pk = form.get('contest-tags',''))
+        curr_problems = problemset.problem_objects.filter(isProblem = 1)
+        P = Problem.objects.filter(type_new__type = typ).filter(newtags__in = NewTag.objects.filter(tag__startswith = desired_tag)).exclude(id__in = curr_problems.values('problem_id')).distinct().order_by("problem_number")
     if request.method == 'POST':
-        form=request.POST
+        form = request.POST
         if 'add-selected-problems' in form:
-            checked=form.getlist("chk")
+            checked = form.getlist("chk")
             top = problemset.problem_objects.count()
             if len(checked)>0:
                 for i in range(0,len(checked)):
@@ -859,10 +863,6 @@ def reviewmatchingproblems(request,pk,upk,ppk):
                     po.save()
                 return redirect('../')
             return redirect('../')
-        typ = form.get('contest-type','')
-        desired_tag = form.get('contest-tags','')
-        curr_problems = problemset.problem_objects.filter(isProblem=1)
-        P=Problem.objects.filter(type_new__type=typ).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).exclude(id__in=curr_problems.values('problem_id')).distinct().order_by("problem_number")
     context={}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -875,34 +875,36 @@ def reviewmatchingproblems(request,pk,upk,ppk):
 @login_required
 def reviewproblemgroup(request,pk,upk,ppk):
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists()==False:
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
-    P=[]
+    P = []
     desired_tag = ''
     if request.method == 'POST':
-        form=request.POST
+        form = request.POST
         if 'add-selected-problems' in form:
             checked=form.getlist("chk")
             top = problemset.problem_objects.count()
-            if len(checked)>0:
+            if len(checked) > 0:
                 for i in range(0,len(checked)):
-                    p=Problem.objects.get(label=checked[i])
-                    po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem=1,problem=p,question_type = p.question_type_new)
+                    p = Problem.objects.get(label = checked[i])
+                    po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem = 1,problem = p,question_type = p.question_type_new)
                     po.problemset = problemset
                     po.save()
                 return redirect('../')
             return redirect('../')
+    if request.method == 'GET':
+        form = request.GET
         prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
         curr_problems = problemset.problem_objects.filter(isProblem=1)
-        P=prob_group.problems.exclude(id__in=curr_problems.values('problem_id')).distinct()
-    context={}
+        P=prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['problemset'] = problemset
@@ -1679,12 +1681,12 @@ class ProofUpdateView(UpdateView):
 def currentclassview(request,pk):#only for published classes...grading; viewing; etc.
     userprofile=request.user.userprofile
     my_class = get_object_or_404(PublishedClass,pk=pk)
-    return render(request,'teacher/publishedclasses/classview.html',{'class':my_class})
+    return render(request,'teacher/publishedclasses/classview.html',{'class':my_class,'nbar':'teacher'})
 
 @login_required
 def studentmanager(request):#request student accounts; add to classes
     userprofile = request.user.userprofile
-    return render(request,'teacher/students/studentmanager.html',{'userprofile':userprofile})
+    return render(request,'teacher/students/studentmanager.html',{'userprofile':userprofile,'nbar':'teacher'})
 
 @login_required
 def blindgrade(request,**kwargs):
@@ -1695,7 +1697,7 @@ def blindgrade(request,**kwargs):
         raise Http404('Not a proof question')
     responses = list(problem_object.response_set.all())
     shuffle(responses)
-    return render(request,'teacher/publishedclasses/blindgrading.html',{'problem_object':problem_object,'responses':responses,'class':my_class,'problemset':problemset})
+    return render(request,'teacher/publishedclasses/blindgrading.html',{'problem_object':problem_object,'responses':responses,'class':my_class,'problemset':problemset,'nbar':'teacher'})
 
 @login_required
 def alphagrade(request,**kwargs):
@@ -1705,7 +1707,7 @@ def alphagrade(request,**kwargs):
     if problem_object.question_type.question_type != 'proof':
         raise Http404('Not a proof question')
     responses = problem_object.response_set.order_by('user_problemset__userunitobject__user_unit__user_class__userprofile__user__username')
-    return render(request,'teacher/publishedclasses/alphagrading.html',{'problem_object':problem_object,'responses':responses,'class':my_class,'problemset':problemset})
+    return render(request,'teacher/publishedclasses/alphagrading.html',{'problem_object':problem_object,'responses':responses,'class':my_class,'problemset':problemset,'nbar':'teacher'})
 
 
 
@@ -1731,6 +1733,16 @@ def grouptableview(request):
     context['probgroups'] =  prob_groups
     return HttpResponse(template.render(context,request))
 
+@login_required
+def newproblemgroup(request):
+    userprofile = request.user.userprofile
+    if request.method == 'POST':
+        group_form = GroupModelForm(request.POST)
+        if group_form.is_valid():
+            group = group_form.save()
+            userprofile.problem_groups.add(group)
+            userprofile.save()
+            return JsonResponse({'group-row':render_to_string('teacher/problemgroups/grouptablerow.html',{'pg':group})})
 @login_required
 def viewproblemgroup(request,pk):
     userprofile = request.user.userprofile

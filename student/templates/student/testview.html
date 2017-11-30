@@ -1,24 +1,26 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../">My Classes</a></li>
-  <li class="active">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_test.name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">My Classes</a></li>
+    <li class="breadcrumb-item active">{{test.userunitobject.user_unit.user_class.published_class.name}} > {{test.userunitobject.user_unit.published_unit.name}} > {{test.published_test.name}}</li>
+  </ol>
+</nav>
 
 {% load tz %}
 <div class="container">
   <h2>{{test.published_test.name}}</h2>
   {% if too_early %}
   <div class="row">
-    <p class="col-xs-12">
+    <p class="col-12">
       This test is not available yet. Please try again during the testing period (beginning {{test.published_test.start_date|timezone:request.user.userprofile.time_zone}}).
     </p>
   </div>
   {% else %}
 
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
       <table class="table table-bordered">
 	{% for response_row,start_index in response_rows %}
 	{% if not forloop.first %}
@@ -45,7 +47,7 @@
 	    <span id="table-problem-status-{{resp.publishedproblem_object.pk}}">
 	      {% if not_graded %}
                {% if resp.attempted %}
-                <span class="glyphicon glyphicon-floppy-saved" style="color:blue"></span>
+                <span class="fa fa-save" style="color:blue"></span>
                {% else %}
                 -
                {% endif %}
@@ -54,36 +56,36 @@
 	       {% if resp.publishedproblem_object.question_type.question_type == "multiple choice" %}
 	        {% if resp.publishedproblem_object.isProblem == 0 %}
 	         {% if resp.response == resp.publishedproblem_object.mc_answer %}
-	          <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	          <span class="fa fa-check" style="color:green"></span>
 	         {% else %}
-	          <span class="glyphicon glyphicon-remove" style="color:red"></span>
+	          <span class="fa fa-remove" style="color:red"></span>
 	         {% endif %}
 	        {% else %}
 	         {% if resp.response == resp.publishedproblem_object.problem.mc_answer %}
-	          <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	          <span class="fa fa-check" style="color:green"></span>
 	         {% else %}
-	          <span class="glyphicon glyphicon-remove" style="color:red"></span>
+	          <span class="fa fa-remove" style="color:red"></span>
 	         {% endif %}
 	        {% endif %}
 	       {% elif resp.publishedproblem_object.question_type.question_type == "short answer" %}
 	        {% if resp.publishedproblem_object.isProblem == 0 %}
 	         {% if resp.response == resp.publishedproblem_object.sa_answer %}
-	          <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	          <span class="fa fa-check" style="color:green"></span>
 	         {% else %}
-	          <span class="glyphicon glyphicon-remove" style="color:red"></span>
+	          <span class="fa fa-remove" style="color:red"></span>
 	         {% endif %}
 	        {% else %}
 	         {% if resp.response == resp.publishedproblem_object.problem.sa_answer %}
-	          <span class="glyphicon glyphicon-ok" style="color:green"></span>
+	          <span class="fa fa-check" style="color:green"></span>
 	         {% else %}
-	          <span class="glyphicon glyphicon-remove" style="color:red"></span>
+	          <span class="fa fa-remove" style="color:red"></span>
 	         {% endif %}
 	        {% endif %}
                {% elif resp.publishedproblem_object.question_type.question_type == "proof" %}
                 {% if resp.is_graded %}
 	  	  {{resp.points}}/{{resp.point_value}}
                 {% else %}
-	          <span class="glyphicon glyphicon-hourglass" style="color:orange"></span>
+	          <span class="fa fa-hourglass" style="color:orange"></span>
                 {% endif %}
 	       {% endif %}
 	      {% else %}
@@ -93,7 +95,7 @@
 	    </span>
 	    <span id="table-star-status-{{resp.publishedproblem_object.pk}}">
 	      {% if resp.stickied %}
-	       (<span class="glyphicon glyphicon-star" style="color:#FFD700"></span>)
+	       (<span class="fa fa-star" style="color:#FFD700"></span>)
 	      {% endif %}
 	    </span>
 	  </td>
@@ -105,16 +107,16 @@
   </div>
   {% if test.is_in_progress %}
   <div class="row">
-    <div class="col-xs-6">
+    <div class="col-6">
       <p><b>Start Time:</b> {{test.start_time|timezone:request.user.userprofile.time_zone}}</p>
     </div>
-    <div class="col-xs-6">
+    <div class="col-6">
       <p><b>End Time:</b> {{test.end_time|timezone:request.user.userprofile.time_zone}}</p>
     </div>
   </div>
   {% endif %}
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
       {% csrf_token %}
       <input type="hidden" name="startform" value="{{pk}}">
       <table>
@@ -222,7 +224,7 @@ $(document).on('click touch',".js-star-toggle",function(event) {
         success: function(data) {
             $("#star_"+data['response_pk']).html(data['response_code']);
             if (data['is_stickied']=='true') {
-                $("#table-star-status-"+data['problem_label']).html("(<span class='glyphicon glyphicon-star' style='color:#FFD700'></span>)");
+                $("#table-star-status-"+data['problem_label']).html("(<span class='fa fa-star' style='color:#FFD700'></span>)");
             } else {
                 $("#table-star-status-"+data['problem_label']).html("");
             }
@@ -249,11 +251,11 @@ $(document).on('click',".js-save-mc-response",function(event) {
                 $("#table-problem-status-"+problem_label).html("-");
             } else if (data['no_change']) {
                 $("#answerstatus_"+problem_label).html("(Saved)");
-                $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-floppy-saved' style='color:blue'></span>");
+                $("#table-problem-status-"+problem_label).html("<span class='fa fa-save' style='color:blue'></span>");
             } else {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 $("#answerstatus_"+problem_label).html("(Saved)");
-                $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-floppy-saved' style='color:blue'></span>");
+                $("#table-problem-status-"+problem_label).html("<span class='fa fa-save' style='color:blue'></span>");
             }
             }
         }
@@ -280,11 +282,11 @@ $(document).on('click',".js-save-sa-response",function(event) {
                 $("#table-problem-status-"+problem_label).html("-");
             } else if (data['no_change']) {
                 $("#answerstatus_"+problem_label).html("(Saved)");
-                $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-floppy-saved' style='color:blue'></span>");
+                $("#table-problem-status-"+problem_label).html("<span class='fa fa-save' style='color:blue'></span>");
             } else {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 $("#answerstatus_"+problem_label).html("(Saved)");
-                $("#table-problem-status-"+problem_label).html("<span class='glyphicon glyphicon-floppy-saved' style='color:blue'></span>");
+                $("#table-problem-status-"+problem_label).html("<span class='fa fa-save' style='color:blue'></span>");
             }
             }
         }
@@ -318,7 +320,7 @@ $(document).on('submit',"#edit-response-form",function(event) {
         dataType: 'json',
         success: function(data) {
             $("#proof-text-div-"+data['po_pk']).html(data['display_response']);
-            $("#table-problem-status-"+data['po_pk']).html("<span class='glyphicon glyphicon-floppy-saved' style='color:blue'></span>");
+            $("#table-problem-status-"+data['po_pk']).html("<span class='fa fa-save' style='color:blue'></span>");
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"proof-text-div-"+data['po_pk']]);
 	    $("#attempted-date-"+data['po_pk']).html(data['mod-date']);
 	    $("#edit-response-modal").hide();

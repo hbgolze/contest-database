@@ -2,40 +2,47 @@
 
 
 {% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Problem Groups</li>
+  </ol>
+</nav>
+<div class="container">
 <h2>My Problem Groups</h2>
-<div class="container-fluid">
   <div class="row">
-    <div class="col-xs-12 col-md-9">
-      {% if probgroups.count == 0 %}
-      You don't have any problem groups yet.
-      {% endif  %}
+    <div class="col-12 col-lg-9">
+      <div id="empty-message">
+	{% if probgroups.count == 0 %}
+	You don't have any problem groups yet.
+	{% endif  %}
+      </div>
 
-      {% if probgroups.count > 0 %}
       <table class="table table-striped">
 	<thead>
 	  <tr>
             <th>Group Name</th>
             <th>Number of Problems</th>
 	    <th>Date Added</th>
-	    <th>Remove</th>
+	    <th></th>
 	  </tr>
 	</thead>
-	<tbody>
+	<tbody id="group-row-table">
 	  {% for pg in probgroups %}
 	  <tr>
             <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
             <td>{{pg.problems.count}}</td>
             <td>{{pg.created_date}}</td>
-	    <td><a href="{{pg.pk}}/delete/"><span class="glyphicon glyphicon-remove" style="color:#ff0000"></span></a></td>
+	    <td style="text-align:right"><a href="{{pg.pk}}/delete/"><span class="fa fa-remove" style="color:#ff0000"></span></a></td>
 	  </tr>
 	  {% endfor %}
 	</tbody>
       </table>
-      {% endif %}
     </div>
-    <div class="col-xs-12">
-      <p>Start a new problem group.</p>
-      <form action="." method="post">
+  </div>
+  <div class="row">
+    <div class="col-12">
+<h2>Start a New Problem Group</h2>
+      <form action="." method="post" id="new-group-form">
 	{% csrf_token %}
 	<p>{{form}}</p>
 	<p><button type="submit" class="btn btn-primary" value="New Group">New Group</button></p>
@@ -45,4 +52,22 @@
   </div>
 </div>
 
+
+<script>
+$(document).on('submit',"#new-group-form",function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/new-problemgroup/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(data) {
+      $("#group-row-table").append(data['group-row']);
+      $("#id_name").val("");
+      $("#empty-message").empty();
+    }
+  });
+  return false;
+});
+</script>
 {% endblock %}

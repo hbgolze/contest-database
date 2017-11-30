@@ -12,97 +12,26 @@ document.write("</div>");
 {% endblock %}
 
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="../../../../">My Classes</a></li>
-  <li><a href="../../">{{class.published_class.name}}</a></li>
-  <li><a href="../">Roster</a></li>
-  <li class="active">View Class ({{username}})</li>
 
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{class.published_class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../">Roster</a></li>
+    <li class="active breadcrumb-item">View Class ({{username}})</li>
+    
+  </ol>
+</nav>
 
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
     <div class="col-sm-9 main">
       <div id="status_message">
       </div>
       <div id="my_classes">
 	<h2>{{class.published_class.name}} ({{username}})</h2>
-<div class="list-group">
-	<div class="list-group-item" style="background-color:lightgray">
-	  <div class="row">
-	    <div class="col-xs-4">
-	      Class Summary: {{class.published_class.pub_units.count}} unit(s)
-	    </div>
-	    <div class="col-xs-4">
-	      {{class.num_correct}}/{{class.num_problems}}
-	      <span style="font-size:30%"><script language="javascript">drawprogressbar({{class.num_correct}}*100/Math.max({{class.num_problems}},1),{% if class.num_correct == class.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-	    </div>
-	    <div class="col-xs-4" style="text-align:right">
-	      Points Earned: {{class.points_earned}}/{{class.total_points}}
-	    </div>
-	  </div>
-	</div>
-</div>
-	<div class="list-group">
-	  {% for unit in class.userunit_set.all %}
-	  <div href="#unit_{{unit.pk}}" class="list-group-item" style="background-color:lightgray">
-	    <div class="row">
-	      <div class="col-xs-4">
-		<b>Unit {{forloop.counter}}:</b> 
-		{{unit.published_unit.name}} ({{unit.num_problemsets}} problem set(s))
-	      </div>
-	      <div class="col-xs-4">
-		{{unit.num_correct}}/{{unit.num_problems}}
-		<span style="font-size:30%"><script language="javascript">drawprogressbar({{unit.num_correct}}*100/Math.max({{unit.num_problems}},1),{% if unit.num_correct == unit.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-	      </div>
-	      <div class="col-xs-4" style="text-align:right">
-		Points Earned: {{unit.points_earned}}/{{unit.total_points}}
-	      </div>
-	    </div>
-	  </div>
-
-	  <div class="list-group" id="unit_{{unit.pk}}">
-	    {% for user_unitobject in unit.userunitobject_set.all %}
-	    {% if user_unitobject.userproblemset %}
-	    {% with pset=user_unitobject.userproblemset %}
-	    <a href="problemset/{{pset.pk}}" class="list-group-item">
-	      <div class="row">
-		<div class="col-xs-4">
-		  <b>Problem Set:</b> {{pset.published_problemset.name}}
-		</div>
-		<div class="col-xs-4">
-		  {{pset.num_correct}}/{{pset.num_problems}}
-		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{pset.num_correct}}*100/Math.max({{pset.num_problems}},1),{% if pset.num_correct == pset.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-		</div>
-		<div class="col-xs-4" style="text-align:right">
-		  Points Earned: {{pset.points_earned}}/{{pset.total_points}}
-		</div>
-	      </div>
-	    </a>
-	    {% endwith %}
-	    {% elif user_unitobject.usertest %}
-	    {% with test=user_unitobject.usertest %}
-	    <a href="test/{{test.pk}}" class="list-group-item">
-	      <div class="row">
-		<div class="col-xs-4">
-		  <b>Test:</b> {{test.published_test.name}}
-		</div>
-		<div class="col-xs-4">
-		  {{test.num_correct}}/{{test.num_problems}}
-		  <span style="font-size:30%"><script language="javascript">drawprogressbar({{test.num_correct}}*100/Math.max({{test.num_problems}},1),{% if test.num_correct == test.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},150)</script></span>
-		</div>
-		<div class="col-xs-4" style="text-align:right">
-		  Points Earned: {{test.points_earned}}/{{test.total_points}}
-		</div>
-	      </div>
-	    </a>
-	    {% endwith %}
-	    {% endif %}
-	    {% endfor %}
-	  </div>
-	  {% endfor %}
-	</div>
+{% include 'student/classcard.html' with collapse=0 %}
       </div>
     </div>
 

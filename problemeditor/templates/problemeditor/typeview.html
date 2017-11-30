@@ -3,28 +3,39 @@
 {% block title %}Choose a Category{% endblock %}
 
 
-<ol class="breadcrumb">
-  <li class="active">Select Type</li>
-</ol>
+
 {% block content %}
-<h2>Problem Editor</h2>
-<div class="content">
-  
-  <div class="pull-right"><a href="tags" class="btn btn-primary">Tags</a></div>
-  
-  <p>Please select a test category.</p>
-  {% if rows|length > 0 %}
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Test Category</th>
-	<th>View by Tag</th>
-	<th>View by Test</th>
-        <th>Number of Untagged Problems</th>
-	<th>Number of Problems with no Solution</th>
-      </tr>
-    </thead>
-    <tbody>
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Select Type</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problem Editor</h2>
+  <div class="row">
+    <div class="col-10">
+      <p>Please select a test category.</p>
+    </div>
+    <div class="col-2" style="text-align:right">
+      <p><a href="tags" class="btn btn-primary">Tags</a></p>
+    </div>
+
+  </div>
+  <div class="row">
+    <div class="col">
+      {% if rows|length > 0 %}
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Test Category</th>
+	    <th>View by Tag</th>
+	    <th>View by Test</th>
+            <th>Number of Untagged Problems</th>
+	    <th>Number of Problems with no Solution</th>
+	  </tr>
+	</thead>
+	<tbody>
       {% for type,untagged,unsolution in rows %}
       
       <tr>
@@ -37,13 +48,15 @@
         <td>{{unsolution}}/{{type.problems.count}}</td>
       </tr>
       {% endfor %}
-    </tbody>
-  </table>
-  {% endif %}
-{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" %}
-<a class="btn btn-primary" href="addproblemform/">Add a problem</a>
-{% endif %}
-
+	</tbody>
+      </table>
+      {% endif %}
+      {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" %}
+      <a class="btn btn-primary" href="addproblemform/">Add a problem</a>
+      {% endif %}
+      
+    </div>
+  </div>
 </div>
 
 {% endblock %}

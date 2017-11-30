@@ -1,14 +1,14 @@
   <div class="row">
-    <div class="col-xs-12">
+    <div class="col-12">
       <div id="problemList" class="list-group">
         {% for prob in rows %}
         <div class="list-group-item" id="problem_{{prob.pk}}">
 	  <div class="row">
-	    <div class="col-xs-1">
+	    <div class="col-1">
 	      {% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}.{% else %}{{forloop.counter}}.{% endif %}
 
 	    </div>
-	    <div class="col-xs-11">
+	    <div class="col-11">
 	      <p>
 		{% include "problemeditor/snippets/problemtext.html" %}
 		[{{prob.readable_label}}] (<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>)
@@ -46,7 +46,7 @@
 	      
 	      {% if request.user.is_superuser %}
 	      <p>
-		<a class="btn btn-default add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
+		<a class="btn btn-secondary add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
 	      </p>
 	      <div id="duplicate-status-{{prob.pk}}"></div>
 	      {% endif %}
@@ -64,7 +64,7 @@
 		<ul id="tag-list-{{prob.pk}}">
 		  {% for tagg in prob.newtags.all %}
 		  <li>
-		    <span class="label label-default">{{tagg}}</span>  <span class="delete-tag-link" id="deletetag_{{prob.pk}}_{{tagg.pk}}" style="cursor:pointer;color:red;">&#10006;</span>
+		    <span class="badge badge-success">{{tagg}}</span>  <span class="delete-tag-link" id="deletetag_{{prob.pk}}_{{tagg.pk}}" style="cursor:pointer;color:red;">&#10006;</span>
 		  </li>
 		  {% endfor %}
 		</ul>
@@ -98,8 +98,8 @@
 	    <div class="col-xs-11">
 	      <label>Solutions:</label>
 	      <div>
-		<button class="btn btn-default solution-link" id="solution-link_{{prob.pk}}">View Solutions ({{prob.solutions.count}})</button>
-		<bytton class="btn btn-default new-sol" id="new-sol_{{prob.pk}}">New Solution</button>
+		<button class="btn btn-secondary solution-link" id="solution-link_{{prob.pk}}">View Solutions ({{prob.solutions.count}})</button>
+		<bytton class="btn btn-secondary new-sol" id="new-sol_{{prob.pk}}">New Solution</button>
 	      </div>
 	    </div>
 	  </div>
@@ -141,8 +141,8 @@
 	<form method="post" action="." class="add-linked-problem-form">
 	  
           <div class="modal-header">
+            <h5 class="modal-title">Add Link to Duplicate Problem</h5>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add Link to Duplicate Problem</h4>
 	  </div>
 	  <div class="modal-body">
             {% csrf_token %}
@@ -154,7 +154,7 @@
 	  </div>
 	  <div class="modal-footer">
             <button type="submit" name="addlink" class="btn btn-primary">Add Linked Problem</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 	  </div>
 	</form>
       </div>

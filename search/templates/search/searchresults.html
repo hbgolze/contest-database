@@ -2,99 +2,127 @@
 
 {% block content %}
 
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../">Search</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Search Results</li>
+  </ol>
+</nav>
 
-<h2>Search results for "{{searchterm}}"</h2>
-There are {{matchnums}} matching problems in the database.
-<br>
 
 <div class="container">
-<table class="table">
-{% for prob in rows %}
-<tr>
-<td valign="top"><br>
-{{ forloop.counter|add:rows.start_index|add:-1 }}.
-</td>
-<td>
-{% if prob.question_type_new.question_type == 'multiple choice' %}
-{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}] {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}<br>
-{% else %}
-{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}] {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}<br>
-{% endif %}
-
-{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
-<form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
-  {% csrf_token %}
-  <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
-    {% include "problemeditor/problem-snippets/components/tag_snippet.html" %}
+  <h2>Search results for "{{searchterm}}"</h2>
+  <p>There are {{matchnums}} matching problems in the database.</p>
+  <div class="row mb-3">
+    <div class="col-lg-9 list-group">
+      {% for prob in rows %}
+      <div class="list-group-item">    
+	<div class="row">
+	  <div class="col-1">
+	    {{ forloop.counter|add:rows.start_index|add:-1 }}.
+	  </div>
+	  <div class="col-11">
+	    {% if prob.question_type_new.question_type == 'multiple choice' %}
+	    {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}] {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}<br>
+	    {% else %}
+	    {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}] {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}<br>
+	    {% endif %}
+	    
+	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+	    <form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
+	      {% csrf_token %}
+	      <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
+		{% include "problemeditor/problem-snippets/components/tag_snippet.html" %}
+	      </div>
+	    </form>
+	    
+	    <div class="col-xs-7">
+	      <form action="{% url 'add_tag' %}" method="post" class="js-tag-form">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{{ request}}">
+		<label for="addtag_{{prob.pk}}">Add Tag:</label>
+		<select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+		  <option value="" disabled selected>Select a Tag</option>
+		  {% for tag in tags %}
+		  <option value="{{tag.pk}}">{{tag}}
+		  </option>
+		  {% endfor %}
+		</select>
+		<div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
+		  
+		</div>
+	      </form>
+	    </div>
+	    {% endif %}
+	    
+	    <div class="col-xs-7">
+	      <form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
+		{% csrf_token %}
+		<input type="hidden" name="next" value="{{ request}}">
+		<label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
+		<select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
+		  <option value="" disabled selected>Select a Group</option>
+		  {% for pg in probgroups.all %}
+		  <option value="{{pg.pk}}">{{pg.name}}
+		  </option>
+		  {% endfor %}
+		</select>
+		<div id="adding-status-{{prob.pk}}" class="js-adding-status">
+		  
+		</div>
+	      </form>
+	    </div>
+	  </div>
+	</div>
+      </div>
+      {% endfor %}
+    </div>
   </div>
-</form>
-
-<div class="col-xs-7">
-  <form action="{% url 'add_tag' %}" method="post" class="js-tag-form">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request}}">
-    <label for="addtag_{{prob.pk}}">Add Tag:</label>
-    <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
-      <option value="" disabled selected>Select a Tag</option>
-      {% for tag in tags %}
-      <option value="{{tag.pk}}">{{tag}}
-      </option>
-      {% endfor %}
-    </select>
-    <div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
-
-    </div>
-  </form>
-</div>
-{% endif %}
-
-<div class="col-xs-7">
-  <form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
-    {% csrf_token %}
-    <input type="hidden" name="next" value="{{ request}}">
-<label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
-    <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
-      <option value="" disabled selected>Select a Group</option>
-      {% for pg in probgroups.all %}
-      <option value="{{pg.pk}}">{{pg.name}}
-      </option>
-      {% endfor %}
-    </select>
-    <div id="adding-status-{{prob.pk}}" class="js-adding-status">
-
-    </div>
-  </form>
-</div>
-
-</td>
-</tr>
-{% endfor %}
-</table>
-</div>
-
-{% if rows.has_other_pages %}
-<ul class="pagination">
-        {% if rows.has_previous %}
-            <li><a href="?page={{ rows.previous_page_number }}&{{current_url}}">&laquo;</a></li>
-            {% else %}
-        <li class="disabled"><span>&laquo;</span></li>
-        {% endif %}
-        {% for i in rows.paginator.page_range %}
-          {% if rows.number == i %}
-            <li class="active"><span>{{ i }} <span class="sr-only">(current)</span></span></li>
+  <div class="row">
+    <div class="col">
+      {% if rows.has_other_pages %}
+      <nav aria-label="Search result pages">
+        <ul class="pagination">
+          {% if rows.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}&{{current_url}}">&laquo;</a></li>
           {% else %}
-            <li><a href="?page={{ i }}&{{current_url}}">{{ i }}</a></li>
+          <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
           {% endif %}
-        {% endfor %}
-
-
-        {% if rows.has_next %}
-        <li><a href="?page={{ rows.next_page_number }}&{{current_url}}">&raquo;</a></li>
-        {% else %}
-        <li class="disabled"><span>&raquo;</span></li>
-        {% endif %}
-</ul>
+          {% for i in rows.paginator.page_range %}
+          {% if rows.number == i %}
+          <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
+          {% else %}
+{% if rows.number|add:-3 < i and rows.number|add:3 > i %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}&{{current_url}}">{{ i }}</a></li>
+{% elif forloop.last %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}&{{current_url}}">{{ i }}</a></li>
+{% elif forloop.first %}
+          <li class="page-item"><a class="page-link" href="?page={{ i }}&{{current_url}}">{{ i }}</a></li>
+{% elif i == 2 %}
+<li class="page-item disabled"><span class="page-link">...</span></li>
+{% elif i == rows.paginator.page_range|length|add:-1 %}
+<li class="page-item disabled"><span class="page-link">...</span></li>
 {% endif %}
+          {% endif %}
+          {% endfor %}
+
+
+          {% if rows.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}&{{current_url}}">&raquo;</a></li>
+          {% else %}
+          <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+
+
+
+
 
 
 <script>

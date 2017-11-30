@@ -1,6 +1,6 @@
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
             <div class="row">
-              <div class="col-xs-12">
+              <div class="col-12">
                 {% if s.publishedtextblock %}
                 {% autoescape off %}{{s.publishedtextblock.text_display|linebreaks}}{% endautoescape %}
                 {% endif %}

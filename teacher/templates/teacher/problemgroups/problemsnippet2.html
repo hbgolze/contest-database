@@ -1,10 +1,10 @@
 <li class="list-group-item prob-item" id="prob-item_{{prob.label}}">
   <input type="hidden" name="chk" value="{{prob.label}}"/>
   <div class="row">
-    <div class="col-xs-1">
+    <div class="col-1">
       {{forcount}}.
     </div>
-    <div class="col-xs-10">
+    <div class="col-10">
       {% if prob.question_type_new.question_type == 'multiple choice' %}
       {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
       {% else %}
@@ -12,8 +12,8 @@
       {% endif %}  
       {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
     </div>
-    <div class="col-xs-1">
-      <span class="glyphicon glyphicon-remove js-remove" style="color:red;cursor:pointer" id="remove_{{prob.label}}"></span>
+    <div class="col-1">
+      <span class="fa fa-remove js-remove" style="color:red;cursor:pointer" id="remove_{{prob.label}}"></span>
     </div>
   </div>
 </li>

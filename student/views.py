@@ -172,7 +172,7 @@ def toggle_star(request,**kwargs):
         return JsonResponse({
                 'response_pk' : response_pk,
                 'is_stickied' : 'false',
-                'response_code' : "<span class='glyphicon glyphicon-star-empty'></span>",
+                'response_code' : "<span class='fa fa-star-o'></span>",
                 'problem_label':response.publishedproblem_object.pk
                 })
     else:
@@ -191,7 +191,7 @@ def toggle_star(request,**kwargs):
         return JsonResponse({
                 'response_pk' : response_pk,
                 'is_stickied' : 'true',
-                'response_code' : "<span class='glyphicon glyphicon-star'></span>",
+                'response_code' : "<span class='fa fa-star'></span>",
                 'problem_label' : response.publishedproblem_object.pk
                 })
 

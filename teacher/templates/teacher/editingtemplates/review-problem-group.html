@@ -64,59 +64,64 @@ function fixcolors() {
 }
 </script>
 
-<ol class="breadcrumb">
-  <li><a href="../../../../../../../">My Classes</a></li>
-  <li><a href="../../../../../">{{my_class.name}}</a></li>
-  <li><a href="../../../">{{unit.name}}</a></li>
-  <li><a href="../">{% if problemset %}{{problemset.name}}{% elif test %}{{test.name}}{% endif %}</a></li>
-  <li class="active">Add Problems</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../../../../">{{my_class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../../">{{unit.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../">{% if problemset %}{{problemset.name}}{% elif test %}{{test.name}}{% endif %}</a></li>
+    <li class="breadcrumb-item active">Add Problems</li>
+  </ol>
+</nav>
 
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
+    <div class="col-sm-3 sidebar">
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
-    <div class="col-sm-9 col-md-10 main">
+    <div class="col-sm-9  main">
       <h2>Add Problems to {% if problemset %}{{problemset.name}}{% elif test %}{{test.name}}{% endif %} (from problem group: {{prob_group.name}})</h2>
-      <form action="." method="POST" id="problems">
-	{% csrf_token %}
-        <p><input type="checkbox" id="toggler" onclick="togglemarked();fixcolors()" checked/> Select/Deselect All</p>
-	{% if rows|length > 0 %}
-	<ul class="list-group" id="probList">
-	  {% for prob in rows %}
-	  <li class="list-group-item prob-item" id="prob-item_{{prob.label}}" style="background-color:#dff0d8">
-	    <div class="row">
-	      <div class="col-xs-1">
-		{{forloop.counter}}.
-	      </div>
-	      <div class="col-xs-10">
-		{% if prob.question_type_new.question_type == 'multiple choice' %}
-		{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
-		{% else %}
-		{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
-		{% endif %}
-		
-		{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
-	      </div>
-	      <div class="col-xs-1">
-		<input type="checkbox" class="chk" id="chk_{{prob.label}}" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked/>
-	      </div>
-	    </div>
-	  </li>
-	  {% endfor %}
-	  
-	</ul>
-	{% else %}
-	There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.
-	{% endif %}
-	<p>
-	  <button type="submit" class="btn btn-primary" name="add-selected-problems" value="add-selected-problems">Add Selected Problems</button>
-	</p>
-      </form>
+      <div class="row">
+	<div class="col">
+	  <form action="." method="POST" id="problems">
+	    {% csrf_token %}
+            <p><input type="checkbox" id="toggler" onclick="togglemarked();fixcolors()" checked> Select/Deselect All</p>
+	    {% if rows|length > 0 %}
+            <ul class="list-group mb-3" id="probList">
+	      {% for prob in rows %}
+	      <li class="list-group-item prob-item" id="prob-item_{{prob.label}}" style="background-color:#dff0d8">
+		<div class="row">
+		  <div class="col-1">
+		    {{forloop.counter}}.
+		  </div>
+		  <div class="col-10">
+		    <p>
+		    {% if prob.question_type_new.question_type == 'multiple choice' %}
+		    {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]
+		    {% else %}
+		    {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]
+		    {% endif %}
+		    </p>
+		    {% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
+		  </div>
+		  <div class="col-1">
+		    <input type="checkbox" class="chk" id="chk_{{prob.label}}" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked>
+		  </div>
+		</div>
+	      </li>
+	      {% endfor %}
+	    </ul>
+	    {% else %}
+	    <p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>
+	    {% endif %}
+            <p>
+	      <button type="submit" class="btn btn-primary" name="add-selected-problems" value="add-selected-problems">Add Selected Problems</button>
+	    </p>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
-
 </div>
 <script>
 $(".chk").change(function() {

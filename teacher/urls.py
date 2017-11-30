@@ -111,6 +111,7 @@ urlpatterns = [
     url(r'^ajax/save-slidegroup-name/$',views.saveslidegroupname, name="saveslidegroupname"),
     url(r'^ajax/edit-slide-title/$',views.editslidetitle, name="editslidetitle"),
     url(r'^ajax/save-slide-title/$',views.saveslidetitle, name="saveslidetitle"),
+    url(r'^ajax/new-problemgroup/$',views.newproblemgroup,name="newproblemgroup"),
 #    url(r'^edit/(?P<pk>\d+)/edit_section/(?P<spk>\d+)/$', login_required(views.SectionUpdateView.as_view()),name="update_section"),
 #    url(r'^edit/(?P<pk>\d+)/edit_subsection/(?P<spk>\d+)/$', login_required(views.SubsectionUpdateView.as_view()),name="update_subsection"),
 #    url(r'^edit/(?P<pk>\d+)/edit_textblock/(?P<spk>\d+)/$', login_required(views.TextBlockUpdateView.as_view()),name="update_textblock"),

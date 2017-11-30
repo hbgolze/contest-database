@@ -1,31 +1,37 @@
 {% extends "randomtest/base.html" %}
 
+{% block title %}
+Problem Group: {{prob_group.name}}
+{% endblock %}
+
 {% block content %}
-<ol class="breadcrumb">
-  <li><a href="/problemgroups/">My Problem Groups</a></li>
-  <li class="active">{{name}}</li>
-</ol>
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../">My Problem Groups</a></li>
+    <li class="breadcrumb-item active">{{name}}</li>
+  </ol>
+</nav>
 
-
-<div class="container-fluid">
+<div class="container">
   <div class="row">
-    <div class="col-sm-3 col-md-2 sidebar">
+    <div class="col-sm-3 sidebar">
       {% include 'teacher/sidebar.html' with activenav="myproblemgroups" %}
     </div>
-    <div class="col-sm-9 col-md-10 main">
+    <div class="col-sm-9 main">
       <h2>{{name}}</h2>
+<p><i>Note: You must click "Save" before any deletions are made permanent!</i></p>
       <form action="." method="POST" id="problems">
 	{% csrf_token %}
 	{% if rows|length > 0 %}
-	<ul class="list-group" id="probList">
+	<ul class="list-group mb-3" id="probList">
 	  {% for prob in rows %}
 	  <li class="list-group-item prob-item" id="prob-item_{{prob.label}}">
 	    <input type="hidden" name="chk" value="{{prob.label}}"/>
 	    <div class="row">
-	      <div class="col-xs-1">
+	      <div class="col-1">
 		{{forloop.counter}}.
 	      </div>
-	      <div class="col-xs-10">
+	      <div class="col-10">
 		{% if prob.question_type_new.question_type == 'multiple choice' %}
 		{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [{{prob.readable_label}}]<br>
 		{% else %}
@@ -34,8 +40,8 @@
 		
 		{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
 	      </div>
-	      <div class="col-xs-1">
-		<span class="glyphicon glyphicon-remove js-remove" style="color:red;cursor:pointer" id="remove_{{prob.label}}"></span>
+	      <div class="col-1" style="text-align:right">
+		<span class="fa fa-remove js-remove" style="color:red;cursor:pointer" id="remove_{{prob.label}}"></span>
 	      </div>
 	    </div>
 	  </li>
@@ -58,8 +64,8 @@
       <div class="modal-content">
 	<form method="GET" action="fetchproblems/" id="add-problems-form">
           <div class="modal-header">
+            <h5 class="modal-title">Add Random Problems</h5>
             <button type="button" class="close" data-dismiss="modal">&times;</button>
-            <h4 class="modal-title">Add Random Problems</h4>
           </div>
           <div class="modal-body">
             <div class="row">
@@ -100,7 +106,7 @@
           </div>
           <div class="modal-footer">
             <button type="submit" class="btn btn-primary" name="add-problems" value="add-problems">Add Random Problems</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
           </div>
 	</form>
       </div>
@@ -132,6 +138,7 @@ $("#add-problems-form").on('submit',function(event) {
             for (i=0; i < probs.length; i++) {
                 $("#probList").append(probs[i]);
             }
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"probList"]);
         }
     });
     return false;
