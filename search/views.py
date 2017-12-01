@@ -18,7 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag
+from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -93,27 +93,34 @@ def searchresults(request):
                 yearend=int(yearend)
 
             if len(tag)>0:
-                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
-                P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
+                P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
 
             else:
-                P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
-#            if solution_search:
-#                S_pk = []
-#                for i in P:
-#                    for j in i.solutions.all():
-#                        S_pk.append(j.pk)
-#                S = Solution.objects.filter(pk__in=S_pk)
+                P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(types__type = testtype).distinct()
+#            if form.get('solution_search','') is not None:
+#                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
+#                for i in keywords:
+#                    S = S.filter(solution_text__contains = i)
+#                P2 = Problem.objects.filter(id__in = S.values('parent_problem_id'))
 
-            for i in keywords:
-                P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i)|Q(label=i)|Q(test_label=i))
-            P=list(P)
-            P=sorted(P,key=lambda x:(x.problem_number,x.year))
+            if 'solutionsearch' in form:
+                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
+                for i in keywords:
+                    S = S.filter(solution_text__contains = i)
+                for i in keywords:
+                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+                P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
+            else:
+                for i in keywords:
+                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+            P = list(P)
+            P = sorted(P,key = lambda x:(x.problem_number,x.year))
             probgroups = userprofile.problem_groups
-            paginator=Paginator(P,25)
+            paginator = Paginator(P,25)
             page = request.GET.get('page')
             try:
-                prows=paginator.page(page)
+                prows = paginator.page(page)
             except PageNotAnInteger:
                 # If page is not an integer, deliver first page.
                 prows = paginator.page(1)
