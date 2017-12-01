@@ -1370,7 +1370,7 @@ def save_review(request,**kwargs):
     LogEntry.objects.log_action(
         user_id = request.user.id,
         content_type_id = ContentType.objects.get_for_model(review).pk,
-        object_id = rewview.id,
+        object_id = review.id,
         object_repr = prob.label,
         action_flag = CHANGE,
         change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
@@ -1387,7 +1387,7 @@ def save_new_review(request,**kwargs):
     LogEntry.objects.log_action(
         user_id = request.user.id,
         content_type_id = ContentType.objects.get_for_model(review).pk,
-        object_id = rewview.id,
+        object_id = review.id,
         object_repr = prob.label,
         action_flag = ADDITION,
         change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',

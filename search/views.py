@@ -95,8 +95,15 @@ def searchresults(request):
             if len(tag)>0:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
                 P=P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
+
             else:
                 P=Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype).distinct()
+#            if solution_search:
+#                S_pk = []
+#                for i in P:
+#                    for j in i.solutions.all():
+#                        S_pk.append(j.pk)
+#                S = Solution.objects.filter(pk__in=S_pk)
 
             for i in keywords:
                 P=P.filter(Q(problem_text__contains=i)|Q(mc_problem_text__contains=i)|Q(label=i)|Q(test_label=i))

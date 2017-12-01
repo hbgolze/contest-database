@@ -82,6 +82,7 @@ class Solution(models.Model):
     authors = models.ManyToManyField(User,blank=True)
     created_date = models.DateTimeField(default = timezone.now)
     modified_date = models.DateTimeField(default = timezone.now)
+    parent_problem = models.ForeignKey('Problem',null=True)
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
