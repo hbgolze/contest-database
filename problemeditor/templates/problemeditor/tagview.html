@@ -21,7 +21,7 @@
     <div class="col-12">
       {% for rows2,urltag,tag,unsolution,num,unsolution_specific,num_specific in rows1 %}
       <div class="list-group list-group-root card mb-2">
-        <div href="#tag_{{tag.pk}}" class="list-group-item" data-toggle="collapse">
+        <div data-target="#tag_{{tag.pk}}" class="list-group-item" data-toggle="collapse" style="background-color:#bbbbbb">
           <div class="row">
             <div class="col-6">
 	      {% if num > num_specific %}
@@ -44,7 +44,7 @@
         <div class="collapse" id="tag_{{tag.pk}}">
 	  <div class="list-group">
             {% for rows3,urltag2,tag2,unsolution2,num2,unsolution_specific2,num_specific2 in rows2 %}
-            <div href="#subtag_{{tag2.pk}}" class="list-group-item" {% if num2 > num_specific2 %}data-toggle="collapse"{% endif %}>
+            <div data-target="#subtag_{{tag2.pk}}" class="list-group-item" {% if num2 > num_specific2 %}data-toggle="collapse"{% endif %} style="background-color:lightgray">
               <div class="row">
 		<div class="col-6">
 		  {% if num2 > num_specific2 %}
@@ -109,7 +109,7 @@ $(document).on('click',".tag-info",function(e) {
 
 });
 
-$(document).on('click', ".list-group-item",function() {
+$(document).on('click', ".list-group-item",function(e) {
     $('.glg', this)
       .toggleClass('fa-chevron-right')
       .toggleClass('fa-chevron-down');
