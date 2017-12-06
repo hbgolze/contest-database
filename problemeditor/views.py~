@@ -102,64 +102,64 @@ class AddProblemWizard(SessionWizardView):
                 return self.initial_dict.get(step, {'mc_problem_text': some_var,'problem_text': some_var1})
         return self.initial_dict.get(step, {})
     def done(self,form_list,**kwargs):
-        D={}
+        D = {}
         for form in form_list:
-            x=form.cleaned_data
+            x = form.cleaned_data
             for i in x:
-                D[i]=x[i]
+                D[i] = x[i]
         if D['question_type'].question_type == 'short answer':
             prob = Problem(
-                problem_text=D['problem_text'],
-                author_name=D['author_name'],
-                answer=D['correct_short_answer_answer'],
-                sa_answer=D['correct_short_answer_answer'],
-                type_new=D['type'],
-                question_type_new=D['question_type'],
+                problem_text = D['problem_text'],
+                author_name = D['author_name'],
+                answer = D['correct_short_answer_answer'],
+                sa_answer = D['correct_short_answer_answer'],
+                type_new = D['type'],
+                question_type_new = D['question_type'],
                 )
         elif D['question_type'].question_type == 'proof':
             prob = Problem(
-                problem_text=D['problem_text'],
-                author_name=D['author_name'],
-                type_new=D['type'],
-                question_type_new=D['question_type'],
+                problem_text = D['problem_text'],
+                author_name = D['author_name'],
+                type_new = D['type'],
+                question_type_new = D['question_type'],
                 )
         elif D['question_type'].question_type == 'multiple choice':
             prob = Problem(
-                mc_problem_text=D['mc_problem_text'],
-                author_name=D['author_name'],
-                answer=D['correct_multiple_choice_answer'],
-                mc_answer=D['correct_multiple_choice_answer'],
-                answer_choices='$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
-                answer_A=D['answer_A'],
-                answer_B=D['answer_B'],
-                answer_C=D['answer_C'],
-                answer_D=D['answer_D'],
-                answer_E=D['answer_E'],
-                type_new=D['type'],
-                question_type_new=D['question_type'],
+                mc_problem_text = D['mc_problem_text'],
+                author_name = D['author_name'],
+                answer = D['correct_multiple_choice_answer'],
+                mc_answer = D['correct_multiple_choice_answer'],
+                answer_choices = '$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
+                answer_A = D['answer_A'],
+                answer_B = D['answer_B'],
+                answer_C = D['answer_C'],
+                answer_D = D['answer_D'],
+                answer_E = D['answer_E'],
+                type_new = D['type'],
+                question_type_new = D['question_type'],
                 )
         elif D['question_type'].question_type == 'multiple choice short answer':
             prob = Problem(
-                problem_text=D['problem_text'],
-                mc_problem_text=D['mc_problem_text'],
-                author_name=D['author_name'],
-                answer=D['correct_multiple_choice_answer'],
-                mc_answer=D['correct_multiple_choice_answer'],
-                answer_choices='$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
-                answer_A=D['answer_A'],
-                answer_B=D['answer_B'],
-                answer_C=D['answer_C'],
-                answer_D=D['answer_D'],
-                answer_E=D['answer_E'],
-                type_new=D['type'],
-                question_type_new=D['question_type'],
+                problem_text = D['problem_text'],
+                mc_problem_text = D['mc_problem_text'],
+                author_name = D['author_name'],
+                answer = D['correct_multiple_choice_answer'],
+                mc_answer = D['correct_multiple_choice_answer'],
+                answer_choices = '$\\textbf{(A) }'+D['answer_A']+'\\qquad\\textbf{(B) }'+D['answer_B']+'\\qquad\\textbf{(C) }'+D['answer_C']+'\\qquad\\textbf{(D) }'+D['answer_D']+'\\qquad\\textbf{(E) }'+D['answer_E']+'$',
+                answer_A = D['answer_A'],
+                answer_B = D['answer_B'],
+                answer_C = D['answer_C'],
+                answer_D = D['answer_D'],
+                answer_E = D['answer_E'],
+                type_new = D['type'],
+                question_type_new = D['question_type'],
                 )
         prob.save()
         prob.question_type.add(D['question_type'])
         prob.types.add(D['type'])
-        prob.author=self.request.user
-        t=prob.type_new
-        t.top_index+=1
+        prob.author = self.request.user
+        t = prob.type_new
+        t.top_index += 1
         t.save()
         prob.label = t.type+str(t.top_index)
         prob.readable_label = t.label+' '+str(t.top_index)
@@ -172,16 +172,16 @@ class AddProblemWizard(SessionWizardView):
         prob.display_problem_text=newtexcode(prob.problem_text,prob.label,'')
         prob.display_mc_problem_text=newtexcode(prob.mc_problem_text,prob.label,prob.answers())
 
-        sol=Solution(solution_text = D['solution_text'])
+        sol = Solution(solution_text = D['solution_text'],parent_problem = prob)
         sol.save()
-        sol.solution_number=1
+        sol.solution_number = 1
         sol.authors.add(self.request.user)
-        sol.problem_label=prob.label
+        sol.problem_label = prob.label
         sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
         sol.save()
         prob.solutions.add(sol)
         prob.save()
-        compileasy(sol.solution_text,prob.label,sol="sol1")
+        compileasy(sol.solution_text,prob.label,sol = "sol1")
         LogEntry.objects.log_action(
             user_id = self.request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
@@ -200,27 +200,27 @@ def typeview(request):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     allowed_types = list(userprofile.user_type_new.allowed_types.all())
     allowed_types = sorted(allowed_types,key=lambda x:(-x.is_contest,x.label))
-    rows=[]
+    rows = []
     for i in allowed_types:
-        P=i.problems.all()
+        P = i.problems.all()
         num_problems = P.count()
-        num_untagged = P.filter(newtags__isnull=True).count()#
-        num_nosolutions = P.filter(solutions__isnull=True).count()
+        num_untagged = P.filter(newtags__isnull = True).count()#
+        num_nosolutions = P.filter(solutions__isnull = True).count()
         rows.append((i,num_untagged,num_nosolutions))
-    template=loader.get_template('problemeditor/typeview.html')
-    context= {'rows': rows, 'nbar': 'problemeditor'}
+    template = loader.get_template('problemeditor/typeview.html')
+    context = {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
 
 @login_required
 def tagview(request,type):
-    typ = get_object_or_404(Type, type=type)
-    newtags = NewTag.objects.all().exclude(label='root').order_by('tag')
+    typ = get_object_or_404(Type, type = type)
+    newtags = NewTag.objects.all().exclude(label = 'root').order_by('tag')
     rows = []
-    probsoftype = Problem.objects.filter(type_new=typ)
-    untagged = probsoftype.filter(newtags__isnull=True)
+    probsoftype = Problem.objects.filter(type_new = typ)
+    untagged = probsoftype.filter(newtags__isnull = True)
     num_untagged = untagged.count()
     for tag in newtags:#i
-        T = tag.problems.filter(type_new=typ)#probsoftype.filter(newtags__in=[tag])
+        T = tag.problems.filter(type_new = typ)#probsoftype.filter(newtags__in=[tag])
         num_problems = T.count()
         num_nosolutions = T.filter(solutions__isnull=True).count()
         if num_problems > 0:
@@ -229,27 +229,27 @@ def tagview(request,type):
     root_tag = NewTag.objects.get(label='root')
     rows1 = []
     for c1 in root_tag.children.all():
-        T_startswith = probsoftype.filter(newtags__in=NewTag.objects.filter(tag__startswith = c1.tag))
-        T = c1.problems.filter(type_new=typ)
+        T_startswith = probsoftype.filter(newtags__in = NewTag.objects.filter(tag__startswith = c1.tag))
+        T = c1.problems.filter(type_new = typ)
         num_probs_sw = T_startswith.count()
-        num_nosolutions_sw = T_startswith.filter(solutions__isnull=True).count()
+        num_nosolutions_sw = T_startswith.filter(solutions__isnull = True).count()
         num_probs = T.count()
-        num_nosolutions = T.filter(solutions__isnull=True).count()
+        num_nosolutions = T.filter(solutions__isnull = True).count()
         if num_probs_sw > 0:
             rows2 = []
             for c2 in c1.children.all():
-                T_startswith2 = probsoftype.filter(newtags__in=NewTag.objects.filter(tag__startswith = c2.tag))
-                T2 = c2.problems.filter(type_new=typ)
+                T_startswith2 = probsoftype.filter(newtags__in = NewTag.objects.filter(tag__startswith = c2.tag))
+                T2 = c2.problems.filter(type_new = typ)
                 num_probs_sw2 = T_startswith2.count()
-                num_nosolutions_sw2 = T_startswith2.filter(solutions__isnull=True).count()
+                num_nosolutions_sw2 = T_startswith2.filter(solutions__isnull = True).count()
                 num_probs2 = T2.count()
-                num_nosolutions2 = T2.filter(solutions__isnull=True).count()
+                num_nosolutions2 = T2.filter(solutions__isnull = True).count()
                 if num_probs_sw2 > 0:
                     rows3 = []
                     for c3 in c2.children.all():
-                        T3 = c3.problems.filter(type_new=typ)
+                        T3 = c3.problems.filter(type_new = typ)
                         num_probs3 = T3.count()
-                        num_nosolutions3 = T3.filter(solutions__isnull=True).count()
+                        num_nosolutions3 = T3.filter(solutions__isnull = True).count()
                         if num_probs3 > 0:
                             rows3.append((goodurl(str(c3)),c3,num_nosolutions3,num_probs3))
                     rows2.append((rows3,goodurl(str(c2)),c2,num_nosolutions_sw2,num_probs_sw2,num_nosolutions2,num_probs2))
@@ -261,41 +261,41 @@ def tagview(request,type):
 
 @login_required
 def testview(request,type):
-    typ=get_object_or_404(Type, type=type)
-    probsoftype=Problem.objects.filter(type_new=typ)
-    num_untagged=probsoftype.filter(newtags__isnull=True).count()
-    testlabels=[]
-    pot=list(probsoftype)
+    typ = get_object_or_404(Type, type = type)
+    probsoftype = Problem.objects.filter(type_new = typ)
+    num_untagged = probsoftype.filter(newtags__isnull = True).count()
+    testlabels = []
+    pot = list(probsoftype)
     for i in range(0,len(pot)):
         testlabels.append(pot[i].test_label)
-    testlabels=list(set(testlabels))
+    testlabels = list(set(testlabels))
     testlabels.sort()
-    rows2=[]
+    rows2 = []
     for i in range(0,len(testlabels)):
-        rows2.append((testlabels[i],probsoftype.filter(test_label=testlabels[i]).filter(newtags__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).filter(solutions__isnull=True).count(),probsoftype.filter(test_label=testlabels[i]).count()))
-    template=loader.get_template('problemeditor/testview.html')
-    context= { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest'}
+        rows2.append((testlabels[i],probsoftype.filter(test_label = testlabels[i]).filter(newtags__isnull = True).count(),probsoftype.filter(test_label = testlabels[i]).filter(solutions__isnull = True).count(),probsoftype.filter(test_label = testlabels[i]).count()))
+    template = loader.get_template('problemeditor/testview.html')
+    context = { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest'}
     return HttpResponse(template.render(context,request))
 
 @login_required
 def typetagview(request,type,tag):
     oldtag = tag
     tag = goodtag(tag)
-    typ = get_object_or_404(Type, type=type)
-    rows=[]
-    if tag!='untagged':
-        ttag=get_object_or_404(NewTag, tag=tag)
-        problems=list(ttag.problems.filter(type_new=typ))
+    typ = get_object_or_404(Type, type = type)
+    rows = []
+    if tag != 'untagged':
+        ttag = get_object_or_404(NewTag, tag = tag)
+        problems = list(ttag.problems.filter(type_new = typ))
     else:
-        problems=list(typ.problems.filter(newtags__isnull=True))
-    problems=sorted(problems, key=lambda x:(x.problem_number,x.year))
+        problems = list(typ.problems.filter(newtags__isnull = True))
+    problems = sorted(problems, key = lambda x:(x.problem_number,x.year))
 
-    template=loader.get_template('problemeditor/typetagview.html')
+    template = loader.get_template('problemeditor/typetagview.html')
 
-    paginator=Paginator(problems,50)
+    paginator = Paginator(problems,50)
     page = request.GET.get('page')
     try:
-        prows=paginator.page(page)
+        prows = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         prows = paginator.page(1)
@@ -308,28 +308,28 @@ def typetagview(request,type,tag):
         'nbar': 'problemeditor',
         'tag':tag,
         'typelabel':typ.label,
-        'tags':NewTag.objects.exclude(tag='root'),
+        'tags':NewTag.objects.exclude(tag = 'root'),
         'oldtag': oldtag
         }
     return HttpResponse(template.render(context,request))
 
 @login_required
 def CMtypetagview(request,type,tag):
-    tag=goodtag(tag)
-    typ=get_object_or_404(Type, type=type)
-    rows=[]
-    if tag!='untagged':
-        ttag=get_object_or_404(NewTag, tag=tag)
-        problems=list(ttag.problems.filter(type_new=typ))
+    tag = goodtag(tag)
+    typ = get_object_or_404(Type, type = type)
+    rows = []
+    if tag != 'untagged':
+        ttag = get_object_or_404(NewTag, tag = tag)
+        problems = list(ttag.problems.filter(type_new = typ))
     else:
-        problems=list(typ.problems.filter(newtags__isnull=True))
-    problems=sorted(problems, key=lambda x:x.pk)
-    template=loader.get_template('problemeditor/CMtypetagview.html')
+        problems = list(typ.problems.filter(newtags__isnull = True))
+    problems = sorted(problems, key=lambda x:x.pk)
+    template = loader.get_template('problemeditor/CMtypetagview.html')
 
-    paginator=Paginator(problems,50)
+    paginator = Paginator(problems,50)
     page = request.GET.get('page')
     try:
-        prows=paginator.page(page)
+        prows = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         prows = paginator.page(1)
@@ -477,6 +477,7 @@ def addcontestview(request,type,num):
     if request.method == "POST":
         form=request.POST
         F=form#.cleaned_data
+        formletter=F['formletter']
         label = F['year']+type+F['formletter']
         readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
         readablelabel = readablelabel.rstrip()
@@ -1160,7 +1161,7 @@ def save_new_solution(request,**kwargs):
     sol_num = prob.top_solution_number+1
     prob.top_solution_number = sol_num
     prob.save()
-    sol = Solution(solution_text=sol_text,solution_number=sol_num,problem_label=prob.label)
+    sol = Solution(solution_text = sol_text,solution_number = sol_num,problem_label = prob.label,parent_problem = prob)
     sol.save()
     sol.authors.add(request.user)
     sol.save()
