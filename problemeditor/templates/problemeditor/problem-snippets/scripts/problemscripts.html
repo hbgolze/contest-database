@@ -266,7 +266,7 @@ $(".solution-link").click(function(event) {
     });
 });
 
-$(document).on('click',".new-sol",function(event) {
+$(document).on('click touchend',".new-sol",function(event) {
     event.preventDefault();
     var prob_pk = $(this).attr("id").split('_')[1];
     $.ajax({
