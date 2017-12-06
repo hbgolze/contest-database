@@ -480,7 +480,7 @@ def addcontestview(request,type,num):
         formletter = F['formletter']
         year = F['year']
         label = F['year']+type+F['formletter']
-        type2=Type.objects.get(type=typ)
+        type2 = typ
         readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
         readablelabel = readablelabel.rstrip()
         if typ.default_question_type=='mc':
