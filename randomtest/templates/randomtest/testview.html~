@@ -112,13 +112,9 @@
 
 		{% endif %}
 		{% else %}
-		<div class="row">
-		  <div class="col-11">
                     <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
 		      <input type="text" class="form-control" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
 		    </div>
-		  </div>
-		</div>
 		{% endif %}
 		
 		{% elif question_type == 'multiple choice' %}
