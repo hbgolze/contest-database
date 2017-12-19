@@ -480,7 +480,7 @@ def addcontestview(request,type,num):
         formletter = F['formletter']
         year = F['year']
         label = F['year']+type+F['formletter']
-        type2=Type.objects.get(type=typ)
+        type2 = typ
         readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
         readablelabel = readablelabel.rstrip()
         if typ.default_question_type=='mc':
@@ -1427,3 +1427,6 @@ def delete_comment(request, **kwargs):
     comment = get_object_or_404(Comment,pk = request.POST.get('com_pk',''))
     comment.delete()
     return JsonResponse({'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})
+
+def matrixview(request,**kwargs):
+    

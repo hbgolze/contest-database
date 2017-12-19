@@ -22,6 +22,7 @@ urlpatterns = [
     url(r'^contest/bytag/(?P<type>\w+)/(?P<tag>\w+)/$', views.typetagview, name='typetagview'),
     url(r'^contest/bytag/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/$', views.problemview, name='problemview'),
     url(r'^contest/bytest/(?P<type>\w+)/$', views.testview, name='testview'),
+    url(r'^contest/bytest/(?P<type>\w+)/matrix/$', views.matrixview, name='matrixview'),
     url(r'^contest/bytest/(?P<type>\w+)/(?P<testlabel>\w+)/$', views.testlabelview, name='testlabelview'),
     url(r'^contest/bytest/(?P<type>\w+)/(?P<tag>\w+)/(?P<label>\w+)/$', views.problemview, name='problemview'),
     url(r'^CM/bytopic/(?P<type>\w+)/$', views.CMtopicview, name='CMtopicview'),

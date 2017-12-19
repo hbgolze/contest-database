@@ -1,0 +1,45 @@
+{% extends "randomtest/base.html" %}
+{% block title %}{{typelabel}} Matrix{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    <li class="breadcrumb-item active">{{typelabel}} Matrix</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problem Editor</h2>
+  <div class="row">
+    <div class="col">
+      <p>Pleae select a problem. The entry in the matrix shows the number of solutions, as well as whether it has been tagged or not.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Test</th>
+	    {% for num in numbers %}
+	    <th>{{num}}</th>
+	    {% endfor %}
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for testlabel,problems in rows2 %}
+	  
+	  <tr>
+            <td><a href="../{{testlabel}}">{{testlabel}}</a></td>
+	    {% for p in problems %}
+            <td><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
+	    {% endfor %}
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
