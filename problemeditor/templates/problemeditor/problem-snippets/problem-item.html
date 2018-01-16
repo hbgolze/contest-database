@@ -16,3 +16,21 @@
 {% if not no_solutions %}
               {% include "problemeditor/problem-snippets/components/solutiondiv.html" %}
 {% endif %}
+
+{% if prob.notes != "" %}
+<label>Notes:</label>
+<div>
+{{prob.notes}}
+</div>
+{% endif %}
+
+{% if prob.difficulty > 0 %}
+<label>Difficulty: {{prob.difficulty}}</label>
+<div class="row">
+  <div class="col-md-4">
+    <div class="progress">
+      <script>document.write("<div class='progress-bar bg-success' role='progressbar' style='width:"+Math.round(({{prob.difficulty}}-500)*100/2000).toString()+"%' aria-valuenow='"+Math.round(({{prob.difficulty}}-500)*100/2000).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+    </div>
+  </div>
+</div>
+{% endif %}

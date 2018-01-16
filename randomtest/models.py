@@ -146,6 +146,7 @@ class Problem(models.Model):
     approvals = models.ManyToManyField(ProblemApproval,blank=True)
     duplicate_problems = models.ManyToManyField("self",blank=True)
     problem_number_prefix = models.CharField(max_length=5,default="")
+    notes = models.TextField(blank=True)
     def __str__(self):
         return self.label
     def print_tags(self):
