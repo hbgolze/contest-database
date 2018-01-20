@@ -1,0 +1,104 @@
+{% extends "randomtest/base.html" %}
+
+{% load randomtest_extras %}
+{% block content %}
+
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../../../">{{my_class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{unit.name}}</a></li>
+    <li class="breadcrumb-item active"><span id="bc-unit-name">{{pset.name}}</span></li>
+  </ol>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-sm-3 sidebar">
+      <ul class="nav nav-pills flex-column">
+        {% include 'teacher/sidebar.html' with activenav="myclasses" %}
+      </ul>
+    </div>
+    <div class="col-sm-9 main">
+      <h2>LaTeX Code for "{{pset.name}}"</h2>
+
+
+
+      <div class="row mb-3">
+	<div class="col">
+	  <input type="hidden" name="startform" value="{{pset.pk}}">
+      
+	  <h3>Options</h3>
+	  <form action="." method="get">
+	    Include Problem Labels?<br>
+	    {% if include_problem_labels %}
+	    <input type="radio" name="problemlabels" value="yes" checked="checked"> Yes
+	    <input type="radio" name="problemlabels" value="no"> No
+	    {% else %}
+	    <input type="radio" name="problemlabels" value="yes"> Yes
+	    <input type="radio" name="problemlabels" value="no" checked="checked"> No
+	    {% endif %}
+	    <br><br>
+	    <input class="btn btn-primary" type="submit" value="Refresh Code">
+	  </form>
+	</div>
+      </div>
+      <div class="row">
+	<div class="col">
+	  <div class="card pl-2" style="background-color:#dddddd">
+	    <div class="card-body">
+	      <pre style="white-space: pre-wrap"><code>
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
+\begin{document}
+\begin{enumerate}
+{% for prob in pset.problem_objects.all %}
+\item {% if prob.isProblem %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text|linebreaks}}{% else %}{{prob.problem.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.problem.readable_label|poundsafe}}]{% endif %}
+
+{% if prob.question_type.question_type == "multiple choice" %}
+{{prob.problem.answers|linebreaks}}
+{% endif %}
+{% else %}{{prob.problem_code|linebreaks}}
+
+{% if prob.question_type.question_type == "multiple choice" %}
+{{prob.answers|linebreaks}}
+{% endif %}
+{% endif %}
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+
+		</code>
+	      </pre>
+	    </div>
+	  </div>
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

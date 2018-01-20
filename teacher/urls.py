@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/add-problemset/$', views.newproblemsetview, name='newproblemsetview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/add-slides/$', views.newslidesview, name='newslidesview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/add-test/$', views.newtestview, name='newtestview'),
+    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemsetlatex/(?P<ppk>\d+)/$', views.latexpsetview, name='latexpsetview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/$', views.problemseteditview, name='problemseteditview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/load-original-problem/$', views.loadoriginalproblemform, name='load-original-problem'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/add-original-problem/$', views.addoriginalproblem, name='add-original-problem'),

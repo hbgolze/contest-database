@@ -533,6 +533,33 @@ def newslidesview(request,pk,upk):
         return HttpResponse(render_to_string('teacher/editingtemplates/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()}))
     return HttpResponse('')
 
+@login_required
+def latexpsetview(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    if userprofile.my_classes.filter(pk = pk).exists() == False:
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    pset = get_object_or_404(ProblemSet,pk=ppk)
+    if pset.unit_object.unit != unit:
+        raise Http404("No such problem set in this unit")
+
+
+    include_problem_labels = True
+    if request.method == "GET":
+        if request.GET.get('problemlabels') == 'no':
+            include_problem_labels = False
+    context = {}
+    context['include_problem_labels'] = include_problem_labels
+
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['nbar'] = 'teacher'
+    context['pset'] = pset
+    return render(request, 'teacher/editingtemplates/latexpsetview.html',context)
+
 
 @login_required
 def problemseteditview(request,pk,upk,ppk):

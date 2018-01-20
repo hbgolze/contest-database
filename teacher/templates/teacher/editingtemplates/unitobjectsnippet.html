@@ -8,7 +8,7 @@
                 {% if unitobj.slidegroup %}
                 <a href="slides/{{unitobj.slidegroup.pk}}/">Slides: {{unitobj.slidegroup.name}}</a> ({{unitobj.slidegroup.slides.count}} slides)
                 {% elif unitobj.problemset %}
-                <a href="problemset/{{unitobj.problemset.pk}}/">Problem Set: {{unitobj.problemset.name}}</a> ({{unitobj.problemset.problem_objects.count}} problems)
+                <a href="problemset/{{unitobj.problemset.pk}}/">Problem Set: {{unitobj.problemset.name}}</a> ({{unitobj.problemset.problem_objects.count}} problems) (<a href="problemsetlatex/{{unitobj.problemset.pk}}/">LaTeX</a>)
                 {% elif unitobj.test %}
                 <a href="test/{{unitobj.test.pk}}/">Test: {{unitobj.test.name}}</a> ({{unitobj.test.problem_objects.count}} problems)
                 {% endif %}
