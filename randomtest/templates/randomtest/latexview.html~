@@ -69,7 +69,10 @@
 {% for prob in test.problems.all %}
 \item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
 
+{% if prob.question_type_new.question_type == "multiple choice" %}
 {{prob.answers|linebreaks}}
+{% endif %}
+
 {% endfor %}
 \end{enumerate}
 \end{document}
