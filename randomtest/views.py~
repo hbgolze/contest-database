@@ -759,6 +759,7 @@ def latexview(request,**kwargs):
     P = list(test.problems.all())
     rows = []
     include_problem_labels = True
+    include_notes = False
     for i in range(0,len(P)):
         ptext = ''
         if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
@@ -770,12 +771,15 @@ def latexview(request,**kwargs):
     if request.method == "GET":
         if request.GET.get('problemlabels') == 'no':
             include_problem_labels = False
+        if request.GET.get('notes') == 'yes':
+            include_notes = True
     context = {}
     context['test'] = test
     context['nbar'] = 'viewmytests'
     if 'username' in kwargs:
         context['username'] = kwargs['username']
     context['include_problem_labels'] = include_problem_labels
+    context['include_notes'] = include_notes
     return render(request, 'randomtest/latexview.html',context)
 
 @login_required

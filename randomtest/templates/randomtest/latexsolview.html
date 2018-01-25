@@ -30,6 +30,15 @@
         <input type="radio" name="problemlabels" value="yes"> Yes
         <input type="radio" name="problemlabels" value="no" checked="checked"> No
         {% endif %}
+	<br><br>
+        Include Notes?<br>
+        {% if include_notes %}
+        <input type="radio" name="notes" value="yes" checked="checked"> Yes
+        <input type="radio" name="notes" value="no"> No
+        {% else %}
+        <input type="radio" name="notes" value="yes"> Yes
+        <input type="radio" name="notes" value="no" checked="checked"> No
+        {% endif %}
         <br><br>
         <input class="btn btn-primary" type="submit" value="Refresh Code">
       </form>
@@ -67,15 +76,21 @@
 \begin{document}
 \begin{enumerate}
 {% for prob in test.problems.all %}
-\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
+\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
 
 {% if prob.question_type_new.question_type == "multiple choice" %}
 {{prob.answers|linebreaks}}
 {% endif %}
 
+{% if include_notes %}
+\textbf{Notes:}
+
+{{prob.notes|linebreaks}}
+{% endif %}
+
 {% for solution in prob.solutions.all %}
 \textbf{Solution{% if solutions|length > 1 %} {{forloop.counter}}{% endif %}:}
-{{solution.solution_text}}
+{{solution.solution_text|linebreaks}}
 
 {% endfor %}
 {% endfor %}

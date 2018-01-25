@@ -31,6 +31,15 @@
 	<input type="radio" name="problemlabels" value="no" checked="checked"> No
 	{% endif %}
 	<br><br>
+	Include Notes?<br>
+	{% if include_notes %}
+	<input type="radio" name="notes" value="yes" checked="checked"> Yes
+	<input type="radio" name="notes" value="no"> No
+	{% else %}
+	<input type="radio" name="notes" value="yes"> Yes
+	<input type="radio" name="notes" value="no" checked="checked"> No
+	{% endif %}
+	<br><br>
 	<input class="btn btn-primary" type="submit" value="Refresh Code">
       </form>
     </div>
@@ -71,6 +80,12 @@
 
 {% if prob.question_type_new.question_type == "multiple choice" %}
 {{prob.answers|linebreaks}}
+{% endif %}
+
+{% if include_notes %}
+\textbf{Notes:}
+
+{{prob.notes|linebreaks}}
 {% endif %}
 
 {% endfor %}
