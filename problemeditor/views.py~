@@ -277,6 +277,7 @@ def testview(request,type):
     context = { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest'}
     return HttpResponse(template.render(context,request))
 
+
 @login_required
 def typetagview(request,type,tag):
     oldtag = tag
@@ -1428,5 +1429,36 @@ def delete_comment(request, **kwargs):
     comment.delete()
     return JsonResponse({'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})
 
-def matrixview(request,**kwargs):
-    
+def matrixview(request,type):    
+    typ = get_object_or_404(Type, type = type)
+    probsoftype = Problem.objects.filter(type_new = typ)
+#    num_untagged = probsoftype.filter(newtags__isnull = True).count()
+    testlabels = []
+    pot = list(probsoftype)
+    for i in range(0,len(pot)):
+        testlabels.append(pot[i].test_label)
+    testlabels = list(set(testlabels))
+    testlabels.sort()
+    rows2 = []
+    maxcount = 0
+    if typ.type == "Putnam":
+        for i in range(0,len(testlabels)):
+            P = probsoftype.filter(test_label = testlabels[i]).order_by('label')
+            rows2.append((testlabels[i],P))
+            n = P.count()
+            if n > maxcount:
+                maxcount = n
+    else:
+        for i in range(0,len(testlabels)):
+            P = probsoftype.filter(test_label = testlabels[i]).order_by('problem_number')
+            rows2.append((testlabels[i],P))
+            n = P.count()
+            if n > maxcount:
+                maxcount = n
+    if typ.type =="Putnam":
+        numbers = ['A1','A2','A3','A4','A5','A6','B1','B2','B3','B4','B5','B6']
+    else:
+        numbers = [str(i) for i in range(1,maxcount+1)]
+    template = loader.get_template('problemeditor/matrixview.html')
+    context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
+    return HttpResponse(template.render(context,request))
