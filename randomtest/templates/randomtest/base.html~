@@ -3,12 +3,17 @@
 {% load staticfiles %}
 
 <head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.19.1/moment.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
+<link rel="stylesheet" href="{% static 'randomtest/font-awesome-4.7.0/css/font-awesome.min.css' %}" />
     <title>{% block title %}Random Contest{% endblock %}</title>
 
 <script type="text/x-mathjax-config">
@@ -29,67 +34,60 @@
 
 
 
-<nav class="navbar navbar-default navbar-static-top">
-  <div class="container-fluid">
-    <!-- Brand and toggle get grouped for better mobile display -->
-    <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-        <span class="icon-bar"></span>
-      </button>
-      <a class="navbar-brand" href="/">Random Contest Problems</a>
-    </div>
-    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-      <ul class="nav navbar-nav navbar-right">
+  <nav class="navbar navbar-expand-sm navbar-custom bg-faded">
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <a class="navbar-brand" href="/">Random Contest Problems</a>
+
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+      <div class="navbar-nav ml-auto">
 	{% if user.is_authenticated %}
+	<p class="navbar-text">Hello, {{user.username}}!&nbsp;&nbsp;&nbsp;</p>
+
+	
 	{% if request.user.userprofile.students.count > 0 %}
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Students <span class="caret"></span></a>
-          <ul class="dropdown-menu">
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Students</a>
+          <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdownMenuLink">
 	    {% for student in request.user.userprofile.students.all %}
-            <li> <a href="/randomtest/student/{{student.username}}/">{{student.username}}</a></li>
+            <a class="dropdown-item" href="/randomtest/student/{{student.username}}/">{{student.username}}</a>
             {% endfor %}
-          </ul>
+	  </div>
         </li>
 	{% endif %}
-        <li class="dropdown">
-          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Account <span class="caret"></span></a>
-          <ul class="dropdown-menu">
-	    <li><a href="{% url 'my_activity' %}">My Activity</a></li>
-	    <li><a href="{% url 'changetimezoneview' %}">Change Time Zone</a></li>
-            <li><a href="{% url 'change_password' %}">Change Password</a></li>
-            <li role="separator" class="divider"></li>
-            <li><a href="{% url 'logout' %}">Logout</a></li>
-          </ul>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
+          <div class="dropdown-menu dropdown-menu-right">
+	    <a class="dropdown-item" href="{% url 'my_activity' %}">My Activity</a>
+	    <a class="dropdown-item" href="{% url 'changetimezoneview' %}">Change Time Zone</a>
+            <a class="dropdown-item" href="{% url 'change_password' %}">Change Password</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+          </div>
         </li>
-      </ul>
-      <p class="navbar-text navbar-right"></p>
-      <p class="navbar-text navbar-right">Hello, {{user.username}}!</p>
-    {% else %}
-      <li><a href="{% url 'login' %}">Login</a></li>
-    {% endif %}
-    </div><!-- /.navbar-collapse -->
-  </div><!-- /.container-fluid -->
-</nav>
-
-
-<!--
-    <div class="page-header">
-      <h1><span class="head-link" style="cursor:pointer">Random Test Creator</span></h1>
+	{% else %}
+	<li><a href="{% url 'login' %}">Login</a></li>
+	{% endif %}
+      </div>
     </div>
--->
+  </nav>
+
+
 {% if user.is_authenticated %}
 <div class="navig">
-<ul class="nav nav-tabs">
-{% if request.user.userprofile.userclasses.count > 0 %}  <li role="presentation" class="{% if nbar == 'student' %}active{% endif %}"><a href="/student/">My Enrolled Classes</a></li>{% endif %}
-{% if request.user.userprofile.user_type_new.name == 'contest manager' or request.user.userprofile.user_type_new.name == 'super' %}  <li role="presentation" class="{% if nbar == 'teacher' %}active{% endif %}"><a href="/teacher/">Teacher Tools</a></li>{% endif %}
-  <li role="presentation" class="{% if nbar == 'viewmytests' %}active{% endif %}"><a href="/randomtest/">View My Tests</a></li>
-  <li role="presentation" class="{% if nbar == 'problemeditor' %}active{% endif %}"><a href="/problemeditor/">Problem Editor</a></li>
-  <li role="presentation" class="{% if nbar == 'search' %}active{% endif %}"><a href="/search/">Search</a></li>
-  <li role="presentation" class="{% if nbar == 'contestcollection' %}active{% endif %}"><a href="/contestcollections/">Contest Collection</a></li>
-<li role="presentation" class="{% if nbar == 'groups' %}active{% endif %}"><a href="/problemgroups/">Problem Groups</a></li>
+  <ul class="nav nav-tabs">
+    {% if request.user.userprofile.userclasses.count > 0 %}
+    <li class="nav-item"><a class="nav-link {% if nbar == 'student' %}active{% endif %}" href="/student/">My Enrolled Classes</a></li>
+    {% endif %}
+    {% if request.user.userprofile.user_type_new.name == 'contest manager' or request.user.userprofile.user_type_new.name == 'super' %}
+    <li class="nav-item"><a class="nav-link {% if nbar == 'teacher' %}active{% endif %}" href="/teacher/">Teacher Tools</a></li>
+    {% endif %}
+    <li class="nav-item"><a class="nav-link {% if nbar == 'viewmytests' %}active{% endif %}" href="/randomtest/">View My Tests</a></li>
+    <li class="nav-item"><a class="nav-link {% if nbar == 'problemeditor' %}active{% endif %}" href="/problemeditor/">Problem Editor</a></li>
+    <li class="nav-item"><a class="nav-link {% if nbar == 'search' %}active{% endif %}" href="/search/">Search</a></li>
+    <li class="nav-item"><a class="nav-link {% if nbar == 'contestcollection' %}active{% endif %}" href="/contestcollections/">Contest Collection</a></li>
+    <li class="nav-item"><a class="nav-link {% if nbar == 'groups' %}active{% endif %}" href="/problemgroups/">Problem Groups</a></li>
 </ul>
 </div>
 {% endif %}
@@ -104,6 +102,8 @@
 
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
 
 <script>
 $(".head-link").on('click',function() {

@@ -80,7 +80,7 @@
     {% if request.user.userprofile.userclasses.count > 0 %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'student' %}active{% endif %}" href="/student/">My Enrolled Classes</a></li>
     {% endif %}
-    {% if request.user.userprofile.user_type_new.name == 'contest manager' or request.user.userprofile.user_type_new.name == 'super' %}
+    {% if request.user.userprofile.user_type_new.name == 'contestmanager' or request.user.userprofile.user_type_new.name == 'super' %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'teacher' %}active{% endif %}" href="/teacher/">Teacher Tools</a></li>
     {% endif %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'viewmytests' %}active{% endif %}" href="/randomtest/">View My Tests</a></li>
