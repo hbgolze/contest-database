@@ -106,7 +106,7 @@
 </div>
 
 <script>
-{% request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
+{% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
 $(".edit-tag-link").click(function(event) {
     event.preventDefault();
     var target = $(this).attr("href");
