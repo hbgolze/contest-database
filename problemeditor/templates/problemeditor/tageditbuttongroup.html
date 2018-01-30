@@ -1,11 +1,17 @@
 
               <div class="btn-group btn-group-sm" role="group" aria-label="...">
               <a class="btn btn-secondary" href="{{ta.pk}}"><span class="badge badge-success">{{ta.label}}</span></a>
-                {% if request.user.userprofile.user_type_new.name == 'super' %}
+
+
+                {% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
+
 {% if not_leaf %}
                 <button data-target="#add-tag" class="btn btn-secondary add-tag-link" href="add_tag/{{ta.pk}}/">Add Subtag</button>
 {% endif %}
 		<button data-target="#edit-tag"  class="btn btn-secondary edit-tag-link" href="edit_tag/{{ta.pk}}/"><span class="fa fa-pencil" aria-hidden="true"></span></button>
+{% endif %}
+                {% if request.user.userprofile.user_type_new.name == 'super' %}
+
                 <button data-target="#delete-tag" data-toggle="modal" class="btn btn-secondary delete-tag-link" id="delete_tag/{{ta.pk}}"><span style="color:red" class="fa fa-remove"></span></button>
                 {% endif %}
                 <button data-target="#info-tag" data-toggle="modal" class="btn btn-secondary info-tag-link" id="info_tag/{{ta.pk}}"><span style="color:green" class="fa fa-info" aria-hidden="true"></span></button>
