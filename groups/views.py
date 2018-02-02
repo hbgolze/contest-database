@@ -2,7 +2,7 @@ from django.shortcuts import render,render_to_response, get_object_or_404,redire
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
-from django.template.loader import get_template
+from django.template.loader import get_template,render_to_string
 
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.admin import User
@@ -41,14 +41,22 @@ def tableview(request):
             group = group_form.save()
             userprofile.problem_groups.add(group)
             userprofile.save()
-    prob_groups = userprofile.problem_groups.all()
+    owned_pgs =  userprofile.problem_groups.all()
+    editor_pgs =  userprofile.editable_problem_groups.all()
+    readonly_pgs =  userprofile.readonly_problem_groups.all()
+
+#    prob_groups = owned + editor + readonly
+
     template=loader.get_template('groups/tableview.html')    
     group_inst = ProblemGroup(name='')
     form = GroupModelForm(instance=group_inst)
     context = {}
     context['form'] = form
     context['nbar'] = 'groups'
-    context['probgroups'] =  prob_groups
+#    context['probgroups'] =  prob_groups
+    context['owned_pgs'] = owned_pgs
+    context['editor_pgs'] = editor_pgs
+    context['readonly_pgs'] = readonly_pgs
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -65,13 +73,15 @@ def tagtableview(request):
 def viewproblemgroup(request,pk):
     userprofile = get_or_create_up(request.user)
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    if prob_group not in userprofile.problem_groups.all():
+    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all():
         return HttpResponse('Unauthorized', status=401)
     P = prob_group.problems.all()
     name = prob_group.name
     context = {}
     context['nbar'] = 'groups'
     context['prob_group'] = prob_group
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.editable_problem_groups.all():
+        context['can_delete'] = 1
     template = loader.get_template('groups/probgroupview.html')
     return HttpResponse(template.render(context,request))
 
@@ -185,3 +195,84 @@ def create_test(request,**kwargs):
             userprofile.save()            
             return JsonResponse({'url':'/randomtest/test/'+str(ut.pk)+'/'})
     return JsonResponse({'error-message':'No problems checked!'})
+
+@login_required
+def load_sharing_modal(request,**kwargs):
+    userprofile = request.user.userprofile
+    context={}
+    pk = request.POST.get('pk','')
+    problemgroup = get_object_or_404(ProblemGroup,pk=pk)
+    context['pg'] = problemgroup
+    owners = problemgroup.userprofiles.all()
+    editors = problemgroup.editoruserprofiles.all()
+    readers = problemgroup.readeruserprofiles.all()
+    context['owners'] = owners
+    context['editors'] = editors
+    context['read_only_users'] = readers
+    context['collaborators'] = userprofile.collaborators.exclude(userprofile__pk__in=owners.values_list('pk')).exclude(userprofile__pk__in=editors.values_list('pk')).exclude(userprofile__pk__in=readers.values_list('pk'))
+    if userprofile in owners:
+        context['is_owner'] = 1
+    context['userprofile'] = userprofile
+    return JsonResponse({'modal-html' : render_to_string('groups/modals/edit-sharing.html',context)})
+
+@login_required
+def share_with_user(request, **kwargs):#check permission...
+    userprofile = request.user.userprofile
+    form = request.POST
+    pk = form.get('problemgrouppk','')
+    problemgroup = get_object_or_404(ProblemGroup,pk = pk)
+    share_target = get_object_or_404(User,pk = form.get('collaborator',''))
+    share_target_up = share_target.userprofile
+    sharing_type = form.get('sharing-type','')
+    if problemgroup in userprofile.problem_groups.all():
+        if sharing_type == 'read':
+            if problemgroup not in share_target_up.editable_problem_groups.all() and problemgroup not in share_target_up.problem_groups.all():
+                share_target_up.readonly_problem_groups.add(problemgroup)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'read'})
+        elif sharing_type == 'edit':
+            if problemgroup not in share_target_up.problem_groups.all():
+                share_target_up.editable_problem_groups.add(problemgroup)
+                share_target_up.save()
+            if problemgroup in share_target_up.readonly_problem_groups.all():
+                share_target_up.readonly_problem_groups.remove(problemgroup)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'edit'})
+        elif sharing_type == 'own':
+            share_target_up.problem_groups.add(problemgroup)
+            share_target_up.save()
+            if problemgroup in share_target_up.readonly_problem_groups.all():
+                share_target_up.readonly_problem_groups.remove(problemgroup)
+                share_target_up.save()
+            if problemgroup in share_target_up.editable_problem_groups.all():
+                share_target_up.editable_problem_groups.remove(problemgroup)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'owner','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'own'})
+
+@login_required
+def change_permission(request):
+    userprofile = request.user.userprofile
+    form = request.POST
+    sharing_type = form.get('sharing_type','')
+    pk = form.get('problemgrouppk','')
+    problemgroup = get_object_or_404(ProblemGroup,pk = pk)
+    share_target_up = get_object_or_404(UserProfile,pk = form.get('pk',''))
+    if problemgroup in userprofile.problem_groups.all():
+        if sharing_type == 'read':
+            share_target_up.problem_groups.remove(problemgroup)
+            share_target_up.editable_problem_groups.remove(problemgroup)
+            share_target_up.readonly_problem_groups.add(problemgroup)
+            share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'read'})
+        elif sharing_type == 'edit':
+            share_target_up.problem_groups.remove(problemgroup)
+            share_target_up.editable_problem_groups.add(problemgroup)
+            share_target_up.readonly_problem_groups.remove(problemgroup)
+            share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'edit'})
+        elif sharing_type == 'own':
+            share_target_up.problem_groups.add(problemgroup)
+            share_target_up.editable_problem_groups.remove(problemgroup)
+            share_target_up.readonly_problem_groups.remove(problemgroup)
+            share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'owner','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'own'})

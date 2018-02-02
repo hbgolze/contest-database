@@ -314,6 +314,8 @@ class UserProfile(models.Model):
     user_type = models.CharField(max_length=15,default='member')
     user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'userprofiles')
+    editable_problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'editoruserprofiles')
+    readonly_problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'readeruserprofiles')
 #    handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')
     newtests = models.ManyToManyField(NewTest,blank=True,related_name='userprofiles')
     my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
@@ -349,6 +351,37 @@ class NewResponse(models.Model):
     is_migrated = models.BooleanField(default = 0)
     def __str__(self):
         return self.problem_label+': '+self.response
+
+
+class CollaboratorRequest(models.Model): 
+    from_user = models.ForeignKey(UserProfile, related_name="collab_invitations_from") 
+    to_user = models.ForeignKey(UserProfile, related_name="collab_invitations_to")
+#    message = models.CharField(max_length=200, blank=True) 
+    created = models.DateTimeField(default=timezone.now, editable=False) 
+    accepted = models.BooleanField(default=False) 
+
+#    class Meta: 
+#        verbose_name = _(u'friendship request') 
+#        verbose_name_plural = _(u'friendship requests') 
+#        unique_together = (('to_user', 'from_user'),) 
+
+    def __str__(self): 
+        return '{from_user} wants to collaborate with {to_user}'.format({'from_user': str(self.from_user), 'to_user': str(self.to_user)}) 
+
+#    def accept(self): 
+#        Friendship.objects.befriend(self.from_user, self.to_user) 
+#        self.accepted = True 
+#        self.save() 
+#        signals.friendship_accepted.send(sender=self) 
+
+#    def decline(self): 
+#        signals.friendship_declined.send(sender=self, cancelled=False) 
+#        self.delete() 
+
+#    def cancel(self): 
+#        signals.friendship_declined.send(sender=self, cancelled=True) 
+#        self.delete() 
+
 
 def get_or_create_up(user):
     userprofile,boolcreated=UserProfile.objects.get_or_create(user=user)

@@ -1,0 +1,13 @@
+            <tr id="outgoing_request_row-{{col.pk}}">
+              <td>
+                {{col.to_user}}
+              </td>
+              <td>
+                {{col.created}}
+              </td>
+              <td style="text-align:right;">
+		<div class="btn-group btn-group-sm" role="group" aria-label="Withdraw Request">
+                  <button type="button" class="btn btn-secondary withdraw-request" id="withdraw-{{col.pk}}">Withdraw</button>
+                </div>
+              </td>
+            </tr>

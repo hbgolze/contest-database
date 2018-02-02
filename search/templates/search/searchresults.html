@@ -62,7 +62,7 @@
 		<label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
 		<select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
 		  <option value="" disabled selected>Select a Group</option>
-		  {% for pg in probgroups.all %}
+		  {% for pg in probgroups %}
 		  <option value="{{pg.pk}}">{{pg.name}}
 		  </option>
 		  {% endfor %}

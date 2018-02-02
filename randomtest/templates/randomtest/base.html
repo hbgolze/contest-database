@@ -60,6 +60,9 @@
           <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
           <div class="dropdown-menu dropdown-menu-right">
 	    <a class="dropdown-item" href="{% url 'my_activity' %}">My Activity</a>
+{% if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmanager" or user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "sitemanager" or user.userprofile.user_type_new.name == "manager" or user.userprofile.user_type_new.name == "teacher" %}
+	    <a class="dropdown-item" href="{% url 'manage_collaborators' %}">Manage Collaborators</a>
+{% endif %}
 	    <a class="dropdown-item" href="{% url 'changetimezoneview' %}">Change Time Zone</a>
             <a class="dropdown-item" href="{% url 'change_password' %}">Change Password</a>
             <div class="dropdown-divider"></div>

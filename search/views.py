@@ -22,6 +22,7 @@ from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionTy
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
+from itertools import chain
 
 @login_required
 def searchform(request):
@@ -116,7 +117,12 @@ def searchresults(request):
                     P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
             P = list(P)
             P = sorted(P,key = lambda x:(x.problem_number,x.year))
-            probgroups = userprofile.problem_groups
+            owned_groups = userprofile.problem_groups.all()
+            editable_groups = userprofile.editable_problem_groups.all()
+            print(owned_groups)
+            print(editable_groups)
+            probgroups = list(chain(owned_groups,editable_groups))
+            print(probgroups)
             paginator = Paginator(P,25)
             page = request.GET.get('page')
             try:

@@ -88,16 +88,19 @@ function fixchecks() {
 		
 		{% if prob.type_new.type|slice:":2" != "CM" %}(<a href="/problemeditor/contest/bytest/{{prob.type_new.type}}/{{prob.test_label}}/{{prob.label}}/">Edit Tags/Solutions</a>){% endif %}
 	      </div>
+{% if can_delete %}
 	      <div class="col-1" style="text-align:right">
 		<span class="fa fa-remove delete-problem-link" style="color:red;cursor:pointer"></span>
 	      </div>
+{% endif %}
 	    </div>
 	  </div>
 	  {% endfor %}
 	</div>
-	
+{% if can_delete %}	
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<p><button type="submit" class="btn btn-primary" id="save-prob-group" name="save" value="save">Save</button></p>
+{% endif %}
       </form>
       {% else %}
     <p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>

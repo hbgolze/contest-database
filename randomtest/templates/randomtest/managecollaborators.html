@@ -1,0 +1,236 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <h1>Manage Collaborators</h1>
+  <div id="incoming-requests"{% if requests_to.count == 0 %} style="display:none;"{% endif %}>
+    <h2>Requests to Collaborate</h2>
+    <div class="row">
+      <div class="col-12">
+	<table class="table table-striped" id="incoming-requests-table">
+	  <thead>
+	    <tr>
+	      <th>Username</th>
+	      <th>Date Requested</th>
+	      <th style="text-align:right;">Actions</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for col in requests_to %}
+	    <tr id="request_row-{{col.pk}}">
+	      <td>
+		{{col.from_user}}
+	      </td>
+	      <td>
+		{{col.created}}
+	      </td>
+	      <td style="text-align:right;">
+		<div class="btn-group btn-group-sm" role="group" aria-label="Accept or Deny Request">
+		  <button type="button" class="btn btn-success accept-request" id="accept-{{col.pk}}">Accept</button>
+		  <button type="button" class="btn btn-secondary deny-request" id="deny-{{col.pk}}">Deny</button>
+		</div>
+	      </td>
+	    </tr>
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+    </div>
+  </div>
+
+
+<h2>Collaborators</h2>
+  <div class="row">
+    <div class="col-12">
+      <div id="collaborators"{% if userprofile.collaborators.count == 0 %} style="display:none;"{% endif %}>
+	<table class="table table-striped" id="collaborator-table">
+	  <thead>
+	    <tr>
+	      <th>Username</th>
+	      <th style="text-align:right;">Remove Collaborator</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for col in userprofile.collaborators.all %}
+
+{% include 'randomtest/collaboration/collaborator-row.html'  %}
+
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+      <div id="nocollaborators"{% if userprofile.collaborators.count > 0 %} style="display:none;"{% endif %}>
+	<p><i>You don't have any collaborators yet. You can send out requests to collaborate below.</i></p>
+      </div>
+    </div>
+  </div>
+
+<h2>Add a New Collaborator</h2>
+  <div class="row">
+    <div class="col-12">
+      <div id="outgoing-requests"{% if requests_from.count == 0 %} style="display:none;"{% endif %}>
+      <h3>Outgoing Requests</h3>
+	<table class="table table-striped" id="outgoing-request-table">
+	  <thead>
+	    <tr>
+	      <th>Username</th>
+	      <th>Date Requested</th>
+	      <th style="text-align:right;">Withdraw</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    {% for col in requests_from %}
+
+{% include 'randomtest/collaboration/request-row.html' %}
+
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+      <p>Enter in a username to request to collaborate.</p>
+      <form method="post" id="request-form">
+	{% csrf_token %}
+	{{form.as_p}}
+	<button type="submit" class="btn btn-primary">Request Collaboration</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+		    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+		    }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+
+$(document).on('submit',"#request-form",function(event) {
+  event.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/collaborators/ajax/request-collaborator/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(data) {
+      if (data['is_valid']==1) {
+        $("#outgoing-request-table").append(data['request-row']);
+        $("#id_username").val("");
+        $("#outgoing-requests").show();
+      } else {
+        $("#id_username").val("");
+        if (data['is_valid']==2) {
+          console.log('request already exits');
+        }
+      }
+    }
+  });
+  return false;
+});
+
+$(document).on('click',".accept-request",function(event) {
+  event.preventDefault();
+  var pk = $(this).attr('id').split('-')[1];
+  $("#request_row-"+pk).empty();
+  if ($('#incoming-request-table tr').length == 0) {
+    $("#incoming-requests").hide();    
+  }
+  $.ajax({
+    type: 'POST',
+    url: '/collaborators/ajax/accept-request/',
+    data: '&pk='+pk,
+    dataType: 'json',
+    success: function(data) {
+      $("#collaborator-table").append(data['collaborator-row']);
+      $("#collaborators").show();
+    }
+  });
+  return false;
+});
+
+$(document).on('click',".deny-request",function(event) {
+  event.preventDefault();
+  var pk = $(this).attr('id').split('-')[1];
+  $("#request_row-"+pk).empty();
+  if ($('#incoming-request-table tr').length == 0) {
+    $("#incoming-requests").hide();    
+  }
+  $.ajax({
+    type: 'POST',
+    url: '/collaborators/ajax/deny-request/',
+    data: '&pk='+pk,
+    dataType: 'json',
+    success: function(data) {
+
+    }
+  });
+  return false;
+});
+
+$(document).on('click',".withdraw-request",function(event) {
+  event.preventDefault();
+  var pk = $(this).attr('id').split('-')[1];
+  $("#outgoing_request_row-"+pk).empty();
+  if ($('#outgoing-request-table tr').length == 0) {
+    $("#outgoing-requests").hide();    
+  }
+  $.ajax({
+    type: 'POST',
+    url: '/collaborators/ajax/withdraw-request/',
+    data: '&pk='+pk,
+    dataType: 'json',
+    success: function(data) {
+
+    }
+  });
+  return false;
+});
+
+$(document).on('click',".remove-collab",function(event) {
+  event.preventDefault();
+  var pk = $(this).attr('id').split('-')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/collaborators/ajax/remove-collaborator/',
+    data: '&pk='+pk,
+    dataType: 'json',
+    success: function(data) {
+      $("#collab_row-"+pk).empty();
+      if ($('#collaborator-table tr').length == 0) {
+        $("#collaborators").hide();
+        $("#nocollaborators").show();
+      }
+    }
+  });
+  return false;
+});
+</script>
+
+{% endblock %}

@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from randomtest.models import UserProfile,Test
+from randomtest.models import UserProfile,Test,CollaboratorRequest
 
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -92,4 +92,18 @@ class UserProfileForm(forms.ModelForm):
     class Meta:
         model = UserProfile
         fields = ('time_zone',)
+        widgets = {
+            'time_zone': forms.Select(attrs={"class":"form-control"})
+            }
 
+class CollaboratorRequestForm(forms.Form):
+    username = CharField(max_length = 50)
+    class Meta:
+        model = CollaboratorRequest
+        fields = ('to_user',)
+        widgets = {
+            'to_user': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self,*args, **kwargs):
+        super(CollaboratorRequestForm, self).__init__(*args, **kwargs)
+        self.fields['to_user'].label = "Username"

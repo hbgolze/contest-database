@@ -1,0 +1,75 @@
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+	
+        <div class="modal-header">
+          <h5 class="modal-title">Manage Sharing</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	</div>
+        <div class="modal-body">
+	  <div id="owners"{% if owners.count == 0 %} style="display:none;"{% endif %}>
+	    <h6>Owners</h6>
+	    <div class="list-group" id="owner-list">
+	      {% for shared_user in owners %}
+{% include 'groups/modals/user-row.html' with sharing_type="owner" %}
+	      {% endfor %}
+	    </div>
+	  </div>
+	  <div id="editors"{% if editors.count == 0 %} style="display:none;"{% endif %}>	  
+	    <h6>Editors</h6>
+	    <div class="list-group" id="editor-list">
+	      {% for shared_user in editors %}
+{% include 'groups/modals/user-row.html' with sharing_type="editor" %}
+	      {% endfor %}
+	    </div>
+	  </div>
+	  <div id="readers"{% if read_only_users.count == 0 %} style="display:none;"{% endif %}>
+	    <h6>Read-Only Users</h6>
+	    <div class="list-group" id="reader-list">
+	      {% for shared_user in read_only_users %}
+{% include 'groups/modals/user-row.html' with sharing_type="reader" %}
+	      {% endfor %}
+	    </div>
+	  </div>
+
+	  {% if is_owner %}
+	  <h6>Share with a collaborator:</h6>
+	  <form id="share-problem-group-form" method="post">
+
+	    <input type="hidden" id="problemgrouppk" name="problemgrouppk" value="{{pg.pk}}">
+	    <div class="row">
+	      <div class="col-6">
+		<label for="collaborator">Collaborator Username</label>
+		<select id="collaborator" name="collaborator" class="form-control" required>
+		  <option value="" disabled selected>Choose a Collaborator</option>
+		  {% for col in collaborators %}
+		  <option value="{{col.pk}}">{{col.username}}</option>
+		  {% endfor %}
+		</select>
+	      </div>
+	      <div class="col-6">
+		<label for="sharing-type">Sharing Role</label>
+		<select id="sharing-type" name="sharing-type" class="form-control">
+		  <option value="own">Owner</option>
+		  <option value="edit" selected>Editor</option>
+		  <option value="read">Read-Only</option>
+		</select>
+<br>
+	      </div>
+	    </div>
+	    <div class="row">
+	      <div class="col-12">
+		<button type="submit" class="btn btn-primary">
+		  Share
+		</button>
+	      </div>
+	    </div>
+	  </form>
+	  {% endif %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+
+  </div>

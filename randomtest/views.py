@@ -2,7 +2,7 @@ from django.shortcuts import render,render_to_response, get_object_or_404,redire
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
 from django.template import loader,RequestContext,Context
 
-from django.template.loader import get_template
+from django.template.loader import get_template,render_to_string
 
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.admin import User
@@ -26,8 +26,8 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse
-from .forms import TestForm,UserForm,UserProfileForm,TestModelForm
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
+from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
 
 from .utils import parsebool,pointsum
 
@@ -1303,3 +1303,77 @@ def changetimezoneview(request):
         return JsonResponse({})
     form = UserProfileForm(instance = userprofile)
     return render(request,'randomtest/timezoneform.html',{'form':form})
+
+@login_required
+def managecollaborators(request):
+    userprofile = request.user.userprofile
+    collab_requests_to = userprofile.collab_invitations_to.filter(accepted=False)
+    collab_requests_from = userprofile.collab_invitations_from.filter(accepted=False)
+    form = CollaboratorRequestForm()
+    context = {
+        'requests_to' : collab_requests_to,
+        'requests_from' : collab_requests_from,
+        'userprofile' : userprofile,
+        'form' : form,
+        }
+    return render(request,'randomtest/managecollaborators.html',context)
+
+@login_required
+def send_collab_request(request):
+    username = request.POST.get('username','')
+    userprofile = request.user.userprofile
+    if User.objects.filter(username=username).exists() == True and userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher']:#need more tests...like target user not being a student; check for duplication of requests, and if user is already a collaborator.
+        u = User.objects.get(username=username)
+        if u not in userprofile.collaborators.all() and u.userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher']:
+            if userprofile.collab_invitations_to.filter(accepted = False).filter(from_user=u.userprofile).exists()==True or userprofile.collab_invitations_from.filter(accepted = False).filter(to_user=u.userprofile).exists()==True:
+                return JsonResponse({'is_valid':2})
+            collab_request = CollaboratorRequest(from_user = request.user.userprofile, to_user = u.userprofile)
+            collab_request.save()
+            return JsonResponse({'request-row': render_to_string('randomtest/collaboration/request-row.html', {'col' : collab_request}),'is_valid':1})
+    return JsonResponse({'is_valid':0})
+
+@login_required
+def accept_request(request):
+    pk = request.POST.get('pk','')
+    collab_request = get_object_or_404(CollaboratorRequest,pk=pk)
+    from_userprofile = collab_request.from_user
+    to_userprofile = collab_request.to_user
+    if request.user.userprofile == to_userprofile:#verify that user can accept the request
+        from_userprofile.collaborators.add(to_userprofile.user)
+        to_userprofile.collaborators.add(from_userprofile.user)
+        from_userprofile.save()
+        to_userprofile.save()
+        collab_request.accepted = True
+        collab_request.save()
+        return JsonResponse({'collaborator-row': render_to_string('randomtest/collaboration/collaborator-row.html', {'col' : from_userprofile.user})})
+    return JsonResponse({'is_valid':0})
+
+@login_required
+def deny_request(request):
+    pk = request.POST.get('pk','')
+    collab_request = get_object_or_404(CollaboratorRequest,pk=pk)
+    to_userprofile = collab_request.to_user
+    if request.user.userprofile == to_userprofile:#verify that user can deny the request
+        collab_request.accepted = True
+        collab_request.save()
+        return JsonResponse({'is_valid': 1})
+    return JsonResponse({'is_valid':0})
+
+@login_required
+def withdraw_request(request):
+    pk = request.POST.get('pk','')
+    collab_request = get_object_or_404(CollaboratorRequest,pk=pk)
+    from_userprofile = collab_request.from_user
+    if request.user.userprofile == from_userprofile:#verify that user can withdraw the request
+        collab_request.delete()
+        return JsonResponse({'is_valid': 1})
+    return JsonResponse({'is_valid':0})
+
+@login_required
+def remove_collaborator(request):
+    pk = request.POST.get('pk','')
+    collaborator = get_object_or_404(User,pk=pk)
+    userprofile = request.user.userprofile
+    userprofile.collaborators.remove(collaborator)
+    userprofile.save()
+    return JsonResponse({'is_valid':1})

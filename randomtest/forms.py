@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from randomtest.models import UserProfile,Test
+from randomtest.models import UserProfile,Test,CollaboratorRequest
 
 from django.contrib.auth.forms import AuthenticationForm
 
@@ -95,3 +95,6 @@ class UserProfileForm(forms.ModelForm):
         widgets = {
             'time_zone': forms.Select(attrs={"class":"form-control"})
             }
+
+class CollaboratorRequestForm(forms.Form):
+    username = forms.CharField(max_length = 50, widget = forms.TextInput(attrs = {'class' : 'form-control'}),label="Username")

@@ -48,5 +48,10 @@ urlpatterns = [
     url(r'^randomtest/newcreatetest/$', views.newstartform, name='startform2'),
     url(r'^randomtest/editnewtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
     url(r'^randomtest/edittimezone/$',views.changetimezoneview,name='changetimezoneview'),
-    
+    url(r'^collaborators/$',views.managecollaborators,name='manage_collaborators'),
+    url(r'^collaborators/ajax/request-collaborator/$',views.send_collab_request,name='request_collaborator'),
+    url(r'^collaborators/ajax/accept-request/$',views.accept_request,name='accept_request'),
+    url(r'^collaborators/ajax/deny-request/$',views.deny_request,name='deny_request'),
+    url(r'^collaborators/ajax/withdraw-request/$',views.withdraw_request,name='withdraw_request'),
+    url(r'^collaborators/ajax/remove-collaborator/$',views.remove_collaborator,name='remove_collaborator'),
 ]
