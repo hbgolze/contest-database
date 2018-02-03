@@ -65,7 +65,9 @@ function fixchecks() {
   <h2>Problem Group: {{prob_group.name}}</h2>
   <div class="row">
     <div class="col-lg-9">
+{% if can_delete %}
       <p>If you remove problems, you must click "Save" for your changes to be saved.</p>
+{% endif %}
       {% if prob_group.problems.count > 0 %}
       <form action="." method="POST" id="problems">
 {% csrf_token %}

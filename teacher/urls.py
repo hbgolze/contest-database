@@ -4,6 +4,8 @@ from django.contrib.auth.decorators import login_required
 
 from . import views
 
+import groups.views as gviews
+
 urlpatterns = [
     url(r'^$', views.teacherview, name='teacherview'),
     url(r'^editclass/(?P<pk>\d+)/$', views.classeditview, name='classeditview'),
@@ -56,6 +58,7 @@ urlpatterns = [
     url(r'^problemgroups/(?P<pk>\d+)/$', views.viewproblemgroup, name='viewproblemgroup'),
     url(r'^problemgroups/(?P<pk>\d+)/fetchproblems/$', views.fetchproblems, name='fetchproblems'),
     url(r'^problemgroups/(?P<pk>\d+)/delete/$', views.deletegroup, name='deletegroup'),
+    url(r'^problemgroups/(?P<pk>\d+)/remove/$', views.removegroup, name='removegroup'),
     url(r'^mystudents/$', views.studentmanager, name='studentmanager'),
     url(r'^mystudents/(?P<username>\w+)/$', views.studentclassview, name='studentclassview'),
     url(r'^mystudents/(?P<username>\w+)/problemset/(?P<upk>\w+)/$', views.studentproblemsetview, name='studentproblemsetview'),

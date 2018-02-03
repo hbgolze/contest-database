@@ -1744,20 +1744,23 @@ def alphagrade(request,**kwargs):
 @login_required
 def grouptableview(request):
     userprofile = request.user.userprofile
-    if request.method == 'POST':
-        group_form = GroupModelForm(request.POST)
-        if group_form.is_valid():
-            group = group_form.save()
-            userprofile.problem_groups.add(group)
-            userprofile.save()
-    prob_groups = userprofile.problem_groups.all()
+
+    owned_pgs =  userprofile.problem_groups.all()
+    co_owned_pgs =  userprofile.owned_problem_groups.all()
+    editor_pgs =  userprofile.editable_problem_groups.all()
+    readonly_pgs =  userprofile.readonly_problem_groups.all()
+
     template = loader.get_template('teacher/problemgroups/grouptableview.html')
+
     group_inst = ProblemGroup(name='')
     form = GroupModelForm(instance=group_inst)
     context = {}
     context['form'] = form
     context['nbar'] = 'teacher'
-    context['probgroups'] =  prob_groups
+    context['owned_pgs'] = owned_pgs
+    context['co_owned_pgs'] = co_owned_pgs
+    context['editor_pgs'] = editor_pgs
+    context['readonly_pgs'] = readonly_pgs
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -1769,7 +1772,8 @@ def newproblemgroup(request):
             group = group_form.save()
             userprofile.problem_groups.add(group)
             userprofile.save()
-            return JsonResponse({'group-row':render_to_string('teacher/problemgroups/grouptablerow.html',{'pg':group})})
+            return JsonResponse({'group-row':render_to_string('groups/grouptablerow.html',{'pg':group,'sharing_type':'own'})})
+
 @login_required
 def viewproblemgroup(request,pk):
     userprofile = request.user.userprofile
@@ -1845,17 +1849,41 @@ def fetchproblems(request,pk):
             }
     return JsonResponse(data)
 
+#@login_required
+#def deletegroup(request,pk):
+#    pg = get_object_or_404(ProblemGroup, pk=pk)
+#    userprofile = request.user.userprofile
+#    if pg in userprofile.problem_groups.all():
+#        if pg.is_shared==0:
+#            pg.delete()
+#        else:
+#            userprofile.problem_groups.remove(pg)
+#    return redirect('/teacher/problemgroups/')
+
 @login_required
 def deletegroup(request,pk):
     pg = get_object_or_404(ProblemGroup, pk=pk)
     userprofile = request.user.userprofile
     if pg in userprofile.problem_groups.all():
-        if pg.is_shared==0:
-            pg.delete()
-        else:
-            userprofile.problem_groups.remove(pg)
+        pg.delete()
     return redirect('/teacher/problemgroups/')
 
+@login_required
+def removegroup(request,pk):
+    pg = get_object_or_404(ProblemGroup, pk=pk)
+    print('asd')
+    userprofile = request.user.userprofile
+    if pg in userprofile.owned_problem_groups.all():
+        print('adsfasdfs')
+        userprofile.owned_problem_groups.remove(pg)
+        userprofile.save()
+    elif pg in userprofile.editable_problem_groups.all():
+        userprofile.editable_problem_groups.remove(pg)
+        userprofile.save()
+    elif pg in userprofile.readonly_problem_groups.all():
+        userprofile.readonly_problem_groups.remove(pg)
+        userprofile.save()
+    return redirect('/teacher/problemgroups/')
 
 @login_required
 def migrate_response(request,username,npk):

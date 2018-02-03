@@ -13,6 +13,9 @@
 	      {% for shared_user in owners %}
 {% include 'groups/modals/user-row.html' with sharing_type="owner" %}
 	      {% endfor %}
+	      {% for shared_user in coowners %}
+{% include 'groups/modals/user-row.html' with sharing_type="coowner" %}
+	      {% endfor %}
 	    </div>
 	  </div>
 	  <div id="editors"{% if editors.count == 0 %} style="display:none;"{% endif %}>	  

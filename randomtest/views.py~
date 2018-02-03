@@ -1368,3 +1368,12 @@ def withdraw_request(request):
         collab_request.delete()
         return JsonResponse({'is_valid': 1})
     return JsonResponse({'is_valid':0})
+
+@login_required
+def remove_collaborator(request):
+    pk = request.POST.get('pk','')
+    collaborator = get_object_or_404(User,pk=pk)
+    userprofile = request.user.userprofile
+    userprofile.collaborators.remove(collaborator)
+    userprofile.save()
+    return JsonResponse({'is_valid':1})

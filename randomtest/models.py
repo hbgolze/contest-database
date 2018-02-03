@@ -234,6 +234,15 @@ class TestCollection(models.Model):
     def __str__(self):
         return self.name
 
+#This has not been included in the database....it may potentially speed things up, but it would be better to have clarity on the future structure of ProblemGroups first.
+#class ProblemGroupObject(models.Model):
+#    userprofile = models.ForeignKey('UserProfile',related_name="problem_group_objects")
+#    problem_group = models.ForeignKey('ProblemGroup',related_name="problem_group_objects")
+#    permission = models.CharField(max_length =4)#own,read,edit
+#    is_owner = models.BooleanField(default = 0)
+#    def __str__(self):
+#        return self.problem_group.name
+
 class ProblemGroup(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
     problems = models.ManyToManyField(Problem)
@@ -314,6 +323,7 @@ class UserProfile(models.Model):
     user_type = models.CharField(max_length=15,default='member')
     user_type_new = models.ForeignKey(UserType,null=True, blank=True,on_delete=models.SET_NULL)
     problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'userprofiles')
+    owned_problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'owneruserprofiles')
     editable_problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'editoruserprofiles')
     readonly_problem_groups = models.ManyToManyField(ProblemGroup,blank = True,related_name = 'readeruserprofiles')
 #    handouts = models.ManyToManyField('handouts.Handout',blank = True,related_name = 'handouts')

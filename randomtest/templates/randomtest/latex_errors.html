@@ -1,0 +1,27 @@
+{% extends "./base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    {% if username %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests & Students</a></li>
+    <li class="breadcrumb-item"><a href="../">{{username}}'s Tests</a></li>
+    {% else %}
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests</a></li>
+    {% endif %}
+    <li class="breadcrumb-item active">{{name}}</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col-lg-9">
+      <h2>Errors compiling Test: {{name}}</h2>
+      <p>The pdf could not compile. Here's what pdflatex said:</p>
+      <pre>
+	{{error_text|linebreaks}}
+      </pre>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,8 +1,4 @@
 {% extends "randomtest/base.html" %}
-{% block head %}
-<script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.17.0/dist/jquery.validate.min.js"></script>
-{% endblock %}
-
 
 {% block content %}
 <nav aria-label="breadcrumb" role="navigation">
@@ -11,7 +7,7 @@
   </ol>
 </nav>
 <div class="container">
-<h2>My Problem Groups</h2>
+  <h2>My Problem Groups</h2>
   <div class="row">
     <div class="col-12 col-lg-9">
       <div id="empty-message">
@@ -19,7 +15,7 @@
 	You don't have any problem groups yet.
 	{% endif  %}
       </div>
-
+      
       <table class="table table-striped">
 	<thead>
 	  <tr>
@@ -27,59 +23,47 @@
             <th>Number of Problems</th>
 	    <th>Date Added</th>
 	    <th>Sharing</th>
-	    <th></th>
+	    <th>Remove</th>
 	  </tr>
 	</thead>
 	<tbody id="group-row-table">
 	  {% for pg in owned_pgs %}
-	  <tr>
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
-            <td>{{pg.problems.count}}</td>
-            <td>{{pg.created_date}}</td>
-	    <td style="text-align:center"><button class="edit-sharing btn btn-secondary" id="sharing-{{pg.pk}}"><span class="fa fa-users"></span></a></td>
-	    <td style="text-align:right"><a href="{{pg.pk}}/delete/"><span class="fa fa-remove" style="color:#ff0000"></span></a></td>
-	  </tr>
+	  {% include 'groups/grouptablerow.html' with sharing_type='own' %}
 	  {% endfor %}
 	</tbody>
       </table>
     </div>
   </div>
-<div id="shared-pgs"{% if editor_pgs.count == 0 and readonly_pgs.count == 0 %} style="display:none;"{% endif %}>
-  <h2>Problem Groups Shared with Me</h2>
-  <div class="row">
-    <div class="col-12 col-lg-9">
-      <table class="table table-striped">
-	<thead>
-	  <tr>
-            <th>Group Name</th>
-            <th>Number of Problems</th>
-	    <th>Date Added</th>
-	    <th>Sharing</th>
-	  </tr>
-	</thead>
-	<tbody id="group-row-table">
-	  {% for pg in editor_pgs %}
-	  <tr>
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
-            <td>{{pg.problems.count}}</td>
-            <td>{{pg.created_date}}</td>
-	    <td style="text-align:center"><button class="edit-sharing btn btn-secondary" id="sharing-{{pg.pk}}"><span class="fa fa-users"></span></a></td>
-	  </tr>
-	  {% endfor %}
+  <div id="shared-pgs"{% if editor_pgs.count == 0 and readonly_pgs.count == 0 %} style="display:none;"{% endif %}>
+    <h2>Problem Groups Shared with Me</h2>
+    <div class="row">
+      <div class="col-12 col-lg-9">
+	<table class="table table-striped">
+	  <thead>
+	    <tr>
+              <th>Group Name</th>
+              <th>Number of Problems</th>
+	      <th>Date Added</th>
+	      <th>Sharing</th>
+	      <th>Remove</th>
+	    </tr>
+	  </thead>
+	  <tbody id="group-row-table">
+	    {% for pg in co_owned_pgs %}
+	    {% include 'groups/grouptablerow.html' with sharing_type='coown' %}
+	    {% endfor %}
+	    {% for pg in editor_pgs %}
+	    {% include 'groups/grouptablerow.html' with sharing_type='edit' %}
+	    {% endfor %}
 	  {% for pg in readonly_pgs %}
-	  <tr>
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a></td>
-            <td>{{pg.problems.count}}</td>
-            <td>{{pg.created_date}}</td>
-	    <td></td>
-	  </tr>
-	  {% endfor %}
-	</tbody>
-      </table>
-
+	    {% include 'groups/grouptablerow.html' with sharing_type='read' %}
+	    {% endfor %}
+	  </tbody>
+	</table>
+	
+      </div>
     </div>
   </div>
-</div>
   <div class="row">
     <div class="col-12">
 <h2>Start a New Problem Group</h2>
