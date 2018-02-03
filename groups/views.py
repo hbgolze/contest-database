@@ -231,8 +231,8 @@ def share_with_user(request, **kwargs):#check permission...
     share_target_up = share_target.userprofile
     sharing_type = form.get('sharing-type','')
     if problemgroup in userprofile.problem_groups.all() or problemgroup in userprofile.owned_problem_groups.all():
-        if sharing_type == 'read':            
-            if problemgroup not in share_target_up.editable_problem_groups.all() and share_target_up.owned_problem_groups.all() and problemgroup not in share_target_up.problem_groups.all():
+        if sharing_type == 'read':
+            if problemgroup not in share_target_up.editable_problem_groups.all() and problemgroup not in share_target_up.owned_problem_groups.all() and problemgroup not in share_target_up.problem_groups.all():
                 share_target_up.readonly_problem_groups.add(problemgroup)
                 share_target_up.save()
             return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'read'})
