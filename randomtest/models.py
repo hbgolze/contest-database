@@ -90,6 +90,7 @@ class Solution(models.Model):
 class Sticky(models.Model):
     problem_label = models.CharField(max_length=20)
     sticky_date = models.DateTimeField(default = timezone.now)
+    usertest = models.ForeignKey('UserTest',null=True,blank = True)
     test_pk = models.CharField(max_length = 15)
     test_label = models.CharField(max_length=50,blank=True)
     def __str__(self):
@@ -277,6 +278,7 @@ class UserResponse(models.Model):
     problem_label = models.CharField(max_length=30)
     modified_date = models.DateTimeField(default = timezone.now)
     correct = models.BooleanField(default = 0)
+    usertest = models.ForeignKey('UserTest',blank=True, null=True,on_delete=models.SET_NULL)
     test_pk = models.CharField(max_length = 15,blank = True)
     point_value = models.IntegerField(default=0)
 

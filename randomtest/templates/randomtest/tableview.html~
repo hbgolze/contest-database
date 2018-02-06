@@ -46,7 +46,7 @@ document.write("</div>");
 	</button>
 	<div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
 	  {% for cut in currusertests %}
-	  <a class="dropdown-item" href="randomtest/addtest/{{cut.pk}}">{{cut.name}}</a>
+	  <a class="dropdown-item" href="/randomtest/addtest/{{cut.pk}}">{{cut.name}}</a>
 	  {% endfor %}
 	</div>
       </div>
@@ -77,12 +77,13 @@ document.write("</div>");
 	    <th>Date Added</th>
 	    <th>Options</th>
 	    <th></th>
+	    <th></th>
 	  </tr>
 	</thead>
 	<tbody>
 	  {% for ut in usertests %}
-	  <tr>
-            <td><a href="{% if username %}{% else %}test/{% endif %}{{ut.pk}}/">{{ut.test.name}}</a></td>
+	  <tr id="test-{{ut.pk}}">
+            <td><a href="{% if username %}{% else %}test/{% endif %}{{ut.pk}}/"><span id="name-{{ut.pk}}">{{ut.test.name}}</span></a></td>
             <td> {% for type in ut.test.types.all %}
 	      {{type}}{% if not forloop.last%},{% endif %}
 	      {% endfor %}
@@ -95,6 +96,9 @@ document.write("</div>");
 	    </td>
 	    <td>
 	      <a href="{% if username %}../../{% else %}{% endif %}pdftest/{{ut.test.pk}}/">View PDF</a>
+	    </td>
+	    <td>
+	      <a href="#{{ut.pk}}" class="delete-test"><span class="fa fa-remove" style="color:red;cursor:pointer;"></span></a>
 	    </td>
 	  </tr>
 	  {% endfor %}
@@ -131,7 +135,7 @@ document.write("</div>");
 	    <td colspan="3"><b>Previous days:</b></td>
 	  </tr>
 	  {% for day,num,point in weekcorrect %} <tr><td>{{day}}</td><td>{{num}}</td><td>{{point}}</td></tr>{% endfor %}
-	  <tr><td colspan="3"><a href="/highscores{% if username %}/{{username}}/{% endif %}">High Scores</a></td></tr>
+	  <tr><td colspan="3"><a href="/randomtest/highscores{% if username %}/{{username}}/{% endif %}">High Scores</a></td></tr>
 	</tbody>
       </table>
 
@@ -202,5 +206,60 @@ document.write("</div>");
   </div>
 </div>
 {% endif %}
+
+  <div class="modal fade" id="confirm-delete-modal" role="dialog">
+    <div class="modal-dialog" role="document">
+
+      <div class="modal-content">
+        <form method="post" action="." id="delete-test-form">
+
+          <div class="modal-header">
+            <h5 class="modal-title">Delete test?</h5>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            {% csrf_token %}
+	    Are you sure you want to delete the test "<span id='delete-title'></span>"?
+            <input type="hidden" name="test-pk" id="test-pk">
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" name="deletetest" class="btn btn-primary">Delete</button>
+          </div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+<script>
+$(document).on('click',".delete-test",function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('href').replace('#','');
+  $("#delete-title").text($("#name-"+pk).text());
+  $("#test-pk").val(pk);
+  $("#confirm-delete-modal").modal("show");
+
+});
+$(document).on('submit',"#delete-test-form",function(e) {
+  e.preventDefault();
+  $("#confirm-delete-modal").hide();
+  $("[data-dismiss=modal]").trigger({ type: "click" });
+  $.ajax({
+    type: 'POST',
+    url: '/randomtest/ajax/deletetest/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(data) {
+      console.log('hi')
+      if (data['s'] == 1) {
+console.log('asdfa')
+        $("#test-"+data['pk']).remove();
+      }
+    }
+  });
+});
+
+</script>
 {% endblock %}
     

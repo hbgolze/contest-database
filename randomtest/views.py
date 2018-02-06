@@ -178,22 +178,22 @@ def startform(request):
             shuffle(P)
             P=P[0:num]
             P=sorted(P,key=lambda x:(x.problem_number,x.year))
-            T=Test(name=testname)
+            T=Test(name=testname)####
             T.save()
             for i in range(0,len(P)):
                 T.problems.add(P[i])
             T.save()
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
-            ti=TestTimeStamp(test_pk=T.pk)
+            ti=TestTimeStamp(test_pk=T.pk)###
             ti.save()
             U.timestamps.add(ti)
 
-            ut=UserTest(test = T,num_probs = len(P),num_correct = 0,userprof = U)
+            ut=UserTest(test = T,num_probs = len(P),num_correct = 0,userprof = U)####
             ut.save()
 
             for i in range(0,len(P)):
-                r=NewResponse(response='',problem_label=P[i].label,problem=P[i],usertest = ut)
+                r=NewResponse(response='',problem_label=P[i].label,problem=P[i],usertest = ut)###
                 r.save()
 
             T.types.add(Type.objects.get(type=testtype))
@@ -494,6 +494,16 @@ def tableview(request,**kwargs):
     return HttpResponse(template.render(context,request))
 
 @login_required
+def delete_usertest(request):
+    usertest = get_object_or_404(UserTest,pk=request.POST['test-pk'])
+    userprofile = request.user.userprofile
+    pk = usertest.pk
+    if usertest in userprofile.user_tests.all() or usertest.userprof.user in userprofile.students.all():
+        usertest.delete()
+        return JsonResponse({'s':1,'pk':pk})
+    return JsonResponse({'s':0})
+
+@login_required
 def addtestview(request,**kwargs):#pk
     pk=kwargs['pk']
     curruserprof = get_or_create_up(request.user)
@@ -621,7 +631,7 @@ def testview(request,**kwargs):#switching to UserTest
                             pv=3
                         else:
                             pv=5
-                    ur=UserResponse(test_label=test.name,test_pk=usertest.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv)
+                    ur=UserResponse(test_label=test.name,test_pk=usertest.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv,usertest = usertest)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
@@ -632,14 +642,14 @@ def testview(request,**kwargs):#switching to UserTest
             tempsticky = form.get('sticky'+P[i].label)
             if tempsticky=='on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=test.name)
+                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=test.name,usertest = usertest)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
             else:
                 if r.stickied == True:
                     try:
-                        s=Sticky.objects.get(problem_label=P[i].label,test_pk=usertest.pk)
+                        s=Sticky.objects.get(problem_label=P[i].label,usertest = usertest)
                         s.delete()
                     except Sticky.DoesNotExist:
                         s=None
@@ -701,7 +711,7 @@ def newtestview(request,**kwargs):#Get this ready for use...
                             pv=3
                         else:
                             pv=5
-                    ur=UserResponse(test_label=newtest.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv)
+                    ur=UserResponse(test_label=newtest.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
@@ -712,14 +722,14 @@ def newtestview(request,**kwargs):#Get this ready for use...
             tempsticky = form.get('sticky'+prob.label)
             if tempsticky=='on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=prob.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=newtest.name)
+                    s=Sticky(problem_label=prob.label,sticky_date=timezone.now(),usertest = usertest,test_label=newtest.name)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
             else:
                 if r.stickied == True:
                     try:
-                        s=Sticky.objects.get(problem_label=prob.label,test_pk=usertest.pk)
+                        s=Sticky.objects.get(problem_label=prob.label,usertest = usertest)
                         s.delete()
                     except Sticky.DoesNotExist:
                         s=None
@@ -1194,13 +1204,13 @@ def toggle_star(request,pk):
         response.stickied = False
         response.save()
         try:
-            s=Sticky.objects.get(problem_label=response.problem.label,test_pk=usertest.pk)
+            s=Sticky.objects.get(problem_label=response.problem.label,usertest = usertest)
             s.delete()
         except Sticky.DoesNotExist:
             s=None
         return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='fa fa-star-o'></span>",'problem_label':response.problem.label})
     else:
-        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.test.name)######
+        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),usertest = usertest,test_label=usertest.test.name)######
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
@@ -1219,13 +1229,13 @@ def new_toggle_star(request,pk):
         response.stickied = False
         response.save()
         try:
-            s=Sticky.objects.get(problem_label=response.problem.label,test_pk=usertest.pk)
+            s=Sticky.objects.get(problem_label=response.problem.label,usertest = usertest)
             s.delete()
         except Sticky.DoesNotExist:
             s=None
         return JsonResponse({'response_pk' : response_pk,'is_stickied' : 'false','response_code' : "<span class='fa fa-star-o'></span>",'problem_label':response.problem.label})
     else:
-        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=usertest.newtest.name)######
+        s=Sticky(problem_label=response.problem.label,sticky_date=timezone.now(),usertest = usertest,test_label=usertest.newtest.name)######
         s.save()
         userprofile.stickies.add(s)
         response.stickied = True
@@ -1255,7 +1265,7 @@ def checkanswer(request,pk):
                 pv=3
             else:
                 pv=5
-        ur=UserResponse(test_label=usertest.test.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv)
+        ur=UserResponse(test_label=usertest.test.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
         ur.save()
         r.modified_date = t
         r.response = tempanswer

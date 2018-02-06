@@ -53,4 +53,5 @@ urlpatterns = [
     url(r'^collaborators/ajax/accept-request/$',views.accept_request,name='accept_request'),
     url(r'^collaborators/ajax/deny-request/$',views.deny_request,name='deny_request'),
     url(r'^collaborators/ajax/withdraw-request/$',views.withdraw_request,name='withdraw_request'),
+    url(r'^collaborators/ajax/remove-collaborator/$',views.remove_collaborator,name='remove_collaborator'),
 ]
