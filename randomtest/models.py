@@ -91,7 +91,6 @@ class Sticky(models.Model):
     problem_label = models.CharField(max_length=20)
     sticky_date = models.DateTimeField(default = timezone.now)
     usertest = models.ForeignKey('UserTest',null=True,blank = True)
-    test_pk = models.CharField(max_length = 15)
     test_label = models.CharField(max_length=50,blank=True)
     def __str__(self):
         return self.problem_label
@@ -125,6 +124,7 @@ class Problem(models.Model):
     mc_problem_text = models.TextField(blank=True)
     display_problem_text = models.TextField(blank=True)
     display_mc_problem_text = models.TextField(blank=True)
+    needs_answers = models.BooleanField(default = 0)
     answer_choices = models.TextField(blank=True)#should be replaced
     answer_A = models.CharField(max_length=500,blank=True)
     answer_B = models.CharField(max_length=500,blank=True)
@@ -258,9 +258,6 @@ class Folder(models.Model):
     def __str__(self):
         return self.name
 
-class TestTimeStamp(models.Model):
-    date_added=models.DateTimeField(default = timezone.now)
-    test_pk=models.CharField(max_length=15)
 
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
@@ -279,7 +276,6 @@ class UserResponse(models.Model):
     modified_date = models.DateTimeField(default = timezone.now)
     correct = models.BooleanField(default = 0)
     usertest = models.ForeignKey('UserTest',blank=True, null=True,on_delete=models.SET_NULL)
-    test_pk = models.CharField(max_length = 15,blank = True)
     point_value = models.IntegerField(default=0)
 
 
@@ -314,7 +310,6 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
     usertests = models.ManyToManyField('UserTest', blank=True)
-    timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='userprofiles')
     folders = models.ManyToManyField(Folder,blank = True,related_name='userprofiles')
     students = models.ManyToManyField(User,blank = True,related_name='teacher_profiles')

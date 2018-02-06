@@ -96,7 +96,7 @@ def test_as_pdf(request,pk):
     test = get_object_or_404(Test, pk=pk)
     P=list(test.problems.all())
     rows=[]
-    include_problem_labels = True
+    include_problem_labels = False
     for i in range(0,len(P)):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
@@ -162,8 +162,16 @@ def test_as_pdf(request,pk):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
-        with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
-            pdf = f.read()
-    r = HttpResponse(content_type='application/pdf')
-    r.write(pdf)
-    return r
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+test.name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
+

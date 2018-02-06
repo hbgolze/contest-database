@@ -26,7 +26,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
 
 from .utils import parsebool,pointsum
@@ -93,9 +93,6 @@ def deletetestresponses(request,pk):
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
     return redirect('/randomtest/')
 
 @login_required
@@ -115,9 +112,6 @@ def deletestudenttestresponses(request,username,pk):
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
     return redirect('../../')
 
 
@@ -185,9 +179,6 @@ def startform(request):
             T.save()
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
-            ti=TestTimeStamp(test_pk=T.pk)###
-            ti.save()
-            U.timestamps.add(ti)
 
             ut=UserTest(test = T,num_probs = len(P),num_correct = 0,userprof = U)####
             ut.save()
@@ -996,11 +987,17 @@ def test_sol_as_pdf(request, pk):
             )
             stdout_value = process2.communicate()[0]
         logger.debug(os.listdir(tempdir))
-        with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
-            pdf = f.read()
-    r = HttpResponse(content_type='application/pdf')  
-    r.write(pdf)
-    return r
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')  
+                r.write(pdf)
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
+
 
 @login_required
 def archiveview(request,tpk):
@@ -1008,14 +1005,6 @@ def archiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.add(test)
     userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1025,14 +1014,6 @@ def archivestudentview(request,username,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.add(test)
     userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1041,14 +1022,6 @@ def unarchiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.remove(test)
     userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1058,14 +1031,6 @@ def unarchivestudentview(request,username,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.remove(test)
     userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required

@@ -26,7 +26,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
 
 from .utils import parsebool,pointsum
@@ -93,9 +93,6 @@ def deletetestresponses(request,pk):
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
     return redirect('/randomtest/')
 
 @login_required
@@ -115,9 +112,6 @@ def deletestudenttestresponses(request,username,pk):
         if testresponses.count()>=1:
             testresponses.delete()
         userprofile.tests.remove(test)
-    a= userprofile.timestamps.filter(test_pk=pk)
-    if a.count() >0:
-        a.delete()        
     return redirect('../../')
 
 
@@ -185,9 +179,6 @@ def startform(request):
             T.save()
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
-            ti=TestTimeStamp(test_pk=T.pk)###
-            ti.save()
-            U.timestamps.add(ti)
 
             ut=UserTest(test = T,num_probs = len(P),num_correct = 0,userprof = U)####
             ut.save()
@@ -498,7 +489,7 @@ def delete_usertest(request):
     usertest = get_object_or_404(UserTest,pk=request.POST['test-pk'])
     userprofile = request.user.userprofile
     pk = usertest.pk
-    if usertest in userprofile.user_tests.all() or usertest.userprofile in userprofile.students.all():
+    if usertest in userprofile.user_tests.all() or usertest.userprof.user in userprofile.students.all():
         usertest.delete()
         return JsonResponse({'s':1,'pk':pk})
     return JsonResponse({'s':0})
@@ -1008,14 +999,6 @@ def archiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.add(test)
     userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1025,14 +1008,6 @@ def archivestudentview(request,username,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.add(test)
     userprof.tests.remove(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1041,14 +1016,6 @@ def unarchiveview(request,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.remove(test)
     userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required
@@ -1058,14 +1025,6 @@ def unarchivestudentview(request,username,tpk):
     test = get_object_or_404(Test, pk=tpk) 
     userprof.archived_tests.remove(test)
     userprof.tests.add(test)
-    tists=userprof.timestamps.filter(test_pk=test.pk)
-    if tists.count()==0:
-        ti=TestTimeStamp(test_pk=test.pk)
-    else:
-        ti=userprof.timestamps.get(test_pk=test.pk)
-        ti.date_added=timezone.now()
-    ti.save()
-    userprof.timestamps.add(ti)
     return redirect('../../')
 
 @login_required

@@ -72,6 +72,7 @@ urlpatterns = [
     url(r'^ajax/new-comment/$', views.new_comment, name='new_comment'),
     url(r'^ajax/save-comment/$', views.save_comment, name='save_comment'),
     url(r'^ajax/delete-comment/$', views.delete_comment, name='delete_comment'),
+    url(r'^ajax/change-needs-answers/$', views.change_needs_answers, name='change_needs_answers'),
 #    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),

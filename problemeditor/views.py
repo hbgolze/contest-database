@@ -1233,6 +1233,15 @@ def delete_tag(request):
 
 
 @login_required
+def change_needs_answers(request,**kwargs):
+    pk = request.POST.get('pk','')
+    na = request.POST.get('na','')
+    prob = get_object_or_404(Problem,pk=pk)
+    prob.needs_answers = int(na)
+    prob.save()
+    return JsonResponse({'s':1})
+
+@login_required
 def load_edit_sol(request,**kwargs):
     pk = request.POST.get('pk','')
     spk = request.POST.get('spk','')
@@ -1429,6 +1438,8 @@ def delete_comment(request, **kwargs):
     comment = get_object_or_404(Comment,pk = request.POST.get('com_pk',''))
     comment.delete()
     return JsonResponse({'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})
+
+
 
 def matrixview(request,type):    
     typ = get_object_or_404(Type, type = type)

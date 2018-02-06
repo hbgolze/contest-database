@@ -90,7 +90,7 @@ class Solution(models.Model):
 class Sticky(models.Model):
     problem_label = models.CharField(max_length=20)
     sticky_date = models.DateTimeField(default = timezone.now)
-    test_pk = models.CharField(max_length = 15)
+    usertest = models.ForeignKey('UserTest',null=True,blank = True)
     test_label = models.CharField(max_length=50,blank=True)
     def __str__(self):
         return self.problem_label
@@ -257,9 +257,6 @@ class Folder(models.Model):
     def __str__(self):
         return self.name
 
-class TestTimeStamp(models.Model):
-    date_added=models.DateTimeField(default = timezone.now)
-    test_pk=models.CharField(max_length=15)
 
 class Responses(models.Model):
     test = models.ForeignKey(Test,on_delete=models.CASCADE)
@@ -277,7 +274,7 @@ class UserResponse(models.Model):
     problem_label = models.CharField(max_length=30)
     modified_date = models.DateTimeField(default = timezone.now)
     correct = models.BooleanField(default = 0)
-    test_pk = models.CharField(max_length = 15,blank = True)
+    usertest = models.ForeignKey('UserTest',blank=True, null=True,on_delete=models.SET_NULL)
     point_value = models.IntegerField(default=0)
 
 
@@ -312,7 +309,6 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User)
     tests = models.ManyToManyField(Test, blank=True)
     usertests = models.ManyToManyField('UserTest', blank=True)
-    timestamps = models.ManyToManyField(TestTimeStamp,blank=True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='userprofiles')
     folders = models.ManyToManyField(Folder,blank = True,related_name='userprofiles')
     students = models.ManyToManyField(User,blank = True,related_name='teacher_profiles')

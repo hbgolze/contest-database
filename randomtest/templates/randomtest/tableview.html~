@@ -86,12 +86,22 @@ document.write("</div>");
 	      {{type}}{% if not forloop.last%},{% endif %}
 	      {% endfor %}
 	    </td>
-	    <td style="text-align:right">{{ut.num_correct}}/{{ut.num_probs}} <div style="font-size:30%"><script language="javascript">drawprogressbar({{ut.num_correct}}*100/{{ut.num_probs}},{% if ut.num_correct == ut.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},100)</script></div></td>
+	    <td style="text-align:right;width:100px;">
+{{ut.num_correct}}/{{ut.num_probs}} 
+
+<!--<div style="font-size:30%"><script language="javascript">drawprogressbar({{ut.num_correct}}*100/{{ut.num_probs}},{% if ut.num_correct == ut.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},100)</script></div>-->
+
+
+<div class="progress">
+<script>document.write("<div class='progress-bar{% if ut.num_correct != ut.num_probs %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{ut.num_correct}}*100/Math.max({{ut.num_probs}},1)).toString()+"%' aria-valuenow='"+Math.round({{ut.num_correct}}*100/Math.max({{ut.num_probs}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+</div>
+
+	    </td>
 	    <!--'#C1E0D1'-->
             <td>{{ut.test.created_date|timezone:request.user.userprofile.time_zone|date:"m/d/y h:i a"}}</td>
 	    <td>
-	      <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
-		<div class="btn-group" role="group">
+	      <div class="btn-group btn-group-sm" role="group" aria-label="Button group with nested dropdown">
+		<div class="btn-group btn-group-sm" role="group">
 		  <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 		    Options
 		  </button>

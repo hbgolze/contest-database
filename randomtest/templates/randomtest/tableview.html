@@ -1,15 +1,5 @@
 {% extends "./base.html" %}
 
-{% block head %}
-<script language="javascript">
-function drawprogressbar(percent,color,barwidth) {
-var numpixels=barwidth*percent/100;
-document.write("<div style=\"position: relative;line-height: 1em;border: 1px solid black; width: "+(barwidth+2).toString()+"px; height=10px;\">");
-document.write("<div style=\"height: 1.5em; width: "+ numpixels.toString()+"px; background-color: "+color+";\"></div>");
-document.write("</div>");
-}
-</script>
-{% endblock %}
 
 {% block content %}
 {% load tz %}
@@ -89,9 +79,6 @@ document.write("</div>");
 	    <td style="text-align:right;width:100px;">
 {{ut.num_correct}}/{{ut.num_probs}} 
 
-<!--<div style="font-size:30%"><script language="javascript">drawprogressbar({{ut.num_correct}}*100/{{ut.num_probs}},{% if ut.num_correct == ut.num_probs %} '#339966'{% else %}'#63cb97'{% endif %},100)</script></div>-->
-
-
 <div class="progress">
 <script>document.write("<div class='progress-bar{% if ut.num_correct != ut.num_probs %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{ut.num_correct}}*100/Math.max({{ut.num_probs}},1)).toString()+"%' aria-valuenow='"+Math.round({{ut.num_correct}}*100/Math.max({{ut.num_probs}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
 </div>
@@ -169,8 +156,10 @@ document.write("</div>");
 	    <td>
 	      {{section}}
 	    </td>
-	    <td>
-	      <div style="font-size:30%"><script language="javascript">drawprogressbar({{prog}},{% if prog == 100 %} '#339966'{% else %}'#63cb97'{% endif %},125)</script></div>
+	    <td style="width:125px;">
+	      <div class="progress">
+		<script>document.write("<div class='progress-bar{% if prog != 100 %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+{{prog}}+"%' aria-valuenow='"+{{prog}}+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+	      </div>
 	      {{cor}}/{{tot}} ({{prog}}%)
 	    </td>
 	  </tr>

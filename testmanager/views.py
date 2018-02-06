@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest
 
 from .utils import parsebool,newtexcode,newsoltexcode,pointsum
 
@@ -93,9 +93,6 @@ def startform(request):
             T.save()
             U,boolcreated=UserProfile.objects.get_or_create(user=request.user)
             U.tests.add(T)
-            ti=TestTimeStamp(test_pk=T.pk)
-            ti.save()
-            U.timestamps.add(ti)
             R=Responses(test=T,num_problems_correct=0)
             R.save()
             for i in range(0,len(P)):

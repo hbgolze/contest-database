@@ -22,7 +22,7 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,TestTimeStamp,Folder,UserTest,ProblemGroup,NewTag,NewResponse
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse
 from randomtest.utils import newtexcode
 from .forms import GroupModelForm
 
@@ -99,9 +99,6 @@ def viewtaggroup(request,pk):
                         t.problems.add(p)
                     t.save()
                     userprofile.tests.add(t)
-                    ti = TestTimeStamp(test_pk = t.pk)
-                    ti.save()
-                    userprofile.timestamps.add(ti)
                     ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
                     ut.save()
                     for i in t.problems.all():
@@ -182,18 +179,13 @@ def create_test(request,**kwargs):
             testname = form.get('testname','')
             t = Test(name = testname)
             t.save()
-#            for i in checked:
-#                p = Problem.objects.get(label = i)
-#                t.problems.add(p)
             P = Problem.objects.filter(label__in=checked)
-#            t.save()
+            types = Type.objects.filter(pk__in=P.values('type_new'))
+            for i in types:
+                t.types.add(i)
             userprofile.tests.add(t)
-            ti = TestTimeStamp(test_pk = t.pk)
-            ti.save()
-            userprofile.timestamps.add(ti)
             ut = UserTest(test = t,num_probs = P.count(),num_correct = 0,userprof = userprofile)
             ut.save()
-#            for i in t.problems.all():
             for i in P:
                 t.problems.add(i)
                 r = NewResponse(response = '',problem_label = i.label,problem = i,usertest = ut)

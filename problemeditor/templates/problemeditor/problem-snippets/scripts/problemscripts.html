@@ -354,6 +354,21 @@ $(document).on('click',".save-sol-link",function(event) {
     });
     return false;
 });
+
+$(document).on("change","select.change-needs-answers",function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('-')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/change-needs-answers/',
+        data: "&pk="+pk+"&na="+$(this).val(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['s']==1) {console.log('asd');}
+        }
+    });
+    return false;
+});
 </script>
 
 
