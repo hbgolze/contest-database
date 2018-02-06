@@ -182,17 +182,20 @@ def create_test(request,**kwargs):
             testname = form.get('testname','')
             t = Test(name = testname)
             t.save()
-            for i in checked:
-                p = Problem.objects.get(label = i)
-                t.problems.add(p)
-            t.save()
+#            for i in checked:
+#                p = Problem.objects.get(label = i)
+#                t.problems.add(p)
+            P = Problem.objects.filter(label__in=checked)
+#            t.save()
             userprofile.tests.add(t)
             ti = TestTimeStamp(test_pk = t.pk)
             ti.save()
             userprofile.timestamps.add(ti)
-            ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
+            ut = UserTest(test = t,num_probs = P.count(),num_correct = 0,userprof = userprofile)
             ut.save()
-            for i in t.problems.all():
+#            for i in t.problems.all():
+            for i in P:
+                t.problems.add(i)
                 r = NewResponse(response = '',problem_label = i.label,problem = i,usertest = ut)
                 r.save()
             t.save()
