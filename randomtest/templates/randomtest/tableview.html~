@@ -76,8 +76,6 @@ document.write("</div>");
 	    <th>Progress</th>
 	    <th>Date Added</th>
 	    <th>Options</th>
-	    <th></th>
-	    <th></th>
 	  </tr>
 	</thead>
 	<tbody>
@@ -92,13 +90,20 @@ document.write("</div>");
 	    <!--'#C1E0D1'-->
             <td>{{ut.test.created_date|timezone:request.user.userprofile.time_zone|date:"m/d/y h:i a"}}</td>
 	    <td>
-	      <a href="viewlatex/{{ut.test.pk}}/">View LaTeX</a>
-	    </td>
-	    <td>
-	      <a href="{% if username %}../../{% else %}{% endif %}pdftest/{{ut.test.pk}}/">View PDF</a>
-	    </td>
-	    <td>
-	      <a href="#{{ut.pk}}" class="delete-test"><span class="fa fa-remove" style="color:red;cursor:pointer;"></span></a>
+	      <div class="btn-group" role="group" aria-label="Button group with nested dropdown">
+		<div class="btn-group" role="group">
+		  <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+		    Options
+		  </button>
+		  <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+		    <a class="dropdown-item" href="{% if username %}../../{% else %}{% endif %}pdftest/{{ut.test.pk}}/">View PDF</a>
+		    <a class="dropdown-item" href="viewlatex/{{ut.test.pk}}/">View LaTeX</a>
+		    <a class="dropdown-item" href="{% if username %}../../{% else %}{% endif %}pdfsoltest/{{ut.test.pk}}/">View Solution PDF</a>
+		    <a class="dropdown-item" href="viewlatexsol/{{ut.test.pk}}/">View Solution LaTeX</a>
+		  </div>
+		</div>
+		<button type="button" class="btn btn-danger delete-test" id="delete_btn-{{ut.pk}}"><span class="fa fa-remove"></span></button>
+	      </div>
 	    </td>
 	  </tr>
 	  {% endfor %}
@@ -194,7 +199,13 @@ document.write("</div>");
 	<tbody>
 	  {% for resp in responselog %}
 	  <tr>
-            <td><small><a href="{% if username %}{% else %}test/{% endif %}{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small></td>
+            <td>
+	      {% if resp.usertest %}
+	      <small><a href="{% if username %}{% else %}test/{% endif %}{{resp.test_pk}}/#{{resp.problem_label}}">{{resp.test_label}}</a>: {{resp.problem_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small>
+	      {% else %}
+	      <small><span style="color:red;">{{resp.test_label}}</span>: {{resp.problem_label}}:{% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.response}}</p></small>
+	      {% endif %}
+	    </td>
 	    <td>
 	      <small>{{resp.modified_date}}</small>
 	    </td>
@@ -235,7 +246,7 @@ document.write("</div>");
 <script>
 $(document).on('click',".delete-test",function(e) {
   e.preventDefault();
-  var pk = $(this).attr('href').replace('#','');
+  var pk = $(this).attr('id').split('-')[1];
   $("#delete-title").text($("#name-"+pk).text());
   $("#test-pk").val(pk);
   $("#confirm-delete-modal").modal("show");
@@ -253,8 +264,8 @@ $(document).on('submit',"#delete-test-form",function(e) {
     success: function(data) {
       console.log('hi')
       if (data['s'] == 1) {
-console.log('asdfa')
-        $("#test-"+data['pk']).remove();
+console.log('test-'+data['pk']);
+        $("#test-"+data['pk']).fadeOut();
       }
     }
   });
