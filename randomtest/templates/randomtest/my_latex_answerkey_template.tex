@@ -24,19 +24,16 @@
 \newif\ifsolution
 \solutionfalse
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
-\title{ {{name}} }
+\title{ {{name}} Answer Key}
 \author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
 \maketitle
 \begin{enumerate}
-{% for prob,problemcode,problemlabel,answerchoices in rows %}
-\item {{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
+{% for prob in rows %}
+\item {% if prob.question_type_new.question_type == "multiple choice" %}$\textbf{({{prob.mc_answer}})}\,\, {% if prob.mc_answer == "A" %}{{prob.answer_A}}{% elif prob.mc_answer == "B" %}{{prob.answer_B}}{% elif prob.mc_answer == "C" %}{{prob.answer_C}}{% elif prob.mc_answer == "D" %}{{prob.answer_D}}{% elif prob.mc_answer == "E" %}{{prob.answer_E}}{% endif %}${% elif prob.question_type_new.question_type == "short answer" %}${{prob.sa_answer}}${% elif prob.question_type_new.question_type == "proof" %}Look at Solutions{% endif %}{% if randomize and include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
 
-{% if include_answer_choices or prob.needs_answers %}
-{{answerchoices}}
-{% endif %}
 {% endfor %}
 \end{enumerate}
 \end{document}

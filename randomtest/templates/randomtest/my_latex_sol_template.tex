@@ -24,19 +24,27 @@
 \newif\ifsolution
 \solutionfalse
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
-\title{ {{name}} }
-\author{}
+\title{ {{name}} Solutions}
+\author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
 \maketitle
 \begin{enumerate}
-{% for problemcode,problemlabel,answerchoices,solutions in rows %}
+{% for prob,problemcode,problemlabel,answerchoices,solutions in rows %}
 \item {{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
 
 \vspace{3mm}
 
+{% if include_answer_choices or prob.needs_answers %}
 {{answerchoices}}
+{% endif %} 
+
+{% if include_problem_notes %}
+\textbf{Notes:}
+
+{{prob.notes}}
+{% endif %}
 
 {% if solutions|length > 0 %}
 

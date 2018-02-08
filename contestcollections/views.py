@@ -29,6 +29,7 @@ from randomtest.utils import parsebool,newtexcode,newsoltexcode
 from random import shuffle
 import time
 from datetime import datetime,timedelta
+import random
 
 # Create your views here.                                                                            
 @login_required
@@ -92,26 +93,39 @@ class SolutionView(DetailView):
 
 
 @login_required
-def test_as_pdf(request,pk):
-    test = get_object_or_404(Test, pk=pk)
+def test_as_pdf(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
     P=list(test.problems.all())
     rows=[]
-    include_problem_labels = False
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl'] 
+        include_answer_choices = options['ac']
+        randomize = options['r']
+    else:
+        include_problem_labels = False
+        include_answer_choices = True
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
     for i in range(0,len(P)):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
             ptext=P[i].mc_problem_text
-            rows.append((ptext,P[i].readable_label,P[i].answers()))
+            rows.append((P[i],ptext,P[i].readable_label,P[i].answers()))
         else:
             ptext=P[i].problem_text
-            rows.append((ptext,P[i].readable_label,''))
-    if request.method == "GET":
-        if request.GET.get('problemlabels')=='no':
-            include_problem_labels = False
+            rows.append((P[i],ptext,P[i].readable_label,''))
+#    if request.method == "GET":
+#        if request.GET.get('problemlabels')=='no':
+#            include_problem_labels = False
     context = Context({
             'name':test.name,
             'rows':rows,
-            'pk':pk,
+            'pk':kwargs['pk'],
             'include_problem_labels':include_problem_labels,
             })
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -126,8 +140,11 @@ def test_as_pdf(request,pk):
         context = Context({
                 'name':test.name,
                 'rows':rows,
-                'pk':pk,
+                'pk':kwargs['pk'],
                 'include_problem_labels':include_problem_labels,
+                'include_answer_choices':include_answer_choices,
+                'randomize': randomize,
+                'seed': seed,
                 'tempdirect':tempdir,
                 })
         template = get_template('randomtest/my_latex_template.tex')
@@ -173,5 +190,244 @@ def test_as_pdf(request,pk):
         else:
             with open(os.path.join(tempdir, 'texput.log')) as f:
                 error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})#####Perhaps the error page needs to be customized...
+
+
+@login_required
+def test_sol_as_pdf(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
+    P=list(test.problems.all())
+    rows=[]
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl'] 
+        include_answer_choices = options['ac']
+        include_problem_notes = options['pn']
+        randomize = options['r']
+    else:
+        include_problem_labels = False
+        include_answer_choices = True
+        include_problem_notes = False
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
+    for i in range(0,len(P)):
+        ptext=''
+        if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
+            ptext=P[i].mc_problem_text
+            rows.append((P[i],ptext,P[i].readable_label,P[i].answers(),P[i].solutions.all()))
+        else:
+            ptext=P[i].problem_text
+            rows.append((P[i],ptext,P[i].readable_label,'',P[i].solutions.all()))
+    if request.method == "GET":
+        if request.GET.get('problemlabels')=='no':
+            include_problem_labels = False
+    context = Context({
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            })
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('randomtest/my_latex_sol_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    # Python3 only. For python2 check out the docs!   
+    with tempfile.TemporaryDirectory() as tempdir:
+        # Create subprocess, supress output with PIPE and
+        # run latex twice to generate the TOC properly.
+        # Finally read the generated pdf.
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = Context({
+                'name':test.name,
+                'rows':rows,
+                'pk':kwargs['pk'],
+                'include_problem_labels':include_problem_labels,
+                'include_problem_notes':include_problem_notes,
+                'include_answer_choices':include_answer_choices,
+                'randomize': randomize,
+                'seed': seed,
+                'tempdirect':tempdir,
+                })
+        template = get_template('randomtest/my_latex_sol_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+        for i in range(0,len(L)):
+            if L[i][-4:]=='.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+test.name.replace(' ','')+'solutions.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
 
+@login_required
+def test_answer_key_as_pdf(request, **kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
+    P = list(test.problems.all())
+    rows=[]
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl'] 
+        include_answer_choices = options['ac']
+        randomize = options['r']
+    else:
+        include_problem_labels = False
+        include_answer_choices = True
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
+
+    for i in range(0,len(P)):
+        rows = P
+    # Python3 only. For python2 check out the docs!                                                  
+    with tempfile.TemporaryDirectory() as tempdir:
+        # Create subprocess, supress output with PIPE and
+        # run latex twice to generate the TOC properly.
+        # Finally read the generated pdf.
+        context = Context({
+                'name':test.name,
+                'rows':rows,
+                'pk':kwargs['pk'],
+                'include_problem_labels':include_problem_labels,
+                'randomize': randomize,
+                'seed':seed,
+                'tempdirect':tempdir,
+                })
+        template = get_template('randomtest/my_latex_answerkey_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(2):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+test.name.replace(' ','')+'answerkey.pdf"'
+
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
+
+@login_required
+def testpdfoptions(request,pk):
+    test = get_object_or_404(Test,pk=pk)
+    return render(request,'contestcollections/pdfcreator.html',{'test':test})
+
+@login_required
+def problempdf(request,pk):
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        context['ac'] = 1
+    else:
+        context['ac'] = 0
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_as_pdf(request,pk=pk,opts = context)
+
+@login_required
+def solutionpdf(request,pk):
+    form = request.GET
+    context = {}
+    context['ac'] = 1
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'include-pn' in form:
+        context['pn'] = 1
+    else:
+        context['pn'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_sol_as_pdf(request,pk=pk,opts = context)
+
+
+@login_required
+def answerkeypdf(request,pk):
+    form = request.GET
+    context = {}
+    context['ac'] = 1
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_answer_key_as_pdf(request,pk=pk,opts = context)
