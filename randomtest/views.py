@@ -32,6 +32,7 @@ from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorR
 from .utils import parsebool,pointsum
 
 from random import shuffle
+import random
 import time
 from datetime import datetime,timedelta
 
@@ -817,14 +818,24 @@ def readme(request):
     return render(request,'randomtest/readme.html',{'nbar':'viewmytests'})
 
 @login_required
-def test_as_pdf(request, pk):
-    test = get_object_or_404(Test, pk=pk)
-    P = list(test.problems.all())
+def test_as_pdf(request, **kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
+    P=list(test.problems.all())
     rows=[]
-    include_problem_labels = True
-    include_answer_choices = True
-    randomize = False
-    seed = 0
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl']
+        include_answer_choices = options['ac']
+        randomize = options['r']
+    else:
+        include_problem_labels = True
+        include_answer_choices = True
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
     for i in range(0,len(P)):
         ptext = ''
         if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
@@ -839,7 +850,7 @@ def test_as_pdf(request, pk):
     context = Context({  
             'name':test.name,
             'rows':rows,
-            'pk':pk,
+            'pk':kwargs['pk'],
             'include_problem_labels':include_problem_labels,
             })
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -859,7 +870,7 @@ def test_as_pdf(request, pk):
         context = Context({  
                 'name':test.name,
                 'rows':rows,
-                'pk':pk,
+                'pk':kwargs['pk'],
                 'include_problem_labels':include_problem_labels,
                 'include_answer_choices':include_answer_choices,
                 'randomize': randomize,
@@ -914,15 +925,26 @@ def test_as_pdf(request, pk):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
 
 @login_required
-def test_sol_as_pdf(request, pk):
-    test = get_object_or_404(Test, pk=pk)
+def test_sol_as_pdf(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
     P=list(test.problems.all())
     rows=[]
-    include_problem_labels = True
-    include_answer_choices = True
-    include_problem_notes = False
-    randomize = False
-    seed = 0
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl']
+        include_answer_choices = options['ac']
+        include_problem_notes = options['pn']
+        randomize = options['r']
+    else:
+        include_problem_labels = True
+        include_answer_choices = True
+        include_problem_notes = False
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
     for i in range(0,len(P)):
         ptext=''
         if P[i].question_type_new.question_type=='multiple choice' or P[i].question_type_new.question_type=='multiple choice short answer':
@@ -937,7 +959,7 @@ def test_sol_as_pdf(request, pk):
     context = Context({  
             'name':test.name,
             'rows':rows,
-            'pk':pk,
+            'pk':kwargs['pk'],
             'include_problem_labels':include_problem_labels,
             })
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -957,7 +979,7 @@ def test_sol_as_pdf(request, pk):
         context = Context({  
                 'name':test.name,
                 'rows':rows,
-                'pk':pk,
+                'pk':kwargs['pk'],
                 'include_problem_labels':include_problem_labels,
                 'include_answer_choices':include_answer_choices,
                 'randomize': randomize,
@@ -1012,13 +1034,22 @@ def test_sol_as_pdf(request, pk):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})
 
 @login_required
-def test_answer_key_as_pdf(request, pk):
-    test = get_object_or_404(Test, pk=pk)
+def test_answer_key_as_pdf(request, **kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
     P = list(test.problems.all())
     rows=[]
-    include_problem_labels = True
-    randomize = False
-    seed = 0
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl']
+        randomize = options['r']
+    else:
+        include_problem_labels = False
+        randomize = False
+    if randomize:
+        seed = options['seed']
+        random.Random(seed).shuffle(P)
+    else:
+        seed = 0
     for i in range(0,len(P)):
         rows = P
     # Python3 only. For python2 check out the docs!
@@ -1030,7 +1061,7 @@ def test_answer_key_as_pdf(request, pk):
         context = Context({  
                 'name':test.name,
                 'rows':rows,
-                'pk':pk,
+                'pk':kwargs['pk'],
                 'include_problem_labels':include_problem_labels,
                 'randomize': randomize,
                 'seed':seed,
@@ -1420,3 +1451,74 @@ def remove_collaborator(request):
     userprofile.collaborators.remove(collaborator)
     userprofile.save()
     return JsonResponse({'is_valid':1})
+
+
+
+@login_required
+def testpdfoptions(request,pk):
+    test = get_object_or_404(Test,pk=pk)
+    return render(request,'randomtest/pdfcreator.html',{'test':test,'nbar':'randomtest'})
+
+@login_required
+def problempdf(request,pk):
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        context['ac'] = 1
+    else:
+        context['ac'] = 0
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_as_pdf(request,pk=pk,opts = context)
+
+@login_required
+def solutionpdf(request,pk):
+    form = request.GET
+    context = {}
+    context['ac'] = 1
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'include-pn' in form:
+        context['pn'] = 1
+    else:
+        context['pn'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_sol_as_pdf(request,pk=pk,opts = context)
+
+@login_required
+def answerkeypdf(request,pk):
+    form = request.GET
+    context = {}
+    context['ac'] = 1
+    if 'include-pls' in form:
+        context['pl'] = 1
+    else:
+        context['pl'] = 0
+    if 'randomize' in form:
+        context['r'] = 1
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+        else:
+            context['seed'] = 0
+    else:
+        context['r'] = 0
+    return test_answer_key_as_pdf(request,pk=pk,opts = context)

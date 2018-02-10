@@ -55,4 +55,8 @@ urlpatterns = [
     url(r'^collaborators/ajax/deny-request/$',views.deny_request,name='deny_request'),
     url(r'^collaborators/ajax/withdraw-request/$',views.withdraw_request,name='withdraw_request'),
     url(r'^collaborators/ajax/remove-collaborator/$',views.remove_collaborator,name='remove_collaborator'),
+    url(r'^randomtest/pdfoptions/(?P<pk>\d+)/$', views.testpdfoptions, name='testpdfoptions'),
+    url(r'^randomtest/pdfoptions/(?P<pk>\d+)/problems/$', views.problempdf, name='problempdf'),
+    url(r'^randomtest/pdfoptions/(?P<pk>\d+)/solutions/$', views.solutionpdf, name='solutionpdf'),
+    url(r'^randomtest/pdfoptions/(?P<pk>\d+)/answerkey/$', views.answerkeypdf, name='answerkeypdf'),
 ]

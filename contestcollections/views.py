@@ -365,7 +365,7 @@ def test_answer_key_as_pdf(request, **kwargs):
 @login_required
 def testpdfoptions(request,pk):
     test = get_object_or_404(Test,pk=pk)
-    return render(request,'contestcollections/pdfcreator.html',{'test':test})
+    return render(request,'contestcollections/pdfcreator.html',{'test':test,'nbar':'contestcollection'})
 
 @login_required
 def problempdf(request,pk):

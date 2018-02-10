@@ -1,0 +1,97 @@
+{% extends "randomtest/base.html" %}
+
+{% block title %}
+{{test.name}} - PDF Options
+{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/randomtest/">My Tests</a></li>
+    <li class="breadcrumb-item active">{{test.name}}: PDF Options</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>PDF Options for {{test.name}}</h2>
+  <div class="row">
+    <div class="col-sm-12">
+      <form id="pdf-options">
+	<h3>Options for Problem PDF</h3>
+
+	<fieldset class="form-group">
+	  <div class="row">
+	    <div class="col-sm-10">
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-acs" name="include-acs" checked>
+		<label class="form-check-label" for="include-acs">
+		  Include Answer Choices (If unchecked, answer choices will be omitted where possible)
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-pls" name="include-pls">
+		<label class="form-check-label" for="include-pls">
+		  Include Problem Labels (Each problem will be tagged with a label like [2010 AMC 12A #5])
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="randomize" name="randomize">
+		<label class="form-check-label" for="randomize">
+		  Randomize Problems (specify seed below in order to recreate this PDF later)
+		</label>
+	      </div>
+	    </div>
+	  </div>
+	</fieldset>
+	<div class="row">
+	  <div class="col-sm-6">
+	    <label for="random-seed">Random Seed</label>
+	    <input type="number"  name="random-seed" id="random-seed" class="form-control" disabled><br>
+	  </div>
+	</div>
+
+	<h3>Options for Solution PDF</h3>
+
+	<fieldset class="form-group">
+	  <div class="row">
+	    <div class="col-sm-10">
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-pn" name="include-pn">
+		<label class="form-check-label" for="include-pn">
+		  Include Problem Notes (Usually this consists of problem difficulty information if it is known)
+		</label>
+	      </div>
+	    </div>
+	  </div>
+	</fieldset>
+
+
+
+	<div class="row">
+	  <div class="col-sm-12">
+	    <button type="submit" class="btn btn-primary" id="probs-pdf" formaction="problems/">Download Problems PDF</button><br><br>
+	    <button type="submit" class="btn btn-primary" id="ans-pdf" formaction="answerkey/">Download Answer Key PDF</button><br><br>
+	    <button type="submit" class="btn btn-primary" id="sols-pdf" formaction="solutions/">Download Solutions PDF</button>
+	  </div>
+	</div>
+      </form>
+      
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+$(document).on('change',"#randomize",function(e) {
+  if ($(this).is(':checked')) {
+    $("#random-seed").prop('disabled',false);
+    if ($("#random-seed").val() == "") {
+      $("#random-seed").val(Math.floor(Math.random() * 10000000));
+    }
+  } else {
+    $("#random-seed").prop('disabled',true);
+  }
+});
+
+</script>
+{% endblock %}
