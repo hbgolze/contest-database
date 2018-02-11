@@ -431,3 +431,26 @@ def answerkeypdf(request,pk):
     else:
         context['r'] = 0
     return test_answer_key_as_pdf(request,pk=pk,opts = context)
+
+
+@login_required
+def latexview(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
+    P = list(test.problems.all())
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        context['include_answer_choices'] = True
+    if 'include-pls' in form:
+        context['include_problem_labels'] = True
+    if 'randomize' in form:
+        context['randomize'] = True
+        if 'random-seed' in form:
+            context['seed'] = int(form.get('random-seed',''))
+            random.Random(context['seed']).shuffle(P)
+        else:
+            context['seed'] = 0
+    context['test'] = test
+    context['rows'] = P
+    context['nbar'] = 'contestcollection'
+    return render(request, 'contestcollections/latexview.html',context)

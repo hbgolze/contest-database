@@ -17,4 +17,6 @@ urlpatterns = [
     url(r'^test/(?P<pk>\d+)/pdfoptions/problems/$', views.problempdf, name='ccproblempdf'),
     url(r'^test/(?P<pk>\d+)/pdfoptions/solutions/$', views.solutionpdf, name='ccsolutionpdf'),
     url(r'^test/(?P<pk>\d+)/pdfoptions/answerkey/$', views.answerkeypdf, name='ccanswerkeypdf'),
+    url(r'^test/(?P<pk>\d+)/pdfoptions/viewlatex/$', views.latexview, name='ccviewlatex'),
+
 ]

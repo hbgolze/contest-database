@@ -71,7 +71,8 @@ Contest Collections: {{test.name}} - PDF Options
 	  <div class="col-sm-12">
 	    <button type="submit" class="btn btn-primary" id="probs-pdf" formaction="problems/">Download Problems PDF</button><br><br>
 	    <button type="submit" class="btn btn-primary" id="ans-pdf" formaction="answerkey/">Download Answer Key PDF</button><br><br>
-	    <button type="submit" class="btn btn-primary" id="sols-pdf" formaction="solutions/">Download Solutions PDF</button>
+	    <button type="submit" class="btn btn-primary" id="sols-pdf" formaction="solutions/">Download Solutions PDF</button><br><br>
+	    <button type="submit" class="btn btn-primary" id="view-latex" formaction="viewlatex/">View Problems LaTeX</button>
 	  </div>
 	</div>
       </form>
@@ -93,19 +94,10 @@ $(document).on('change',"#randomize",function(e) {
     $("#random-seed").prop('disabled',true);
   }
 });
-
-//$(document).on('click',"#probs-pdf",function(e) {
-//  e.preventDefault();
-//    $.ajax({
-//        type: 'GET',
-//        url: 'problems/',
-//        data: $("#pdf-options").serialize(),
-//        dataType: 'json',
-//        success: function(result) {
-//console.log('hi');
-//        }
-//    });
-//});
-
+$(document).ready(function() {
+  if ($("#randomize").is(':checked')) {
+    $("#random-seed").prop('disabled',false);
+  }
+});
 </script>
 {% endblock %}
