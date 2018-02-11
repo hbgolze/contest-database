@@ -70,7 +70,7 @@ class AddProblemForm1(forms.Form):
         self.fields['author_name'].widget.attrs['class'] = 'form-control col-md-6'
 
 class AddProblemForm2MC(forms.Form):
-    mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     answer_A = forms.CharField()
     answer_B = forms.CharField()
     answer_C = forms.CharField()
@@ -87,7 +87,7 @@ class AddProblemForm2MC(forms.Form):
         self.fields['answer_E'].widget.attrs['class'] = 'form-control col-md-6'
 
 class AddProblemForm2SA(forms.Form):
-    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     correct_short_answer_answer = forms.CharField()
     sa = forms.CharField(required=False)
     def __init__(self, *args, **kwargs):
@@ -96,13 +96,13 @@ class AddProblemForm2SA(forms.Form):
 
 
 class AddProblemForm2PF(forms.Form):
-    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     pf = forms.CharField(required=False)
 
 class AddProblemForm2MCSA(forms.Form):
-    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     correct_short_answer_answer = forms.CharField()    
-    mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}))
+    mc_problem_text = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
     answer_A = forms.CharField()
     answer_B = forms.CharField()
     answer_C = forms.CharField()

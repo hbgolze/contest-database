@@ -186,7 +186,9 @@ $(document).on('submit',"#edit_answer_form",function(event) {
             if (result['qt'] == 'mc') {
                 $("#mc_answer_"+result['pk']).html(result['answer']);
             } else if (result['qt'] == 'sa') {
-                $("#sa_answer_"+result['pk']).html(result['answer']);
+                $("#sa_answer_"+result['pk']).html("$"+result['answer']+"$");
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_answer_"+result['pk']]);
+
             }
                $("#edit-answer-modal").hide();
                $("[data-dismiss=modal]").trigger({ type: "click" });

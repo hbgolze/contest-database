@@ -1,9 +1,9 @@
               {% if prob.question_type_new.question_type == 'multiple choice' %}
               <p>Answer: <span id="mc_answer_{{prob.pk}}">{{prob.mc_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-mc-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
               {% elif prob.question_type_new.question_type == 'short answer' %}
-              <p>Answer: <span id="sa_answer_{{prob.pk}}">{{prob.sa_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+              <p>Answer: <span id="sa_answer_{{prob.pk}}">{% if prob.sa_answer %}${{prob.sa_answer}}${% endif %}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
               {% elif prob.question_type_new.question_type == 'multiple choice short answer' %}
               <p>Answer (Multiple Choice): <span id="mc_answer_{{prob.pk}}">{{prob.mc_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-mc-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
 
-              <p>Answer (Short Answer): <span id="sa_answer_{{prob.pk}}">{{prob.sa_answer}}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
+              <p>Answer (Short Answer): <span id="sa_answer_{{prob.pk}}">{% if prob.sa_answer %}${{prob.sa_answer}}${% endif %}</span>{% if request.user.userprofile.user_type_new.name == "super" %} (<a class="edit-sa-answer" href="{{prob.pk}}">Edit Answer</a>){% endif %}</p>
               {% endif %}

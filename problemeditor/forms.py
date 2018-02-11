@@ -319,6 +319,7 @@ class EditSAAnswer(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EditSAAnswer,self).__init__(*args,**kwargs)
         self.fields['sa_answer'].label = "Answer"
+        self.fields['sa_answer'].required = True
 
 
 class MCProblemTextForm(forms.ModelForm):
