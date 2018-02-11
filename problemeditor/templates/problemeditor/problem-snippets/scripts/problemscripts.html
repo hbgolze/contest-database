@@ -369,6 +369,13 @@ $(document).on("change","select.change-needs-answers",function(event) {
     });
     return false;
 });
+
+$(document).on("click","#preview-latex-button", function(e) {
+console.log("ASD");
+    $("#preview-latex").html($("#codetext").val());
+    $("#preview-latex").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
+});
 </script>
 
 

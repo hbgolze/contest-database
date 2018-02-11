@@ -124,6 +124,7 @@ class Problem(models.Model):
     mc_problem_text = models.TextField(blank=True)
     display_problem_text = models.TextField(blank=True)
     display_mc_problem_text = models.TextField(blank=True)
+    needs_answers = models.BooleanField(default = 0)
     answer_choices = models.TextField(blank=True)#should be replaced
     answer_A = models.CharField(max_length=500,blank=True)
     answer_B = models.CharField(max_length=500,blank=True)

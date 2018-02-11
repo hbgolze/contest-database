@@ -132,7 +132,7 @@ class Problem(models.Model):
     answer_D = models.CharField(max_length=500,blank=True)
     answer_E = models.CharField(max_length=500,blank=True)
     mc_answer = models.CharField(max_length=1,blank=True)
-    sa_answer = models.CharField(max_length=20,blank=True)
+    sa_answer = models.CharField(max_length=100,blank=True)
     form_letter = models.CharField(max_length=2,blank=True)
     test_label = models.CharField(max_length=20,blank=True)
     question_type = models.ManyToManyField(QuestionType)
