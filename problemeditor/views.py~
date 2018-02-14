@@ -13,7 +13,7 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
@@ -475,16 +475,28 @@ def detailedproblemview(request,**kwargs):
 def addcontestview(request,type,num):
     typ=get_object_or_404(Type, type=type)
     num=int(num)
+    sa = QuestionType.objects.get(question_type='short answer')
+    mc = QuestionType.objects.get(question_type='multiple choice')
+    pf = QuestionType.objects.get(question_type='proof')
     if request.method == "POST":
         form=request.POST
         F=form#.cleaned_data
         formletter = F['formletter']
         year = F['year']
-        label = F['year']+type+F['formletter']
-        type2 = typ
-        readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
-        readablelabel = readablelabel.rstrip()
-        if typ.default_question_type=='mc':
+        if 'round' in F:
+            round = get_object_or_404(Round, pk=F['round'])
+            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + F['formletter']
+            default_question_type = round.default_question_type
+            readablelabel = readablelabel.rstrip()
+            post_label = round.readable_label_post_form
+            label = F['year']+round.name.replace(' ','')+F['formletter']#####no spaces
+        else:
+            readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
+            default_question_type = typ.default_question_type
+            readablelabel = readablelabel.rstrip()
+            post_label = typ.readable_label_post_form
+            label = F['year']+type+F['formletter']#####
+        if default_question_type=='mc':
             for i in range(1,num+1):
                 p=Problem(mc_problem_text = F['problem_text'+str(i)],
                           problem_text = F['problem_text'+str(i)],
@@ -497,9 +509,9 @@ def addcontestview(request,type,num):
                           answer_D = F['answer_D'+str(i)],
                           answer_E = F['answer_E'+str(i)],
                           label = label+str(i),
-                          readable_label = readablelabel+typ.readable_label_post_form+str(i),
+                          readable_label = readablelabel+post_label+str(i),
                           type_new = typ,
-                          question_type_new = QuestionType.objects.get(question_type='multiple choice'),
+                          question_type_new = mc,
                           problem_number = i,
                           year = F['year'],
                           form_letter=F['formletter'],
@@ -507,23 +519,25 @@ def addcontestview(request,type,num):
                           top_solution_number=0,
                           )
                 p.save()
+                if 'round' in F:
+                    p.round = round
                 p.types.add(typ)
-                p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
+                p.question_type.add(mc)
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        if typ.default_question_type=='sa':
+        if default_question_type=='sa':
             for i in range(1,num+1):
                 p=Problem(problem_text=F['problem_text'+str(i)],
                           answer=F['answer'+str(i)],
                           sa_answer=F['answer'+str(i)],
                           label=label+str(i),
-                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
+                          readable_label = readablelabel + post_label + str(i),
                           type_new=typ,
-                          question_type_new=QuestionType.objects.get(question_type='short answer'),
+                          question_type_new=sa,
                           problem_number=i,
                           year=F['year'],
                           form_letter=F['formletter'],
@@ -531,42 +545,46 @@ def addcontestview(request,type,num):
                           top_solution_number=0,
                           )
                 p.save()
+                if 'round' in F:
+                    p.round = round
                 p.types.add(typ)
-                p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                p.question_type.add(sa)
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        if typ.default_question_type=='pf':
+        if default_question_type=='pf':
             for i in range(1,num+1):
                 p=Problem(problem_text=F['problem_text'+str(i)],
-                          label=label+str(i),
-                          readable_label=readablelabel+typ.readable_label_post_form+str(i),
-                          type_new=typ,
-                          question_type_new=QuestionType.objects.get(question_type='proof'),
-                          problem_number=i,
-                          year=F['year'],
-                          form_letter=F['formletter'],
-                          test_label=label,
-                          top_solution_number=0,
+                          label = label+str(i),
+                          readable_label = readablelabel + post_label + str(i),
+                          type_new = typ,
+                          question_type_new = pf,
+                          problem_number = i,
+                          year = F['year'],
+                          form_letter = F['formletter'],
+                          test_label = label,
+                          top_solution_number = 0,
                           )
                 p.save()
+                if 'round' in F:
+                    p.round = round
                 p.types.add(typ)
-                p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                p.question_type.add(pf)
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        P=Problem.objects.filter(test_label=label)
+        P = Problem.objects.filter(test_label=label)
         if len(P)>0:
-            if formletter != "":
-                t=Test(name=readablelabel)
-            else:
-                t=Test(name=year+' '+type2.label)
+#            if formletter != "":# if a formletter exists.
+            t=Test(name = readablelabel)# would this change for rounds
+#            else:
+#                t=Test(name = year+' '+typ.label)
             t.save()
         for i in P:
             t.problems.add(i)
@@ -634,7 +652,7 @@ def redirectproblem(request,pk):
         return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
 
 
-
+#######THIS MUST BE UPDATED TO USE ROUNDS PROPERLY.
 @login_required
 def uploadcontestview(request):
     if request.POST and request.FILES:

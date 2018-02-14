@@ -147,7 +147,7 @@ class Problem(models.Model):
     mc_answer = models.CharField(max_length=1,blank=True)
     sa_answer = models.CharField(max_length=150,blank=True)
     form_letter = models.CharField(max_length=2,blank=True)
-    test_label = models.CharField(max_length=20,blank=True)
+    test_label = models.CharField(max_length=50,blank=True)
     question_type = models.ManyToManyField(QuestionType)
     solutions = models.ManyToManyField(Solution,blank=True)
     top_solution_number = models.IntegerField(blank=True,null=True)
