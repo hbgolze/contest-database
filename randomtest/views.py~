@@ -1457,7 +1457,7 @@ def remove_collaborator(request):
 @login_required
 def testpdfoptions(request,pk):
     test = get_object_or_404(Test,pk=pk)
-    return render(request,'contestcollections/pdfcreator.html',{'test':test,'nbar':'randomtest'})
+    return render(request,'randomtest/pdfcreator.html',{'test':test,'nbar':'randomtest'})
 
 @login_required
 def problempdf(request,pk):
