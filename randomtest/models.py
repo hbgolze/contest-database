@@ -57,6 +57,7 @@ class Type(models.Model):
         return self.label
     class Meta:
         ordering = ['label']
+
 class ProblemApproval(models.Model):
     approval_user = models.ForeignKey(User,blank=True,null=True)
     APPROVAL_CHOICES = (
