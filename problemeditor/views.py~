@@ -1234,8 +1234,8 @@ def delete_tag(request):
 
 @login_required
 def change_needs_answers(request,**kwargs):
-    pk = request.POST.get(pk,'')
-    na = request.POST.get(na,'')
+    pk = request.POST.get('pk','')
+    na = request.POST.get('na','')
     prob = get_object_or_404(Problem,pk=pk)
     prob.needs_answers = int(na)
     prob.save()

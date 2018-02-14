@@ -32,39 +32,49 @@ Contest Collections
   <div class="row">
     <div class="col-lg-9">
       {% for name,T1,T2,T3,T4 in rows %}
+
       <a name="{{name}}"></a>
       <div class="card mb-3">
 	
 	<div class="card-header card-heading-custom">{{name}}</div>
 	
 	<!-- Table -->
-	<table class="table">
-	  <tr>
-	    <td>
-	      {% for test in T1 %}
-	      <a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a>
-	      <br>
-	      {% endfor %}
-	    </td>
-	    <td>
-	      {% for test in T2 %}
-	      <a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
-	      {% endfor %}
-	    </td>
-	    <td>
-	      {% for test in T3 %}
-	      <a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
-	      {% endfor %}
-	    </td>
-	    <td>
-	      {% for test in T4 %}
-	      <a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
-	      {% endfor %}
-	    </td>
-	  </tr>
-	</table>
+<div class="container">
+	<div class="row" style="margin-top:20px;margin-bottom:20px">
+	  <div class="col-6">
+	    <div class="row">
+	      <div class="col-md-6">
+		{% for test in T1 %}
+		<a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a>
+		<br>
+		{% endfor %}
+	      </div>
+	      <div class="col-md-6">
+		{% for test in T2 %}
+		<a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
+		{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+	  <div class="col-6">
+	    <div class="row">
+	      <div class="col-md-6">
+		{% for test in T3 %}
+		<a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
+		{% endfor %}
+	      </div>
+	      <div class="col-md-6">
+		{% for test in T4 %}
+		<a href="test/{{test.pk}}">{{test.name}}</a>&nbsp;<a href="/randomtest/addtest/{{test.pk}}"><span class="fa fa-plus" aria-hidden="true"></span></a><br>
+		{% endfor %}
+	      </div>
+	    </div>
+	  </div>
+	</div>
+</div>
       </div>
       {% endfor %}
+
     </div>
   </div>
 </div>

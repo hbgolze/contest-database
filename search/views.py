@@ -28,9 +28,9 @@ from itertools import chain
 def searchform(request):
     userprofile = get_or_create_up(request.user)
     types = userprofile.user_type_new.allowed_types.all()
-    tags=sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
+    tags = sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
     template = loader.get_template('search/searchform.html')
-    context={'nbar' : 'search', 'types' : types,'tags' : tags}
+    context = {'nbar' : 'search', 'types' : types,'tags' : tags}
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -58,6 +58,9 @@ def searchresults(request):
         form = request.GET
         if form.get('searchform','') == "start":
             testtype = form.get('testtype','')
+            type_args = testtype.split('_')
+            round_or_type = type_args[0]
+            rt_pk = type_args[1]
 
             searchterm = form.get('keywords','')
             if searchterm is None or searchterm == u'':
@@ -94,11 +97,18 @@ def searchresults(request):
                 yearend=int(yearend)
 
             if len(tag)>0:
-                P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(types__type=testtype)
+                if round_or_type == "T":
+                    P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)
+                else:
+                    P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)
                 P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
 
             else:
-                P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(types__type = testtype).distinct()
+                if round_or_type == "T":
+                    P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()
+                else:
+                    P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()
+
 #            if form.get('solution_search','') is not None:
 #                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
 #                for i in keywords:
@@ -106,7 +116,10 @@ def searchresults(request):
 #                P2 = Problem.objects.filter(id__in = S.values('parent_problem_id'))
 
             if 'solutionsearch' in form:
-                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
+                if round_or_type == "T":
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).distinct()
+                else:
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).distinct()
                 for i in keywords:
                     S = S.filter(solution_text__contains = i)
                 for i in keywords:
@@ -119,10 +132,7 @@ def searchresults(request):
             P = sorted(P,key = lambda x:(x.problem_number,x.year))
             owned_groups = userprofile.problem_groups.all()
             editable_groups = userprofile.editable_problem_groups.all()
-            print(owned_groups)
-            print(editable_groups)
             probgroups = list(chain(owned_groups,editable_groups))
-            print(probgroups)
             paginator = Paginator(P,25)
             page = request.GET.get('page')
             try:

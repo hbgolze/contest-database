@@ -231,25 +231,30 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
 
 class AddContestForm(forms.Form):
 #    type = forms.ModelChoiceField( queryset = Type.objects.exclude(type__startswith='CM'),required=True)
-    year = forms.CharField(max_length=4,label='Year',required=True)
-    formletter = forms.CharField(max_length=2,label='Form',required=False)
+    year = forms.CharField(max_length=4,label='Year',required=True,widget=forms.TextInput(attrs={'class':'form-control','max-width':'50px'}))
+    formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
+#    widgets = {
+#        'year': forms.TextInput(attrs={'class':'form-control'}),
+#        'formletter':forms.TextInput(attrs={'class':'form-control'}),
+# forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 5,'class':'form-control'}),
+#        }
     def __init__(self, *args, **kwargs):
         num_probs = kwargs.pop('num_probs')
         typ = Type.objects.get(type=kwargs.pop('type'))
         super(AddContestForm,self).__init__(*args,**kwargs)
         for i in range(1,num_probs+1):
-            self.fields['problem_text%s' % i] = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext'}),label='Problem %s' % i)
+            self.fields['problem_text%s' % i] = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}),label='Problem %s' % i)
             if typ.default_question_type=='mc':
-                self.fields['answer_A%s' % i] = forms.CharField(max_length=255,label='Answer A')
-                self.fields['answer_B%s' % i] = forms.CharField(max_length=255,label='Answer B')
-                self.fields['answer_C%s' % i] = forms.CharField(max_length=255,label='Answer C')
-                self.fields['answer_D%s' % i] = forms.CharField(max_length=255,label='Answer D')
-                self.fields['answer_E%s' % i] = forms.CharField(max_length=255,label='Answer E')
+                self.fields['answer_A%s' % i] = forms.CharField(max_length=255,label='Answer A',widget=forms.TextInput(attrs={'class':'form-control'}))
+                self.fields['answer_B%s' % i] = forms.CharField(max_length=255,label='Answer B',widget=forms.TextInput(attrs={'class':'form-control'}))
+                self.fields['answer_C%s' % i] = forms.CharField(max_length=255,label='Answer C',widget=forms.TextInput(attrs={'class':'form-control'}))
+                self.fields['answer_D%s' % i] = forms.CharField(max_length=255,label='Answer D',widget=forms.TextInput(attrs={'class':'form-control'}))
+                self.fields['answer_E%s' % i] = forms.CharField(max_length=255,label='Answer E',widget=forms.TextInput(attrs={'class':'form-control'}))
                 self.fields['answer%s' % i] = forms.ChoiceField(label='Answer',widget =forms.RadioSelect, choices=(('A','A'),('B','B'),('C','C'),('D','D'),('E','E')))
             elif typ.default_question_type=='sa':
-                self.fields['answer%s' % i] = forms.CharField(max_length=50,label = 'Answer')
-
-
+                self.fields['answer%s' % i] = forms.CharField(max_length=150,label = 'Answer',widget=forms.TextInput(attrs={'class':'form-control'}))
+        if typ.rounds.count() > 0:
+            self.fields['round'] = forms.ChoiceField(label="Round", widget = forms.Select(attrs={'class':'form-control'}), choices = tuple((r.pk,r.name) for r in typ.rounds.all()),required=True)
 class DuplicateProblemForm(forms.Form):
     duplicate_problem_label=forms.CharField(max_length=30,required=True)
     def clean_label(self):
@@ -319,6 +324,7 @@ class EditSAAnswer(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(EditSAAnswer,self).__init__(*args,**kwargs)
         self.fields['sa_answer'].label = "Answer"
+        self.fields['sa_answer'].required = True
 
 
 class MCProblemTextForm(forms.ModelForm):

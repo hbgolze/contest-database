@@ -32,7 +32,10 @@
 	    <label for="testtype" class="control-label">Problem Type:</label>
 	    <select name="testtype" class="form-control">
 	      {% for typ in types %}
-	      <option value="{{typ.type}}">{{typ.label}} Problems</option>
+	      <option value="T_{{typ.pk}}">{{typ.label}} Problems</option>
+{% for round in typ.rounds.all %}
+<option value="R_{{round.pk}}">&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
+{% endfor %}
 	  {% endfor %}
 	    </select>
 	  </div>
