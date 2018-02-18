@@ -10,24 +10,54 @@
       {% with object as prob %}
       {% include "problemeditor/snippetprobtextans.html" %}
       {% endwith %}
-      
       {% if object.solutions.count > 0 %}
+      <div id="all_solutions">
       {% for solution in object.solutions.all %}
+
       <div id="sol_{{solution.pk}}">
-	<label>Solution {{forloop.counter}}:</label>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
-	<span class="delete-sol-link" id="deletesol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:red;"><span class="fa fa-remove"></span></span> <span class="edit-sol-link" id="editsol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:blue"><span class="fa fa-pencil"></span></span>
+	<hr>
+	<div class="d-flex flex-row">
+	  <div class="p-2 mr-auto">
+	<label>Solution {{forloop.counter}}:</label>
+	  </div>
+	  
+	  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+	  <div class="p-2">
+	    <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
+	      <button type="button" class="btn btn-secondary edit-sol-link" id="editsol_{{object.pk}}_{{solution.pk}}"><span class="fa fa-pencil"></span></button>
+	      <button type="button" class="btn btn-danger pre-delete-sol-link" id="predeletesol_{{object.pk}}_{{solution.pk}}"><span class="fa fa-remove"></span></button>
+	    </div>
+	  </div>
+	</div>
+	
+	<div class="alert alert-danger" role="alert" style="display:none" id="confirmdelete_{{solution.pk}}">
+	  <div class="d-flex flex-row">
+	    <div class="p-2 mr-auto">
+	      Are you sure you want to delete this solution?
+	    </div>
+	    <div class="p-2">
+	      <div class="btn-group btn-group-sm" role="group" aria-label="Solution options" style="margin-bottom 20px">
+		<button type="button" class="btn btn-danger delete-sol-link" id="deletesol_{{object.pk}}_{{solution.pk}}">Yes</button>
+		<button type="button" class="btn btn-secondary no-delete-sol-link" id="nodeletesol_{{object.pk}}_{{solution.pk}}">No</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
 	{% endif %}
+
 	<div id="soltext_{{solution.pk}}">
           {% include 'problemeditor/problem-snippets/modals/soltext.html' %}
 	</div>
-      </div>
-      <div id="editsolplaceholder_{{solution.pk}}">
+	<div id="editsolplaceholder_{{solution.pk}}">
 
+	</div>
       </div>
       {% endfor %}
-      {% else %}
-      No current solutions.
+      </div>
       {% endif %}
+      <div id="no-solutions" {% if object.solutions.count > 0%}style="display:none"{% endif %}>
+	No current solutions.
+      </div>
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
