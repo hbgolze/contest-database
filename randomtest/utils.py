@@ -153,12 +153,10 @@ def replace_enumitem(s):
                 r += s[0:t[1]]#before the first environment opens, place in return string
                 level +=1
                 s = s[t[1]:]
-                print(t[0])
                 if t[0] == "begin_enum_with_token":
                     enum_level += 1
                     s = s[s.index(']')+1:]
                     current_pop_start = 0
-                    print(t[2])
                     if t[2] == '(i)':
                         r += "<ol class=\"par-list-lower-roman\">"
                     elif t[2] == '(a)':
@@ -205,7 +203,6 @@ def replace_enumitem(s):
             while level > 0 and t[0] != "":#does stuff until the enum/itemize gets closed/popping yields nothing
                 t = itemenum_beginend_pop(s,current_pop_start)
                 if t[0][0:4] == "item":#first, if items are in the current level, fix them up.
-#                    print('item')
                     if level == 1:
                         if counter == 0:
                             r += s[0:t[1]] + '<li>'
@@ -231,7 +228,6 @@ def replace_enumitem(s):
                         level_two_start = t[1]
                     current_pop_start = t[1] + 1#move on to the next pop...
                 if t[0][0:4] == "end_":
-#                    print('===================',s)
                     level -= 1# always decrease a level
                     if t[0] == "end_enum":
                         enum_level -= 1
@@ -245,7 +241,6 @@ def replace_enumitem(s):
                         r += s[0:level_two_start]
                         r += replace_enumitem(s[level_two_start:level_two_end])
                         s = s[level_two_end:]
-#                        print('post string',s)
                         current_pop_start = 0
                     elif level == 0:
                         if t[0] == 'end_enum':
@@ -271,9 +266,7 @@ def replace_enumitem(s):
 ####Strategy: pop off the first begin (itemize/enumerate); keep on popping off the next begin/end.
 def replaceitemize(s):
 #    itemizes=tagindexpairs('itemize',s)
-#    print(itemizes)
     itemizes = firstleveltagindexpairs('itemize',s)
-    print(itemizes)
     if len(itemizes)==0:
         return s
     r=s[0:itemizes[0][0]]

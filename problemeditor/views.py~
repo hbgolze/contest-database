@@ -581,14 +581,14 @@ def addcontestview(request,type,num):
                 p.save()
         P = Problem.objects.filter(test_label=label)
         if len(P)>0:
-#            if formletter != "":# if a formletter exists.
-            t=Test(name = readablelabel)# would this change for rounds
-#            else:
-#                t=Test(name = year+' '+typ.label)
+            if 'round' in F:
+                t=Test(name=F['year']+' '+round.name)
+            else:
+                t=Test(name = readablelabel)# would this change for rounds
             t.save()
         for i in P:
             t.problems.add(i)
-            t.types.add(i.type_new)
+        t.types.add(typ)
         t.save()
         tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
         tc.tests.add(t)
