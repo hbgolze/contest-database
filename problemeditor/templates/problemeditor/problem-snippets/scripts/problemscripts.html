@@ -243,10 +243,22 @@ $(document).on('submit',"#edit_latex_form",function(event) {
         success: function(result) {
             if (result['qt'] == 'mc') {
                 $("#mc_prob_text_"+result['pk']).html(result['prob-text']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mc_prob_text_"+result['pk']]);
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mc_prob_text_"+result['pk']]);
+
+                d = new Date();
+                $("#mc_prob_text_"+result['pk']+" img").each(function(e) {
+                  url = $(this).attr("src");
+                  $(this).attr("src",url+"?"+d.getTime());
+                });
+
             } else if (result['qt'] == 'sa') {
                 $("#sa_prob_text_"+result['pk']).html(result['prob-text']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_prob_text_"+result['pk']]);
+                d = new Date();
+                $("#sa_prob_text_"+result['pk']+" img").each(function(e) {
+                  url = $(this).attr("src");
+                  $(this).attr("src",url+"?"+d.getTime());
+                });
+                MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_prob_text_"+result['pk']]);
             }
                $("#edit-latex-modal").hide();
                $("[data-dismiss=modal]").trigger({ type: "click" });
@@ -366,6 +378,12 @@ $(document).on('click',".save-sol-link",function(event) {
             $("#soltext_"+sol_id).html(result['sol_text']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"soltext_"+sol_id]);
               $("#editsolplaceholder_"+sol_id).empty()
+            d = new Date();
+            $("#soltext_"+sol_id+" img").each(function(e) {
+              url = $(this).attr("src");
+              $(this).attr("src",url+"?"+d.getTime());
+            });
+
         }
     });
     return false;

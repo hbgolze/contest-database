@@ -246,6 +246,19 @@ $(document).on('submit',"#new-solution-form",function(event) {
     return false;
 });
 
+
+
+$(document).on('click',".pre-delete-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[2];
+  $("#confirmdelete_"+sol_id).show();
+});
+
+$(document).on('click',".no-delete-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[2];
+  $("#confirmdelete_"+sol_id).hide();
+});
+
+
 $(document).on('click',".delete-sol-link",function(event) {
     event.preventDefault();
     var sol_id = $(this).attr('id').split('_')[2];
@@ -258,13 +271,18 @@ $(document).on('click',".delete-sol-link",function(event) {
         success: function(result) {
             if (result['deleted']==1) {
                 $("#solution-link_"+prob_id).text("View Solutions ("+result['sol_count']+")");
-	        $("#num_solutions-"+prob_id).html(result['sol_count']);
-                $("#sol_"+sol_id).empty();
+                $("#num_solutions-"+prob_id).html(result['sol_count']);
+                $("#sol_"+sol_id).remove();
+                if ($("#all_solutions > div").length == 0) {
+                    $("#no-solutions").show();
+                }
             }
         }
     });
     return false;
 });
+
+
 
 $(document).on('click',".edit-sol-link",function(event) {
     event.preventDefault();
@@ -505,6 +523,12 @@ $(document).on('click',".delete-comment-link",function(event) {
         }
     });
     return false;
+});
+
+$(document).on("click","#preview-latex-button", function(e) {
+    $("#preview-latex").html($("#codetext").val());
+    $("#preview-latex").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
 });
 </script>
 
