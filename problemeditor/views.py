@@ -1,5 +1,6 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404,JsonResponse
+from django.utils.http import urlquote,urlunquote
 from django.template import loader,RequestContext
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required,user_passes_test
@@ -213,6 +214,7 @@ def typeview(request):
 
 @login_required
 def tagview(request,type):
+    print('sadf')
     typ = get_object_or_404(Type, type = type)
     newtags = NewTag.objects.all().exclude(label = 'root').order_by('tag')
     rows = []
@@ -224,7 +226,7 @@ def tagview(request,type):
         num_problems = T.count()
         num_nosolutions = T.filter(solutions__isnull=True).count()
         if num_problems > 0:
-            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
+            rows.append((goodurl(str(tag)),tag,num_nosolutions,num_problems))
 
     root_tag = NewTag.objects.get(label='root')
     rows1 = []
@@ -279,16 +281,14 @@ def testview(request,type):
 
 
 @login_required
-def typetagview(request,type,tag):
-    oldtag = tag
-    tag = goodtag(tag)
+def typetagview(request,type,pk):#type,tag):
     typ = get_object_or_404(Type, type = type)
-    rows = []
-    if tag != 'untagged':
-        ttag = get_object_or_404(NewTag, tag = tag)
-        problems = list(ttag.problems.filter(type_new = typ))
-    else:
+    if pk == "untagged":
         problems = list(typ.problems.filter(newtags__isnull = True))
+        tag = "untagged"
+    else:
+        tag = get_object_or_404(NewTag,pk=pk)#this is new. ISSUE: how to deal with untagged?
+        problems = list(tag.problems.filter(type_new = typ))
     problems = sorted(problems, key = lambda x:(x.problem_number,x.year))
 
     template = loader.get_template('problemeditor/typetagview.html')
@@ -307,10 +307,9 @@ def typetagview(request,type,tag):
         'rows' : prows,
         'type' : typ.type,
         'nbar': 'problemeditor',
-        'tag':tag,
-        'typelabel':typ.label,
-        'tags':NewTag.objects.exclude(tag = 'root'),
-        'oldtag': oldtag
+        'tag' : tag,#####
+        'typelabel' : typ.label,
+        'tags' : NewTag.objects.exclude(tag = 'root'),
         }
     return HttpResponse(template.render(context,request))
 
@@ -394,9 +393,19 @@ def CMtopicview(request,type):#unapprovedview
     context= {'rows' : prows, 'type' : typ.type, 'nbar': 'problemeditor','typelabel':typ.label}
     return HttpResponse(template.render(context,request))
 
+#####Check it
 @login_required
-def problemview(request,type,tag,label):
-    tag=goodtag(tag)
+def problemview(request,**kwargs):#,type,tag,label):
+    if 'type' in kwargs:
+        type = kwargs['type']
+    if 'tag' in kwargs:
+        tag = kwargs['tag']
+        tag=goodtag(tag)
+    if 'label' in kwargs:
+        label = kwargs['label']
+    if 'pk' in kwargs:
+        tag_object = get_object_or_404(NewTag,pk=kwargs['pk'])
+        tag = tag_object.tag
     typ=get_object_or_404(Type, type=type)
     prob=get_object_or_404(Problem, label=label)
 

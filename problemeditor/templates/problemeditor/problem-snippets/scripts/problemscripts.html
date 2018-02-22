@@ -358,6 +358,7 @@ $(document).on('click',".edit-sol-link",function(event) {
         data: "pk="+prob_id+"&spk="+sol_id,
         dataType: 'json',
         success: function(result) {
+$("#editsol_"+prob_id+"_"+sol_id).hide();
             $("#editsolplaceholder_"+sol_id).html(result['sol_form']);
             window.location ="#editsolplaceholder_"+sol_id;
         }
@@ -383,10 +384,19 @@ $(document).on('click',".save-sol-link",function(event) {
               url = $(this).attr("src");
               $(this).attr("src",url+"?"+d.getTime());
             });
+$("#editsol_"+prob_id+"_"+sol_id).show();
 
         }
     });
     return false;
+});
+
+$(document).on('click',".cancel-edit-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $("#editsolplaceholder_"+sol_id).empty()
+    $("#editsol_"+prob_id+"_"+sol_id).show();
 });
 
 $(document).on("change","select.change-needs-answers",function(event) {
