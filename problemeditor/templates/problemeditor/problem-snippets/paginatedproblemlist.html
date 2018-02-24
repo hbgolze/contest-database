@@ -25,7 +25,7 @@
       <nav aria-label="Search result pages">
         <ul class="pagination">
           {% if rows.has_previous %}
-          <li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}">&laquo;</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ rows.previous_page_number }}{% if exacttag %}&exact=true{% endif %}">&laquo;</a></li>
           {% else %}
           <li class="page-item disabled"><span class="page-link">&laquo;</span></li>
           {% endif %}
@@ -34,11 +34,11 @@
           <li class="page-item active"><span class="page-link">{{ i }} <span class="sr-only">(current)</span></span></li>
           {% else %}
 {% if rows.number|add:-3 < i and rows.number|add:3 > i %}
-          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ i }}{% if exacttag %}&exact=true{% endif %}">{{ i }}</a></li>
 {% elif forloop.last %}
-          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}{% if exacttag %}&exact=true{% endif %}</a></li>
 {% elif forloop.first %}
-          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}{% if exacttag %}&exact=true{% endif %}</a></li>
 {% elif i == 2 %}
 <li class="page-item disabled"><span class="page-link">...</span></li>
 {% elif i == rows.paginator.page_range|length|add:-1 %}
@@ -49,7 +49,7 @@
 
 
           {% if rows.has_next %}
-          <li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}">&raquo;</a></li>
+          <li class="page-item"><a class="page-link" href="?page={{ rows.next_page_number }}{% if exacttag %}&exact=true{% endif %}">&raquo;</a></li>
           {% else %}
           <li class="page-item disabled"><span class="page-link">&raquo;</span></li>
           {% endif %}

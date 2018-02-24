@@ -214,7 +214,6 @@ def typeview(request):
 
 @login_required
 def tagview(request,type):
-    print('sadf')
     typ = get_object_or_404(Type, type = type)
     newtags = NewTag.objects.all().exclude(label = 'root').order_by('tag')
     rows = []
@@ -282,6 +281,7 @@ def testview(request,type):
 
 @login_required
 def typetagview(request,type,pk):#type,tag):
+    context = {}
     typ = get_object_or_404(Type, type = type)
     if pk == "untagged":
         problems = list(typ.problems.filter(newtags__isnull = True))
@@ -290,6 +290,7 @@ def typetagview(request,type,pk):#type,tag):
         tag = get_object_or_404(NewTag,pk=pk)#this is new. ISSUE: how to deal with untagged?
         if request.method =="GET" and request.GET.get('exact') == "true":
             problems = list(tag.problems.filter(type_new = typ))
+            context['exacttag'] = 1
         else:
             problems = Problem.objects.filter(type_new = typ)
             problems = problems.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
@@ -307,14 +308,12 @@ def typetagview(request,type,pk):#type,tag):
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         prows = paginator.page(paginator.num_pages)
-    context = {
-        'rows' : prows,
-        'type' : typ.type,
-        'nbar': 'problemeditor',
-        'tag' : tag,#####
-        'typelabel' : typ.label,
-        'tags' : NewTag.objects.exclude(tag = 'root'),
-        }
+    context['rows'] = prows
+    context['type'] = typ.type
+    context['nbar'] = 'problemeditor'
+    context['tag'] = tag#####
+    context['typelabel'] = typ.label
+    context['tags'] = NewTag.objects.exclude(tag = 'root')
     return HttpResponse(template.render(context,request))
 
 @login_required
