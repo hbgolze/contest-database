@@ -14,8 +14,8 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round
-from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
+from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
@@ -288,7 +288,11 @@ def typetagview(request,type,pk):#type,tag):
         tag = "untagged"
     else:
         tag = get_object_or_404(NewTag,pk=pk)#this is new. ISSUE: how to deal with untagged?
-        problems = list(tag.problems.filter(type_new = typ))
+        if request.method =="GET" and request.GET.get('exact') == "true":
+            problems = list(tag.problems.filter(type_new = typ))
+        else:
+            problems = Problem.objects.filter(type_new = typ)
+            problems = problems.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
     problems = sorted(problems, key = lambda x:(x.problem_number,x.year))
 
     template = loader.get_template('problemeditor/typetagview.html')
@@ -1326,7 +1330,7 @@ def change_qt_load(request,**kwargs):
 
 @login_required
 def save_qt(request,**kwargs):
-    print(request.POST)
+#    print(request.POST)
     qt = get_object_or_404(QuestionType,pk=request.POST.get('question_type_new',''))
     prob = get_object_or_404(Problem,pk=request.POST.get('cqt_prob_pk',''))
     prob.question_type_new = qt
@@ -1501,3 +1505,29 @@ def matrixview(request,type):
     template = loader.get_template('problemeditor/matrixview.html')
     context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
     return HttpResponse(template.render(context,request))
+
+
+def edittypes(request):
+    userprofile = request.user.userprofile
+    return render(request,'problemeditor/edittypesview.html',{'nbar':'problemeditor','types' : userprofile.user_type_new.allowed_types.all()})
+
+@login_required
+def load_new_type(request,**kwargs):
+    form = NewTypeForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-type.html',{'form':form})})
+
+@login_required
+def save_type(request):
+    if request.method == "POST":
+        form = NewTypeForm(request.POST)
+        if form.is_valid():
+            new_type = form.save()
+            super = UserType.objects.get(name="super")
+            super.allowed_types.add(new_type)
+            super.save()
+            for i in request.POST.getlist('user_groups'):
+                user_type = UserType.objects.get(pk=i)
+                user_type.allowed_types.add(new_type)
+                user_type.save()
+        return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':new_type})})
+    return JsonResponse({'success':0})

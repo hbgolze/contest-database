@@ -30,7 +30,7 @@
 	      <i class="fa fa-asterisk"></i>
 	      {% endif %}
 	      {% if num_specific > 0 %}
-              <a class="inner-link" href="{{urltag|urlencode}}/">{{tag}}</a>
+              <a class="inner-link" href="{{tag.pk}}/">{{tag}}</a>
 	      {% else %}
 	      {{tag}}
 	      {% endif %}
@@ -53,7 +53,7 @@
 		  <i class="fa fa-asterisk pl-2"></i>
 		  {% endif %}
 		  {% if num_specific2 > 0 %} 
-		  <a class="inner-link" href="{{urltag2|urlencode}}">{{tag2}}</a>
+		  <a class="inner-link" href="{{tag2.pk}}/">{{tag2}}</a>
 		  {% else %}
 		  {{tag2}}
 		  {% endif %}
@@ -71,7 +71,7 @@
 		  <div class="row">
 		    <div class="col-6">
 		      <i class="fa fa-asterisk pl-4"></i> 
-                      <a href="{{urltag3|urlencode}}">{{tag3}}</a> <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag3.pk}}/"></span> ({{num3}} matches)
+                      <a href="{{tag3.pk}}/">{{tag3}}</a> <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag3.pk}}/"></span> ({{num3}} matches)
 		    </div>
 		    <div class="col-6">
 		      # problems with no solution: {{unsolution3}}

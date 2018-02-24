@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from randomtest.utils import newsoltexcode,compileasy
 
@@ -19,6 +19,11 @@ APPROVAL_CHOICES = (
     ('DE', 'Propose For Deletion'),
     )
 
+DEFAULT_QTS = (
+    ('pf', 'Proof'),
+    ('sa', 'Short Answer'),
+    ('mc', 'Multiple Choice'),
+    )
 class SolutionForm(forms.ModelForm):
     class Meta:
         model = Solution
@@ -355,3 +360,38 @@ class DifficultyForm(forms.ModelForm):
             }
     def __init__(self, *args, **kwargs):
         super(DifficultyForm, self).__init__(*args, **kwargs)
+
+class NewTypeForm(forms.ModelForm):
+    user_groups = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    class Meta:
+        model = Type
+        fields = ('type', 'label','default_question_type','readable_label_pre_form','readable_label_post_form',)
+        widgets = {
+            'type': forms.TextInput(attrs={"class":"form-control"}),
+            'label': forms.TextInput(attrs={"class":"form-control"}),
+            'default_question_type': forms.Select(attrs={'class':'form-control'},choices = DEFAULT_QTS),
+            'readable_label_pre_form': forms.TextInput(attrs={"class":"form-control"}),
+            'readable_label_post_form': forms.TextInput(attrs={"class":"form-control"}),
+#            'user_groups' : forms.CheckboxSelectMultiple,
+            }
+    def __init__(self,*args, **kwargs):
+        super(NewTypeForm,self).__init__(*args, **kwargs)
+        self.fields['type'].help_text = "Name of test category (without spaces)--used in URLs (like \"AMC10\")"
+        self.fields['label'].help_text = "Label for test category--user friendly version (like \"HMMT February\""
+        self.fields['default_question_type'].help_text = 'When adding new problems, they will be added in this format'
+        self.fields['readable_label_pre_form'].help_text = 'Readable labels are of the form [YEAR |READABLE LABEL PRE FORM|FORM LETTER|READABLE LABEL POST FORM|PROBLEM NUMBER], where the | characters are removed.\n For example, for the AMC 10,\nreadable_label_pre_form=\"AMC 10\"\nreadable_label_post_form=\" #\"\nleads to [2018 AMC 10A #12], where other parameters are specified later. Pay attention to spaces!'
+        self.fields['default_question_type'].help_text = ''
+        self.fields['user_groups'].choices = choices = tuple((r.pk,r.name) for r in UserType.objects.exclude(name='super'))
+        self.fields['user_groups'].help_text = 'super group automatically can access'
+
+class NewRoundForm(forms.ModelForm):
+    class Meta:
+        model = Round
+        fields = ('type', 'name', 'default_question_type','readable_label_pre_form','readable_label_post_form',)
+        widgets = {
+            'name': forms.TextInput(attrs={"class":"form-control"}),
+            'default_question_type': forms.Select(attrs={'class':'form-control'},choices = DEFAULT_QTS),
+            'readable_label_pre_form': forms.TextInput(attrs={"class":"form-control"}),
+            'readable_label_post_form': forms.TextInput(attrs={"class":"form-control"}),
+            }
+#initialize to make "type" hidden

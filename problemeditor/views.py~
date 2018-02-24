@@ -15,7 +15,7 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round
-from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm
+from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
@@ -226,7 +226,7 @@ def tagview(request,type):
         num_problems = T.count()
         num_nosolutions = T.filter(solutions__isnull=True).count()
         if num_problems > 0:
-            rows.append((goodurl(str(tag)),str(tag),num_nosolutions,num_problems))
+            rows.append((goodurl(str(tag)),tag,num_nosolutions,num_problems))
 
     root_tag = NewTag.objects.get(label='root')
     rows1 = []
@@ -285,9 +285,10 @@ def typetagview(request,type,pk):#type,tag):
     typ = get_object_or_404(Type, type = type)
     if pk == "untagged":
         problems = list(typ.problems.filter(newtags__isnull = True))
+        tag = "untagged"
     else:
         tag = get_object_or_404(NewTag,pk=pk)#this is new. ISSUE: how to deal with untagged?
-        problems = list(tag.problems.filter(type_new = typ)
+        problems = list(tag.problems.filter(type_new = typ))
     problems = sorted(problems, key = lambda x:(x.problem_number,x.year))
 
     template = loader.get_template('problemeditor/typetagview.html')
@@ -304,11 +305,11 @@ def typetagview(request,type,pk):#type,tag):
         prows = paginator.page(paginator.num_pages)
     context = {
         'rows' : prows,
-        'type' : typ
+        'type' : typ.type,
         'nbar': 'problemeditor',
-        'tag':tag,#####
-#        'typelabel':typ.label,
-        'tags':NewTag.objects.exclude(tag = 'root'),
+        'tag' : tag,#####
+        'typelabel' : typ.label,
+        'tags' : NewTag.objects.exclude(tag = 'root'),
         }
     return HttpResponse(template.render(context,request))
 
@@ -1500,3 +1501,13 @@ def matrixview(request,type):
     template = loader.get_template('problemeditor/matrixview.html')
     context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
     return HttpResponse(template.render(context,request))
+
+
+def edittypes(request):
+    userprofile = request.user.userprofile
+    return render(request,'problemeditor/edittypesview.html',{'nbar':'problemeditor','types' : userprofile.user_type_new.allowed_types.all()})
+
+@login_required
+def load_new_type(request,**kwargs):
+    form = NewTypeForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-type.html',{'form':form})})

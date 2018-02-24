@@ -1,0 +1,96 @@
+{% extends 'randomtest/base.html' %}
+{% block title %}Edit Types{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Problem Editor</a></li>
+    <li class="breadcrumb-item active">Edit Types</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h2>Edit Types</h2>
+  <div class="row">
+    <div class="col">
+      <div class="list-group" id="type-list">
+	{% for type in types %}
+	{% include 'problemeditor/edittypes-row.html' %}
+	{% endfor %}
+      </div>
+<button class="btn btn-primary" id="new-type">New Type</button>
+
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="new-type-placeholder" role="dialog">
+
+</div>
+<div class="modal fade" id="new-round-placeholder" role="dialog">
+
+</div>
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+$(document).on('click',"#new-type",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-type/',
+        dataType: 'json',
+        success: function(result) {
+            $("#new-type-placeholder").html(result['modal-html']);
+            $("#new-type-placeholder").modal();
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-type-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-type/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#type-list").append(result['row']);
+console.log(result['row']);
+            $("#new-type-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+</script>
+
+{% endblock %}

@@ -29,12 +29,8 @@
 	      {% else %}
 	      <i class="fa fa-asterisk"></i>
 	      {% endif %}
-	      {% if num_specific > 0 %}
               <a class="inner-link" href="{{tag.pk}}/">{{tag}}</a>
-	      {% else %}
-	      {{tag}}
-	      {% endif %}
-	      <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag.pk}}/"></span> ({{num}} matches, {{num_specific}} exact matches)
+	      <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag.pk}}/"></span> ({{num}} matches, {{num_specific}} {% if num_specific > 0 %}<a class="inner-link" href="{{tag.pk}}?exact=true">exact</a>{% else %}exact{% endif %} matches)
             </div>
             <div class="col-6">
 	      # problems with no solution: {{unsolution}} ({{unsolution_specific}} for problems matching specific tag)
@@ -52,12 +48,8 @@
 		  {% else %}
 		  <i class="fa fa-asterisk pl-2"></i>
 		  {% endif %}
-		  {% if num_specific2 > 0 %} 
 		  <a class="inner-link" href="{{tag2.pk}}/">{{tag2}}</a>
-		  {% else %}
-		  {{tag2}}
-		  {% endif %}
-		  <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag2.pk}}/"></span> ({{num2}} matches, {{num_specific2}} exact matches)
+		  <span class="fa fa-info-circle tag-info" style="color:green;cursor:pointer;" id="info_tag/{{tag2.pk}}/"></span> ({{num2}} matches, {{num_specific2}}  {% if num_specific > 0 %}<a class="inner-link" href="{{tag2.pk}}?exact=true">exact</a>{% else %}exact{% endif %} matches)
 		</div>
 		<div class="col-6">
 		  # problems with no solution: {{unsolution2}} ({{unsolution_specific2}} for problems matching specific tag)

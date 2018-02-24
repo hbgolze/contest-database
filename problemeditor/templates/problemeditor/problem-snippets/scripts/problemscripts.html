@@ -415,7 +415,7 @@ $(document).on("change","select.change-needs-answers",function(event) {
 });
 
 $(document).on("click","#preview-latex-button", function(e) {
-    $("#preview-latex").html($("#codetext").val());
+    $("#preview-latex").html($("#codetext[name=new_solution_text]").val());
     $("#preview-latex").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
 });

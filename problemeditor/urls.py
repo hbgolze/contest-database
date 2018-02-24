@@ -47,6 +47,7 @@ urlpatterns = [
     url(r'^tags/delete_tag/(?P<pk>\d+)/$', user_passes_test(lambda u: u.is_superuser)(views.TagDeleteView.as_view()),name="delete_tag"),
     url(r'^tags/info_tag/(?P<pk>\d+)/$', views.taginfoview,name="info_tag"),
     url(r'^tags/([\w-]+)/$', views.TagProblemList.as_view(),name="tag_problem_view"),
+    url(r'^edittypes/$', views.edittypes,name='edit_types'),
 ###########
     url(r'^ajax/remove_duplicate/$', views.remove_duplicate_problem, name='remove_duplicate'),
     url(r'^ajax/add_duplicate/$', views.add_duplicate_problem, name='add_duplicate'),
@@ -75,6 +76,8 @@ urlpatterns = [
     url(r'^ajax/save-comment/$', views.save_comment, name='save_comment'),
     url(r'^ajax/delete-comment/$', views.delete_comment, name='delete_comment'),
     url(r'^ajax/change-needs-answers/$', views.change_needs_answers, name='change_needs_answers'),
+    url(r'^ajax/load-new-type/$', views.load_new_type, name='load_new_type'),
+    url(r'^ajax/save-type/$', views.save_type, name='save_type'),
 #    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
