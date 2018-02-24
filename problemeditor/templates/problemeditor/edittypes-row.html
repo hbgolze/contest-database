@@ -2,7 +2,6 @@
           <div class="row">
             <div class="col-9">
               <p>{{type.label}}</p>
-              {% if type.rounds.count > 0 %}
               <p>
                 <ul id="rounds-{{type.pk}}">
                   {% for round in type.rounds.all %}
@@ -10,7 +9,6 @@
                   {% endfor %}
                 </ul>
               </p>
-              {% endif %}
             </div>
             <div class="col-3" style="text-align:right">
               <button class="btn btn-secondary new-round" id="new_round-{{type.pk}}">Add Round</button>
