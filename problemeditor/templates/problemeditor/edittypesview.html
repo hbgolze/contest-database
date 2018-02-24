@@ -61,6 +61,7 @@ $.ajaxSetup({
         }
     },
 });
+
 $(document).on('click',"#new-type",function(event) {
     event.preventDefault();
     $.ajax({
@@ -84,8 +85,40 @@ $(document).on('submit',"#new-type-form",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#type-list").append(result['row']);
-console.log(result['row']);
             $("#new-type-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".new-round",function(event) {
+    event.preventDefault();
+    type_id = $(this).attr('id').split('-')[1];
+console.log(type_id);
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-round/',
+        data: "type_id="+type_id,
+        dataType: 'json',
+        success: function(result) {
+            $("#new-round-placeholder").html(result['modal-html']);
+            $("#new-round-placeholder").modal();
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-round-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-round/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#rounds-"+result['type_id']).append(result['row']);
+            $("#new-round-modal").hide();
             $("[data-dismiss=modal]").trigger({ type: "click" });
         }
     });

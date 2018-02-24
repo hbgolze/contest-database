@@ -15,7 +15,7 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
-from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm
+from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 
 from django.db.models import Count
@@ -1505,17 +1505,17 @@ def matrixview(request,type):
     context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
     return HttpResponse(template.render(context,request))
 
-
+@user_passes_test(lambda u: u.is_superuser)
 def edittypes(request):
     userprofile = request.user.userprofile
     return render(request,'problemeditor/edittypesview.html',{'nbar':'problemeditor','types' : userprofile.user_type_new.allowed_types.all()})
 
-@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def load_new_type(request,**kwargs):
     form = NewTypeForm()
     return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-type.html',{'form':form})})
 
-@login_required
+@user_passes_test(lambda u: u.is_superuser)
 def save_type(request):
     if request.method == "POST":
         form = NewTypeForm(request.POST)
@@ -1529,4 +1529,21 @@ def save_type(request):
                 user_type.allowed_types.add(new_type)
                 user_type.save()
         return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':new_type})})
+    return JsonResponse({'success':0})
+
+@user_passes_test(lambda u: u.is_superuser)
+def load_new_round(request,**kwargs):
+    typ = get_object_or_404(Type,pk=request.GET.get('type_id'))
+    form = NewRoundForm()
+    form.fields['type'].initial = typ.pk
+    form.fields['type'].label = typ.label
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-round.html',{'form':form})})
+
+@user_passes_test(lambda u: u.is_superuser)
+def save_round(request):
+    if request.method == "POST":
+        form = NewRoundForm(request.POST)
+        if form.is_valid():
+            new_round = form.save()
+        return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-round-row.html',{'round':new_round}),'type_id' : new_round.type.pk})
     return JsonResponse({'success':0})

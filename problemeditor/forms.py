@@ -395,3 +395,12 @@ class NewRoundForm(forms.ModelForm):
             'readable_label_post_form': forms.TextInput(attrs={"class":"form-control"}),
             }
 #initialize to make "type" hidden
+    def __init__(self, *args, **kwargs):
+        super(NewRoundForm, self).__init__(*args, **kwargs)
+#        self.fields['type'].initial = kwargs.pop('type')
+#        self.fields['type'].label = get_object_or_404(Type,pk = self.fields['type'].initial)
+        self.fields['type'].widget = HiddenInput()
+        self.fields['name'].help_text = "Name of round, like \"HMMT-F Combinatorics\""
+        self.fields['default_question_type'].help_text = 'When adding new problems, they will be added in this format'
+        self.fields['readable_label_pre_form'].help_text = 'Readable labels are of the form [YEAR |READABLE LABEL PRE FORM|FORM LETTER|READABLE LABEL POST FORM|PROBLEM NUMBER], where the | characters are removed.\n For example, for the AMC 10,\nreadable_label_pre_form=\"AMC 10\"\nreadable_label_post_form=\" #\"\nleads to [2018 AMC 10A #12], where other parameters are specified later. Pay attention to spaces!'
+        self.fields['default_question_type'].help_text = ''
