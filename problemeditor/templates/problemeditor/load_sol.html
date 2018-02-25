@@ -14,7 +14,7 @@
       {% if object.solutions.count > 0 %}
       {% for solution in object.solutions.all %}
       <div id="sol_{{solution.pk}}">
-	<label>Solution {{forloop.counter}}:</label>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+	<label>Solution {{forloop.counter}}:</label>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
 	<span class="delete-sol-link" id="deletesol_{{object.pk}}_{{solution.pk}}" style="cursor:pointer;color:red;">&#10006;</span>
 	{% endif%}
       {% autoescape off %} {{solution.display_solution_text|linebreaks}} {% endautoescape %}<br><br>

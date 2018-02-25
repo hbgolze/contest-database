@@ -1,4 +1,4 @@
-{% if request.user.is_superuser %}
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
   <div class="modal fade" id="duplicate-modal" role="dialog">
     <div class="modal-dialog" role="document">
 

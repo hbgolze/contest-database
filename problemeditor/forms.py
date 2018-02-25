@@ -244,8 +244,8 @@ class AddContestForm(forms.Form):
         super(AddContestForm,self).__init__(*args,**kwargs)
 
         if typ.rounds.count() > 0:
-            self.fields['round'] = forms.ChoiceField(label="Round", widget = forms.Select(attrs={'class':'form-control'}), choices = tuple((r.pk,r.name) for r in typ.rounds.all()),required=True)
-
+#            self.fields['round'] = forms.ChoiceField(label="Round", widget = forms.Select(attrs={'class':'form-control'}), choices = tuple((r.pk,r.name) for r in typ.rounds.all()),required=True)
+            self.fields['round'] = forms.ModelChoiceField(queryset=typ.rounds.all(), widget = forms.Select(attrs={'class':'form-control'}),empty_label="Select a Round")
         for i in range(1,num_probs+1):
             self.fields['problem_text%s' % i] = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}),label='Problem %s' % i)
             if typ.default_question_type=='mc':

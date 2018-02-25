@@ -1041,9 +1041,11 @@ def test_answer_key_as_pdf(request, **kwargs):
     if 'opts' in kwargs:
         options = kwargs['opts']
         include_problem_labels = options['pl']
+        include_problem_notes = options['pn']
         randomize = options['r']
     else:
         include_problem_labels = False
+        include_problem_notes = False
         randomize = False
     if randomize:
         seed = options['seed']
@@ -1063,6 +1065,7 @@ def test_answer_key_as_pdf(request, **kwargs):
                 'rows':rows,
                 'pk':kwargs['pk'],
                 'include_problem_labels':include_problem_labels,
+                'include_problem_notes':include_problem_notes,
                 'randomize': randomize,
                 'seed':seed,
                 'tempdirect':tempdir,
@@ -1513,6 +1516,10 @@ def answerkeypdf(request,pk):
         context['pl'] = 1
     else:
         context['pl'] = 0
+    if 'include-pn' in form:
+        context['pn'] = 1
+    else:
+        context['pn'] = 0
     if 'randomize' in form:
         context['r'] = 1
         if 'random-seed' in form:

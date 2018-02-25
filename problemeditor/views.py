@@ -483,7 +483,7 @@ def detailedproblemview(request,**kwargs):
     return render(request, 'problemeditor/detailedview.html', context)
 
 
-@login_required
+@user_passes_test(lambda u: mod_permission(u))
 def addcontestview(request,type,num):
     typ=get_object_or_404(Type, type=type)
     num=int(num)
@@ -1219,7 +1219,7 @@ def delete_sol(request,**kwargs):
     spk = request.POST.get('spk','')
     prob =  get_object_or_404(Problem,pk=pk)
     sol =  get_object_or_404(Solution,pk=spk)
-    if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'sitemanager' or request.user.userprofile.user_type_new.name == 'contestmanager':
+    if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'sitemanager' or request.user.userprofile.user_type_new.name == 'contestmanager' or request.user.userprofile.user_type_new.name == 'contestmod':
         if prob.type_new in request.user.userprofile.user_type_new.allowed_types.all():
             LogEntry.objects.log_action(
                 user_id = request.user.id,
@@ -1505,17 +1505,22 @@ def matrixview(request,type):
     context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
     return HttpResponse(template.render(context,request))
 
-@user_passes_test(lambda u: u.is_superuser)
+def mod_permission(user):
+    if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmod":
+        return True
+    return False
+
+@user_passes_test(lambda u: mod_permission(u))
 def edittypes(request):
     userprofile = request.user.userprofile
     return render(request,'problemeditor/edittypesview.html',{'nbar':'problemeditor','types' : userprofile.user_type_new.allowed_types.all()})
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: mod_permission(u))
 def load_new_type(request,**kwargs):
     form = NewTypeForm()
     return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-type.html',{'form':form})})
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: mod_permission(u))
 def save_type(request):
     if request.method == "POST":
         form = NewTypeForm(request.POST)
@@ -1531,7 +1536,7 @@ def save_type(request):
         return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':new_type})})
     return JsonResponse({'success':0})
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: mod_permission(u))
 def load_new_round(request,**kwargs):
     typ = get_object_or_404(Type,pk=request.GET.get('type_id'))
     form = NewRoundForm()
@@ -1539,7 +1544,7 @@ def load_new_round(request,**kwargs):
     form.fields['type'].label = typ.label
     return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-round.html',{'form':form})})
 
-@user_passes_test(lambda u: u.is_superuser)
+@user_passes_test(lambda u: mod_permission(u))
 def save_round(request):
     if request.method == "POST":
         form = NewRoundForm(request.POST)

@@ -3,7 +3,7 @@
               <a class="btn btn-secondary" href="{{ta.pk}}"><span class="badge badge-success">{{ta.label}}</span></a>
 
 
-                {% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
+                {% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod' %}
 
 {% if not_leaf %}
                 <button data-target="#add-tag" class="btn btn-secondary add-tag-link" href="add_tag/{{ta.pk}}/">Add Subtag</button>

@@ -1,4 +1,4 @@
-              {% if request.user.is_superuser %}
+              {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
                 {% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
                 <p><a class="edit-mc-latex" href="{{prob.pk}}">Edit LaTeX Code{% if prob.question_type_new.question_type == 'multiple choice short answer' %} (Multiple Choice){% endif %}</a></p>
                 {% endif %}

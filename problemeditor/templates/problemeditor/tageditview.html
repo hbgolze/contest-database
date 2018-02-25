@@ -87,7 +87,7 @@
       </table>
     </div>
   </div>
-{% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
+{% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod' %}
   <div class="row">
     <div class="col">
       <a class="btn btn-primary add-tag-link" data-target="#add-tag" href="add_tag/{{root_tag.pk}}/">Add Level 1 Tag</a>
@@ -106,7 +106,7 @@
 </div>
 
 <script>
-{% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmanager' %}
+{% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod' %}
 $(".edit-tag-link").click(function(event) {
     event.preventDefault();
     var target = $(this).attr("href");

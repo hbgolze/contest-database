@@ -85,7 +85,7 @@ $(document).on('click',".delete-tag-link",function(event) {
 });
 
 
-{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" %}
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
 
 $(document).on('click',".remove_duplicate",function(event) {
     event.preventDefault();
