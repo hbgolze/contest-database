@@ -499,7 +499,9 @@ def addcontestview(request,type,num):
     if request.method == "POST":
         form=request.POST
         F=form#.cleaned_data
-        formletter = F['formletter']
+        formletter = ''
+        if 'formletter' in F:
+            formletter = F['formletter']
         year = F['year']
         if 'round' in F:
             round = get_object_or_404(Round, pk=F['round'])
