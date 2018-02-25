@@ -93,6 +93,16 @@ def asyreplacementindexes(s):
         replacementpairs.append((startindex,endindex))
     return replacementpairs
 
+def tikzreplacementindexes(s):
+    tikzs=tagindexpairs('tikzpicture',s)
+    print(tikzs)
+    replacementpairs=[]
+    for i in range(0,len(tikzs)):
+        startindex=tikzs[i][0]
+        endindex=tikzs[i][1]+17
+        replacementpairs.append((startindex,endindex))
+    return replacementpairs
+
 def centerasyreplacementindexes(s):
     centers=tagindexpairs('center',s)
     asys=tagindexpairs('asy',s)
@@ -378,8 +388,8 @@ def replaceenumerate(s,optional=''):
         return r
 
 def newtexcode(texcode,label,answer_choices):
-    texcode=texcode.replace('<',' < ')
-    repl=asyreplacementindexes(texcode)
+    texcode = texcode.replace('<',' < ')
+    repl = asyreplacementindexes(texcode)
     newtexcode=''
     if len(repl)==0:
         newtexcode+=texcode
@@ -396,15 +406,29 @@ def newtexcode(texcode,label,answer_choices):
             three='+0_0'
         newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+three+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
-    newtexcode+='<br><br>'+ansscrape(answer_choices)
-    newtexcode=newtexcode.replace('\\ ',' ')
+
+    repl2 = tikzreplacementindexes(newtexcode)
+    new2texcode = ''
+    if len(repl2) == 0:
+        new2texcode += newtexcode
+    else:
+        new2texcode += newtexcode[0:repl2[0][0]]
+        for i in range(0,len(repl2)-1):
+            new2texcode += '<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(i+1)+'.png\"/>'
+            new2texcode += newtexcode[repl2[i][1]:repl2[i+1][0]]
+        new2texcode+='<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(len(repl2))+'.png\"/>'
+        new2texcode+=texcode[repl2[-1][1]:]
+    newtexcode = new2texcode
+
+    newtexcode += '<br><br>'+ansscrape(answer_choices)
+    newtexcode = newtexcode.replace('\\ ',' ')
 #    newtexcode=replaceitemize(newtexcode)
 #    newtexcode=replaceenumerate(newtexcode,'(a)')
 #    newtexcode=replaceenumerate(newtexcode,'(i)')
 #    newtexcode=replaceenumerate(newtexcode)
     newtexcode = replace_enumitem(newtexcode)
-    newtexcode=newtexcode.replace('\\begin{center}','')
-    newtexcode=newtexcode.replace('\\end{center}','\n')
+    newtexcode = newtexcode.replace('\\begin{center}','')
+    newtexcode = newtexcode.replace('\\end{center}','\n')
     return newtexcode
 
 def newsoltexcode(texcode,label):
@@ -430,6 +454,20 @@ def newsoltexcode(texcode,label):
 #    newtexcode=replaceenumerate(newtexcode,'(a)')
 #    newtexcode=replaceenumerate(newtexcode,'(i)')
 #    newtexcode=replaceenumerate(newtexcode)
+
+    repl2 = tikzreplacementindexes(newtexcode)
+    new2texcode = ''
+    if len(repl2) == 0:
+        new2texcode += newtexcode
+    else:
+        new2texcode += newtexcode[0:repl2[0][0]]
+        for i in range(0,len(repl2)-1):
+            new2texcode += '<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(i+1)+'.png\"/>'
+            new2texcode += newtexcode[repl2[i][1]:repl2[i+1][0]]
+        new2texcode+='<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(len(repl2))+'.png\"/>'
+        new2texcode+=texcode[repl2[-1][1]:]
+    newtexcode = new2texcode
+
     newtexcode = replace_enumitem(newtexcode)
     newtexcode=newtexcode.replace('\\begin{center}','')
     newtexcode=newtexcode.replace('\\end{center}','\n')
@@ -491,6 +529,44 @@ def compileasy(texcode,label,sol=''):
                                             stderr=subprocess.PIPE,
                                             )
                     stdout_value = proc.communicate()[0]
+
+def compiletikz(texcode,label,sol=''):
+    repl = tikzreplacementindexes(texcode)
+    for i in range(0,len(repl)):
+        tikz_code = texcode[repl[i][0]:repl[i][1]]
+        tikz_code = tikz_code.rstrip().lstrip()
+        filename = 'tikz'+label+sol+'-'+str(i+1)
+        filename = filename.replace(' ','')
+        context = Context({
+                'tikz_code':tikz_code,
+                'filename':filename,
+                })
+        template = get_template('randomtest/my_tikz_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+
+
+        with tempfile.TemporaryDirectory() as tempdir:
+            ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+            ftex.write(rendered_tpl)
+            ftex.close()
+            for j in range(0,2):
+                process = Popen(
+                    ['pdflatex', 'texput.tex'],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    cwd = tempdir,
+                    )
+                process.communicate(rendered_tpl)
+            L=os.listdir(tempdir)
+            command = "convert -density 150 -quality 95 %s/%s -trim -bordercolor White -border 10x10 +repage %s%s" % (tempdir, 'texput.pdf', settings.MEDIA_ROOT, filename+'.png')
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+                                    )
+            stdout_value = proc.communicate()[0]
+
 
 def pointsum(user_responses):
     tot=0

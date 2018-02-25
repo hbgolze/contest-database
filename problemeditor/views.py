@@ -16,7 +16,7 @@ from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
-from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
+from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz
 
 from django.db.models import Count
 
@@ -169,6 +169,9 @@ class AddProblemWizard(SessionWizardView):
 
         compileasy(prob.mc_problem_text,prob.label)
         compileasy(prob.problem_text,prob.label)
+        compiletikz(prob.mc_problem_text,prob.label)
+        compiletikz(prob.problem_text,prob.label)
+
 
         prob.display_problem_text=newtexcode(prob.problem_text,prob.label,'')
         prob.display_mc_problem_text=newtexcode(prob.mc_problem_text,prob.label,prob.answers())
@@ -183,6 +186,7 @@ class AddProblemWizard(SessionWizardView):
         prob.solutions.add(sol)
         prob.save()
         compileasy(sol.solution_text,prob.label,sol = "sol1")
+        compiletikz(sol.solution_text,prob.label,sol = "sol1")
         LogEntry.objects.log_action(
             user_id = self.request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
@@ -538,6 +542,8 @@ def addcontestview(request,type,num):
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
+                compiletikz(p.mc_problem_text,p.label)
+                compiletikz(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
@@ -564,6 +570,8 @@ def addcontestview(request,type,num):
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
+                compiletikz(p.mc_problem_text,p.label)
+                compiletikz(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
@@ -588,6 +596,8 @@ def addcontestview(request,type,num):
                 p.save()
                 compileasy(p.mc_problem_text,p.label)
                 compileasy(p.problem_text,p.label)
+                compiletikz(p.mc_problem_text,p.label)
+                compiletikz(p.problem_text,p.label)
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
@@ -746,6 +756,8 @@ def uploadcontestview(request):
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
+                            compiletikz(p.mc_problem_text,p.label)
+                            compiletikz(p.problem_text,p.label)
                             p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
@@ -777,6 +789,8 @@ def uploadcontestview(request):
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
+                            compiletikz(p.mc_problem_text,p.label)
+                            compiletikz(p.problem_text,p.label)
                             p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
@@ -895,6 +909,8 @@ def uploadsave(request):
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
+                            compiletikz(p.mc_problem_text,p.label)
+                            compiletikz(p.problem_text,p.label)
                             p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
@@ -926,6 +942,8 @@ def uploadsave(request):
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
+                            compiletikz(p.mc_problem_text,p.label)
+                            compiletikz(p.problem_text,p.label)
                             p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
@@ -1144,6 +1162,7 @@ def save_latex(request,**kwargs):
         prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
         prob.save()
         compileasy(prob.mc_problem_text,prob.label)
+        compiletikz(prob.mc_problem_text,prob.label)
         LogEntry.objects.log_action(
             user_id = request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
@@ -1160,6 +1179,7 @@ def save_latex(request,**kwargs):
         prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
         prob.save()
         compileasy(prob.problem_text,prob.label)
+        compiletikz(prob.problem_text,prob.label)
         LogEntry.objects.log_action(
             user_id = request.user.id,
             content_type_id = ContentType.objects.get_for_model(prob).pk,
@@ -1200,6 +1220,7 @@ def save_new_solution(request,**kwargs):
     sol.authors.add(request.user)
     sol.save()
     compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
+    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol_num))
     sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
     sol.save()
     prob.solutions.add(sol)
@@ -1292,6 +1313,7 @@ def save_sol(request,**kwargs):
     sol.authors.add(request.user)
     sol.save()
     compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
+    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
     sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
     sol.save()
     LogEntry.objects.log_action(
@@ -1339,6 +1361,7 @@ def save_qt(request,**kwargs):
         prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
         prob.save()
         compileasy(prob.problem_text,prob.label)
+        compiletikz(prob.problem_text,prob.label)
     elif qt.question_type == 'short answer':
         prob.problem_text = request.POST.get('problem_text')
         prob.sa_answer = request.POST.get('sa_answer')
@@ -1346,6 +1369,7 @@ def save_qt(request,**kwargs):
         prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
         prob.save()
         compileasy(prob.problem_text,prob.label)
+        compiletikz(prob.problem_text,prob.label)
     elif qt.question_type == 'multiple choice':
         prob.problem_text = request.POST.get('mc_problem_text')
         prob.mc_answer = request.POST.get('mc_answer')
@@ -1358,6 +1382,7 @@ def save_qt(request,**kwargs):
         prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
         prob.save()
         compileasy(prob.mc_problem_text,prob.label)
+        compiletikz(prob.mc_problem_text,prob.label)
     elif qt.question_type == 'multiple choice short answer':
         prob.problem_text = request.POST.get('mc_problem_text')
         prob.mc_answer = request.POST.get('mc_answer')
@@ -1370,12 +1395,14 @@ def save_qt(request,**kwargs):
         prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
         prob.save()
         compileasy(prob.mc_problem_text,prob.label)
+        compiletikz(prob.mc_problem_text,prob.label)
         prob.problem_text = request.POST.get('problem_text')
         prob.sa_answer = request.POST.get('sa_answer')
         prob.save()
         prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
         prob.save()
         compileasy(prob.problem_text,prob.label)
+        compiletikz(prob.problem_text,prob.label)
     return JsonResponse({'problem-div':render_to_string('problemeditor/problem-snippets/CMcomponents/problemtext.html',{'prob':prob}),'qt':qt.question_type})
 
 @login_required

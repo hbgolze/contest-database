@@ -1,0 +1,19 @@
+
+{% autoescape off %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{multirow,curves}
+\usepackage{xparse}
+\usepackage{framed}
+\usepackage[margin=1in]{geometry}
+\begin{document}
+\thispagestyle{empty}
+{{tikz_code}}
+
+\end{document}
+
+{% endautoescape %}
