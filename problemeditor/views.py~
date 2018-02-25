@@ -15,7 +15,9 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
-from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm,UploadContestForm,NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
+from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
+#from .forms import UploadContestForm
+from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz
 
 from django.db.models import Count
@@ -1351,7 +1353,6 @@ def change_qt_load(request,**kwargs):
 
 @login_required
 def save_qt(request,**kwargs):
-#    print(request.POST)
     qt = get_object_or_404(QuestionType,pk=request.POST.get('question_type_new',''))
     prob = get_object_or_404(Problem,pk=request.POST.get('cqt_prob_pk',''))
     prob.question_type_new = qt

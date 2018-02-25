@@ -481,8 +481,9 @@ def newsoltexcode(texcode,label):
     newtexcode = new2texcode
 
     newtexcode = replace_enumitem(newtexcode)
-    newtexcode=newtexcode.replace('\\begin{center}','')
-    newtexcode=newtexcode.replace('\\end{center}','\n')
+
+    newtexcode = newtexcode.replace('\\begin{center}','<p style="text-align:center;\">')####dangerous....
+    newtexcode = newtexcode.replace('\\end{center}','</p>\n')
     return newtexcode
 
                 
