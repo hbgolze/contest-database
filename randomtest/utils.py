@@ -95,7 +95,6 @@ def asyreplacementindexes(s):
 
 def tikzreplacementindexes(s):
     tikzs=tagindexpairs('tikzpicture',s)
-    print(tikzs)
     replacementpairs=[]
     for i in range(0,len(tikzs)):
         startindex=tikzs[i][0]
@@ -271,6 +270,18 @@ def replace_enumitem(s):
     return s
             
 #perhaps include '\\item' in the above parser...
+
+
+#def replacecenter(s):
+#    if '\\begin{center}' not in s:
+#        return s
+#    r = s[0:s.index('\\begin{center}')]
+#    while '\\begin{center}' in s and '\\end'
+#    r = s[0:centers[0][0]]
+#    for i in range(0,len(centers)-1):
+#        middle = s[centers[i][0]+14:centers[i][1]]
+#        
+#<div id="mc_prob_text-{{prob.pk}}">
         
 
 ####Strategy: pop off the first begin (itemize/enumerate); keep on popping off the next begin/end.
@@ -427,8 +438,9 @@ def newtexcode(texcode,label,answer_choices):
 #    newtexcode=replaceenumerate(newtexcode,'(i)')
 #    newtexcode=replaceenumerate(newtexcode)
     newtexcode = replace_enumitem(newtexcode)
-    newtexcode = newtexcode.replace('\\begin{center}','')
-    newtexcode = newtexcode.replace('\\end{center}','\n')
+
+    newtexcode = newtexcode.replace('\\begin{center}','<p style="text-align:center;\">')####dangerous....
+    newtexcode = newtexcode.replace('\\end{center}','</p>\n')
     return newtexcode
 
 def newsoltexcode(texcode,label):

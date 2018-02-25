@@ -293,16 +293,279 @@ background: #006699; color: #fff; }
 
 
 
-.parentheses-list ol {
+.par-list-lower-roman {
+  list-style-type: none;
   counter-reset: list;
+  list-style-position: outside;
 }
-.parentheses-list ol > li {
-  list-style: none;
+
+
+.par-list-lower-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
 }
-paraentheses-list ol > li:before {
-  content: "(" counter(list) ") ";
+.par-list-lower-roman > li::before {
+  content: "(" counter(list,lower-roman) ") ";
   counter-increment: list;
+  position: absolute;
+  left: -1.6em;
 }
+
+.par-list-lower-alpha {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+
+.par-list-lower-alpha > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.par-list-lower-alpha > li::before {
+  content: "(" counter(list,lower-alpha) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.par-list-upper-roman {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+
+.par-list-upper-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.par-list-upper-roman > li::before {
+  content: "(" counter(list,upper-roman) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.par-list-upper-alpha {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+
+.par-list-upper-alpha > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.par-list-upper-alpha > li::before {
+  content: "(" counter(list,upper-alpha) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.par-list-decimal {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.par-list-decimal > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.par-list-decimal > li::before {
+  content: "(" counter(list,decimal) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.dot-list-decimal {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.dot-list-decimal > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.dot-list-decimal > li::before {
+  content: counter(list,decimal) ". ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.dot-list-lower-roman {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.dot-list-lower-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.dot-list-lower-roman > li::before {
+  content: counter(list,lower-roman) ". ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.dot-list-lower-alpha {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.dot-list-lower-alpha > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.dot-list-lower-alpha > li::before {
+  content: counter(list,lower-alpha) ". ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.dot-list-upper-roman {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.dot-list-upper-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.dot-list-upper-roman > li::before {
+  content: counter(list,upper-roman) ". ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.dot-list-upper-alpha {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.dot-list-upper-alpha > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.dot-list-upper-alpha > li::before {
+  content: counter(list,upper-alpha) ". ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.right-par-list-decimal {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.right-par-list-decimal > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.right-par-list-decimal > li::before {
+  content: counter(list,decimal) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.right-par-list-upper-alpha {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.right-par-list-upper-alpha > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.right-par-list-upper-alpha > li::before {
+  content: counter(list,upper-alpha) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.right-par-list-lower-roman {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.right-par-list-lower-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.right-par-list-lower-roman > li::before {
+  content: counter(list,lower-roman) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+.right-par-list-upper-roman {
+  list-style-type: none;
+  counter-reset: list;
+  list-style-position: outside;
+}
+
+.right-par-list-upper-roman > li {
+    list-style: none;
+    position: relative;
+    margin-bottom: 0em;
+    padding-left: 2px;
+}
+.right-par-list-upper-roman > li::before {
+  content: counter(list,upper-roman) ") ";
+  counter-increment: list;
+  position: absolute;
+  left: -1.6em;
+}
+
+
+
+
 
 
 

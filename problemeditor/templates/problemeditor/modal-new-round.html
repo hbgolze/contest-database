@@ -19,7 +19,7 @@
             </ul>
             {% endif %}
             {% if field in form.visible_fields %}{{ field.label_tag }}{% endif %} {{ field }}
-            {% if field.help_text %}<div class="form-helptext">{{ field.help_text |linebreaks}}</div>{% endif %}
+            {% if field.help_text %}<div class="form-text text-muted">{{ field.help_text |linebreaks}}</div>{% endif %}
           </div>
 	  {% endfor %}
         </div>

@@ -53,6 +53,7 @@ class Type(models.Model):
     default_question_type = models.CharField(max_length=4,default = 'pf')
     readable_label_pre_form = models.CharField(max_length=50,default = '')
     readable_label_post_form = models.CharField(max_length=50,default = '')
+    allow_form_letter = models.BooleanField(default = 0)
     def __str__(self):
         return self.label
     class Meta:

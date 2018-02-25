@@ -237,12 +237,13 @@ class ChangeQuestionTypeForm2MCSA(forms.ModelForm):
 class AddContestForm(forms.Form):
 #    type = forms.ModelChoiceField( queryset = Type.objects.exclude(type__startswith='CM'),required=True)
     year = forms.CharField(max_length=4,label='Year',required=True,widget=forms.TextInput(attrs={'class':'form-control','max-width':'50px'}))
-    formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
+#    formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
     def __init__(self, *args, **kwargs):
         num_probs = kwargs.pop('num_probs')
         typ = Type.objects.get(type=kwargs.pop('type'))
         super(AddContestForm,self).__init__(*args,**kwargs)
-
+        if typ.allow_form_letter == True:
+            self.fields['formletter'] = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
         if typ.rounds.count() > 0:
 #            self.fields['round'] = forms.ChoiceField(label="Round", widget = forms.Select(attrs={'class':'form-control'}), choices = tuple((r.pk,r.name) for r in typ.rounds.all()),required=True)
             self.fields['round'] = forms.ModelChoiceField(queryset=typ.rounds.all(), widget = forms.Select(attrs={'class':'form-control'}),empty_label="Select a Round")
@@ -271,13 +272,13 @@ class DuplicateProblemForm(forms.Form):
 
 
 
-class UploadContestForm(forms.Form):
-    T=Type.objects.filter(is_contest=1)
-    CONTEST_CHOICES=tuple((i.type,i.label) for i in T)
-    year = forms.CharField(max_length=4,label='Year',required=True)
-    formletter = forms.CharField(max_length=2,label='Form',required=False)
-    typ = forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}), choices = CONTEST_CHOICES,label="Contest Type",required=True)
-    contestfile=forms.FileField()
+#class UploadContestForm(forms.Form):
+#    T=Type.objects.filter(is_contest=1)
+#    CONTEST_CHOICES=tuple((i.type,i.label) for i in T)
+#    year = forms.CharField(max_length=4,label='Year',required=True)
+#    formletter = forms.CharField(max_length=2,label='Form',required=False)
+#    typ = forms.ChoiceField(widget=forms.Select(attrs={'class':'form-control'}), choices = CONTEST_CHOICES,label="Contest Type",required=True)
+#    contestfile=forms.FileField()
 
 class NewTagForm(forms.ModelForm):
     class Meta:
@@ -384,7 +385,7 @@ class NewTypeForm(forms.ModelForm):
         self.fields['readable_label_post_form'].strip = False
         self.fields['default_question_type'].help_text = ''
         self.fields['user_groups'].choices = choices = tuple((r.pk,r.name) for r in UserType.objects.exclude(name='super'))
-        self.fields['user_groups'].help_text = 'super group automatically can access'
+        self.fields['user_groups'].help_text = 'super group automatically can access; Typical choice: member, contestmanager,student,teacher,contestmod'
 
 class NewRoundForm(forms.ModelForm):
     class Meta:
