@@ -1100,9 +1100,10 @@ def remove_duplicate_problem(request,**kwargs):
     dpk = request.GET.get('dpk','')
     prob=get_object_or_404(Problem,pk=pk)
     div_code = ""
-    if request.user.userprofile.user_type_new.name == 'super' and  prob.duplicate_problems.filter(pk=dpk).exists():
-        prob.duplicate_problems.remove(Problem.objects.get(pk=dpk))
-        prob.save()
+    if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod':
+        if prob.duplicate_problems.filter(pk=dpk).exists():
+            prob.duplicate_problems.remove(Problem.objects.get(pk=dpk))
+            prob.save()
     return JsonResponse({'duplicate_problems':render_to_string('problemeditor/duplicate_problems.html',{'prob':prob,'request':request})})
 
 @login_required

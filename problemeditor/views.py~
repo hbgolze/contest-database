@@ -505,17 +505,17 @@ def addcontestview(request,type,num):
         year = F['year']
         if 'round' in F:
             round = get_object_or_404(Round, pk=F['round'])
-            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + F['formletter']
+            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + formletter
             default_question_type = round.default_question_type
             readablelabel = readablelabel.rstrip()
             post_label = round.readable_label_post_form
-            label = F['year']+round.name.replace(' ','')+F['formletter']#####no spaces
+            label = F['year'] + round.name.replace(' ','') + formletter#####no spaces
         else:
-            readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + F['formletter']
+            readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + formletter
             default_question_type = typ.default_question_type
             readablelabel = readablelabel.rstrip()
             post_label = typ.readable_label_post_form
-            label = F['year']+type+F['formletter']#####
+            label = F['year'] + type + formletter#####
         if default_question_type=='mc':
             for i in range(1,num+1):
                 p=Problem(mc_problem_text = F['problem_text'+str(i)],
@@ -534,9 +534,9 @@ def addcontestview(request,type,num):
                           question_type_new = mc,
                           problem_number = i,
                           year = F['year'],
-                          form_letter=F['formletter'],
-                          test_label=label,
-                          top_solution_number=0,
+                          form_letter = formletter,
+                          test_label = label,
+                          top_solution_number = 0,
                           )
                 p.save()
                 if 'round' in F:
@@ -551,20 +551,20 @@ def addcontestview(request,type,num):
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        if default_question_type=='sa':
-            for i in range(1,num+1):
-                p=Problem(problem_text=F['problem_text'+str(i)],
-                          answer=F['answer'+str(i)],
-                          sa_answer=F['answer'+str(i)],
-                          label=label+str(i),
+        if default_question_type == 'sa':
+            for i in range(1,num + 1):
+                p = Problem(problem_text = F['problem_text' + str(i)],
+                          answer = F['answer' + str(i)],
+                          sa_answer = F['answer' + str(i)],
+                          label = label + str(i),
                           readable_label = readablelabel + post_label + str(i),
-                          type_new=typ,
-                          question_type_new=sa,
-                          problem_number=i,
-                          year=F['year'],
-                          form_letter=F['formletter'],
-                          test_label=label,
-                          top_solution_number=0,
+                          type_new = typ,
+                          question_type_new = sa,
+                          problem_number = i,
+                          year = F['year'],
+                          form_letter = formletter,
+                          test_label = label,
+                          top_solution_number = 0,
                           )
                 p.save()
                 if 'round' in F:
@@ -588,7 +588,7 @@ def addcontestview(request,type,num):
                           question_type_new = pf,
                           problem_number = i,
                           year = F['year'],
-                          form_letter = F['formletter'],
+                          form_letter = formletter,
                           test_label = label,
                           top_solution_number = 0,
                           )
