@@ -607,10 +607,12 @@ def addcontestview(request,type,num):
                 p.save()
         P = Problem.objects.filter(test_label=label)
         if len(P)>0:
-            if 'round' in F:
-                t=Test(name=F['year']+' '+round.name)
-            else:
-                t=Test(name = readablelabel)# would this change for rounds
+            t=Test(name=readablelabel)
+#            if 'round' in F:
+#                t=Test(name = F['year']+round.name)
+#            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + formletter
+#            else:
+#                t=Test(name = readablelabel)# would this change for rounds
             t.save()
         for i in P:
             t.problems.add(i)
