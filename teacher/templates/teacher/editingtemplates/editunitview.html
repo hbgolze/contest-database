@@ -20,9 +20,10 @@
       </ul>
     </div>
     <div class="col-sm-9 main">
-      <h2>Edit Unit: <span id="unit-name">{{unit.name}}</span> <a href="#" id="edit-unit-name"><span class="fa fa-pencil"></span></a></h2>
-      
+      <h2>Edit Unit: <span id="unit-name">{{unit.name}}</span>{% if sharing_type != "read" %} <a href="#" id="edit-unit-name"><span class="fa fa-pencil"></span></a>{% endif %}</h2>
+{% if sharing_type != "read" %}
       <p>Drag around assignments to reorder them. If you reorder assignments or delete assignments, you must click "Save" to have the changes saved.</p>
+{% endif %}
       <h3>Assignments</h3>
       <form action="." method="POST" id="units">
         {% csrf_token %}
@@ -31,6 +32,7 @@
         </div>
 	
 	<div id="no-assignments">{% if unit.unit_objects.count == 0 %}<p><i>You don't have any assignments in this unit yet.</i></p>{% endif %}</div>	
+{% if sharing_type != "read" %}
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<span class="dropup">
           <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -43,11 +45,13 @@
           </div>
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
+{% endif %}
       </form>
       
     </div>
   </div>
 </div>
+{% if sharing_type != "read" %}
 <div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
   <div class="alert alert-warning">
     You have unsaved changes! Please click "Save" before navigating away.
@@ -335,5 +339,5 @@ $(document).on('submit',"#edit-unit-name-form",function(e) {
   return false;
 });
 </script>
-
+{% endif %}
 {% endblock %}

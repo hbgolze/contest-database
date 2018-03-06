@@ -22,26 +22,28 @@
       </ul>
     </div>
     <div class="col-sm-9 main">
-      <h2>Edit Slides: <span id="slides-name">{{slides.name}}</span> <a href="#" id="edit-slides-name"><span class="fa fa-pencil"></span></a></h2>
-
+      <h2>Edit Slides: <span id="slides-name">{{slides.name}}</span>{% if sharing_type != "read" %} <a href="#" id="edit-slides-name"><span class="fa fa-pencil"></span></a>{% endif %}</h2>
+{% if sharing_type != "read" %}
       <p>Drag slides around to reorder them. If you reorder or delete slides, you must click "Save" for your changes to apply.</p>
+{% endif %}
 
       <form action="." method="POST" id="slides">
         {% csrf_token %}
         <div id="slideList" class="list-group mb-3">
 	  {% include "teacher/editingtemplates/editslides/slidelist.html" with slides=slides %}
         </div>
-	<div id="msg-no-slides">{% if slides.slides.count == 0 %}<p><i>You don't have any slides yet. Click the button below to add slides.</i></p>{% endif %}</div>
+	<div id="msg-no-slides">{% if slides.slides.count == 0 %}<p><i>You don't have any slides yet.{% if sharing_type != "read" %} Click the button below to add slides.{% endif %}</i></p>{% endif %}</div>
+{% if sharing_type != "read" %}
         <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<a href="#add-slide-modal" class="btn btn-secondary add-slide-link" data-toggle="modal">Add Slide</a>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
-
+{% endif %}
       </form>
 
     </div>
   </div>
 </div>
-
+{% if sharing_type != "read" %}
 <div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
   <div class="alert alert-warning">
     You have unsaved changes! Please click "Save" before navigating away.
@@ -201,5 +203,5 @@ $(document).on('submit',"#edit-slidegroup-name-form",function(e) {
   return false;
 });
 </script>
-
+{% endif %}
 {% endblock %}

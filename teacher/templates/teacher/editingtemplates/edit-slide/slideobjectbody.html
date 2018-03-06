@@ -37,6 +37,7 @@
                 {% endif %}
               </div>
               <div class="col-1">
+{% if sharing_type != "read" %}
                 <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
 
                 {% if s.textblock %}
@@ -56,6 +57,6 @@
                 {% if s.imagemodel %}
 <!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
                 {% endif %}
-
+{% endif %}
               </div>
             </div><!--row-->

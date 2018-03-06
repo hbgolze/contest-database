@@ -22,10 +22,10 @@
       </ul>
     </div>
     <div class="col-sm-9 main">
-      <h2>Edit Slide: <span id="slide-title">{{slide.title}}</span> <a href="#" id="edit-slide-title"><span class="fa fa-pencil"></span></a></h2>
-
+      <h2>Edit Slide: <span id="slide-title">{{slide.title}}</span>{% if sharing_type != "read" %} <a href="#" id="edit-slide-title"><span class="fa fa-pencil"></span></a>{% endif %}</h2>
+{% if sharing_type != "read" %}
       <p>Drag elements around to reorder them. If you reorder or delete elements, you must click "Save" for your changes to apply.</p>
-
+{% endif %}
       <form action="." method="POST" id="slides">
         {% csrf_token %}
         <div id="slideobjectList" class="list-group mb-3">
@@ -34,7 +34,8 @@
 	    {% include "teacher/editingtemplates/edit-slide/slideobject.html" with s=s %}
 	  {% endfor %}
 	</div><!--list-group-->
-        <div id="msg-no-problems">{% if slide.slide_objects.count == 0 %}<p><i>You don't have anything on this slide yet. Click the button below to add elements.</i></p>{% endif %}</div>
+        <div id="msg-no-problems">{% if slide.slide_objects.count == 0 %}<p><i>You don't have anything on this slide yet.{% if sharing_type != "read" %} Click the button below to add elements.{% endif %}</i></p>{% endif %}</div>
+{% if sharing_type != "read" %}
         <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 
         <span class="dropup">
@@ -50,11 +51,12 @@
           </div>
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
+{% endif %}
       </form>
     </div>
   </div>
 </div>
-
+{% if sharing_type != "read" %}
 <div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
   <div class="alert alert-warning">
     You have unsaved changes! Please click "Save" before navigating away.
@@ -858,5 +860,5 @@ $(document).on('submit',"#textblock_update_form",function(e) {
   return false;
 });
 </script>
-	  
+{% endif %}	  
 {% endblock %}

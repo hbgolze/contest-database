@@ -39,24 +39,87 @@ def teacherview(request):
             c.save()
             userprofile.my_classes.add(c)
             userprofile.save()
-            return JsonResponse({"newrow":render_to_string("teacher/editingtemplates/editclassrow.html",{'cls':c})})
+            return JsonResponse({"newrow":render_to_string("teacher/editingtemplates/editclassrow.html",{'cls':c,'sharing_type': 'own'})})
 #reorder sections in post...
+    owned_cls =  userprofile.my_classes.all()
+    co_owned_cls =  userprofile.owned_my_classes.all()
+    editor_cls =  userprofile.editable_my_classes.all()
+    readonly_cls =  userprofile.readonly_my_classes.all()
     context={}
-    context['my_classes'] = userprofile.my_classes
+#    context['my_classes'] = userprofile.my_classes
     context['my_published_classes'] = userprofile.my_published_classes
     context['my_TA_classes'] = userprofile.my_TA_classes
     context['my_students'] = userprofile.students
     context['nbar'] = 'teacher'
+
+    context['owned_cls'] = owned_cls
+    context['co_owned_cls'] = co_owned_cls
+    context['editor_cls'] = editor_cls
+    context['readonly_cls'] = readonly_cls
+    print(context)
     return render(request, 'teacher/teacherview.html',context)
 
 @login_required
+def get_permission_level(request,cls):
+    userprofile = request.user.userprofile
+    if userprofile.my_classes.filter(pk=cls.pk).exists():
+        return "own"
+    if userprofile.owned_my_classes.filter(pk=cls.pk).exists():
+        return "coown"
+    if userprofile.editable_my_classes.filter(pk=cls.pk).exists():
+        return "edit"
+    if userprofile.readonly_my_classes.filter(pk=cls.pk).exists():
+        return "read"
+    return "none"
+
+@login_required
 def publishview(request,pk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    if get_permission_level(request,my_class) == "none":#userprofile.my_classes.filter(pk=pk).exists()==False:##########Currently means "actual owners" are the only people who can 
         raise Http404("Unauthorized.")
     p=my_class.publish(userprofile)
     return JsonResponse({'newrow':render_to_string('teacher/publishedclasses/publishedclassrow.html',{'cls':p})})
+
+@login_required
+def confirm_delete_class(request):
+    pk = request.POST.get('pk','')
+    cls = get_object_or_404(Class, pk=pk)
+    context = {}
+    context['cls'] = cls
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-delete-class.html',context)})
+@login_required
+def confirm_remove_class(request):
+    pk = request.POST.get('pk','')
+    cls = get_object_or_404(Class, pk=pk)
+    context = {}
+    context['cls'] = cls
+    return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-remove-class.html',context)})
+
+@login_required
+def delete_class(request):
+    pk = request.POST.get('pk','')
+    cls = get_object_or_404(Class, pk=pk)
+    userprofile = request.user.userprofile
+    if cls in userprofile.my_classes.all():
+        cls.delete()
+    return JsonResponse({'s':1})
+
+@login_required
+def remove_class(request):
+    pk = request.POST.get('pk','')
+    cls = get_object_or_404(Clas, pk=pk)
+    userprofile = request.user.userprofile
+    if cls in userprofile.owned_my_classes.all():
+        userprofile.owned_my_classes.remove(cls)
+        userprofile.save()
+    elif cls in userprofile.editable_my_classes.all():
+        userprofile.editable_my_classes.remove(cls)
+        userprofile.save()
+    elif cls in userprofile.readonly_my_classes.all():
+        userprofile.readonly_my_classes.remove(cls)
+        userprofile.save()
+    return JsonResponse({'s':1})
 
 
 @login_required
@@ -363,7 +426,8 @@ def addstudenttoclass(request,pk):
 def classeditview(request,pk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     if request.method == "POST":
         form=request.POST
@@ -381,6 +445,7 @@ def classeditview(request,pk):
             return JsonResponse({'unit-list' : render_to_string('teacher/editingtemplates/unit-list.html',{'my_class':my_class})})
     context={}
     context['my_class'] = my_class
+    context['sharing_type'] = sharing_type
     context['nbar'] = 'teacher'
     return render(request, 'teacher/editingtemplates/editclassview.html',context)
 
@@ -389,7 +454,8 @@ def classeditview(request,pk):
 def newunitview(request,pk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     if request.method == "POST":
         form=request.POST
@@ -405,7 +471,8 @@ def editclassname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditClassNameForm(instance = my_class)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-class-name.html',{'form':form})})
@@ -415,7 +482,8 @@ def saveclassname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditClassNameForm(request.POST,instance = my_class)
     form.save()
@@ -425,7 +493,8 @@ def saveclassname(request):
 def uniteditview(request,pk,upk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -451,6 +520,7 @@ def uniteditview(request,pk,upk):
     context['nbar'] = 'teacher'
     context['minuterange'] = [5*i for i in range(0,12)]
     context['default_hours'] = 1
+    context['sharing_type'] = sharing_type
     return render(request, 'teacher/editingtemplates/editunitview.html',context)
 
 @login_required
@@ -459,7 +529,8 @@ def editunitname(request):
     pk = request.POST.get('pk','')
     unit = get_object_or_404(Unit,pk=pk)
     my_class = unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditUnitNameForm(instance = unit)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-unit-name.html',{'form':form})})
@@ -470,7 +541,8 @@ def saveunitname(request):
     pk = request.POST.get('pk','')
     unit = get_object_or_404(Unit,pk=pk)
     my_class = unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditUnitNameForm(request.POST,instance = unit)
     form.save()
@@ -480,7 +552,8 @@ def saveunitname(request):
 def newproblemsetview(request,pk,upk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -498,7 +571,8 @@ def newproblemsetview(request,pk,upk):
 def newtestview(request,pk,upk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -519,7 +593,8 @@ def newtestview(request,pk,upk):
 def newslidesview(request,pk,upk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -537,7 +612,8 @@ def newslidesview(request,pk,upk):
 def latexpsetview(request,pk,upk,ppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -562,10 +638,37 @@ def latexpsetview(request,pk,upk,ppk):
 
 
 @login_required
+def latexslidesview(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.units.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    slidegroup = get_object_or_404(SlideGroup,pk=ppk)
+    if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
+        raise Http404("No such problem set in this unit")
+
+    context = {}
+
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['slides'] = slidegroup
+    filename = slidegroup.name+".tex"
+    response = HttpResponse(render_to_string('teacher/editingtemplates/latexslidesview.html',context), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
+#    return render(request, 'teacher/editingtemplates/latexslidesview.html',context)
+
+
+@login_required
 def problemseteditview(request,pk,upk,ppk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -593,6 +696,7 @@ def problemseteditview(request,pk,upk,ppk):
     context['problemset'] = problemset
     context['tags'] = NewTag.objects.exclude(tag='root')
     context['nbar'] = 'teacher'
+    context['sharing_type'] = sharing_type
     return render(request, 'teacher/editingtemplates/editproblemsetview.html',context)
 
 @login_required
@@ -601,7 +705,8 @@ def editproblemsetname(request):
     pk = request.POST.get('pk','')
     problemset = get_object_or_404(ProblemSet,pk=pk)
     my_class = problemset.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     form = EditProblemSetNameForm(instance = problemset)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-problemset-name.html',{'form':form})})
@@ -612,7 +717,8 @@ def saveproblemsetname(request):
     pk = request.POST.get('pk','')
     problemset = get_object_or_404(ProblemSet,pk=pk)
     my_class = problemset.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditProblemSetNameForm(request.POST,instance = problemset)
     form.save()
@@ -677,7 +783,8 @@ def loadcqtexampleproblemform(request,**kwargs):
 def addoriginalproblem(request,pk,upk,ppk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -734,7 +841,8 @@ def addoriginalproblem(request,pk,upk,ppk):
 def update_point_value(request,pk,upk,ppk,pppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -842,7 +950,8 @@ def savequestiontype(request,**kwargs):
 def numprobsmatching(request,pk,upk,ppk):#changing tag to pk
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -861,7 +970,8 @@ def numprobsmatching(request,pk,upk,ppk):#changing tag to pk
 def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -903,7 +1013,8 @@ def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
 def reviewproblemgroup(request,pk,upk,ppk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -956,7 +1067,8 @@ def reviewproblemgroup(request,pk,upk,ppk):
 def testeditview(request,pk,upk,tpk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -984,6 +1096,7 @@ def testeditview(request,pk,upk,tpk):
     context['test'] = test
     context['tags'] = NewTag.objects.exclude(tag='root')
     context['nbar'] = 'teacher'
+    context['sharing_type'] = sharing_type
     return render(request, 'teacher/editingtemplates/edittestview.html',context)
 
 @login_required
@@ -992,7 +1105,8 @@ def edittestname(request):
     pk = request.POST.get('pk','')
     test = get_object_or_404(Test,pk=pk)
     my_class = test.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditTestNameForm(instance = test)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-test-name.html',{'form':form})})
@@ -1003,7 +1117,8 @@ def savetestname(request):
     pk = request.POST.get('pk','')
     test = get_object_or_404(Test,pk=pk)
     my_class = test.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditTestNameForm(request.POST,instance = test)
     form.save()
@@ -1041,7 +1156,8 @@ def testloadcqtoriginalproblemform(request,**kwargs):
 def testaddoriginalproblem(request,pk,upk,ppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1101,7 +1217,8 @@ def testaddoriginalproblem(request,pk,upk,ppk):
 def testupdate_point_value(request,pk,upk,ppk,pppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1126,7 +1243,8 @@ def testupdate_point_value(request,pk,upk,ppk,pppk):
 def testupdate_blank_value(request,pk,upk,ppk,pppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1151,7 +1269,8 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
 def testnumprobsmatching(request,pk,upk,ppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1170,7 +1289,8 @@ def testnumprobsmatching(request,pk,upk,ppk):
 def testreviewmatchingproblems(request,pk,upk,ppk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1209,7 +1329,8 @@ def testreviewmatchingproblems(request,pk,upk,ppk):
 def testreviewproblemgroup(request,pk,upk,ppk):
     userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
-    if userprofile.my_classes.filter(pk = pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
     if my_class.units.filter(pk = upk).exists == False:
@@ -1248,7 +1369,8 @@ def testreviewproblemgroup(request,pk,upk,ppk):
 def slideseditview(request,pk,upk,spk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -1277,6 +1399,7 @@ def slideseditview(request,pk,upk,spk):
     context['unit'] = unit
     context['slides'] = slidegroup
     context['nbar'] = 'teacher'
+    context['sharing_type'] = sharing_type
     return render(request,'teacher/editingtemplates/editslidesview.html',context)
 
 @login_required
@@ -1285,7 +1408,8 @@ def editslidegroupname(request):
     pk = request.POST.get('pk','')
     slidegroup = get_object_or_404(SlideGroup,pk=pk)
     my_class = slidegroup.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditSlideGroupNameForm(instance = slidegroup)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-slidegroup-name.html',{'form':form})})
@@ -1296,7 +1420,8 @@ def saveslidegroupname(request):
     pk = request.POST.get('pk','')
     slidegroup = get_object_or_404(SlideGroup,pk=pk)
     my_class = slidegroup.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditSlideGroupNameForm(request.POST,instance = slidegroup)
     form.save()
@@ -1306,7 +1431,8 @@ def saveslidegroupname(request):
 def newslideview(request,pk,upk,spk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -1324,8 +1450,11 @@ def newslideview(request,pk,upk,spk):
 def editslideview(request,pk,upk,spk,sspk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
         raise Http404("Unauthorized.")
+    context = {}
+    context['sharing_type'] = sharing_type
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
@@ -1464,7 +1593,6 @@ def editslideview(request,pk,upk,spk,sspk):
             slide.top_order_number = slide.slide_objects.count()
             slide.save()
             return JsonResponse({'slideobjectlist':render_to_string('teacher/editingtemplates/edit-slide/slideobjectlist.html',{'slide_objects' :slide.slide_objects.all()})})
-    context={}
     context['my_class'] = my_class
     context['unit'] = unit
     context['slides'] = slidegroup
@@ -1478,7 +1606,8 @@ def editslidetitle(request):
     pk = request.POST.get('pk','')
     slide = get_object_or_404(Slide,pk = pk)
     my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk = my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditSlideTitleForm(instance = slide)
     return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/modals/modal-edit-slide-title.html',{'form':form})})
@@ -1489,7 +1618,8 @@ def saveslidetitle(request):
     pk = request.POST.get('pk','')
     slide = get_object_or_404(Slide,pk=pk)
     my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
-    if userprofile.my_classes.filter(pk=my_class.pk).exists() == False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditSlideTitleForm(request.POST,instance = slide)
     form.save()
@@ -1511,7 +1641,8 @@ def exampleproblemgroups(request,**kwargs):
 def exampleaddproblem(request,**kwargs):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=kwargs['pk'])
-    if userprofile.my_classes.filter(pk=kwargs['pk']).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=kwargs['upk'])
     if my_class.units.filter(pk=kwargs['upk']).exists==False:
@@ -1557,7 +1688,8 @@ def examplebytagproblems(request,**kwargs):
 def editexampleproblem(request,pk,upk,spk,sspk,sopk):
     userprofile=request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
-    if userprofile.my_classes.filter(pk=pk).exists()==False:
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
     if my_class.units.filter(pk=upk).exists==False:
@@ -2112,3 +2244,97 @@ def delete_timelimit(request):
         test.time_limit = None
         test.save()
         return JsonResponse({'time_snippet':render_to_string('teacher/editingtemplates/time_limit_snippet.html',{'test':test,'request':request})})
+
+
+####################
+#####SHARING CLASSES
+####################
+@login_required
+def load_sharing_modal(request,**kwargs):
+    userprofile = request.user.userprofile
+    context={}
+    pk = request.POST.get('pk','')
+    my_class = get_object_or_404(Class,pk=pk)
+    context['cl'] = my_class
+    owners = my_class.userprofiles.all()
+    coowners = my_class.owneruserprofiles.all()
+    editors = my_class.editoruserprofiles.all()
+    readers = my_class.readeruserprofiles.all()
+    context['owners'] = owners
+    context['coowners'] = coowners
+    context['editors'] = editors
+    context['read_only_users'] = readers
+    context['collaborators'] = userprofile.collaborators.exclude(userprofile__pk__in=owners.values_list('pk')).exclude(userprofile__pk__in=editors.values_list('pk')).exclude(userprofile__pk__in=readers.values_list('pk')).exclude(userprofile__pk__in=coowners.values_list('pk'))
+    if userprofile in owners or userprofile in coowners:
+        context['is_owner'] = 1
+    context['userprofile'] = userprofile
+    return JsonResponse({'modal-html' : render_to_string('teacher/sharing/modals/edit-sharing.html',context)})
+
+@login_required
+def share_with_user(request, **kwargs):
+    userprofile = request.user.userprofile
+    form = request.POST
+    pk = form.get('classpk','')
+    my_class = get_object_or_404(Class,pk = pk)
+    share_target = get_object_or_404(User,pk = form.get('collaborator',''))
+    share_target_up = share_target.userprofile
+    sharing_type = form.get('sharing-type','')
+    if my_class in userprofile.my_classes.all() or my_class in userprofile.owned_my_classes.all():
+        if sharing_type == 'read':
+            if my_class not in share_target_up.editable_my_classes.all() and my_class not in share_target_up.owned_my_classes.all() and my_class not in share_target_up.my_classes.all():
+                share_target_up.readonly_my_classes.add(my_class)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'read'})
+        elif sharing_type == 'edit':
+            if my_class not in share_target_up.my_classes.all() and my_class not in share_target_up.owned_my_classes.all():
+                share_target_up.editable_my_classes.add(my_class)
+                share_target_up.save()
+            if my_class in share_target_up.readonly_my_classes.all():
+                share_target_up.readonly_my_classes.remove(my_class)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'edit'})
+        elif sharing_type == 'own':
+            share_target_up.owned_my_classes.add(my_class)
+            share_target_up.save()
+            if my_class in share_target_up.readonly_my_classes.all():
+                share_target_up.readonly_my_classes.remove(my_class)
+                share_target_up.save()
+            if my_class in share_target_up.editable_my_classes.all():
+                share_target_up.editable_my_classes.remove(my_class)
+                share_target_up.save()
+            return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'own'})
+
+@login_required
+def change_permission(request):
+    userprofile = request.user.userprofile
+    form = request.POST
+    sharing_type = form.get('sharing_type','')
+    pk = form.get('classpk','')
+    my_class = get_object_or_404(Class,pk = pk)
+    share_target_up = get_object_or_404(UserProfile,pk = form.get('pk',''))
+    if share_target_up.my_classes.filter(pk = my_class.pk).exists()==False:#if target not an original owner...                                                                                   
+        if my_class in userprofile.my_classes.all() or my_class in userprofile.owned_my_classes.all():#if owner....                                                                      
+            if sharing_type == 'read':
+                share_target_up.owned_my_classes.remove(my_class)
+                share_target_up.editable_my_classes.remove(my_class)
+                share_target_up.readonly_my_classes.add(my_class)
+                share_target_up.save()
+                return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'read'})
+            elif sharing_type == 'edit':
+                share_target_up.owned_my_classes.remove(my_class)
+                share_target_up.editable_my_classes.add(my_class)
+                share_target_up.readonly_my_classes.remove(my_class)
+                share_target_up.save()
+                return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'edit'})
+            elif sharing_type == 'own':
+                share_target_up.owned_my_classes.add(my_class)
+                share_target_up.editable_my_classes.remove(my_class)
+                share_target_up.readonly_my_classes.remove(my_class)
+                share_target_up.save()
+                return JsonResponse({'user-row' : render_to_string('teacher/sharing/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'own'})
+            elif sharing_type == 'del':
+                share_target_up.owned_my_classes.remove(my_class)
+                share_target_up.editable_my_classes.remove(my_class)
+                share_target_up.readonly_my_classes.remove(my_class)
+                share_target_up.save()
+                return JsonResponse({'sharing_type':'del'})

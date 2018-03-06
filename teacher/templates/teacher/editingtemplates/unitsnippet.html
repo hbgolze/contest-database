@@ -24,7 +24,9 @@
 		{% endif %}
               </div>
               <div class="col-1">
+		{% if sharing_type != "read" %}
                 <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
+		{% endif %}
               </div>
             </div>
           </div>

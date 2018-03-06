@@ -1,0 +1,89 @@
+{% load randomtest_extras %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb,amsthm}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{fancyhdr}
+\usepackage{tikz}
+\setlength{\topmargin}{0in}
+\setlength{\headsep}{.1in}
+\setlength{\textheight}{8.2in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{10pt}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+\newtheorem{example}{Example}
+\newtheorem{exercise}{Exercise}
+
+\setlength{\voffset}{-.5in}
+
+\setlength\headheight{1in}
+
+\setlength{\headwidth}{\textwidth}
+\fancyhead[R]{
+Section {{unit.order}}.{{slides.unit_object.order}}: {{unit.name}}$\to${{slides.name}}
+}
+\fancyhead[C]{}
+\fancyhead[L]{
+{{my_class.name}}
+}
+\pagestyle{fancy}
+
+
+\begin{document}
+\setcounter{section}{ {{unit.order}} }
+\setcounter{subsection}{ {{slides.unit_object.order|add:-1}} }
+\subsection{ {% autoescape off %}{{slides.name}} {% endautoescape %} }
+{% for slide in slides.slides.all %}
+\subsubsection{ {% autoescape off %}{{slide.title}}{% endautoescape %} }
+{% for s in slide.slide_objects.all %}
+              {% if s.textblock %}
+              {% autoescape off %}{{s.textblock.text_code}}{% endautoescape %}
+              {% endif %}
+              {% if s.proof %}
+              \begin{proof}[{{s.proof.prefix}}]
+              {% autoescape off %}{{s.proof.proof_code}}{% endautoescape %}
+              \end{proof}
+              {% endif %}
+              {% if s.theorem %}
+              \begin{{s.theorem.prefix|lower|surroundbracket}}{% if s.theorem.name != "" %}[{% autoescape off %}{{s.theorem.name}}{% endautoescape %}]{% endif %}
+              {% autoescape off %}{{s.theorem.theorem_code}}{% endautoescape %}
+              \end{{s.theorem.prefix|lower|surroundbracket}}
+              {% endif %}
+              {% if s.exampleproblem %}
+              \begin{{s.exampleproblem.prefix|lower|surroundbracket}}
+              {% if s.exampleproblem.isProblem == 1 %}
+              {% if s.exampleproblem.problem.question_type_new.question_type == "multiple_choice" %}
+              {% autoescape off %}{{s.exampleproblem.problem.mc_problem_text}}{% endautoescape %} [{{s.exampleproblem.problem.readable_label|poundsafe}}]
+              {% else %}
+              {% autoescape off %}{{s.exampleproblem.problem.problem_text}}{% endautoescape %} [{{s.exampleproblem.problem.readable_label|poundsafe}}]
+              {% endif %}
+              {% else %}
+              {% autoescape off %}{{s.exampleproblem.problem_code}}{% endautoescape %}
+              {% endif %}
+              \end{{s.exampleproblem.prefix|lower|surroundbracket}}
+              {% endif %}
+              {% if s.imagemodel %}
+{% comment %}              <img class="img-responsive center-block" src="/{{s.imagemodel.image.url }}/"/>{% endcomment %}
+              {% endif %}
+
+        {% endfor %}
+
+
+{% endfor %}
+
+
+\end{document}

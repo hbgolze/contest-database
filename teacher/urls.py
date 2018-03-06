@@ -25,6 +25,7 @@ urlpatterns = [
 #    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.editquestiontype, name='edit-question-type'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/change-qt-original-problem/$', views.loadcqtoriginalproblemform, name='loadcqtoriginalproblemform'),
 #slides
+    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slideslatex/(?P<ppk>\d+)/$', views.latexslidesview, name='latexslidesview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slides/(?P<spk>\d+)/$', views.slideseditview, name='slideseditview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slides/(?P<spk>\d+)/add-slide/$', views.newslideview, name='addslide'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slides/(?P<spk>\d+)/edit-slide/(?P<sspk>\d+)/$', views.editslideview, name='editslideview'),
@@ -116,6 +117,14 @@ urlpatterns = [
     url(r'^ajax/edit-slide-title/$',views.editslidetitle, name="editslidetitle"),
     url(r'^ajax/save-slide-title/$',views.saveslidetitle, name="saveslidetitle"),
     url(r'^ajax/new-problemgroup/$',views.newproblemgroup,name="newproblemgroup"),
+
+    url(r'^ajax/edit-sharing/$', views.load_sharing_modal, name='class_edit_sharing'),
+    url(r'^ajax/share-with-user/$', views.share_with_user, name='class_share_with_user'),
+    url(r'^ajax/change-permission/$', views.change_permission, name='class_change_permission'),
+    url(r'^ajax/confirm-delete-class/$', views.confirm_delete_class, name='confirm_delete_class'),
+    url(r'^ajax/confirm-remove-class/$', views.confirm_remove_class, name='confirm_remove_class'),
+    url(r'^ajax/delete-class/$', views.delete_class, name='delete_class'),
+    url(r'^ajax/remove-class/$', views.remove_class, name='remove_class'),
 #    url(r'^edit/(?P<pk>\d+)/edit_section/(?P<spk>\d+)/$', login_required(views.SectionUpdateView.as_view()),name="update_section"),
 #    url(r'^edit/(?P<pk>\d+)/edit_subsection/(?P<spk>\d+)/$', login_required(views.SubsectionUpdateView.as_view()),name="update_subsection"),
 #    url(r'^edit/(?P<pk>\d+)/edit_textblock/(?P<spk>\d+)/$', login_required(views.TextBlockUpdateView.as_view()),name="update_textblock"),

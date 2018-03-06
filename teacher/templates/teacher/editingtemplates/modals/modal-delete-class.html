@@ -1,0 +1,21 @@
+  <div class="modal-dialog" role="document">
+
+    <div class="modal-content">
+      <form method="post" action="." id="delete-class-form">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Are you sure?</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	</div>
+	<div class="modal-body">
+	  <p>Are you sure you want to delete the class "{{cls.name}}"? This will remove access for all shared users.</p>
+	  <input type="hidden" name="pk" value="{{cls.pk}}">
+	</div>
+        <div class="modal-footer">
+          <button type="submit" name="save" class="btn btn-primary">Delete Class</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>

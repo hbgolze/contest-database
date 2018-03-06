@@ -4,20 +4,30 @@
 <b>Start Date:</b>
 {% if problemset.start_date %}
 {{problemset.start_date|timezone:request.user.userprofile.time_zone}} 
+{% if sharing_type != "read" %}
 <span class="edit-startdate-link" id="edit-startdate_{{problemset.pk}}" style="color:blue;cursor:pointer"><span class="fa fa-pencil"></span></span>
 <span class="delete-startdate-link" id="delete-startdate_{{problemset.pk}}" style="color:red;cursor:pointer"><span class="fa fa-remove"></span></span>
+{% endif %}
 {% else %}
-No start date set for this assignment.<span class="edit-startdate-link" id="edit-startdate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+No start date set for this assignment.
+{% if sharing_type != "read" %}
+<span class="edit-startdate-link" id="edit-startdate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+{% endif %}
 {% endif %}
 </p>
 <p><b>Due Date:</b> 
 {% if problemset.due_date %}
 
 {{problemset.due_date|timezone:request.user.userprofile.time_zone}} 
+{% if sharing_type != "read" %}
 <span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:blue;cursor:pointer"><span class="fa fa-pencil"></span></span>
 <span class="delete-duedate-link" id="delete-duedate_{{problemset.pk}}" style="color:red;cursor:pointer"><span class="fa fa-remove"></span></span>
+{% endif %}
 {% else %}
-No due date set for this assignment.<span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+No due date set for this assignment.
+{% if sharing_type != "read" %}
+<span class="edit-duedate-link" id="edit-duedate_{{problemset.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+{% endif %}
 {% endif %}
 </p>
 {% else %}
@@ -25,20 +35,30 @@ No due date set for this assignment.<span class="edit-duedate-link" id="edit-due
 <b>Start Date:</b>
 {% if test.start_date %}
 {{test.start_date|timezone:request.user.userprofile.time_zone}} 
+{% if sharing_type != "read" %}
 <span class="edit-startdate-link" id="edit-startdate_{{test.pk}}" style="color:blue;cursor:pointer"><span class="fa fa-pencil"></span></span>
 <span class="delete-startdate-link" id="delete-startdate_{{test.pk}}" style="color:red;cursor:pointer"><span class="fa fa-remove"></span></span>
+{% endif %}
 {% else %}
-No start date set for this test.<span class="edit-startdate-link" id="edit-startdate_{{test.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+No start date set for this test.
+{% if sharing_type != "read" %}
+<span class="edit-startdate-link" id="edit-startdate_{{test.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+{% endif %}
 {% endif %}
 </p>
 <p>
 <b>Due Date:</b>
 {% if test.due_date %}
 {{test.due_date|timezone:request.user.userprofile.time_zone}} 
+{% if sharing_type != "read" %}
 <span class="edit-duedate-link" id="edit-duedate_{{test.pk}}" style="color:blue;cursor:pointer"><span class="fa fa-pencil"></span></span>
 <span class="delete-duedate-link" id="delete-duedate_{{test.pk}}" style="color:red;cursor:pointer"><span class="fa fa-remove"></span></span>
+{% endif %}
 {% else %}
-No due date set for this test.<span class="edit-duedate-link" id="edit-duedate_{{test.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+No due date set for this test.
+{% if sharing_type != "read" %}
+<span class="edit-duedate-link" id="edit-duedate_{{test.pk}}" style="color:green;cursor:pointer"><span class="fa fa-plus"></span></span>
+{% endif %}
 {% endif %}
 </p>
 {% endif %}

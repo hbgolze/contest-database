@@ -4,7 +4,9 @@
       <h3>{{forcount}}. <a href="edit-slide/{{slide.pk}}/">{{slide.title}}</a></h3>
     </div>
     <div class="col-1" style="text-align:right">
+{% if sharing_type != "read" %}
       <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
+{% endif %}
     </div>
   </div>
   <input type="hidden" name="slideinput" value="slide_{{slide.pk}}">

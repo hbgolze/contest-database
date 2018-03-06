@@ -6,7 +6,7 @@
               </div>
               <div class="col-10">
                 {% if unitobj.slidegroup %}
-                <a href="slides/{{unitobj.slidegroup.pk}}/">Slides: {{unitobj.slidegroup.name}}</a> ({{unitobj.slidegroup.slides.count}} slides)
+                <a href="slides/{{unitobj.slidegroup.pk}}/">Slides: {{unitobj.slidegroup.name}}</a> ({{unitobj.slidegroup.slides.count}} slides) (<a href="slideslatex/{{unitobj.slidegroup.pk}}/">LaTeX</a>)
                 {% elif unitobj.problemset %}
                 <a href="problemset/{{unitobj.problemset.pk}}/">Problem Set: {{unitobj.problemset.name}}</a> ({{unitobj.problemset.problem_objects.count}} problems) (<a href="problemsetlatex/{{unitobj.problemset.pk}}/">LaTeX</a>)
                 {% elif unitobj.test %}
@@ -14,7 +14,9 @@
                 {% endif %}
               </div>
               <div class="col-1">
+{% if sharing_type != "read" %}
                 <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
+{% endif %}
               </div>
             </div>
           </div>

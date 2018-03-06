@@ -1,0 +1,41 @@
+             <li class="list-group-item d-flex justify-content-between align-items-center" id="permission_row-{{shared_user.pk}}">
+                <span><span class="fa fa-user"></span> {{shared_user.user.username}}</span>
+                {% if not is_owner %}
+                <span>
+		  {% if sharing_type == "owner" %}
+		  Owner (primary)
+		  {% endif %}
+		  {% if sharing_type == "coowner" %}
+		  Owner
+		  {% endif %}
+		  {% if sharing_type == "editor" %}
+		  Editor
+		  {% endif %}
+		  {% if sharing_type == "reader" %}
+		  Read-Only User
+		  {% endif %}
+		</span>
+                {% else %}
+		{% if userprofile.pk == shared_user.pk %}
+{% if sharing_type != "owner" %}
+		  Owner
+{% else %}
+		Owner (primary)
+{% endif %}
+		{% else %}
+{% if sharing_type != "owner" %}
+                <form>
+                <select class="form-control change-permission" id="change_permission-{{shared_user.pk}}">
+                  <option value="own"{% if sharing_type == "owner" %} selected{% endif %}>Owner</option>
+                  <option value="edit"{% if sharing_type == "editor" %} selected{% endif %}>Editor</option>
+                  <option value="read"{% if sharing_type == "reader" %} selected{% endif %}>Read-Only</option>
+		  {% if sharing_type != "owner" %}<option value="del">Remove Access</option>{% endif %}
+                </select>
+                </form>
+{% else %}
+Owner (primary)
+{% endif %}
+
+		{% endif %}
+                {% endif %}
+              </li>

@@ -65,29 +65,62 @@ document.write("</div>");
       </table>
       {% endif %}
       
-      <h2>Classes for Editing</h2>
-      <div id="my_editing_classes"{% if my_classes.count == 0 %} style="display:none;"{% endif %}>
+      <h2>My Unpublished Classes</h2>
+      <p><i>These classes can be edited.</i></p>
+      <div id="my_editing_classes"{% if owned.cls.count == 0 %} style="display:none;"{% endif %}>
       <table class="table table-striped" id="editing_table">
 	<thead>
 	  <tr>
 	    <th>Class Name</th>
 	    <th>Number of Units</th>
 	    <th>Publish</th>
+	    <th>Sharing</th>
+	    <th></th>
 	  </tr>
 	</thead>
 	<tbody>
-	  {% for cls in my_classes.all %}
-            {% include 'teacher/editingtemplates/editclassrow.html' %}
+	  {% for cls in owned_cls %}
+            {% include 'teacher/editingtemplates/editclassrow.html' with sharing_type='own' %}
 	  {% endfor %}
 	</tbody>
       </table>
       </div>
       <div id="my_classes-empty_message">
-      {% if my_classes.count == 0 %}
+      {% if owned_cls.count == 0 %}
       <p>You haven't written any classes yet. Click the button below to start a new class.</p>
       {% endif %}
       </div>
-      <button class="btn btn-primary addclass-link" data-toggle="modal">New Class</button>      
+      <button class="btn btn-primary addclass-link" data-toggle="modal">New Class</button> 
+{% if co_owned_cls.count > 0 or editor_cls.count > 0 or readonly_cls.count > 0 %}
+      <h2>Unpublished Classes Shared With Me</h2>
+      <p><i>These classes can be edited if you have Owner or Editor privileges.</i></p>
+      <div id="shared_editing_classes"{% if my_classes.count == 0 %} style="display:none;"{% endif %}>
+      <table class="table table-striped" id="shared_editing_table">
+	<thead>
+	  <tr>
+	    <th>Class Name</th>
+	    <th>Number of Units</th>
+	    <th>Publish</th>
+	    <th>Sharing</th>
+	    <th></th>
+	  </tr>
+	</thead>
+	<tbody>
+          {% for cls in co_owned_cls %}
+            {% include 'teacher/editingtemplates/editclassrow.html' with sharing_type='coown' %}
+          {% endfor %}
+          {% for cls in editor_cls %}
+            {% include 'teacher/editingtemplates/editclassrow.html' with sharing_type='edit' %}
+          {% endfor %}
+          {% for cls in readonly_cls %}
+            {% include 'teacher/editingtemplates/editclassrow.html' with sharing_type='read' %}
+          {% endfor %}
+	</tbody>
+      </table>
+      </div>
+{% endif %}
+
+
     </div>
   </div>
 </div>
@@ -117,6 +150,11 @@ document.write("</div>");
     </div>
   </div>
 
+
+<div class="modal fade" id="edit-sharing-placeholder" role="dialog">
+</div>
+<div class="modal fade" id="confirm-delete-placeholder" role="dialog">
+</div>
 <script>
 function getCookie(name) {
     var cookieValue = null;
@@ -148,7 +186,6 @@ $.ajaxSetup({
 			    }
     },
 });
-
 
 $(document).on('click',".addclass-link",function(e) {
   e.preventDefault();
@@ -188,6 +225,154 @@ $(document).on('click',".publish-class",function(event) {
     });
     return false;
 });
+
+
+$(document).on('click',".edit-sharing",function(e) {
+  e.preventDefault();
+  pk = $(this).attr('id').split('-')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/edit-sharing/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-sharing-placeholder").html(result['modal-html']);
+      $("#edit-sharing-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#share-class-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/share-with-user/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      if (result['sharing_type'] == 'read') {
+        $("#reader-list").append(result['user-row']);
+        $("#collaborator option[value='"+result['col']+"']").remove();
+        $("#readers").show();
+      }
+      if (result['sharing_type'] == 'edit') {
+        $("#editor-list").append(result['user-row']);
+        $("#collaborator option[value='"+result['col']+"']").remove();
+        $("#editors").show();
+      }
+      if (result['sharing_type'] == 'own') {
+        $("#owner-list").append(result['user-row']);
+        $("#collaborator option[value='"+result['col']+"']").remove();
+        $("#owners").show();
+      }
+    }
+  });
+  return false;
+});
+
+$(document).on('change',".change-permission", function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('id').split('-')[1];
+  var sharing_type = $(this).val();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/change-permission/',
+    data: "&pk="+pk+"&sharing_type="+sharing_type+"&classpk="+$("#classpk").val(),
+    dataType: 'json',
+    success: function(result) {
+      $("#permission_row-"+pk).remove();
+      if (result['sharing_type'] == 'read') {
+        $("#reader-list").append(result['user-row']);
+        $("#readers").show();
+      }
+      if (result['sharing_type'] == 'edit') {
+        $("#editor-list").append(result['user-row']);
+        $("#editors").show();
+      }
+      if (result['sharing_type'] == 'own') {
+        $("#owner-list").append(result['user-row']);
+        $("#owners").show();
+      }
+      if ($('#reader-list li').length == 0) {
+        $("#readers").hide();
+      }
+      if ($('#owner-list li').length == 0) {
+        $("#owners").hide();
+      }
+      if ($('#editor-list li').length == 0) {
+        $("#editors").hide();
+      }
+    }
+  });
+  return false;
+});
+
+
+$(document).on('click',".confirm-delete-class",function(e) {
+  e.preventDefault();
+  pk = $(this).attr('id').split('-')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/confirm-delete-class/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#confirm-delete-placeholder").html(result['modal-html']);
+      $("#confirm-delete-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+$(document).on('click',".confirm-remove-class",function(e) {
+  e.preventDefault();
+  pk = $(this).attr('id').split('-')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/confirm-remove-class/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#confirm-delete-placeholder").html(result['modal-html']);
+      $("#confirm-delete-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#delete-class-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/delete-class/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      $("#class-row-"+$("#"+$(this).attr('id')+" input[name='pk']").val()).remove();
+      $("#confirm-delete-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
+$(document).on('submit',"#remove-class-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/remove-class/',
+    data: $(this).serialize(),
+    dataType: 'json',
+    success: function(result) {
+      $("#class-row-"+$("#"+$(this).attr('id')+" input[name='pk']").val()).remove();
+      $("#confirm-delete-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
 </script>
 
 

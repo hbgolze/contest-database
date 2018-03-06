@@ -25,7 +25,7 @@
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
     </div>
     <div class="col-sm-9 main">
-      <h2>Edit Problem Set: <span id="problemset-name">{{problemset.name}}</span> <a href="#" id="edit-problemset-name"><span class="fa fa-pencil"></span></a></h2>
+      <h2>Edit Problem Set: <span id="problemset-name">{{problemset.name}}</span>{% if sharing_type != "read" %} <a href="#" id="edit-problemset-name"><span class="fa fa-pencil"></span></a>{% endif %}</h2>
 
 
       <div class="row">
@@ -33,14 +33,16 @@
 	  {% include 'teacher/editingtemplates/editduedate.html' %}
 	</div>
       </div>
-
+{% if sharing_type != "read" %}
       <p>Drag problems around to reorder them. If you reorder or delete problems, you must click "Save" for your changes to apply.</p>
+{% endif %}
       <form action="." method="POST" id="problemobjects">
         {% csrf_token %}
         <div id="problemobjectList" class="list-group mb-3">
 {% include 'teacher/editingtemplates/problemobjectlist.html' %}
         </div>
-	<div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet. Click the button below to add problems</i></p>{% endif %}</div>
+	<div id="msg-no-problems">{% if problemset.problem_objects.count == 0 %}<p><i>You don't have any problems in this problem set yet.{% if sharing_type != "read" %} Click the button below to add problems{% endif %}</i></p>{% endif %}</div>
+{% if sharing_type != "read" %}
         <div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>	
 	<span class="dropup">
           <button type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -53,12 +55,13 @@
           </div>
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
+{% endif %}
       </form>
       
     </div>
   </div>
 </div>
-
+{% if sharing_type != "read" %}
 <div id="unsaved-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
   <div class="alert alert-warning">
     You have unsaved changes! Please click "Save" before navigating away.
@@ -657,5 +660,6 @@ $(document).on('submit',"#edit-problemset-name-form",function(e) {
   return false;
 });
 </script>
+{% endif %}
 
 {% endblock %}
