@@ -74,6 +74,7 @@
 \solutionfalse
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
 \begin{document}
+{% if pset.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in pset.problem_objects.all %}
 \item {% if prob.isProblem %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text|linebreaks}}{% else %}{{prob.problem.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.problem.readable_label|poundsafe}}]{% endif %}
@@ -90,6 +91,7 @@
 
 {% endfor %}
 \end{enumerate}
+{% endif %}
 \end{document}
 
 		</code>

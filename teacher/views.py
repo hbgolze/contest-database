@@ -56,7 +56,6 @@ def teacherview(request):
     context['co_owned_cls'] = co_owned_cls
     context['editor_cls'] = editor_cls
     context['readonly_cls'] = readonly_cls
-    print(context)
     return render(request, 'teacher/teacherview.html',context)
 
 @login_required
@@ -657,11 +656,24 @@ def latexslidesview(request,pk,upk,ppk):
     context['unit'] = unit
     context['slides'] = slidegroup
     filename = slidegroup.name+".tex"
-    response = HttpResponse(render_to_string('teacher/editingtemplates/latexslidesview.html',context), content_type='text/plain')
+    response = HttpResponse(render_to_string('teacher/editingtemplates/latexslidesview.tex',context), content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
 #    return render(request, 'teacher/editingtemplates/latexslidesview.html',context)
 
+@login_required
+def latexclassview(request,pk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    context = {}
+    context['my_class'] = my_class
+    filename = my_class.name+".tex"
+    response = HttpResponse(render_to_string('teacher/editingtemplates/latexclassview.tex',context), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
 
 @login_required
 def problemseteditview(request,pk,upk,ppk):
@@ -2003,10 +2015,8 @@ def deletegroup(request,pk):
 @login_required
 def removegroup(request,pk):
     pg = get_object_or_404(ProblemGroup, pk=pk)
-    print('asd')
     userprofile = request.user.userprofile
     if pg in userprofile.owned_problem_groups.all():
-        print('adsfasdfs')
         userprofile.owned_problem_groups.remove(pg)
         userprofile.save()
     elif pg in userprofile.editable_problem_groups.all():
@@ -2054,10 +2064,7 @@ def move_response(request,**kwargs):
     ups_pk = request.GET.get('ups_pk','')
     user_problemset = get_object_or_404(UserProblemSet,pk=ups_pk)
     po = user_problemset.problemset.problem_objects.get(problem = resp.problem)
-    print('josadf')
-    print(user_problemset.response_set.filter(problem_object = po))
     if user_problemset.response_set.filter(problem_object = po).exists()==False:
-        print('josadf2')
         r = Response(problem_object = po, user_problemset=user_problemset, response = resp.response,attempted = resp.attempted, stickied = resp.stickied, order = po.order, point_value = po.point_value, modified_date = resp.modified_date)
         r.save()
         if po.question_type.question_type == "short answer":

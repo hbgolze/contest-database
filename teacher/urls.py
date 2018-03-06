@@ -9,6 +9,7 @@ import groups.views as gviews
 urlpatterns = [
     url(r'^$', views.teacherview, name='teacherview'),
     url(r'^editclass/(?P<pk>\d+)/$', views.classeditview, name='classeditview'),
+    url(r'^editclass/(?P<pk>\d+)/latex/$', views.latexclassview, name='latexclassview'),
     url(r'^editclass/(?P<pk>\d+)/add-unit/$', views.newunitview, name='newunitview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/$', views.uniteditview, name='uniteditview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/add-problemset/$', views.newproblemsetview, name='newproblemsetview'),

@@ -1,6 +1,6 @@
 {% if sharing_type == 'own' %}
           <tr id="class-row-{{cls.pk}}">
-            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a></td>
+            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a> (<a href="editclass/{{cls.pk}}/latex/">Download Complete LaTeX</a>)</td>
             <td>{{cls.units.count}}</td>
             <td><a href="publishclass/{{cls.pk}}/" class="publish-class">Publish</a></td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{cls.pk}}"><span class="fa fa-users"></span> Owner</button></td>
@@ -9,7 +9,7 @@
 {% endif %}
 {% if sharing_type == 'coown' %}
           <tr id="class-row-{{cls.pk}}">
-            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a></td>
+            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a> (<a href="editclass/{{cls.pk}}/latex/">Download Complete LaTeX</a>)</td>
             <td>{{cls.units.count}}</td>
             <td><a href="publishclass/{{cls.pk}}/" class="publish-class">Publish</a></td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{cls.pk}}"><span class="fa fa-users"></span> Owner</button></td>
@@ -18,7 +18,7 @@
 {% endif %}
 {% if sharing_type == 'edit' %}
           <tr id="class-row-{{cls.pk}}">
-            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a></td>
+            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a> (<a href="editclass/{{cls.pk}}/latex/">Download Complete LaTeX</a>)</td>
             <td>{{cls.units.count}}</td>
             <td><a href="publishclass/{{cls.pk}}/" class="publish-class">Publish</a></td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{cls.pk}}"><span class="fa fa-users"></span> Editor</button></td>
@@ -27,7 +27,7 @@
 {% endif %}
 {% if sharing_type == 'read' %}
           <tr id="class-row-{{cls.pk}}">
-            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a></td>
+            <td><a href="editclass/{{cls.pk}}/">{{cls.name}}</a> (<a href="editclass/{{cls.pk}}/latex/">Download Complete LaTeX</a>)</td>
             <td>{{cls.units.count}}</td>
             <td><a href="publishclass/{{cls.pk}}/" class="publish-class">Publish</a></td>
             <td style="text-align:center">Viewer</td>
