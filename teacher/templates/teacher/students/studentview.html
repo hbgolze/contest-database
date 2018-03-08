@@ -87,7 +87,7 @@ $(function() {
 	<tbody>
 	  {% for sticky in stickies %}
 	  <tr>
-            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.problemset.problemset.name}}</a>: {{sticky.readable_label}}</small></td>
+            <td><small><a href="problemset/{{sticky.problemset.pk}}/#{{sticky.response.publishedproblem_object.pk}}">{{sticky.problemset.published_problemset.name}}</a>: {{sticky.readable_label}}</small></td>
 	    <td>
 	      <small>{{sticky.sticky_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</small>
 	    </td>
@@ -106,7 +106,7 @@ $(function() {
 	<tbody>
 	  {% for resp in responselog %}
 	  <tr>
-            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.publishedproblem_object.pk}}">{{resp.user_problemset.problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
+            <td><small><a href="problemset/{{resp.user_problemset.pk}}/#{{resp.response.publishedproblem_object.pk}}">{{resp.user_problemset.published_problemset.name}}</a>: {{resp.readable_label}}: {% if resp.correct == 1 %} <p style="color:green">{% else %}<p style="color:red">{% endif %}{{resp.static_response}}</p></small></td>
 	    <td>
 	      <small>{{resp.modified_date|timezone:request.user.userprofile.time_zone|date:"SHORT_DATETIME_FORMAT"}}</small>
 	    </td>
