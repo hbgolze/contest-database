@@ -23,8 +23,6 @@ from subprocess import Popen,PIPE
 import tempfile
 import os
 
-import logging
-logger = logging.getLogger(__name__)
 
 from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
@@ -866,7 +864,6 @@ def test_as_pdf(request, **kwargs):
         fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        logger.debug(os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
                 'rows':rows,
@@ -882,7 +879,6 @@ def test_as_pdf(request, **kwargs):
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
         ftex.close()
-        logger.debug(os.listdir(tempdir))
         for i in range(1):
             process = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -892,7 +888,6 @@ def test_as_pdf(request, **kwargs):
             )
             stdout_value = process.communicate()[0]
         L=os.listdir(tempdir)
-        logger.debug(os.listdir(tempdir))
 
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
@@ -903,7 +898,6 @@ def test_as_pdf(request, **kwargs):
                     cwd = tempdir,
                     )
                 stdout_value = process1.communicate()[0]
-        logger.debug(os.listdir(tempdir))
         for i in range(2):
             process2 = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -912,7 +906,6 @@ def test_as_pdf(request, **kwargs):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
-        logger.debug(os.listdir(tempdir))
         if 'texput.pdf' in os.listdir(tempdir):
             with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
                 pdf = f.read()
@@ -975,7 +968,6 @@ def test_sol_as_pdf(request,**kwargs):
         fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        logger.debug(os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
                 'rows':rows,
@@ -991,7 +983,6 @@ def test_sol_as_pdf(request,**kwargs):
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
         ftex.close()
-        logger.debug(os.listdir(tempdir))
         for i in range(1):
             process = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -1001,7 +992,6 @@ def test_sol_as_pdf(request,**kwargs):
             )
             stdout_value = process.communicate()[0]
         L=os.listdir(tempdir)
-        logger.debug(os.listdir(tempdir))
 
         for i in range(0,len(L)):
             if L[i][-4:]=='.asy':
@@ -1012,7 +1002,6 @@ def test_sol_as_pdf(request,**kwargs):
                     cwd = tempdir,
                     )
                 stdout_value = process1.communicate()[0]
-        logger.debug(os.listdir(tempdir))
         for i in range(2):
             process2 = Popen(
                 ['pdflatex', 'texput.tex'],
@@ -1021,7 +1010,6 @@ def test_sol_as_pdf(request,**kwargs):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
-        logger.debug(os.listdir(tempdir))
         if 'texput.pdf' in os.listdir(tempdir):
             with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
                 pdf = f.read()
@@ -1059,7 +1047,6 @@ def test_answer_key_as_pdf(request, **kwargs):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
-        logger.debug(os.listdir(tempdir))
         context = Context({  
                 'name':test.name,
                 'rows':rows,

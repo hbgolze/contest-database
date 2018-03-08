@@ -1399,9 +1399,9 @@ def managecollaborators(request):
 def send_collab_request(request):
     username = request.POST.get('username','')
     userprofile = request.user.userprofile
-    if User.objects.filter(username=username).exists() == True and userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher']:#need more tests...like target user not being a student; check for duplication of requests, and if user is already a collaborator.
+    if User.objects.filter(username=username).exists() == True and userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher','contestmod']:#need more tests...like target user not being a student; check for duplication of requests, and if user is already a collaborator.
         u = User.objects.get(username=username)
-        if u not in userprofile.collaborators.all() and u.userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher']:
+        if u not in userprofile.collaborators.all() and u.userprofile.user_type_new.name in ['super','contestmanager','sitemanager','manager','teacher','contestmod']:
             if userprofile.collab_invitations_to.filter(accepted = False).filter(from_user=u.userprofile).exists()==True or userprofile.collab_invitations_from.filter(accepted = False).filter(to_user=u.userprofile).exists()==True:
                 return JsonResponse({'is_valid':2})
             collab_request = CollaboratorRequest(from_user = request.user.userprofile, to_user = u.userprofile)

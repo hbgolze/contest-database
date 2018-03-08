@@ -252,7 +252,7 @@ class Sticky(models.Model):
     userprofile = models.ForeignKey(UserProfile,related_name = "student_stickies",null=True)
     readable_label = models.CharField(max_length=30,blank=True)
     def __str__(self):
-        return self.problemset.problemset.name+' #'+self.response.order
+        return self.problemset.problemset.name+' #'+str(self.response.order)
 
 class UserResponse(models.Model):
     userprofile = models.ForeignKey(UserProfile,related_name = "student_responselog")
