@@ -1,21 +1,22 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
-<table class="table">
-{% for a,b,c in rows %}
-<tr>
-<td>{{a}}</td>
-<td>{{b}}</td>
-<td>{{c}}</td>
-</tr>
-{% endfor %}
-</table>
-<form>
-{% csrf_token %}
-{% for field in form %}
-{{ field.as_hidden }}
-{% endfor %}
-<button type="submit" class="btn btn-primary">Add Contest</button>
-</form>
-
+<div class="container">
+<h1>Preview Upload for {{name}}</h1>
+  <div class="row">
+    <div class="col">
+<p class="text-muted">
+Close this tab to return to the upload page, where you can save the test.
+</p>
+      <div class="list-group">
+	{% for a,b in rows %}
+	<div class="list-group-item">
+	  {% autoescape off %}{{a|linebreaks}} {% endautoescape %}
+	  <p>[{{b}}]</p>
+	</div>
+	{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

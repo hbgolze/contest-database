@@ -398,10 +398,13 @@ def replaceenumerate(s,optional=''):
         r+=mid+'\n'+end
         return r
 
-def newtexcode(texcode,label,answer_choices):
+def newtexcode(texcode,label,answer_choices,temp = False):
     texcode = texcode.replace('<',' < ')
     repl = asyreplacementindexes(texcode)
     newtexcode=''
+    tempdir = ''
+    if temp == True:
+        tempdir = 'temp/'
     if len(repl)==0:
         newtexcode+=texcode
     else:
@@ -410,12 +413,12 @@ def newtexcode(texcode,label,answer_choices):
             three=''
             if 'import three' in texcode[repl[i][0]:repl[i][1]]:
                 three='+0_0'
-            newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+three+'.png\"/>'
+            newtexcode+='<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+str(i+1)+three+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
         three=''
         if 'import three' in texcode[repl[-1][0]:repl[-1][1]]:
             three='+0_0'
-        newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+three+'.png\"/>'
+        newtexcode+='<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+str(len(repl))+three+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
 
     repl2 = tikzreplacementindexes(newtexcode)
@@ -425,9 +428,9 @@ def newtexcode(texcode,label,answer_choices):
     else:
         new2texcode += newtexcode[0:repl2[0][0]]
         for i in range(0,len(repl2)-1):
-            new2texcode += '<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(i+1)+'.png\"/>'
+            new2texcode += '<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+str(i+1)+'.png\"/>'
             new2texcode += newtexcode[repl2[i][1]:repl2[i+1][0]]
-        new2texcode+='<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(len(repl2))+'.png\"/>'
+        new2texcode+='<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+str(len(repl2))+'.png\"/>'
         new2texcode+=texcode[repl2[-1][1]:]
     newtexcode = new2texcode
 
@@ -508,7 +511,10 @@ def goodtag(t):
     return t.replace('__',' ').replace('_','>')
 
 
-def compileasy(texcode,label,sol=''):
+def compileasy(texcode, label, sol = '', temp = False):
+    tempfolder = ''
+    if temp == True:
+        tempfolder = 'temp/'
     repl = asyreplacementindexes(texcode)
     for i in range(0,len(repl)):
         asy_code = texcode[repl[i][0]:repl[i][1]]
@@ -534,7 +540,7 @@ def compileasy(texcode,label,sol=''):
             L=os.listdir(tempdir)
             for j in L:
                 if 'pdf' in j:
-                    command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, j, settings.MEDIA_ROOT, j.replace('.pdf','.png'))
+                    command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, j, settings.MEDIA_ROOT+tempfolder, j.replace('.pdf','.png'))
                     proc = subprocess.Popen(command,
                                             shell=True,
                                             stdin=subprocess.PIPE,
@@ -543,7 +549,10 @@ def compileasy(texcode,label,sol=''):
                                             )
                     stdout_value = proc.communicate()[0]
 
-def compiletikz(texcode,label,sol=''):
+def compiletikz(texcode,label,sol='',temp = False):
+    tempfolder = ''
+    if temp == True:
+        tempfolder = 'temp/'
     repl = tikzreplacementindexes(texcode)
     for i in range(0,len(repl)):
         tikz_code = texcode[repl[i][0]:repl[i][1]]
@@ -571,7 +580,7 @@ def compiletikz(texcode,label,sol=''):
                     )
                 process.communicate(rendered_tpl)
             L=os.listdir(tempdir)
-            command = "convert -density 150 -quality 95 %s/%s -trim -bordercolor White -border 10x10 +repage %s%s" % (tempdir, 'texput.pdf', settings.MEDIA_ROOT, filename+'.png')
+            command = "convert -density 150 -quality 95 %s/%s -trim -bordercolor White -border 10x10 +repage %s%s" % (tempdir, 'texput.pdf', settings.MEDIA_ROOT+tempfolder, filename+'.png')
             proc = subprocess.Popen(command,
                                     shell=True,
                                     stdin=subprocess.PIPE,

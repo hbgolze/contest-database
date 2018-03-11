@@ -16,7 +16,7 @@ from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
-#from .forms import UploadContestForm
+from .forms import UploadContestForm
 from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz
 
@@ -682,83 +682,68 @@ def redirectproblem(request,pk):
 
 #######THIS MUST BE UPDATED TO USE ROUNDS PROPERLY.
 @login_required
-def uploadcontestview(request):
+def uploadcontestview(request,type):
+    typ = get_object_or_404(Type, type = type)
+    if typ.default_question_type == 'mc' or typ.default_question_type == 'mcsa':
+        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
     if request.POST and request.FILES:
-        form = UploadContestForm(request.POST, request.FILES)
+        form = UploadContestForm(request.POST, request.FILES,type = type)
         if form.is_valid():
             contestfile = form.cleaned_data["contestfile"]
-            year=form.cleaned_data['year']
-            formletter=form.cleaned_data['formletter']
-            typ=form.cleaned_data['typ']
-            type2=Type.objects.get(type=typ)
+            year = form.cleaned_data['year']
+            formletter=''
+            if 'formletter' in form.cleaned_data:
+                formletter = form.cleaned_data['formletter']
+            if 'round' in form.cleaned_data:
+                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+                readablelabel = year + ' ' + round.readable_label_pre_form + formletter
+                default_question_type = round.default_question_type
+                readablelabel = readablelabel.rstrip()
+                post_label = round.readable_label_post_form
+                label = year + round.name.replace(' ','') + formletter#####no spaces
+            else:
+                readablelabel = year + ' ' + typ.readable_label_pre_form + formletter
+                default_question_type = typ.default_question_type
+                readablelabel = readablelabel.rstrip()
+                post_label = typ.readable_label_post_form
+                label = year + type + formletter#####
             if contestfile.multiple_chunks()== True:
                 pass
             else:
                 f=contestfile.read().decode('utf-8')
 #                print(f.decode("utf-8"))
                 problemtexts = str(f).split('=========')
+#Currently no support for 'mc'
+                if default_question_type == 'sa':
+                    sa = QuestionType.objects.get(question_type = 'short answer')
 
-
-                label = year+type2.type+formletter
-                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
-                readablelabel = readablelabel.rstrip()
-#                if type.default_question_type=='mc':
-#                    for i in range(1,num+1):
-#                p=Problem(mc_problem_text = F['problem_text'+str(i)],
-#                          problem_text = F['problem_text'+str(i)],
-#                          answer = F['answer'+str(i)],
-#                          mc_answer = F['answer'+str(i)],
-#                          answer_choices = '$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
-#                          answer_A = F['answer_A'+str(i)],
-#                          answer_B = F['answer_B'+str(i)],
-#                          answer_C = F['answer_C'+str(i)],
-#                          answer_D = F['answer_D'+str(i)],
-#                          answer_E = F['answer_E'+str(i)],
-#                          label = label+str(i),
-#                          readable_label = readablelabel+typ.readable_label_post_form+str(i),
-#                          type_new = typ,
-#                          question_type_new = QuestionType.objects.get(question_type='multiple choice'),
-#                          problem_number = i,
-#                          year = F['year'],
-#                          form_letter=F['formletter'],
-#                          test_label=label,
-#                          top_solution_number=0,
-#                          )
-#                p.save()
-#                p.types.add(typ)
-#                p.question_type.add(QuestionType.objects.get(question_type='multiple choice'))
-#                p.save()
-#                compileasy(p.mc_problem_text,p.label)
-#                compileasy(p.problem_text,p.label)
-#                p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-#                p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-#                p.save()
-                if type2.default_question_type=='sa':
-                    num=1
-                    prefix_pn=''
+                    num = 1
+                    prefix_pn = ''
                     for i in range(1,len(problemtexts)):
-                        ptext=problemtexts[i]
+                        ptext = problemtexts[i]
                         if '===' in ptext:
-                            prefix_pn=ptext[ptext.index('===')+3]
-                            num=1
+                            prefix_pn = ptext[ptext.index('===') + 3]
+                            num = 1
                         else:
-                            p=Problem(problem_text = problemtexts[i],
-                                      answer='',
-                                      sa_answer='',
-                                      label=label+prefix_pn+str(num),
-                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
-                                      type_new=type2,
-                                      question_type_new=QuestionType.objects.get(question_type='short answer'),
-                                      problem_number=num,
-                                      year=year,
-                                      form_letter=formletter,
-                                      test_label=label,
-                                      top_solution_number=0,
-                                      problem_number_prefix=prefix_pn,
-                                      )
+                            p = Problem(problem_text = ptext,
+                                        answer = '',
+                                        sa_answer = '',
+                                        label = label + prefix_pn + str(num),
+                                        readable_label = readablelabel + post_label + prefix_pn + str(num),
+                                        type_new = typ,
+                                        question_type_new = sa,
+                                        problem_number = num,
+                                        year = year,
+                                        form_letter = formletter,
+                                        test_label = label,
+                                        top_solution_number = 0,
+                                        problem_number_prefix = prefix_pn
+                                        )
                             p.save()
-                            p.types.add(type2)
-                            p.question_type.add(QuestionType.objects.get(question_type='short answer'))
+                            if 'round' in form.cleaned_data:
+                                p.round = round
+                            p.types.add(typ)
+                            p.question_type.add(sa)
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
@@ -768,30 +753,33 @@ def uploadcontestview(request):
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
                             num+=1
-                if type2.default_question_type=='pf':
-                    num=1
-                    prefix_pn=''
+                if default_question_type=='pf':
+                    pf = QuestionType.objects.get(question_type = 'proof')
+                    num = 1
+                    prefix_pn = ''
                     for i in range(1,len(problemtexts)):
                         ptext=problemtexts[i]
                         if '===' in ptext:
-                            prefix_pn=ptext[ptext.index('===')+3]
-                            num=1
+                            prefix_pn = ptext[ptext.index('===') + 3]
+                            num = 1
                         else:
-                            p=Problem(problem_text=problemtexts[i],
-                                      label=label+prefix_pn+str(num),
-                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
-                                      type_new=type2,
-                                      question_type_new=QuestionType.objects.get(question_type='proof'),
-                                      problem_number=num,
-                                      year=year,
-                                      form_letter=formletter,
-                                      test_label=label,
-                                      top_solution_number=0,
-                                      problem_number_prefix=prefix_pn,
+                            p=Problem(problem_text = ptext,
+                                      label = label + prefix_pn + str(num),
+                                      readable_label = readablelabel + post_label + prefix_pn + str(num),
+                                      type_new = typ,
+                                      question_type_new = pf,
+                                      problem_number = num,
+                                      year = year,
+                                      form_letter = formletter,
+                                      test_label = label,
+                                      top_solution_number = 0,
+                                      problem_number_prefix = prefix_pn,
                                       )
                             p.save()
-                            p.types.add(type2)
-                            p.question_type.add(QuestionType.objects.get(question_type='proof'))
+                            if 'round' in form.cleaned_data:
+                                p.round = round
+                            p.types.add(typ)
+                            p.question_type.add(pf)
                             p.save()
                             compileasy(p.mc_problem_text,p.label)
                             compileasy(p.problem_text,p.label)
@@ -800,69 +788,81 @@ def uploadcontestview(request):
                             p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
-                            num+=1
-                P=Problem.objects.filter(test_label=label)
-                if len(P)>0:
-                    if formletter != "":
-                        t=Test(name=readablelabel)
-                    else:
-                        t=Test(name=year+' '+type2.label)
+                            num += 1
+                P = Problem.objects.filter(test_label = label)
+
+                if len(P) > 0:
+                    t = Test(name = readablelabel)
                     t.save()
                 for i in P:
                     t.problems.add(i)
-                    t.types.add(i.type_new)
+                    t.types.add(typ)
                 t.save()
-                tc,boolcreated=TestCollection.objects.get_or_create(name=type2.label)
+                tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
                 tc.tests.add(t)
                 tc.save()
                 return redirect('/problemeditor/')
-    form=UploadContestForm()
-    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
+    form = UploadContestForm(type = type)
+    return render(request, 'problemeditor/addcontestfileform.html', context = {'form':form,'nbar':'problemeditor','typ':typ})
+
+#@login_required
+#def tameupload(request):
+#    form=UploadContestForm()
+#    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
+
 
 @login_required
-def tameupload(request):
-    form=UploadContestForm()
-    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
-
-
-@login_required
-def uploadpreview(request):
+def uploadpreview(request,type):
+    typ = get_object_or_404(Type, type = type)
+    if typ.default_question_type == 'mc' or typ.default_question_type == 'mcsa':
+        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
     if request.POST and request.FILES:
-        form = UploadContestForm(request.POST, request.FILES)
+        form = UploadContestForm(request.POST, request.FILES,type = type)
         if form.is_valid():
             contestfile = form.cleaned_data["contestfile"]
-            year=form.cleaned_data['year']
-            formletter=form.cleaned_data['formletter']
-            typ=form.cleaned_data['typ']
-            type2=Type.objects.get(type=typ)
+            year = form.cleaned_data['year']
+            formletter=''
+            if 'formletter' in form.cleaned_data:
+                formletter = form.cleaned_data['formletter']
+            if 'round' in form.cleaned_data:
+                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+                readablelabel = year + ' ' + round.readable_label_pre_form + formletter
+                default_question_type = round.default_question_type
+                readablelabel = readablelabel.rstrip()
+                post_label = round.readable_label_post_form
+                label = year + round.name.replace(' ','') + formletter#####no spaces
+            else:
+                readablelabel = year + ' ' + typ.readable_label_pre_form + formletter
+                default_question_type = typ.default_question_type
+                readablelabel = readablelabel.rstrip()
+                post_label = typ.readable_label_post_form
+                label = year + type + formletter#####
             if contestfile.multiple_chunks()== True:
                 pass
             else:
                 f=contestfile.read().decode('utf-8')
                 problemtexts = str(f).split('=========')
-                label = year+type2.type+formletter
-                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
-                readablelabel = readablelabel.rstrip()
-                rows=[]
-                if type2.default_question_type=='sa' or type2.default_question_type=='pf':
-                    num=1
-                    prefix_pn=''
+#Currently no support for 'mc'
+                if default_question_type == 'sa' or default_question_type == 'pf':
+                    rows = []
+                    num = 1
+                    prefix_pn = ''
                     for i in range(1,len(problemtexts)):
-                        ptext=problemtexts[i]
+                        ptext = problemtexts[i]
                         if '===' in ptext:
-                            prefix_pn=ptext[ptext.index('===')+3]
-                            num=1
+                            prefix_pn = ptext[ptext.index('===') + 3]
+                            num = 1
                         else:
-                            rows.append((newtexcode(problemtexts[i],label+prefix_pn+str(num),''),
-                                         label+prefix_pn+str(num),
-                                         readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
-                                         ))
+                            rows.append((
+                                    newtexcode(ptext,label + prefix_pn + str(num),'',temp = True),
+                                    readablelabel + post_label + prefix_pn + str(num)
+                                    ))
+                            plabel = label + prefix_pn + str(num)
+                            compileasy(ptext,plabel,temp = True)
+                            compiletikz(ptext,plabel,temp = True)
+#can I make the above stuff temp?
                             num+=1
-#default_question_type
-#testlabel
-#prefix
-#problem number...
-                return render(request,'problemeditor/uploadpreview.html',context={'form':form,'rows':rows})
+                return render(request,'problemeditor/uploadpreview.html',context={'nbar': 'problemeditor','rows':rows, 'name':readablelabel})
     return redirect('/problemeditor/')
 
 

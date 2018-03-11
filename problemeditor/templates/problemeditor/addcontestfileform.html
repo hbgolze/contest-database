@@ -1,16 +1,123 @@
 {% extends "randomtest/base.html" %}
 
 {% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Problem Editor</a></li>
+    <li class="breadcrumb-item active">Upload Contest by File</li>
+  </ol>
+</nav>
 <div class="container">
-  <h2>New Contest</h2>
+  <h2>New Contest: {{typ.label}}</h2>
   <div class="row">
     <div class="col">
-      <form action="." method="post" enctype="multipart/form-data">
+      <form action="." method="post" enctype="multipart/form-data" id="upload-problems-form">
 	{% csrf_token %}
 	{{form.as_p}}
-	<button type="submit" class="btn btn-primary" value="Save Contest">Save Contest</button>
+	<button type="submit" class="btn btn-primary" value="Preview" id="preview">Preview in New Tab</button>
+	<button type="submit" class="btn btn-primary" value="Save Contest" id="save-contest">Save Contest</button>
+	<div style="display:none">
+	  <button type="submit" value="sub" id="submit_button">Action</button>
+	</div>
       </form>
+<br>
+<p>      <button data-target="#help-modal" data-toggle="modal" class="btn btn-secondary">Help</button></p>
+
     </div>
   </div>
 </div>
+
+<div class="modal fade" id="help-modal" role="dialog">
+  <div class="modal-dialog" role="document">
+
+    <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">Help</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+	  Files should contain only the LaTeX code of the problems (no headers/footers, etc). Problems should be separated by =========. Also, if one desires to put prefixes in the readable labels, one can achieve this. For example, in the 1995 IMO shortlist, the file appearing as 
+	  <pre style="white-space: pre-wrap;background-color:lightgray;border-radius:5px;padding:10px 10px 10px 10px;">
+=========
+
+===Algebra
+
+=========
+
+Let $ a$, $ b$, $ c$ be positive real numbers such that $ abc = 1$. Prove that
+\[ \frac {1}{a^{3}\left(b + c\right)} + \frac {1}{b^{3}\left(c + a\right)} + \frac {1}{c^{3}\left(a + b\right)}\geq \frac {3}{2}.
+\]
+
+
+=========
+
+Let $ a$ and $ b$ be non-negative integers such that $ ab \geq c^2,$ where $ c$ is an integer. Prove that there is a number $ n$ and integers $ x_1, x_2, \ldots, x_n, y_1, y_2, \ldots, y_n$ such that
+
+\[ \sum^n_{i=1} x^2_i = a, \sum^n_{i=1} y^2_i = b, \text{ and } \sum^n_{i=1} x_iy_i = c.\]
+
+</pre>
+would result in two problems, with readable labels "1995 IMO SL #A1" and "1995 IMO SL #A2" (essentially the first character after === turns into a prefix for the problem number).
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('click','#preview', function(e) {
+  e.preventDefault();
+  f = $(this).closest('form');
+  f.attr("action", "preview/");
+  f.attr("target","_blank");
+  $("#submit_button").click();
+  return false;
+});
+
+$(document).on('click','#save-contest', function(e) {
+  e.preventDefault();
+  f = $(this).closest('form');
+  f.attr("action", ".");
+  f.attr("target","");
+  $("#submit_button").click();
+  return false;
+});
+
+
+</script>
 {% endblock %}
