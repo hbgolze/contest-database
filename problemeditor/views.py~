@@ -16,13 +16,16 @@ from formtools.wizard.views import SessionWizardView
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
-from .forms import UploadContestForm
+from .forms import UploadContestForm,HTMLLatexForm
 from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz
 
 from django.db.models import Count
 
 from django import forms
+
+from bs4 import BeautifulSoup
+import bs4
 
 def show_mc_form_condition(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
@@ -805,11 +808,6 @@ def uploadcontestview(request,type):
     form = UploadContestForm(type = type)
     return render(request, 'problemeditor/addcontestfileform.html', context = {'form':form,'nbar':'problemeditor','typ':typ})
 
-#@login_required
-#def tameupload(request):
-#    form=UploadContestForm()
-#    return render(request, 'problemeditor/addcontestfileform.html', context={'form':form})
-
 
 @login_required
 def uploadpreview(request,type):
@@ -854,118 +852,64 @@ def uploadpreview(request,type):
                             num = 1
                         else:
                             rows.append((
-                                    newtexcode(ptext,label + prefix_pn + str(num),''),
+                                    newtexcode(ptext,label + prefix_pn + str(num),'',temp = True),
                                     readablelabel + post_label + prefix_pn + str(num)
                                     ))
+                            plabel = label + prefix_pn + str(num)
+                            compileasy(ptext,plabel,temp = True)
+                            compiletikz(ptext,plabel,temp = True)
 #can I make the above stuff temp?
                             num+=1
-                return render(request,'problemeditor/uploadpreview.html',context={'nbar': 'problemeditor','rows':rows})
+                return render(request,'problemeditor/uploadpreview.html',context={'nbar': 'problemeditor','rows':rows, 'name':readablelabel})
     return redirect('/problemeditor/')
 
 
-
-# this is not working yet...upload preview needs to work better.
 @login_required
-def uploadsave(request):
-    if request.POST and request.FILES:
-        form = UploadContestForm(request.POST, request.FILES)
+def htmltolatex(request):
+    if request.method == "POST":
+        form = HTMLLatexForm(request.POST)
         if form.is_valid():
-            contestfile = form.cleaned_data["contestfile"]
-            year=form.cleaned_data['year']
-            formletter=form.cleaned_data['formletter']
-            typ=form.cleaned_data['typ']
-            type2=Type.objects.get(type=typ)
-            if contestfile.multiple_chunks()== True:
-                pass
-            else:
-                f=contestfile.read().decode('utf-8')
-                problemtexts = str(f).split('=========')
-                label = year+type2.type+formletter
-                readablelabel = year + ' ' + type2.readable_label_pre_form + formletter
-                readablelabel = readablelabel.rstrip()
-                if type2.default_question_type=='sa':
-                    num=1
-                    prefix_pn=''
-                    for i in range(1,len(problemtexts)):
-                        ptext=problemtexts[i]
-                        if '===' in ptext:
-                            prefix_pn=ptext[ptext.index('===')+3]
-                            num=1
-                        else:
-                            p=Problem(problem_text = problemtexts[i],
-                                      answer='',
-                                      sa_answer='',
-                                      label=label+prefix_pn+str(num),
-                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
-                                      type_new=type2,
-                                      question_type_new=QuestionType.objects.get(question_type='short answer'),
-                                      problem_number=num,
-                                      year=year,
-                                      form_letter=formletter,
-                                      test_label=label,
-                                      top_solution_number=0,
-                                      problem_number_prefix=prefix_pn,
-                                      )
-                            p.save()
-                            p.types.add(type2)
-                            p.question_type.add(QuestionType.objects.get(question_type='short answer'))
-                            p.save()
-                            compileasy(p.mc_problem_text,p.label)
-                            compileasy(p.problem_text,p.label)
-                            compiletikz(p.mc_problem_text,p.label)
-                            compiletikz(p.problem_text,p.label)
-                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                            p.save()
-                            num+=1
-                if type2.default_question_type=='pf':
-                    num=1
-                    prefix_pn=''
-                    for i in range(1,len(problemtexts)):
-                        ptext=problemtexts[i]
-                        if '===' in ptext:
-                            prefix_pn=ptext[ptext.index('===')+3]
-                            num=1
-                        else:
-                            p=Problem(problem_text=problemtexts[i],
-                                      label=label+prefix_pn+str(num),
-                                      readable_label=readablelabel+type2.readable_label_post_form+prefix_pn+str(num),
-                                      type_new=type2,
-                                      question_type_new=QuestionType.objects.get(question_type='proof'),
-                                      problem_number=num,
-                                      year=year,
-                                      form_letter=formletter,
-                                      test_label=label,
-                                      top_solution_number=0,
-                                      problem_number_prefix=prefix_pn,
-                                      )
-                            p.save()
-                            p.types.add(type2)
-                            p.question_type.add(QuestionType.objects.get(question_type='proof'))
-                            p.save()
-                            compileasy(p.mc_problem_text,p.label)
-                            compileasy(p.problem_text,p.label)
-                            compiletikz(p.mc_problem_text,p.label)
-                            compiletikz(p.problem_text,p.label)
-                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                            p.save()
-                            num+=1
-                P=Problem.objects.filter(test_label=label)
-                if len(P)>0:
-                    if formletter != "":
-                        t=Test(name=readablelabel)
-                    else:
-                        t=Test(name=year+' '+type2.label)
-                    t.save()
-                for i in P:
-                    t.problems.add(i)
-                    t.types.add(i.type_new)
-                t.save()
-                tc,boolcreated=TestCollection.objects.get_or_create(name=type2.label)
-                tc.tests.add(t)
-                tc.save()
-                return redirect('/problemeditor/')
+            soup = BeautifulSoup(form.cleaned_data['html_code'],'html')
+            X= soup.find_all('div', class_="cmty-view-post-item-text")
+            M=[]
+            for i in X:
+                L=i.contents
+                s=''
+                for j in L:
+                    if type(j)==bs4.element.NavigableString:
+#                        s+=str(unicode(j).replace(u'\u2019','\'').replace(u'\u201c','\"').replace(u'\u201d','\"'))
+                        s += str(j)
+                    elif type(j)==bs4.element.Tag:
+                        if j.name=='img':
+                            s+=str(j.attrs['alt'])
+                        if j.name=='span' and "style" in j.attrs:
+                            R=j.contents
+                            for k in R:
+                                if k.name=='img':
+                                    s+=str(k.attrs['alt'])
+                                else:
+#                                    s+=str(unicode(k).replace(u'\u2019','\'').replace(u'\u201c','\"').replace(u'\u201d','\"'))
+                                    s += str(k)
+#                    if j.name=='span' and "style" not in j.attrs:
+#                        print j
+                        if j.name=='i':
+                            s+=str(j).replace("<i>","$\\textit{").replace("</i>","}$")
+                        if j.name=='b':
+                            s+=str(j).replace("<b>","$\\textbf{").replace("</b>","}$")
+#                else:
+#                    print type(j)
+                s=s.replace('[asy]','\n\\begin{center}\n\\begin{asy}\n')
+                s=s.replace('[/asy]','\\end{asy}\n\\end{center}\n')
+                M.append(s)
+            return_string = ''
+            for i in M:
+                return_string += '=========\n\n'+str(i)+'\n\n'
+            filename = "latex_code.txt"
+            response = HttpResponse(return_string, content_type='text/plain')
+            response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+            return response
+    form = HTMLLatexForm()
+    return render(request,'problemeditor/htmltolatex.html',context = {'nbar':'problemeditor','form':form})
 
 @login_required
 def duplicate_view(request,type_name):

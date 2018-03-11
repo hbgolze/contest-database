@@ -4,13 +4,14 @@
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/problemeditor/">Problem Editor</a></li>
-    <li class="breadcrumb-item active">Upload Contest by File</li>
+    <li class="breadcrumb-item active">Upload Contest by File ({{typ.label}})</li>
   </ol>
 </nav>
 <div class="container">
   <h2>New Contest: {{typ.label}}</h2>
   <div class="row">
     <div class="col">
+      <a href="htmltolatex/">Convert HTML to txt file</a>
       <form action="." method="post" enctype="multipart/form-data" id="upload-problems-form">
 	{% csrf_token %}
 	{{form.as_p}}

@@ -1,0 +1,26 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Problem Editor</a></li>
+    <li class="breadcrumb-item"><a href="../">Upload Contest by File ({{typ.label}})</a></li>
+    <li class="breadcrumb-item active">Convert HTML to LaTeX</a></li>
+  </ol>
+</nav>
+<div class="container">
+<h1>Convert a Contest from HTML to LaTeX</h1>
+  <div class="row">
+    <div class="col">
+      <p class="text-muted">
+	Use this page to parse HTML into a text file, which you can input into the test uploader.
+      </p>
+      <form method="post">
+	{% csrf_token %}
+	{{form.as_p}}
+	<button type="submit" class="btn btn-primary">Download Parsed Text File</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

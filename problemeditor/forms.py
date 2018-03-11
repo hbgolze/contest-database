@@ -416,3 +416,6 @@ class NewRoundForm(forms.ModelForm):
         self.fields['default_question_type'].help_text = 'When adding new problems, they will be added in this format'
         self.fields['readable_label_pre_form'].help_text = 'Readable labels are of the form [YEAR |READABLE LABEL PRE FORM|FORM LETTER|READABLE LABEL POST FORM|PROBLEM NUMBER], where the | characters are removed.\n For example, for the AMC 10,\nreadable_label_pre_form=\"AMC 10\"\nreadable_label_post_form=\" #\"\nleads to [2018 AMC 10A #12], where other parameters are specified later. Pay attention to spaces!'
         self.fields['default_question_type'].help_text = ''
+
+class HTMLLatexForm(forms.Form):
+    html_code = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))

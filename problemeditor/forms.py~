@@ -287,7 +287,6 @@ class UploadContestForm(forms.Form):
 
 
 
-
 class NewTagForm(forms.ModelForm):
     class Meta:
         model = NewTag
