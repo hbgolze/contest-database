@@ -865,7 +865,8 @@ def uploadpreview(request,type):
 
 
 @login_required
-def htmltolatex(request):
+def htmltolatex(request,type):
+    typ = get_object_or_404(Type, type = type)
     if request.method == "POST":
         form = HTMLLatexForm(request.POST)
         if form.is_valid():
@@ -909,7 +910,7 @@ def htmltolatex(request):
             response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
             return response
     form = HTMLLatexForm()
-    return render(request,'problemeditor/htmltolatex.html',context = {'nbar':'problemeditor','form':form})
+    return render(request,'problemeditor/htmltolatex.html',context = {'nbar':'problemeditor','form':form,'typ':typ})
 
 @login_required
 def duplicate_view(request,type_name):

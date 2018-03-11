@@ -34,7 +34,7 @@ urlpatterns = [
     url(r'^CM/bytag/(?P<type>\w+)/(?P<tag>[-\w]+)/(?P<pk>\w+)/$', views.detailedproblemview, name='detailedproblemview'),
     url(r'^addproblemform/$',AddProblemWizard.as_view(addproblem_forms,condition_dict={'1':show_mc_form_condition,'2':show_sa_form_condition,'3':show_pf_form_condition,'4':show_mcsa_form_condition,})),
     url(r'^addcontest/(?P<type>\w+)/(?P<num>\w+)/$',views.addcontestview, name='addcontestview'),
-    url(r'^uploadcontest/(?P<type>\w+)/htmltolatex/$',views.htmltolatex, name='htmltolatex'),
+    url(r'^uploadcontest/(?P<type2>\w+)/htmltolatex/$',views.htmltolatex, name='htmltolatex'),
     url(r'^uploadcontest/(?P<type>\w+)/$',views.uploadcontestview, name='uploadcontestview'),
     url(r'^uploadcontest/(?P<type>\w+)/preview/$',views.uploadpreview, name='uploadpreview'),
 
