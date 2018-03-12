@@ -18,7 +18,7 @@ from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Co
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
 from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
-from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz
+from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely
 
 from django.db.models import Count
 
@@ -278,8 +278,7 @@ def testview(request,type):
     pot = list(probsoftype)
     for i in range(0,len(pot)):
         testlabels.append(pot[i].test_label)
-    testlabels = list(set(testlabels))
-    testlabels.sort()
+    testlabels = sorted_nicely(set(testlabels))
     rows2 = []
     for i in range(0,len(testlabels)):
         rows2.append((testlabels[i],probsoftype.filter(test_label = testlabels[i]).filter(newtags__isnull = True).count(),probsoftype.filter(test_label = testlabels[i]).filter(solutions__isnull = True).count(),probsoftype.filter(test_label = testlabels[i]).count()))

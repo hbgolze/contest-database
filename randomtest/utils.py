@@ -7,6 +7,7 @@ from subprocess import Popen,PIPE
 import subprocess
 import tempfile
 import os,os.path
+import re
 
 #center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
 #class ItemizeEnv:
@@ -595,3 +596,8 @@ def pointsum(user_responses):
     for i in user_responses:
         tot+=i.point_value
     return tot
+
+def sorted_nicely(l):
+    convert = lambda text: int(text) if text.isdigit() else text 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)

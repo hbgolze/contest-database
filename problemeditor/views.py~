@@ -865,8 +865,8 @@ def uploadpreview(request,type):
 
 
 @login_required
-def htmltolatex(request,type):
-    typ = get_object_or_404(Type, type = type)
+def htmltolatex(request,type2):
+    typ = get_object_or_404(Type, type = type2)
     if request.method == "POST":
         form = HTMLLatexForm(request.POST)
         if form.is_valid():
