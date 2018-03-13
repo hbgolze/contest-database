@@ -71,6 +71,7 @@ urlpatterns = [
     url(r'^publishclass/(?P<pk>\d+)/$', views.publishview, name='publishview'),
     url(r'^class/(?P<pk>\d+)/$', views.currentclassview, name='currentclass'),
     url(r'^class/(?P<pk>\d+)/roster/$', views.rosterview, name='rosterview'),
+    url(r'^class/(?P<pk>\d+)/roster/assignment/(?P<ppk>\d+)/$', views.assignmentview, name='assignmentview'),
     url(r'^class/(?P<pk>\d+)/roster/get-student-list/$', views.getstudentlist, name='getstudentlist'),
     url(r'^class/(?P<pk>\d+)/roster/add-student/$', views.addstudenttoclass, name='addstudent'),
     url(r'^class/(?P<pk>\d+)/roster/(?P<username>\w+)/$', views.studentoneclassview, name='studentoneclassview'),

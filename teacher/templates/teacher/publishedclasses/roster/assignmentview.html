@@ -1,0 +1,64 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../../../">My Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../../">{{my_class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../">Roster</a></li>
+    <li class="active breadcrumb-item">Problem Set {{problemset.name}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h1>    
+    Problem Set: {{problemset.name}}
+  </h1>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Student Name</th>
+	    {% for p in problemset.problem_objects.all %}
+	    <th>
+	      {{p.order}} ({{p.point_value}} {% if p.point_value == 1 %}Point{% else %}Points{% endif %})
+	    </th>
+	    {% endfor %}
+	    <th>
+	      Total Points (out of {{problemset.total_points}})
+	    </th>
+	    <th>
+	      Problems Solved (out of {{problemset.num_problems}})
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for student in student_problemsets %}
+	  <tr>
+	    <td>
+	      <a href="../../{{student.userunitobject.user_unit.user_class.userprofile}}/problemset/{{student.pk}}">{{student.userunitobject.user_unit.user_class.userprofile}}</a>
+	    </td>
+	    {% if student.is_initialized %}
+	  {% for p in student.response_set.all %}
+	    <td>
+	      {% if p.attempted %}{{p.points}} {% if p.points > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}{% else %}-{% endif %}
+	    </td>
+	  {% endfor %}
+{% else %}
+	    {% for p in problemset.problem_objects.all %}
+	    <td>-</td>
+	    {% endfor %}
+{% endif %}
+	    <td>
+	      {{student.points_earned}}
+	    </td>
+	    <td>
+	      {{student.num_correct}}
+	    </td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

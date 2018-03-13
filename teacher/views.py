@@ -131,6 +131,18 @@ def rosterview(request,pk):
     return render(request,'teacher/publishedclasses/rosterview.html',{'student_classes':student_classes,'my_class':my_class,'nbar':'teacher'})
 
 @login_required
+def assignmentview(request,pk,ppk):
+    userprofile=request.user.userprofile
+    my_class = get_object_or_404(PublishedClass,pk=pk)
+    problemset = get_object_or_404(PublishedProblemSet,pk = ppk)
+    if userprofile.my_published_classes.filter(pk=pk).exists()==False:
+        raise Http404("Unauthorized.")
+    if problemset.unit_object.unit not in my_class.pub_units.all():
+        raise Http404("Unauthorized.")
+    student_problemsets = problemset.userproblemset_set.all()
+    return render(request,'teacher/publishedclasses/roster/assignmentview.html',{'nbar': 'teacher','my_class':my_class,'student_problemsets': student_problemsets,'problemset':problemset})
+
+@login_required
 def studentoneclassview(request,**kwargs):
     userprofile = request.user.userprofile
 
@@ -331,7 +343,7 @@ def teacherproblemsetview(request,**kwargs):
     problemset = get_object_or_404(PublishedProblemSet, pk = kwargs['pspk'])##
     if my_class not in userprofile.my_published_classes.all():
         raise Http404("Unauthorized.")
-    if problemset.unit_object.unit not in my_class.pub_units.all():##
+    if problemset.unit_object.unit not in my_class.pub_units.all():##        raise Http40
         raise Http404("Unauthorized.")
     rows = problemset.problem_objects.all()
     expanded_rows = []

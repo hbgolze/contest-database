@@ -38,7 +38,7 @@ document.write("</div>");
 	    <th style="border-left: 1px solid;border-right: 1px solid;">Total for Unit: {{unit.name}}</th>
 	    {% for unit_object in unit.unit_objects.all %}
 	    {% if unit_object.publishedproblemset %}
-	    <th>Problem Set: {{unit_object.publishedproblemset.name}}</th>
+	    <th><a href="assignment/{{unit_object.publishedproblemset.pk}}">Problem Set: {{unit_object.publishedproblemset.name}}</a></th>
 	    {% elif unit_object.publishedtest%}
 	    <th>Test: {{unit_object.publishedtest.name}}</th>
 	    {% endif %}
