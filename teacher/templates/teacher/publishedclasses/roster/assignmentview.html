@@ -21,7 +21,7 @@
 	    <th>Student Name</th>
 	    {% for p in problemset.problem_objects.all %}
 	    <th>
-	      {{p.order}} ({{p.point_value}} {% if p.point_value == 1 %}Point{% else %}Points{% endif %})
+	      <a href="../../../problemset/{{problemset.pk}}#{{p.pk}}">{{p.order}} ({{p.point_value}} {% if p.point_value == 1 %}Point{% else %}Points{% endif %})</a>
 	    </th>
 	    {% endfor %}
 	    <th>

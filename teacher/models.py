@@ -13,6 +13,7 @@ class Class(models.Model):#This should be reserved for drafts of classes; also, 
     name = models.CharField(max_length = 100)
     created_date = models.DateTimeField(default = timezone.now)
     units = models.ManyToManyField('Unit',blank = True)# or foreignkey
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
 #Should I include a Version number?
@@ -41,6 +42,7 @@ class PublishedClass(models.Model):#class?
     pub_units = models.ManyToManyField('PublishedUnit',blank=True)
     total_points = models.IntegerField(default = 0)
     num_problems = models.IntegerField(default = 0)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -81,6 +83,8 @@ class Unit(models.Model):#with order
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     num_problemsets = models.IntegerField(default=0)
+    the_class = models.ForeignKey(Class,null = True,blank = True)
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def publish(self,published_class):
@@ -135,6 +139,8 @@ class PublishedUnit(models.Model):
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     num_problemsets = models.IntegerField(default=0)
+    the_class = models.ForeignKey(PublishedClass,null = True,blank = True)
+    version_number = models.IntegerField(default = 0)
     def sync_to_parent(self):
         self.name = self.parent_unit.name
         self.order = self.parent_unit.order
@@ -175,6 +181,7 @@ class PublishedUnit(models.Model):
 class UnitObject(models.Model):
     order = models.IntegerField(default = 0)
     unit = models.ForeignKey(Unit,related_name='unit_objects')
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def publish(self,published_unit):
@@ -191,24 +198,12 @@ class UnitObject(models.Model):
                 test = self.test
                 test.publish(new_unit_object)
         return new_unit_object
-    def sync_to_parent(self):
-        self.order = self.parent_unitobject.order
-        self.save()
-        try:
-            sg = self.slidegroup
-            sg.sync_to_parent()
-        except:
-            try:
-                pset = self.problemset
-                pset.sync_to_parent()
-            except:
-                a=0
-
 
 class PublishedUnitObject(models.Model):
     parent_unitobject = models.ForeignKey(UnitObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
     unit = models.ForeignKey(PublishedUnit,related_name='unit_objects')
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def sync_to_parent(self):
@@ -235,6 +230,7 @@ class SlideGroup(models.Model):#like Handout, but more punctuated; problems can 
     created_date = models.DateTimeField(default = timezone.now)
 #    unit_objects = GenericRelation(UnitObject)#??????
     num_slides = models.IntegerField(default = 0)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
@@ -242,18 +238,6 @@ class SlideGroup(models.Model):#like Handout, but more punctuated; problems can 
         new_slide_group.save()
         for s in self.slides.all():
             s.publish(new_slide_group)
-    def sync_to_parent(self):
-        self.name = self.parent_slidegroup.name
-        self.save()
-        parent_slide_pks=[]
-        for s in self.slides.all():
-            if s.parent_slide not in self.parent_slidegroup.slides.all():
-                s.delete()
-            else:
-                s.sync_to_parent()
-                parent_slide_pks.append(s.parent_slide.pk)
-        for s in self.parent_slidegroup.slides.exclude(pk__in=parent_slide_pks):
-            s.publish(self)
 
 class PublishedSlideGroup(models.Model):#like Handout, but more punctuated; problems can be included, but only short answer and multiple choice will be checked
     unit_object = models.OneToOneField(
@@ -266,6 +250,7 @@ class PublishedSlideGroup(models.Model):#like Handout, but more punctuated; prob
     created_date = models.DateTimeField(default = timezone.now)
 #    unit_objects = GenericRelation(UnitObject)#??????
     num_slides = models.IntegerField(default = 0)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -286,6 +271,7 @@ class Slide(models.Model):#(i.e., slide 1...etc)
     order = models.IntegerField(default = 0)
     slidegroup = models.ForeignKey(SlideGroup,related_name='slides')
     top_order_number = models.IntegerField(default = 0)
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def __str__(self):
@@ -295,20 +281,6 @@ class Slide(models.Model):#(i.e., slide 1...etc)
         new_slide.save()
         for so in self.slide_objects.all():
             so.publish(new_slide)
-    def sync_to_parent(self):
-        self.title = self.parent_slide.title
-        self.order = self.parent_slide.order
-        self.top_order_number = self.parent_slide.top_order_number
-        self.save()
-        parent_slideobject_pks = []
-        for so in self.slide_objects.all():
-            if so.parent_slideobject not in self.parent_slide.slide_objects.all():
-                so.delete()
-            else:
-                so.sync_to_parent()
-                parent_slideobject_pks.append(so.parent_slideobject.pk)
-        for so in self.parent_slide.slide_objects.exclude(pk__in=parent_slideobject_pks):
-            so.publish(self)
 
 class PublishedSlide(models.Model):#(i.e., slide 1...etc)
     title = models.CharField(max_length = 100)
@@ -316,6 +288,7 @@ class PublishedSlide(models.Model):#(i.e., slide 1...etc)
     parent_slide = models.ForeignKey(Slide,null=True,on_delete=models.SET_NULL)
     slidegroup = models.ForeignKey(PublishedSlideGroup,related_name='slides')
     top_order_number = models.IntegerField(default = 0)
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def __str__(self):
@@ -339,6 +312,7 @@ class PublishedSlide(models.Model):#(i.e., slide 1...etc)
 class SlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
     slide = models.ForeignKey(Slide,related_name='slide_objects')
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def publish(self,published_slide):
@@ -360,39 +334,11 @@ class SlideObject(models.Model):#placeholder for components
         obj.publish(new_so)
         return new_so
 
-    def sync_to_parent(self):
-        self.order = self.parent_slideobject.order
-        self.save()
-        if self.content_type == ContentType.objects.get(app_label = 'teacher', model = 'textblock'):
-            if self.content_object.parent_textblock is None:
-                self.content_object.delete()
-            else:
-                self.content_object.sync_to_parent()
-        if self.content_type == ContentType.objects.get(app_label = 'teacher', model = 'proof'):
-            if self.content_object.parent_proof is None:
-                self.content_object.delete()
-            else:
-                self.content_object.sync_to_parent()
-        if self.content_type == ContentType.objects.get(app_label = 'teacher', model = 'theorem'):
-            if self.content_object.parent_theorem is None:
-                self.content_object.delete()
-            else:
-                self.content_object.sync_to_parent()
-        if self.content_type == ContentType.objects.get(app_label = 'teacher', model = 'exampleproblem'):
-            if self.content_object.parent_exampleproblem is None:
-                self.content_object.delete()
-            else:
-                self.content_object.sync_to_parent()
-        if self.content_type == ContentType.objects.get(app_label = 'teacher', model = 'imagemodel'):
-            if self.content_object.parent_image is None:
-                self.content_object.delete()
-            else:
-                self.content_object.sync_to_parent()
-
 class PublishedSlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
     parent_slideobject = models.ForeignKey(SlideObject,null=True,on_delete=models.SET_NULL)
     slide = models.ForeignKey(PublishedSlide,related_name='slide_objects')
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def sync_to_parent(self):
@@ -435,6 +381,7 @@ class TextBlock(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def publish(self,so):
         new_textblock = PublishedTextBlock(text_code = self.text_code,text_display="",parent_textblock = self,slide_object = so)
         new_textblock.save()
@@ -442,12 +389,6 @@ class TextBlock(models.Model):
         new_textblock.save()
         compileasy(new_textblock.text_code,'publishedtextblock_'+str(new_textblock.pk))
         return new_textblock
-    def sync_to_parent(self):
-        self.text_code = self.parent_textblock.text_code
-        self.save()
-        self.text_display = newtexcode(self.text_code, 'textblock_'+str(self.pk), "")
-        self.save()
-        compileasy(self.text_code,'textblock_'+str(self.pk))
 
 class PublishedTextBlock(models.Model):
     parent_textblock = models.ForeignKey(TextBlock,null=True,on_delete=models.SET_NULL)
@@ -458,6 +399,7 @@ class PublishedTextBlock(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def sync_to_parent(self):
         self.text_code = self.parent_textblock.text_code
         self.save()
@@ -476,6 +418,7 @@ class Proof(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def publish(self,so):
         new_proof = PublishedProof(prefix=self.prefix,proof_code = self.proof_code,proof_display="",parent_proof=self,slide_object = so)
         new_proof.save()
@@ -483,13 +426,7 @@ class Proof(models.Model):
         new_proof.save()
         compileasy(new_proof.proof_code,'publishedproofblock_'+str(new_proof.pk))
         return new_proof
-    def sync_to_parent(self):
-        self.proof_code = self.parent_proof.proof_code
-        self.prefix = self.parent_proof.prefix
-        self.save()
-        self.proof_display = newtexcode(self.proof_code, 'proofblock_'+str(self.pk), "")
-        self.save()
-        compileasy(self.proof_code,'proofblock_'+str(self.pk))
+
 
 class PublishedProof(models.Model):
     parent_proof = models.ForeignKey(Proof,null=True,on_delete=models.SET_NULL)
@@ -503,6 +440,7 @@ class PublishedProof(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def sync_to_parent(self):
         self.proof_code = self.parent_proof.proof_code
         self.prefix = self.parent_proof.prefix
@@ -521,6 +459,7 @@ class Theorem(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def publish(self,so):
@@ -530,14 +469,7 @@ class Theorem(models.Model):
         new_theorem.save()
         compileasy(new_theorem.theorem_code,'publishedtheoremblock_'+str(new_theorem.pk))
         return new_theorem
-    def sync_to_parent(self):
-        self.theorem_code = self.parent_theorem.theorem_code
-        self.name = self.parent_theorem.name
-        self.prefix = self.parent_theorem.prefix
-        self.save()
-        self.theorem_display = newtexcode(self.theorem_code, 'theoremblock_'+str(self.pk), "")
-        self.save()
-        compileasy(self.theorem_code,'theoremblock_'+str(self.pk))
+
 
 
 class PublishedTheorem(models.Model):
@@ -551,6 +483,7 @@ class PublishedTheorem(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -584,6 +517,7 @@ class ExampleProblem(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def answers(self):
@@ -612,25 +546,6 @@ class ExampleProblem(models.Model):
         new_example.save()
         compileasy(new_example.problem_code,'publishedexampleproblem_'+str(new_example.pk))
         return new_example
-    def sync_to_parent(self):
-        self.name = self.parent_exampleproblem.name
-        self.prefix = self.parent_exampleproblem.prefix
-        self.problem_code = self.parent_exampleproblem.problem_code
-        self.isProblem = self.parent_exampleproblem.isProblem
-        self.problem = self.parent_exampleproblem.problem
-        self.question_type = self.parent_exampleproblem.question_type
-        self.mc_answer = self.parent_exampleproblem.mc_answer
-        self.sa_answer = self.parent_exampleproblem.sa_answer
-        self.answer_A = self.parent_exampleproblem.answer_A
-        self.answer_B = self.parent_exampleproblem.answer_B
-        self.answer_C = self.parent_exampleproblem.answer_C
-        self.answer_D = self.parent_exampleproblem.answer_D
-        self.answer_E = self.parent_exampleproblem.answer_E
-        self.author = self.parent_exampleproblem.author
-        self.save()
-        self.problem_display = newtexcode(self.problem_code, 'exampleproblem_'+str(self.pk), "")
-        self.save()
-        compileasy(self.problem_code,'exampleproblem_'+str(self.pk))
 
 
 class PublishedExampleProblem(models.Model):
@@ -656,6 +571,7 @@ class PublishedExampleProblem(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def answers(self):
@@ -704,13 +620,11 @@ class ImageModel(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def publish(self,so):
         new_image = PublishedImageModel(image = self.image,parent_image = self,slide_object = so)
         new_image.save()
         return new_image
-    def sync_to_parent(self):
-        self.image = self.parent_image.image
-        self.save()
 
 class PublishedImageModel(models.Model):
     parent_image = models.ForeignKey(ImageModel,null=True,on_delete=models.SET_NULL)
@@ -720,6 +634,7 @@ class PublishedImageModel(models.Model):
         on_delete=models.CASCADE,
         null = True,
     )
+    version_number = models.IntegerField(default = 0)
     def sync_to_parent(self):
         self.image = self.parent_image.image
         self.save()
@@ -738,6 +653,7 @@ class ProblemSet(models.Model):#like NewTest
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
     start_date = models.DateTimeField(null = True)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
@@ -751,23 +667,6 @@ class ProblemSet(models.Model):#like NewTest
         new_problemset.total_points = total_points
         new_problemset.num_problems = new_problemset.problem_objects.count()
         new_problemset.save()
-    def sync_to_parent(self):
-        self.name = self.parent_problemset.name
-        self.default_point_value = self.parent_problemset.default_point_value
-        self.save()
-        parent_po_pks=[]
-        for po in self.problem_objects.all():
-            if po.parent_problemobject not in self.parent_problemset.problem_objects().all():
-                po.response_set.delete()
-                po.delete()
-            else:
-                po.sync_to_parent(self)
-                parent_po_pks.append(po.parent_problem_object.pk)
-        for po in self.parent_problemset.problem_objects.exclude(pk__in=parent_po_pks):
-            new_po=po.publish(self)
-            for ups in self.userproblemset_set.all():
-                r=Response(problem_object = new_po,user_problemset = ups,order = new_po.order,point_value = new_po.point_value)
-                r.save()
 
 class PublishedProblemSet(models.Model):#like NewTest
     parent_problemset = models.ForeignKey(ProblemSet,null=True,on_delete=models.SET_NULL)
@@ -784,6 +683,7 @@ class PublishedProblemSet(models.Model):#like NewTest
     num_problems = models.IntegerField(default=0)
     due_date = models.DateTimeField(null = True)
     start_date = models.DateTimeField(null = True)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -820,6 +720,7 @@ class Test(models.Model):#like NewTest
     due_date = models.DateTimeField(null = True)
     time_limit = models.TimeField(null = True)
     student_gradeable = models.BooleanField(default = True)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def publish(self,published_unit_object):
@@ -852,6 +753,7 @@ class PublishedTest(models.Model):#like NewTest
     start_date = models.DateTimeField(null = True)
     time_limit = models.TimeField(null = True)
     student_gradeable = models.BooleanField(default = True)
+    version_number = models.IntegerField(default = 0)
     def __str__(self):
         return self.name
     def sync_to_parent(self):
@@ -895,6 +797,7 @@ class ProblemObject(models.Model):
     answer_E = models.CharField(max_length=500,blank=True)
     author = models.ForeignKey(User,related_name='problem_object',blank=True,null=True)
     created_date = models.DateTimeField(default = timezone.now)
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def answers(self):
@@ -927,25 +830,6 @@ class ProblemObject(models.Model):
             new_po.save()
             compileasy(new_po.problem_code,'publishedoriginalproblem_'+str(new_po.pk))
         return new_po
-    def sync_to_parent(self):
-        self.order = self.parent_problemobject.order
-        self.point_value = self.parent_problemobject.point_value
-        self.problem_code = self.parent_problemobject.problem_code
-        self.isProblem = self.parent_problemobject.isProblem
-        self.problem = self.parent_problemobject.problem
-        self.question_type = self.parent_problemobject.question_type
-        self.mc_answer = self.parent_problemobject.mc_answer
-        self.sa_answer = self.parent_problemobject.sa_answer
-        self.answer_A = self.parent_problemobject.answer_A
-        self.answer_B = self.parent_problemobject.answer_B
-        self.answer_C = self.parent_problemobject.answer_C
-        self.answer_D = self.parent_problemobject.answer_D
-        self.answer_E = self.parent_problemobject.answer_E
-        self.author = self.parent_problemobject.author
-        self.save()
-        self.problem_display = newtexcode(self.problem_code, 'originalproblem_'+str(self.pk), "")
-        self.save()
-        compileasy(self.problem_code,'originalproblem_'+str(self.pk))
 
 
 class PublishedProblemObject(models.Model):
@@ -969,6 +853,7 @@ class PublishedProblemObject(models.Model):
     answer_E = models.CharField(max_length=500,blank=True)
     author = models.ForeignKey(User,related_name='published_problem_object',blank=True,null=True)
     created_date = models.DateTimeField(default = timezone.now)
+    version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
     def answers(self):
