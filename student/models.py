@@ -241,6 +241,7 @@ class Response(models.Model):
     blank_point_value = models.IntegerField(default = 0)
     is_graded = models.BooleanField(default = 0)
     modified_date = models.DateTimeField(default = timezone.now)
+    num_attempts = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
 
