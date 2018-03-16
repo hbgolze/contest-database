@@ -65,6 +65,7 @@ def problemsetview(request,**kwargs):
     if user_problemset.published_problemset.due_date != None:
         if user_problemset.published_problemset.due_date < timezone.now():
             context['past_due'] = 1
+    spammed_pks = []
     if request.method == "POST":
         form=request.POST
         P=user_problemset.response_set.all()
@@ -76,44 +77,48 @@ def problemsetview(request,**kwargs):
             if tempanswer != None and tempanswer !='':
                 t=timezone.now()
                 r.attempted = 1
-                if r.response != tempanswer:
-                    if r.publishedproblem_object.isProblem:
-                        readable_label = r.publishedproblem_object.problem.readable_label
-                    else:
-                        readable_label = 'Problem #'+str(r.publishedproblem_object.order)
-                    ur=UserResponse(userprofile=userprofile, user_problemset = user_problemset,response=r,static_response=tempanswer,readable_label=readable_label,modified_date=t,point_value=r.point_value)
-                    ur.save()
-                    r.modified_date = t
-                    r.response = tempanswer
-                    if r.publishedproblem_object.question_type.question_type == "multiple choice" or r.publishedproblem_object.question_type.question_type == "short answer":
-                        r.num_attempts = r.num_attempts + 1
-                        # should something similar happen for proof?
-                    r.save()
+                if r.response != tempanswer:# new response
+                    if r.publishedproblem_object.question_type.question_type == "short answer" or r.publishedproblem_object.question_type.question_type == "multiple choice":
+                        if t < r.modified_date+timedelta(hours=0,minutes=1):
+                            spammed_pks.append(r.pk)
+                        else:
+                            if r.publishedproblem_object.isProblem:
+                                readable_label = r.publishedproblem_object.problem.readable_label
+                            else:
+                                readable_label = 'Problem #'+str(r.publishedproblem_object.order)
+                            ur = UserResponse(userprofile=userprofile, user_problemset = user_problemset,response=r,static_response=tempanswer,readable_label=readable_label,modified_date=t,point_value=r.point_value)
+                            ur.save()
+                            r.modified_date = t
+                            r.response = tempanswer
+                            if r.publishedproblem_object.question_type.question_type == "multiple choice" or r.publishedproblem_object.question_type.question_type == "short answer":
+                                r.num_attempts = r.num_attempts + 1
+# should something similar happen for proof?
+                            r.save()
 
-                    if r.publishedproblem_object.question_type.question_type == "multiple choice":
-                        if r.publishedproblem_object.isProblem == True:
-                            answer = r.publishedproblem_object.problem.mc_answer
-                        else:
-                            answer = r.publishedproblem_object.mc_answer
-                        if r.response == answer:
-                            ur.correct = 1
-                            ur.save()
-                            r.points = r.point_value
-                            r.save()
-                            num_correct += 1
-                            num_points += r.point_value
-                    elif r.publishedproblem_object.question_type.question_type == "short answer":
-                        if r.publishedproblem_object.isProblem == True:
-                            answer = r.publishedproblem_object.problem.sa_answer
-                        else:
-                            answer = r.publishedproblem_object.sa_answer
-                        if r.response == answer:
-                            ur.correct = 1
-                            ur.save()
-                            r.points = r.point_value
-                            r.save()
-                            num_correct += 1
-                            num_points += r.point_value
+                            if r.publishedproblem_object.question_type.question_type == "multiple choice":
+                                if r.publishedproblem_object.isProblem == True:
+                                    answer = r.publishedproblem_object.problem.mc_answer
+                                else:
+                                    answer = r.publishedproblem_object.mc_answer
+                                if r.response == answer:
+                                    ur.correct = 1
+                                    ur.save()
+                                    r.points = r.point_value
+                                    r.save()
+                                    num_correct += 1
+                                    num_points += r.point_value
+                            elif r.publishedproblem_object.question_type.question_type == "short answer":
+                                if r.publishedproblem_object.isProblem == True:
+                                    answer = r.publishedproblem_object.problem.sa_answer
+                                else:
+                                    answer = r.publishedproblem_object.sa_answer
+                                if r.response == answer:
+                                    ur.correct = 1
+                                    ur.save()
+                                    r.points = r.point_value
+                                    r.save()
+                                    num_correct += 1
+                                    num_points += r.point_value
         user_problemset.num_correct = user_problemset.num_correct+num_correct
         user_problemset.userunitobject.user_unit.num_correct = user_problemset.userunitobject.user_unit.num_correct+num_correct
         user_problemset.userunitobject.user_unit.user_class.num_correct = user_problemset.userunitobject.user_unit.user_class.num_correct+num_correct
@@ -123,7 +128,7 @@ def problemsetview(request,**kwargs):
         user_problemset.save()
         user_problemset.userunitobject.user_unit.save()
         user_problemset.userunitobject.user_unit.user_class.save()
-        return HttpResponse('')
+#        return HttpResponse('')
     rows = user_problemset.response_set.all()
     context['rows'] = rows
     response_rows = []
@@ -133,6 +138,7 @@ def problemsetview(request,**kwargs):
     context['problemset'] = user_problemset
     context['pk'] = pk
     context['nbar'] = 'student'
+    context['spammed_pks'] = spammed_pks
     return render(request, 'student/problemsetview.html',context)
 
 
@@ -205,7 +211,6 @@ def checkanswer(request,pk):
     user_problemset = get_object_or_404(UserProblemSet, pk=pk)
     if user_problemset.userunitobject.user_unit.user_class.userprofile != userprofile:
         return HttpResponse('Unauthorized', status=401)
-
     response_label=request.POST.get('response_id','')
     problem_label = response_label.split('-')[2]
     problem_object = get_object_or_404(PublishedProblemObject,pk=problem_label)
@@ -214,6 +219,9 @@ def checkanswer(request,pk):
     
     r = user_problemset.response_set.get(publishedproblem_object = problem_object)
     t=timezone.now()
+    if problem_object.question_type.question_type == "short answer" or problem_object.question_type.question_type == "multiple choice":
+        if t < r.modified_date+timedelta(hours=0,minutes=1):
+            return JsonResponse({'spam':'true'})
     r.attempted = 1
     if r.response != tempanswer:#....if new response
         if r.publishedproblem_object.question_type.question_type == "multiple choice" or r.publishedproblem_object.question_type.question_type == "short answer":
@@ -258,7 +266,8 @@ def checkanswer(request,pk):
             user_problemset.save()
             user_problemset.userunitobject.user_unit.save()
             user_problemset.userunitobject.user_unit.user_class.save()
-
+    else:#response is not new
+        return JsonResponse({'blank': 'true'})
     if tempanswer != None and tempanswer !='' and tempanswer != 'undefined':
         mod_date = render_to_string("student/problemset/date-snippet.html",{'resp':r})
         if tempanswer == answer:

@@ -23,12 +23,12 @@ condition: past_due
 {% endcomment %}
                           <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
                             <span class="fa fa-check" style="color:green" id="icon{{prob_label}}"></span>
-                            <input type="text" class="form-control answer-input is-valid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+                            <input type="text" class="form-control answer-input is-valid" name="answer{{prob_label}}" id="answer{{prob_label}}" value="{{response}}" disabled>
                           </div>
                         {% else %}
                           <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
                             <span class="fa fa-remove" style="color:red" id="icon{{prob_label}}"></span>
-                              <input type="text" class="form-control answer-input is-invalid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}">
+                              <input type="text" class="form-control answer-input is-invalid" name="answer{{prob_label}}" id="answer{{prob_label}}" value="{{response}}">
                           </div>
 		    
 		    
@@ -37,11 +37,11 @@ condition: past_due
 		        {% if past_due %}
 		    
                           <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
-                            <input type="text" class="form-control answer-input" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="(Correct Answer: {{answer}})" disabled>
+                            <input type="text" class="form-control answer-input" name="answer{{prob_label}}" id="answer{{prob_label}}" value="(Correct Answer: {{answer}})" disabled>
                           </div>
 			{% else %}
 			  <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
-			    <input type="text" class="form-control answer-input" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}">
+			    <input type="text" class="form-control answer-input" name="answer{{prob_label}}" id="answer{{prob_label}}">
 			  </div>
 			{% endif %}
 		      {% endif %}
@@ -97,7 +97,13 @@ condition: past_due
 {% endif %}
                       {% endif %}
                     {% endif %}
+<div class="alert alert-danger" role="alert" style="{% if resp.pk in spammed_pks %}{% else %}display:none;{% endif %}margin-top:5px;" id="spam-{{prob_label}}">
+<div class="pull-right">
+<a href="#" class="close close-spam" id="close-spam-{{prob_label}}" aria-label="close">&times;</a>
+</div>
+You cannot submit two answers to the same problem within one minute of each other.
 
+</div>
 
 
 		    

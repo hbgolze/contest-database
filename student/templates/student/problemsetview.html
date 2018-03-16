@@ -128,7 +128,15 @@
 	{% endif %}
 	{% endfor %}
       </table>
-      <button type="submit" class="btn btn-primary" id="submit-all" value="Submit Answers">Submit Answers</button>
+      <form id="all-answers" method="post">
+	{% csrf_token %}
+	{% for resp in rows %}
+	{% with prob_label=resp.publishedproblem_object.pk %}
+	<input type="hidden" name="answer{{prob_label}}" id="hidden_answer{{prob_label}}" value="">
+	{% endwith %}
+	{% endfor %}
+	<button type="submit" class="btn btn-primary" id="submit-all" value="Submit Answers">Submit Answers</button>
+      </form>
     </div>
   </div>
   <div id="solution-placeholder" class="modal fade" role="dialog">
@@ -207,12 +215,16 @@ $(document).on('click touch',".js-star-toggle",function(event) {
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();
     var problem_label=$(this).attr('id').split('-')[2];//problem_label...resp.problem_object.pk
+    $("#spam-"+problem_label).hide();
     $.ajax({
         type: 'POST',
         url: '{% url 'student_checkanswer' pk %}',
         data: "&response_id="+$(this).attr('id')+"&answer="+$('input[name=answer'+problem_label+']:checked').val(),
         dataType: 'json',
         success: function(data) {
+          if (data['spam']) {
+             $("#spam-"+problem_label).fadeIn();
+          } else {
             if (data['blank'] == 'false') {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 if (data['correct'] == 'true') {
@@ -232,6 +244,7 @@ $(document).on('click',".js-check-mc-answer",function(event) {
                     $("#answerstatus_"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
                 }
             }
+          }
         }
     });
     return false;
@@ -240,6 +253,7 @@ $(document).on('click',".js-check-mc-answer",function(event) {
 $(document).on('click',".js-check-answer",function(event) {
     event.preventDefault();
     var problem_label=$(this).attr('id').split('-')[2];
+    $("#spam-"+problem_label).hide();
     var answer = $('input[name=answer'+problem_label+']').val();
     $.ajax({
         type: 'POST',
@@ -247,6 +261,9 @@ $(document).on('click',".js-check-answer",function(event) {
         data: "&response_id="+$(this).attr('id')+"&answer="+answer,
         dataType: 'json',
         success: function(data) {
+          if (data['spam']) {
+             $("#spam-"+problem_label).fadeIn();
+          } else {
             if (data['blank'] == 'false') {
                 $("#attempted-date-"+problem_label).html(data['mod-date']);
                 if (data['correct'] == 'true') {
@@ -271,6 +288,7 @@ $("#icon"+problem_label).remove();
 $("#sa-input-"+problem_label).prepend("<span class='fa fa-remove' style='color:red' id='icon"+problem_label+"'></span>");
                 }
             }
+          }
         }
     });
     return false;
@@ -314,21 +332,25 @@ $(document).on('submit',"#edit-response-form",function(event) {
 
 $(document).on('click',"#submit-all",function(event) {
     event.preventDefault();
-    var answer_data="";
-    $(".prob-panel").each(function() {
-        answer_data=answer_data+'&'+$(this).serialize();
+    $(".answer-input").each(function() {
+        $("#hidden_"+$(this).attr('id')).val($(this).val());
     });
-    $.ajax({
-        type: 'POST',
-        url: '.',
-        data: answer_data,
-        dataType: 'html',
-        success: function(data) {
-            location.reload();
-        }
-    });
+    $("#all-answers").submit();
+//    var answer_data="";
+//    $(".prob-panel").each(function() {
+//        answer_data=answer_data+'&'+$(this).serialize();
+//    });
+//    $.ajax({
+//        type: 'POST',
+//        url: '.',
+//        data: answer_data,
+//        dataType: 'html',
+//        success: function(data) {
+//            location.reload();
+//        }
+//    });
 
-    return false;
+//    return false;
 });
 
 $(document).on('input',".answer-input", function(event) {
@@ -337,6 +359,12 @@ $(document).on('input',".answer-input", function(event) {
   $("#icon"+problem_label).remove();
 });
 {% endif %}
+
+$(document).on('click',".close-spam", function(e) {
+  e.preventDefault();
+  problem_label = $(this).attr('id').split('-')[2];
+  $("#spam-"+problem_label).fadeOut();
+});
 </script>
 
 {% endblock %}
