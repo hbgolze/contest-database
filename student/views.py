@@ -85,6 +85,9 @@ def problemsetview(request,**kwargs):
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
+                    if r.publishedproblem_object.question_type.question_type == "multiple choice" or r.publishedproblem_object.question_type.question_type == "short answer":
+                        r.num_attempts = r.num_attempts + 1
+                        # should something similar happen for proof?
                     r.save()
 
                     if r.publishedproblem_object.question_type.question_type == "multiple choice":
@@ -213,6 +216,9 @@ def checkanswer(request,pk):
     t=timezone.now()
     r.attempted = 1
     if r.response != tempanswer:#....if new response
+        if r.publishedproblem_object.question_type.question_type == "multiple choice" or r.publishedproblem_object.question_type.question_type == "short answer":
+            r.num_attempts = r.num_attempts + 1
+        # should something similar happen for proof?
         if problem_object.isProblem:
             readable_label = problem_object.problem.readable_label
         else:

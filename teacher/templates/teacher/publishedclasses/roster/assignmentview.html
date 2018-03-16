@@ -40,7 +40,7 @@
 	    {% if student.is_initialized %}
 	  {% for p in student.response_set.all %}
 	    <td>
-	      {% if p.attempted %}{{p.points}} {% if p.points > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}{% else %}-{% endif %}
+	      {% if p.attempted %}{{p.points}} {% if p.points > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %} ({{p.num_attempts}}){% else %}-{% endif %}
 	    </td>
 	  {% endfor %}
 {% else %}
