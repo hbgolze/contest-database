@@ -35,7 +35,7 @@
 
 \begin{document}
 \maketitle
-{% for unit in my_class.units.all %}
+{% for unit in my_class.unit_set.all %}
 \chapter{ {% autoescape off %}{{unit.name}}{% endautoescape %} }
 
 {% for unit_object in unit.unit_objects.all %}

@@ -22,7 +22,7 @@ $(function() {
 	    <div class="row">
 	      <div class="col-sm-4">
 		<i class="fa fa-chevron-right glg"></i>
-		{{class.published_class.name}} ({{class.published_class.pub_units.count}} unit{% if class.published_class.pub_units.count == 1 %}{% else %}s{% endif %})
+		{{class.published_class.name}} ({{class.published_class.publishedunit_set.count}} unit{% if class.published_class.publishedunit_set.count == 1 %}{% else %}s{% endif %})
 	      </div>
 	      <div class="col-sm-4 text-right">
 		{{class.num_correct}}/{{class.num_problems}} Problems (<script>document.write(Math.round({{class.num_correct}}*100/Math.max({{class.num_problems}},1)));</script>%)

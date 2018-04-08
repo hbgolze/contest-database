@@ -29,7 +29,7 @@
         <div id="unitList" class="list-group mb-3">
 {% include 'teacher/editingtemplates/unit-list.html' %}
         </div><!--listgroup-->
-	<div id="no-units">{% if my_class.units.count == 0 %}<p><i>You don't have any units in this class yet.</i></p>{% endif %}</div>
+	<div id="no-units">{% if my_class.unit_set.count == 0 %}<p><i>You don't have any units in this class yet.</i></p>{% endif %}</div>
 {% if sharing_type != "read" %}
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
         <button type="button" class="btn btn-secondary" data-toggle="modal" data-target="#newunit">New Unit</button>

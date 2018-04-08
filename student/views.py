@@ -73,13 +73,14 @@ def problemsetview(request,**kwargs):
         num_correct = 0
         num_points = 0
         for r in P:
+            prev_attempted = r.attempted
             tempanswer = form.get('answer'+str(r.publishedproblem_object.pk))
             if tempanswer != None and tempanswer !='':
                 t=timezone.now()
                 r.attempted = 1
                 if r.response != tempanswer:# new response
                     if r.publishedproblem_object.question_type.question_type == "short answer" or r.publishedproblem_object.question_type.question_type == "multiple choice":
-                        if t < r.modified_date+timedelta(hours=0,minutes=1):
+                        if prev_attempted and t < r.modified_date+timedelta(hours=0,minutes=1):
                             spammed_pks.append(r.pk)
                         else:
                             if r.publishedproblem_object.isProblem:
@@ -220,7 +221,7 @@ def checkanswer(request,pk):
     r = user_problemset.response_set.get(publishedproblem_object = problem_object)
     t=timezone.now()
     if problem_object.question_type.question_type == "short answer" or problem_object.question_type.question_type == "multiple choice":
-        if t < r.modified_date+timedelta(hours=0,minutes=1):
+        if r.attempted and t < r.modified_date+timedelta(hours=0,minutes=1):
             return JsonResponse({'spam':'true'})
     r.attempted = 1
     if r.response != tempanswer:#....if new response

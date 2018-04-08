@@ -34,7 +34,7 @@ document.write("</div>");
 	<thead>
 	  <tr>
 	    <th>Student Name</th>
-	    {% for unit in my_class.pub_units.all %}
+	    {% for unit in my_class.publishedunit_set.all %}
 	    <th style="border-left: 1px solid;border-right: 1px solid;">Total for Unit: {{unit.name}}</th>
 	    {% for unit_object in unit.unit_objects.all %}
 	    {% if unit_object.publishedproblemset %}

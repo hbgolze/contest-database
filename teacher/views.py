@@ -137,7 +137,7 @@ def assignmentview(request,pk,ppk):
     problemset = get_object_or_404(PublishedProblemSet,pk = ppk)
     if userprofile.my_published_classes.filter(pk=pk).exists()==False:
         raise Http404("Unauthorized.")
-    if problemset.unit_object.unit not in my_class.pub_units.all():
+    if problemset.unit_object.unit not in my_class.publishedunit_set.all():##########
         raise Http404("Unauthorized.")
     student_problemsets = problemset.userproblemset_set.all()
     return render(request,'teacher/publishedclasses/roster/assignmentview.html',{'nbar': 'teacher','my_class':my_class,'student_problemsets': student_problemsets,'problemset':problemset})
@@ -343,7 +343,7 @@ def teacherproblemsetview(request,**kwargs):
     problemset = get_object_or_404(PublishedProblemSet, pk = kwargs['pspk'])##
     if my_class not in userprofile.my_published_classes.all():
         raise Http404("Unauthorized.")
-    if problemset.unit_object.unit not in my_class.pub_units.all():##        raise Http40
+    if problemset.unit_object.unit not in my_class.publishedunit_set.all():
         raise Http404("Unauthorized.")
     rows = problemset.problem_objects.all()
     expanded_rows = []
@@ -369,7 +369,7 @@ def teachertestview(request,**kwargs):
     test = get_object_or_404(PublishedTest, pk = kwargs['tpk'])
     if my_class not in userprofile.my_published_classes.all():
         raise Http404("Unauthorized.")
-    if test.unit_object.unit not in my_class.pub_units.all():##
+    if test.unit_object.unit not in my_class.publishedunit_set.all():
         raise Http404("Unauthorized.")
     rows = test.problem_objects.all()
     context['rows'] = rows
@@ -411,7 +411,7 @@ def addstudenttoclass(request,pk):
 #        my_class.save()
 #        user_class = UserClass(published_class = my_class,userprofile=student.userprofile,total_points=my_class.total_points,points_earned=0,num_problems = my_class.num_problems)
 #        user_class.save()
-#        for unit in my_class.pub_units.all():
+#        for unit in my_class.publishedunit_set.all():
 #            user_unit = UserUnit(published_unit = unit,user_class = user_class,total_points=unit.total_points, points_earned=0,order = unit.order,num_problems = unit.num_problems)
 #            user_unit.save()
 #            num_psets = 0
@@ -443,14 +443,14 @@ def classeditview(request,pk):
     if request.method == "POST":
         form=request.POST
         if 'save' in form:
-            U=list(my_class.units.all())
+            U=list(my_class.unit_set.all())
             U=sorted(U,key=lambda x:x.order)
             unit_inputs = form.getlist('unitinput')
             for u in U:
                 if 'unit_'+str(u.pk) not in unit_inputs:
                     u.delete()
             for i in range(0,len(unit_inputs)):
-                u = my_class.units.get(pk=unit_inputs[i].split('_')[1])
+                u = my_class.unit_set.get(pk=unit_inputs[i].split('_')[1])
                 u.order = i+1
                 u.save()
             return JsonResponse({'unit-list' : render_to_string('teacher/editingtemplates/unit-list.html',{'my_class':my_class})})
@@ -470,11 +470,13 @@ def newunitview(request,pk):
         raise Http404("Unauthorized.")
     if request.method == "POST":
         form=request.POST
-        u=Unit(name=form.get("unit-name",""),order=my_class.units.count()+1)
+#################################################################
+###############################################################
+        u=Unit(name=form.get("unit-name",""),order=my_class.unit_set.count()+1,the_class=my_class)
         u.save()
-        my_class.units.add(u)
+#        my_class.unit_set.add(u)################
         my_class.save()
-        return HttpResponse(render_to_string('teacher/editingtemplates/unitsnippet.html',{'unit':u,'forcount':my_class.units.count()}))
+        return HttpResponse(render_to_string('teacher/editingtemplates/unitsnippet.html',{'unit':u,'forcount':my_class.unit_set.count()}))
     return HttpResponse('')
 
 @login_required
@@ -508,7 +510,7 @@ def uniteditview(request,pk,upk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
 
     if request.method == "POST":
@@ -539,7 +541,7 @@ def editunitname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     unit = get_object_or_404(Unit,pk=pk)
-    my_class = unit.class_set.all()[0]
+    my_class = unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -551,7 +553,7 @@ def saveunitname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     unit = get_object_or_404(Unit,pk=pk)
-    my_class = unit.class_set.all()[0]
+    my_class = unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -567,7 +569,7 @@ def newproblemsetview(request,pk,upk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
         form=request.POST
@@ -586,7 +588,7 @@ def newtestview(request,pk,upk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
         form=request.POST
@@ -608,7 +610,7 @@ def newslidesview(request,pk,upk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
         form=request.POST
@@ -627,7 +629,7 @@ def latexpsetview(request,pk,upk,ppk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     pset = get_object_or_404(ProblemSet,pk=ppk)
     if pset.unit_object.unit != unit:
@@ -656,7 +658,7 @@ def latexslidesview(request,pk,upk,ppk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=ppk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -695,7 +697,7 @@ def problemseteditview(request,pk,upk,ppk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk=ppk)
     if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
@@ -728,7 +730,7 @@ def editproblemsetname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     problemset = get_object_or_404(ProblemSet,pk=pk)
-    my_class = problemset.unit_object.unit.class_set.all()[0]
+    my_class = problemset.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
@@ -740,7 +742,7 @@ def saveproblemsetname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     problemset = get_object_or_404(ProblemSet,pk=pk)
-    my_class = problemset.unit_object.unit.class_set.all()[0]
+    my_class = problemset.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -811,7 +813,7 @@ def addoriginalproblem(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk=ppk)
     if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
@@ -869,7 +871,7 @@ def update_point_value(request,pk,upk,ppk,pppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk = ppk)
     if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
@@ -892,10 +894,10 @@ def loadeditquestiontype(request,**kwargs):
     userprofile=request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
     if po.test != None:
-        if po.test.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
             raise Http404("Unauthorized.")
     elif po.problemset!=None:
-        if po.problemset.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
             raise Http404("Unauthorized.")
     else:
         raise Http404("Problem does not belong to a valid class.")
@@ -927,10 +929,10 @@ def savequestiontype(request,**kwargs):
     qt = form.get('cqt-question-type','')
     po = get_object_or_404(ProblemObject,pk=form.get('problem_id',''))
     if po.test != None:
-        if po.test.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
             raise Http404("Unauthorized.")
     elif po.problemset!=None:
-        if po.problemset.unit_object.unit.class_set.all()[0] not in userprofile.my_classes.all():#THIS IS AWFUL AND SHOULD BE CHANGED IF I GET AROUND TO CHANGING MODELS!!!
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
             raise Http404("Unauthorized.")
     else:
         raise Http404("Problem does not belong to a valid class.")
@@ -978,7 +980,7 @@ def numprobsmatching(request,pk,upk,ppk):#changing tag to pk
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk = ppk)
     if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
@@ -998,7 +1000,7 @@ def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk = ppk)
     if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
@@ -1041,7 +1043,7 @@ def reviewproblemgroup(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     problemset = get_object_or_404(ProblemSet,pk = ppk)
     if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
@@ -1095,7 +1097,7 @@ def testeditview(request,pk,upk,tpk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = tpk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1128,7 +1130,7 @@ def edittestname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     test = get_object_or_404(Test,pk=pk)
-    my_class = test.unit_object.unit.class_set.all()[0]
+    my_class = test.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1140,7 +1142,7 @@ def savetestname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     test = get_object_or_404(Test,pk=pk)
-    my_class = test.unit_object.unit.class_set.all()[0]
+    my_class = test.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1184,7 +1186,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1245,7 +1247,7 @@ def testupdate_point_value(request,pk,upk,ppk,pppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1271,7 +1273,7 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1297,7 +1299,7 @@ def testnumprobsmatching(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1317,7 +1319,7 @@ def testreviewmatchingproblems(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists() == False:
@@ -1357,7 +1359,7 @@ def testreviewproblemgroup(request,pk,upk,ppk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk = upk)
-    if my_class.units.filter(pk = upk).exists == False:
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     test = get_object_or_404(Test,pk = ppk)
     if unit.unit_objects.filter(test__isnull = False).filter(test__pk = test.pk).exists()==False:
@@ -1397,7 +1399,7 @@ def slideseditview(request,pk,upk,spk):
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=spk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -1431,7 +1433,7 @@ def editslidegroupname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     slidegroup = get_object_or_404(SlideGroup,pk=pk)
-    my_class = slidegroup.unit_object.unit.class_set.all()[0]
+    my_class = slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1443,7 +1445,7 @@ def saveslidegroupname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     slidegroup = get_object_or_404(SlideGroup,pk=pk)
-    my_class = slidegroup.unit_object.unit.class_set.all()[0]
+    my_class = slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1459,7 +1461,7 @@ def newslideview(request,pk,upk,spk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=spk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -1480,7 +1482,7 @@ def editslideview(request,pk,upk,spk,sspk):
     context = {}
     context['sharing_type'] = sharing_type
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=spk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -1629,7 +1631,7 @@ def editslidetitle(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     slide = get_object_or_404(Slide,pk = pk)
-    my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
+    my_class = slide.slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1641,7 +1643,7 @@ def saveslidetitle(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     slide = get_object_or_404(Slide,pk=pk)
-    my_class = slide.slidegroup.unit_object.unit.class_set.all()[0]
+    my_class = slide.slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
@@ -1669,7 +1671,7 @@ def exampleaddproblem(request,**kwargs):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=kwargs['upk'])
-    if my_class.units.filter(pk=kwargs['upk']).exists==False:
+    if my_class.unit_set.filter(pk=kwargs['upk']).exists==False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=kwargs['spk'])
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -1716,7 +1718,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     unit = get_object_or_404(Unit,pk=upk)
-    if my_class.units.filter(pk=upk).exists==False:
+    if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     slidegroup = get_object_or_404(SlideGroup,pk=spk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
@@ -2056,7 +2058,7 @@ def migrate_response(request,username,npk):
         for r in ut.newresponses.all():
             J=[]
             for ups in user_psets:
-                if ups.problemset.problem_objects.filter(problem=r.problem).exists():
+                if ups.published_problemset.problem_objects.filter(problem=r.problem).exists():
                     J.append(ups)
             R.append((r,J))
         UTR.append((ut,R))
@@ -2075,7 +2077,7 @@ def move_response(request,**kwargs):
     resp = get_object_or_404(NewResponse,pk=resp_pk)
     ups_pk = request.GET.get('ups_pk','')
     user_problemset = get_object_or_404(UserProblemSet,pk=ups_pk)
-    po = user_problemset.problemset.problem_objects.get(problem = resp.problem)
+    po = user_problemset.published_problemset.problem_objects.get(problem = resp.problem)
     if user_problemset.response_set.filter(problem_object = po).exists()==False:
         r = Response(problem_object = po, user_problemset=user_problemset, response = resp.response,attempted = resp.attempted, stickied = resp.stickied, order = po.order, point_value = po.point_value, modified_date = resp.modified_date)
         r.save()
@@ -2085,7 +2087,7 @@ def move_response(request,**kwargs):
                 r.save()
         resp.is_migrated = 1
         resp.save()
-        return JsonResponse({'success':1,'name':user_problemset.problemset.name,'resp_pk':resp_pk})
+        return JsonResponse({'success':1,'name':user_problemset.published_problemset.name,'resp_pk':resp_pk})
     return JsonResponse({'success':0,'name':''})
 
 
