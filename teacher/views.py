@@ -77,7 +77,7 @@ def publishview(request,pk):
     my_class = get_object_or_404(Class,pk=pk)
     if get_permission_level(request,my_class) == "none":#userprofile.my_classes.filter(pk=pk).exists()==False:##########Currently means "actual owners" are the only people who can 
         raise Http404("Unauthorized.")
-    p=my_class.publish(userprofile)
+    p = my_class.publish(userprofile)
     return JsonResponse({'newrow':render_to_string('teacher/publishedclasses/publishedclassrow.html',{'cls':p})})
 
 @login_required
@@ -120,10 +120,22 @@ def remove_class(request):
         userprofile.save()
     return JsonResponse({'s':1})
 
+@login_required
+def sync_class(request, pk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(PublishedClass,pk=pk)
+    if userprofile.my_published_classes.filter(pk=pk).exists()==False:
+        raise Http404("Unauthorized.")
+    try:
+        my_class.sync_to_parent()
+        return JsonResponse({"error":0})
+    except:
+        return JsonResponse({"error":1})
+    
 
 @login_required
 def rosterview(request,pk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(PublishedClass,pk=pk)
     if userprofile.my_published_classes.filter(pk=pk).exists()==False:
         raise Http404("Unauthorized.")
@@ -261,7 +273,7 @@ def load_grade(request,**kwargs):
     resp_pk = request.GET.get('resp_pk','')
     resp = get_object_or_404(Response,pk=resp_pk)
     context['resp'] = resp
-    po = resp.problem_object
+    po = resp.publishedproblem_object
     if po.isProblem:
         if po.question_type == "multiple choice":
             problem_display = po.problem.display_mc_problem_text
@@ -269,7 +281,7 @@ def load_grade(request,**kwargs):
             problem_display = po.problem.display_problem_text
         context['readable_label'] = po.problem.readable_label
     else:
-        problem_display = po.problem.problem_display
+        problem_display = po.problem_display
     context['problem_display'] = problem_display
     pts=[]
     for i in range(0,po.point_value+1):
@@ -435,24 +447,30 @@ def addstudenttoclass(request,pk):
 ##############################
 @login_required
 def classeditview(request,pk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk=pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         if 'save' in form:
-            U=list(my_class.unit_set.all())
-            U=sorted(U,key=lambda x:x.order)
+            U = list(my_class.unit_set.all())
+            U = sorted(U,key=lambda x:x.order)
             unit_inputs = form.getlist('unitinput')
             for u in U:
+                deleted = 0
                 if 'unit_'+str(u.pk) not in unit_inputs:
                     u.delete()
+                    deleted = 1                
             for i in range(0,len(unit_inputs)):
                 u = my_class.unit_set.get(pk=unit_inputs[i].split('_')[1])
                 u.order = i+1
                 u.save()
+                u.increment_version()
+                deleted = 0
+            if deleted == 1:
+                my_class.increment_version()
             return JsonResponse({'unit-list' : render_to_string('teacher/editingtemplates/unit-list.html',{'my_class':my_class})})
     context={}
     context['my_class'] = my_class
@@ -470,12 +488,9 @@ def newunitview(request,pk):
         raise Http404("Unauthorized.")
     if request.method == "POST":
         form=request.POST
-#################################################################
-###############################################################
         u=Unit(name=form.get("unit-name",""),order=my_class.unit_set.count()+1,the_class=my_class)
         u.save()
-#        my_class.unit_set.add(u)################
-        my_class.save()
+        my_class.increment_version()
         return HttpResponse(render_to_string('teacher/editingtemplates/unitsnippet.html',{'unit':u,'forcount':my_class.unit_set.count()}))
     return HttpResponse('')
 
@@ -500,6 +515,7 @@ def saveclassname(request):
         raise Http404("Unauthorized.")
     form = EditClassNameForm(request.POST,instance = my_class)
     form.save()
+    my_class.increment_version()
     return JsonResponse({'class-name':form.instance.name})
 
 @login_required
@@ -519,13 +535,19 @@ def uniteditview(request,pk,upk):
             unit_objs = list(unit.unit_objects.all())
             unit_objs = sorted(unit_objs,key = lambda x:x.order)###
             unit_obj_inputs = form.getlist('unitobjectinput')
+            deleted = 0
             for u in unit_objs:
                 if 'unitobject_'+str(u.pk) not in unit_obj_inputs:
                     u.delete()
+                    deleted = 1
             for i in range(0,len(unit_obj_inputs)):
                 u = unit.unit_objects.get(pk = unit_obj_inputs[i].split('_')[1])
                 u.order = i+1
                 u.save()
+                u.increment_version()
+                deleted = 0
+            if deleted == 1:
+                unit.increment_version()
             return JsonResponse({'unit-object-list' : render_to_string('teacher/editingtemplates/unitobjectlist.html',{'unit':unit})})
     context = {}
     context['my_class'] = my_class
@@ -559,6 +581,7 @@ def saveunitname(request):
         raise Http404("Unauthorized.")
     form = EditUnitNameForm(request.POST,instance = unit)
     form.save()
+    unit.increment_version()
     return JsonResponse({'unit-name':form.instance.name})
 
 @login_required
@@ -572,52 +595,55 @@ def newproblemsetview(request,pk,upk):
     if my_class.unit_set.filter(pk=upk).exists==False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
-        form=request.POST
-        u=UnitObject(unit=unit,order=unit.unit_objects.count()+1)
+        form = request.POST
+        u = UnitObject(unit=unit,order=unit.unit_objects.count()+1)
         u.save()
-        p=ProblemSet(name=form.get("problemset-name",""),default_point_value=form.get("problemset-default_point_value",""),unit_object = u)
+        p = ProblemSet(name = form.get("problemset-name",""),default_point_value = form.get("problemset-default_point_value",""),unit_object = u)
         p.save()
+        unit.increment_version()
         return HttpResponse(render_to_string('teacher/editingtemplates/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()},request=request))
     return HttpResponse('')
 
 @login_required
 def newtestview(request,pk,upk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
-        form=request.POST
-        u=UnitObject(unit=unit,order=unit.unit_objects.count()+1)
+        form = request.POST
+        u = UnitObject(unit = unit,order = unit.unit_objects.count() + 1)
         u.save()
         minutes = request.POST.get('minutes')
         hours = request.POST.get('hours')
-        time_limit = time(hour=int(hours),minute=int(minutes))
-        t=Test(name=form.get("test-name",""),default_point_value=form.get("test-default_point_value",""),default_blank_value = form.get("test-default_blank_value",""),unit_object = u,time_limit = time_limit)
+        time_limit = time(hour = int(hours),minute = int(minutes))
+        t = Test(name = form.get("test-name",""),default_point_value = form.get("test-default_point_value",""),default_blank_value = form.get("test-default_blank_value",""),unit_object = u,time_limit = time_limit)
         t.save()
+        unit.increment_version()
         return HttpResponse(render_to_string('teacher/editingtemplates/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()},request=request))
     return HttpResponse('')
 
 @login_required
 def newslidesview(request,pk,upk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
     if request.method == "POST":
-        form=request.POST
-        u=UnitObject(unit=unit,order=unit.unit_objects.count()+1)
+        form = request.POST
+        u = UnitObject(unit = unit,order = unit.unit_objects.count() + 1)
         u.save()
-        s=SlideGroup(name=form.get("slides-name",""),unit_object = u)
+        s = SlideGroup(name = form.get("slides-name",""),unit_object = u)
         s.save()
+        unit.increment_version()
         return HttpResponse(render_to_string('teacher/editingtemplates/unitobjectsnippet.html',{'unitobj':u,'forcount':unit.unit_objects.count()}))
     return HttpResponse('')
 
@@ -634,8 +660,6 @@ def latexpsetview(request,pk,upk,ppk):
     pset = get_object_or_404(ProblemSet,pk=ppk)
     if pset.unit_object.unit != unit:
         raise Http404("No such problem set in this unit")
-
-
     include_problem_labels = True
     if request.method == "GET":
         if request.GET.get('problemlabels') == 'no':
@@ -663,7 +687,6 @@ def latexslidesview(request,pk,upk,ppk):
     slidegroup = get_object_or_404(SlideGroup,pk=ppk)
     if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
         raise Http404("No such problem set in this unit")
-
     context = {}
 
     context['my_class'] = my_class
@@ -673,7 +696,6 @@ def latexslidesview(request,pk,upk,ppk):
     response = HttpResponse(render_to_string('teacher/editingtemplates/latexslidesview.tex',context), content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
-#    return render(request, 'teacher/editingtemplates/latexslidesview.html',context)
 
 @login_required
 def latexclassview(request,pk):
@@ -691,32 +713,38 @@ def latexclassview(request,pk):
 
 @login_required
 def problemseteditview(request,pk,upk,ppk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         if 'save' in form:
-            prob_objs=list(problemset.problem_objects.all())
-            prob_objs=sorted(prob_objs,key=lambda x:x.order)###
+            prob_objs = list(problemset.problem_objects.all())
+            prob_objs = sorted(prob_objs,key = lambda x:x.order)###
             prob_obj_inputs = form.getlist('problemobjectinput')#could be an issue if no units
+            deleted = 0
             for p in prob_objs:
-                if 'problemobject_'+str(p.pk) not in prob_obj_inputs:
+                if 'problemobject_' + str(p.pk) not in prob_obj_inputs:
                     p.delete()
+                    deleted = 1
             for i in range(0,len(prob_obj_inputs)):
-                p = problemset.problem_objects.get(pk=prob_obj_inputs[i].split('_')[1])
+                p = problemset.problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
                 p.order = i+1
                 p.save()
+                p.increment_version()
+                deleted = 0
+            if deleted == 1:
+                problemset.increment_version()
             return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'problemset':problemset})})
-    context={}
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['problemset'] = problemset
@@ -748,6 +776,7 @@ def saveproblemsetname(request):
         raise Http404("Unauthorized.")
     form = EditProblemSetNameForm(request.POST,instance = problemset)
     form.save()
+    problemset.increment_version()
     return JsonResponse({'problemset-name':form.instance.name})
 
 @login_required
@@ -807,16 +836,16 @@ def loadcqtexampleproblemform(request,**kwargs):
 
 @login_required
 def addoriginalproblem(request,pk,upk,ppk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    problemset = get_object_or_404(ProblemSet,pk=ppk)
-    if unit.unit_objects.filter(problemset__isnull=False).filter(problemset__pk=problemset.pk).exists()==False:
+    problemset = get_object_or_404(ProblemSet,pk = ppk)
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
         raise Http404("No such problem set in this unit.")
     if request.method == "POST":
         form = request.POST
@@ -834,6 +863,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.order = problemset.problem_objects.count()+1
                 prob.problemset = problemset
                 prob.save()
+                problemset.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "short answer":
             pform = NewProblemObjectSAForm(request.POST, instance=po)
@@ -847,6 +877,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.order = problemset.problem_objects.count()+1
                 prob.problemset = problemset
                 prob.save()
+                problemset.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
         elif qt == "proof":
             pform = NewProblemObjectPFForm(request.POST, instance=po)
@@ -860,6 +891,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.order = problemset.problem_objects.count()+1
                 prob.problemset = problemset
                 prob.save()
+                problemset.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
@@ -885,6 +917,7 @@ def update_point_value(request,pk,upk,ppk,pppk):
                 'pk': pppk,
                 'point_value':form.instance.point_value,
             }
+            po.increment_version()
             return JsonResponse(data)
     form = PointValueForm(instance = po)
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
@@ -925,7 +958,7 @@ def loadeditquestiontype(request,**kwargs):
 @login_required
 def savequestiontype(request,**kwargs):
     userprofile = request.user.userprofile
-    form=request.POST
+    form = request.POST
     qt = form.get('cqt-question-type','')
     po = get_object_or_404(ProblemObject,pk=form.get('problem_id',''))
     if po.test != None:
@@ -936,38 +969,43 @@ def savequestiontype(request,**kwargs):
             raise Http404("Unauthorized.")
     else:
         raise Http404("Problem does not belong to a valid class.")
+
     if po.isProblem == 0:
         if qt == "multiple choice":
             pform = NewProblemObjectMCForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.save()
+                prob.increment_version()
                 return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
         elif qt == "short answer":
             pform = NewProblemObjectSAForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.save()
+                prob.increment_version()
                 return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
         elif qt == "proof":
             pform = NewProblemObjectPFForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type=qt)
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.save()
+                prob.increment_version()
                 return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
     else:
         po.question_type = QuestionType.objects.get(question_type = qt)
         po.save()
+        po.increment_version()
         return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
 
 
@@ -1018,15 +1056,16 @@ def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
         if 'add-selected-problems' in form:
             checked = form.getlist("chk")
             top = problemset.problem_objects.count()
-            if len(checked)>0:
+            if len(checked) > 0:
                 for i in range(0,len(checked)):
-                    p=Problem.objects.get(label=checked[i])
-                    po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem=1,problem=p,question_type = p.question_type_new)
+                    p = Problem.objects.get(label = checked[i])
+                    po = ProblemObject(order = top + i + 1,point_value = problemset.default_point_value,isProblem = 1,problem = p,question_type = p.question_type_new)
                     po.problemset = problemset
                     po.save()
+                problemset.increment_version()
                 return redirect('../')
             return redirect('../')
-    context={}
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['problemset'] = problemset
@@ -1037,7 +1076,7 @@ def reviewmatchingproblems(request,pk,upk,ppk):#changing to GET request
 
 @login_required
 def reviewproblemgroup(request,pk,upk,ppk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
@@ -1053,21 +1092,22 @@ def reviewproblemgroup(request,pk,upk,ppk):
     if request.method == 'POST':
         form = request.POST
         if 'add-selected-problems' in form:
-            checked=form.getlist("chk")
+            checked = form.getlist("chk")
             top = problemset.problem_objects.count()
             if len(checked) > 0:
                 for i in range(0,len(checked)):
                     p = Problem.objects.get(label = checked[i])
-                    po = ProblemObject(order=top+i+1,point_value = problemset.default_point_value,isProblem = 1,problem = p,question_type = p.question_type_new)
+                    po = ProblemObject(order = top + i + 1,point_value = problemset.default_point_value,isProblem = 1,problem = p,question_type = p.question_type_new)
                     po.problemset = problemset
                     po.save()
+                problemset.increment_version()
                 return redirect('../')
             return redirect('../')
     if request.method == 'GET':
         form = request.GET
-        prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
-        curr_problems = problemset.problem_objects.filter(isProblem=1)
-        P=prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+        prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
+        curr_problems = problemset.problem_objects.filter(isProblem = 1)
+        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
     context = {}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -1108,13 +1148,19 @@ def testeditview(request,pk,upk,tpk):
             prob_objs = list(test.problem_objects.all())
             prob_objs = sorted(prob_objs,key = lambda x:x.order)###
             prob_obj_inputs = form.getlist('problemobjectinput')#could be an issue if no units
+            deleted = 0
             for p in prob_objs:
                 if 'problemobject_'+str(p.pk) not in prob_obj_inputs:
                     p.delete()
+                    deleted = 1
             for i in range(0,len(prob_obj_inputs)):
                 p = test.problem_objects.get(pk = prob_obj_inputs[i].split('_')[1])
                 p.order = i+1
                 p.save()
+                p.increment_version()
+                deleted = 0
+            if deleted == 1:
+                test.increment_version()
             return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'test':test})})
     context={}
     context['my_class'] = my_class
@@ -1148,6 +1194,7 @@ def savetestname(request):
         raise Http404("Unauthorized.")
     form = EditTestNameForm(request.POST,instance = test)
     form.save()
+    test.increment_version()
     return JsonResponse({'test-name':form.instance.name})
 
 @login_required
@@ -1199,8 +1246,8 @@ def testaddoriginalproblem(request,pk,upk,ppk):
             pform = NewProblemObjectMCForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -1208,13 +1255,14 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.order = test.problem_objects.count()+1
                 prob.test = test
                 prob.save()
+                test.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
         elif qt == "short answer":
             pform = NewProblemObjectSAForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -1222,13 +1270,14 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.order = test.problem_objects.count() + 1
                 prob.test = test
                 prob.save()
+                test.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
         elif qt == "proof":
             pform = NewProblemObjectPFForm(request.POST, instance = po)
             if pform.is_valid():
                 prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
+                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -1236,6 +1285,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.order = test.problem_objects.count() + 1
                 prob.test = test
                 prob.save()
+                test.increment_version()
                 return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
@@ -1254,13 +1304,14 @@ def testupdate_point_value(request,pk,upk,ppk,pppk):
         raise Http404("No such problem set in this unit.")
     po = get_object_or_404(ProblemObject,pk = pppk)
     if request.method == 'POST':
-        form = PointValueForm(request.POST,instance=po)
+        form = PointValueForm(request.POST,instance = po)
         if form.is_valid():
             form.save()
             data = {
                 'pk': pppk,
                 'point_value':form.instance.point_value,
             }
+            po.increment_version()
             return JsonResponse(data)
     form = PointValueForm(instance = po)
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
@@ -1280,13 +1331,14 @@ def testupdate_blank_value(request,pk,upk,ppk,pppk):
         raise Http404("No such problem set in this unit.")
     po = get_object_or_404(ProblemObject,pk = pppk)
     if request.method == 'POST':
-        form = BlankPointValueForm(request.POST,instance=po)
+        form = BlankPointValueForm(request.POST,instance = po)
         if form.is_valid():
             form.save()
             data = {
                 'pk': pppk,
                 'blank_point_value':form.instance.blank_point_value,
             }
+            po.increment_version()
             return JsonResponse(data)
     form = BlankPointValueForm(instance = po)
     return render(request,'teacher/editingtemplates/editpointvalueform.html',{'form':form,'pk':pk,'upk':upk,'ppk':ppk,'pppk':pppk})
@@ -1331,18 +1383,19 @@ def testreviewmatchingproblems(request,pk,upk,ppk):
         if 'add-selected-problems' in form:
             checked = form.getlist("chk")
             top = test.problem_objects.count()
-            if len(checked)>0:
+            if len(checked) > 0:
                 for i in range(0,len(checked)):
-                    p = Problem.objects.get(label=checked[i])
-                    po = ProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value, test = test, isProblem=1,problem=p,question_type = p.question_type_new)
+                    p = Problem.objects.get(label = checked[i])
+                    po = ProblemObject(order = top + i + 1,point_value = test.default_point_value,blank_point_value = test.default_blank_value, test = test, isProblem = 1,problem = p,question_type = p.question_type_new)
                     po.save()
+                test.increment_version()
                 return redirect('../')
             return redirect('../')
         typ = form.get('contest-type','')
         desired_tag = form.get('contest-tags','')
         curr_problems = test.problem_objects.filter(isProblem=1)
-        P = Problem.objects.filter(type_new__type=typ).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).exclude(id__in=curr_problems.values('problem_id')).distinct().order_by("problem_number")
-    context={}
+        P = Problem.objects.filter(type_new__type = typ).filter(newtags__in = NewTag.objects.filter(tag__startswith = desired_tag)).exclude(id__in = curr_problems.values('problem_id')).distinct().order_by("problem_number")
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['test'] = test
@@ -1374,14 +1427,20 @@ def testreviewproblemgroup(request,pk,upk,ppk):
             if len(checked)>0:
                 for i in range(0,len(checked)):
                     p = Problem.objects.get(label=checked[i])
-                    po = ProblemObject(order=top+i+1,point_value = test.default_point_value,blank_point_value = test.default_blank_value,isProblem=1,problem=p,question_type = p.question_type_new,test=test)
+                    po = ProblemObject(order = top + i + 1,point_value = test.default_point_value,blank_point_value = test.default_blank_value,isProblem = 1,problem = p,question_type = p.question_type_new,test = test)
                     po.save()
+                test.increment_version()
                 return redirect('../')
             return redirect('../')
-        prob_group = get_object_or_404(ProblemGroup,pk=form.get('problem-group',''))
-        curr_problems = test.problem_objects.filter(isProblem=1)
-        P = prob_group.problems.exclude(id__in=curr_problems.values('problem_id')).distinct()
-    context={}
+        prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
+        curr_problems = test.problem_objects.filter(isProblem = 1)
+        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+    if request.method == 'GET':
+        form = request.GET
+        prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
+        curr_problems = test.problem_objects.filter(isProblem = 1)
+        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['test'] = test
@@ -1393,34 +1452,38 @@ def testreviewproblemgroup(request,pk,upk,ppk):
 ###Slides###
 @login_required
 def slideseditview(request,pk,upk,spk):
-    userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    slidegroup = get_object_or_404(SlideGroup,pk=spk)
-    if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
+    slidegroup = get_object_or_404(SlideGroup,pk = spk)
+    if unit.unit_objects.filter(slidegroup__isnull = False).filter(slidegroup__pk = slidegroup.pk).exists() == False:
         raise Http404("No such slides in this unit.")
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         if 'save' in form:#######
-            slides=list(slidegroup.slides.all())
-            slides=sorted(slides,key=lambda x:x.order)
+            slides = list(slidegroup.slides.all())
+            slides = sorted(slides,key = lambda x:x.order)
             slide_inputs = form.getlist('slideinput')
+            deleted = 0
             for s in slides:
                 if 'slide_'+str(s.pk) not in slide_inputs:
-#                    for so in s.slide_objects.all():
-#                        so.content_object.delete()#I think that slide_objects are now automatically deleted
                     s.delete()
+                    deleted = 1
             for i in range(0,len(slide_inputs)):
-                s = slidegroup.slides.get(pk=slide_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
+                s = slidegroup.slides.get(pk = slide_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
                 s.order = i+1
                 s.save()
+                s.increment_version()
+                deleted = 0
+            if deleted == 1:
+                slidegroup.increment_version()
             return JsonResponse({'slidelist':render_to_string('teacher/editingtemplates/editslides/slidelist.html',{'slides' :slidegroup})})
-    context={}
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['slides'] = slidegroup
@@ -1432,7 +1495,7 @@ def slideseditview(request,pk,upk,spk):
 def editslidegroupname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
-    slidegroup = get_object_or_404(SlideGroup,pk=pk)
+    slidegroup = get_object_or_404(SlideGroup,pk = pk)
     my_class = slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
@@ -1444,32 +1507,34 @@ def editslidegroupname(request):
 def saveslidegroupname(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
-    slidegroup = get_object_or_404(SlideGroup,pk=pk)
+    slidegroup = get_object_or_404(SlideGroup,pk = pk)
     my_class = slidegroup.unit_object.unit.the_class
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
     form = EditSlideGroupNameForm(request.POST,instance = slidegroup)
     form.save()
+    slidegroup.increment_version()
     return JsonResponse({'slidegroup-name':form.instance.name})
 
 @login_required
 def newslideview(request,pk,upk,spk):
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists==False:
         raise Http404("No such unit in this class.")
-    slidegroup = get_object_or_404(SlideGroup,pk=spk)
-    if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
+    slidegroup = get_object_or_404(SlideGroup,pk = spk)
+    if unit.unit_objects.filter(slidegroup__isnull = False).filter(slidegroup__pk = slidegroup.pk).exists() == False:
         raise Http404("No such slides in this unit.")
     if request.method == "POST":
-        form=request.POST
-        s=Slide(title=form.get("slide-title",""),order=slidegroup.slides.count()+1,slidegroup=slidegroup)
+        form = request.POST
+        s = Slide(title = form.get("slide-title",""),order = slidegroup.slides.count() + 1,slidegroup = slidegroup)
         s.save()
+        slidegroup.increment_version()
         return JsonResponse({'slide-body':render_to_string('teacher/editingtemplates/editslides/slidebody.html',{'slide':s,'forcount':s.order})})
 #    return HttpResponse('')
 
@@ -1492,54 +1557,58 @@ def editslideview(request,pk,upk,spk,sspk):
         raise Http404("No such slide in the slide group.")
 
     if request.method == "POST":
-        form=request.POST
+        form = request.POST
         if "addtextblock" in form:
-            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s = SlideObject(slide = slide,order = slide.top_order_number + 1)
             s.save()
             textbl = form.get("codetextblock","")
-            tb = TextBlock(slide_object = s, text_code = textbl, text_display="")
+            tb = TextBlock(slide_object = s, text_code = textbl, text_display = "")
             tb.save()
-            tb.text_display = newtexcode(textbl, 'textblock_'+str(tb.pk), "")
+            tb.text_display = newtexcode(textbl, 'textblock_' + str(tb.pk), "")
             tb.save()
-            compileasy(tb.text_code,'textblock_'+str(tb.pk))
-            slide.top_order_number = slide.top_order_number +1
+            compileasy(tb.text_code,'textblock_' + str(tb.pk))
+            slide.top_order_number = slide.top_order_number + 1
             slide.save()
+            slide.increment_version()
             return JsonResponse({'textblock':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addtheorem" in form:
-            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s = SlideObject(slide = slide,order = slide.top_order_number + 1)
             s.save()
             thmbl = form.get("codetheoremblock","")
             prefix = form.get("theorem-prefix","")
             thmname = form.get("theorem-name","")
-            th = Theorem(slide_object = s,theorem_code = thmbl, theorem_display="",prefix=prefix,name=thmname)
+            th = Theorem(slide_object = s,theorem_code = thmbl, theorem_display = "",prefix = prefix,name = thmname)
             th.save()
             th.theorem_display = newtexcode(thmbl, 'theoremblock_'+str(th.pk), "")
             th.save()
             slide.top_order_number = slide.top_order_number +1
             slide.save()
+            slide.increment_version()
             return JsonResponse({'theorem':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addproof" in form:
-            s=SlideObject(slide=slide,order=slide.top_order_number+1)
+            s = SlideObject(slide = slide,order = slide.top_order_number + 1)
             s.save()
             proofbl = form.get("codeproofblock","")
             prefix = form.get("proof-prefix","")
-            pf = Proof(slide_object = s, proof_code = proofbl, proof_display="",prefix=prefix)
+            pf = Proof(slide_object = s, proof_code = proofbl, proof_display = "",prefix = prefix)
             pf.save()
             pf.proof_display = newtexcode(proofbl, 'proofblock_'+str(pf.pk), "")
             pf.save()
             compileasy(pf.proof_code,'proofblock_'+str(pf.pk))#######Check
             slide.top_order_number = slide.top_order_number +1
             slide.save()
+            slide.increment_version()
             return JsonResponse({'proof':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addimage" in form:
             form = ImageForm(request.POST, request.FILES)
             if form.is_valid():
-                s = SlideObject(slide=slide,order=slide.top_order_number+1)
+                s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                 s.save()
-                m = ImageModel(slide_object = s,image=form.cleaned_data['image'])
+                m = ImageModel(slide_object = s,image = form.cleaned_data['image'])
                 m.save()
                 slide.top_order_number = slide.top_order_number +1
                 slide.save()
+                slide.increment_version()
                 return JsonResponse({'image':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if "addproblem" in form:
             prefix = form.get("example-prefix","")
@@ -1549,12 +1618,13 @@ def editslideview(request,pk,upk,spk,sspk):
                 if Problem.objects.filter(label = problem_label).exists():
                     p = Problem.objects.get(label = problem_label)
                     if p.type_new in userprofile.user_type_new.allowed_types.all():
-                        s = SlideObject(slide=slide,order=slide.top_order_number+1)
+                        s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                         s.save()
-                        ep = ExampleProblem(slide_object = s,isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
+                        ep = ExampleProblem(slide_object = s,isProblem = 1,problem = p,question_type = p.question_type_new,prefix=prefix)
                         ep.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
+                        slide.increment_version()
                         return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
                     else:
                         return JsonResponse({'error-msg': "No such problem with label"})
@@ -1579,6 +1649,7 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
+                        slide.increment_version()
                 elif qt == "short answer":
                     pform = NewExampleProblemSAForm(request.POST, instance = ep)
                     if pform.is_valid():
@@ -1591,6 +1662,7 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
+                        slide.increment_version()
                 elif qt == "proof":
                     pform = NewExampleProblemPFForm(request.POST, instance = ep)
                     if pform.is_valid():
@@ -1603,21 +1675,27 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
+                        slide.increment_version()
                 return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
         if 'save' in form:
             slide_objs = list(slide.slide_objects.all())
-            slide_objs = sorted(slide_objs,key=lambda x:x.order)
+            slide_objs = sorted(slide_objs,key = lambda x:x.order)
             slide_obj_inputs = form.getlist('slideobjectinput')
+            deleted = 0
             for s in slide_objs:
                 if 'slideobject_'+str(s.pk) not in slide_obj_inputs:
-#                    s.content_object.delete()# wouldn't this delete s???(copied comment from u)
                     s.delete()
+                    deleted = 1
             for i in range(0,len(slide_obj_inputs)):
-                s = slide.slide_objects.get(pk=slide_obj_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
-                s.order = i+1
+                s = slide.slide_objects.get(pk = slide_obj_inputs[i].split('_')[1])###better way to do this? (i.e., get the query set first)
+                s.order = i + 1
                 s.save()
+                s.increment_version()
+                deleted = 0
             slide.top_order_number = slide.slide_objects.count()
             slide.save()
+            if deleted == 1:
+                slide.increment_version()
             return JsonResponse({'slideobjectlist':render_to_string('teacher/editingtemplates/edit-slide/slideobjectlist.html',{'slide_objects' :slide.slide_objects.all()})})
     context['my_class'] = my_class
     context['unit'] = unit
@@ -1649,6 +1727,7 @@ def saveslidetitle(request):
         raise Http404("Unauthorized.")
     form = EditSlideTitleForm(request.POST,instance = slide)
     form.save()
+    slide.increment_version()
     return JsonResponse({'slide-title':form.instance.title})
 
 @login_required
@@ -1666,28 +1745,29 @@ def exampleproblemgroups(request,**kwargs):
 @login_required
 def exampleaddproblem(request,**kwargs):
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=kwargs['pk'])
+    my_class = get_object_or_404(Class,pk = kwargs['pk'])
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=kwargs['upk'])
-    if my_class.unit_set.filter(pk=kwargs['upk']).exists==False:
+    unit = get_object_or_404(Unit,pk = kwargs['upk'])
+    if my_class.unit_set.filter(pk = kwargs['upk']).exists == False:
         raise Http404("No such unit in this class.")
-    slidegroup = get_object_or_404(SlideGroup,pk=kwargs['spk'])
-    if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
+    slidegroup = get_object_or_404(SlideGroup,pk = kwargs['spk'])
+    if unit.unit_objects.filter(slidegroup__isnull = False).filter(slidegroup__pk = slidegroup.pk).exists() == False:
         raise Http404("No such slides in this unit.")
-    slide = get_object_or_404(Slide,pk=kwargs['sspk'])
-    if slidegroup.slides.filter(pk=slide.pk).exists()==False:
+    slide = get_object_or_404(Slide,pk = kwargs['sspk'])
+    if slidegroup.slides.filter(pk = slide.pk).exists() == False:
         raise Http404("No such slide in the slide group.")
     form = request.GET
     prefix = form.get("example-prefix","")
-    p = Problem.objects.get(pk=form.get('pk',''))
-    s = SlideObject(slide=slide,order=slide.top_order_number+1)
+    p = Problem.objects.get(pk = form.get('pk',''))
+    s = SlideObject(slide = slide,order = slide.top_order_number + 1)
     s.save()
-    ep = ExampleProblem(slide_object = s, isProblem=1,problem=p,question_type=p.question_type_new,prefix=prefix)
+    ep = ExampleProblem(slide_object = s, isProblem = 1,problem = p,question_type = p.question_type_new,prefix = prefix)
     ep.save()
     slide.top_order_number = slide.top_order_number + 1
     slide.save()
+    slide.increment_version()
     return JsonResponse({'example':render_to_string('teacher/editingtemplates/edit-slide/slideobject.html',{'s':s}),'sopk':s.pk})
 
 
@@ -1695,13 +1775,13 @@ def exampleaddproblem(request,**kwargs):
 @login_required
 def exampleproblemgroupproblems(request,**kwargs):
     form = request.GET
-    problem_group = get_object_or_404(ProblemGroup,pk=form.get('example-problem-group',''))
+    problem_group = get_object_or_404(ProblemGroup,pk = form.get('example-problem-group',''))
     return JsonResponse({'pgp-form':render_to_string('teacher/editingtemplates/example-problem-group-problems.html',{'problem_group':problem_group})})
 
 @login_required
 def examplebytag(request,**kwargs):
     contest_types = request.user.userprofile.user_type_new.allowed_types.all()
-    tags = NewTag.objects.exclude(tag='root')
+    tags = NewTag.objects.exclude(tag = 'root')
     return JsonResponse({'tag-form':render_to_string('teacher/editingtemplates/example-bytag.html',{'contest_types':contest_types,'tags':tags})})
 
 @login_required
@@ -1713,20 +1793,20 @@ def examplebytagproblems(request,**kwargs):
 @login_required
 def editexampleproblem(request,pk,upk,spk,sspk,sopk):
     userprofile=request.user.userprofile
-    my_class = get_object_or_404(Class,pk=pk)
+    my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
         raise Http404("Unauthorized.")
-    unit = get_object_or_404(Unit,pk=upk)
-    if my_class.unit_set.filter(pk=upk).exists==False:
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
         raise Http404("No such unit in this class.")
-    slidegroup = get_object_or_404(SlideGroup,pk=spk)
-    if unit.unit_objects.filter(slidegroup__isnull=False).filter(slidegroup__pk=slidegroup.pk).exists()==False:
+    slidegroup = get_object_or_404(SlideGroup,pk = spk)
+    if unit.unit_objects.filter(slidegroup__isnull = False).filter(slidegroup__pk = slidegroup.pk).exists() == False:
         raise Http404("No such slides in this unit.")
-    slide = get_object_or_404(Slide,pk=sspk)
-    if slidegroup.slides.filter(pk=slide.pk).exists()==False:
+    slide = get_object_or_404(Slide,pk = sspk)
+    if slidegroup.slides.filter(pk = slide.pk).exists() == False:
         raise Http404("No such slide in the slide group.")
-    ep = get_object_or_404(ExampleProblem,pk=sopk)
+    ep = get_object_or_404(ExampleProblem,pk = sopk)
     if slide.slide_objects.exclude(exampleproblem = None).filter(exampleproblem__id = ep.pk).exists() == False:
         raise Http404("No such object in slide.")
     so = slide.slide_objects.exclude(exampleproblem = None).get(exampleproblem__id = ep.pk)
@@ -1738,11 +1818,12 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                 pform = NewExampleProblemMCForm(request.POST, instance = ep)
                 if pform.is_valid():
                     prob = pform.save()
-                    prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
-                    compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                    prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_' + str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'exampleproblem_' + str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.author = request.user
                     prob.save()
+                    ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
             elif qt == "short answer":
                 pform = NewExampleProblemSAForm(request.POST, instance = ep)
@@ -1752,6 +1833,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.save()
+                    ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
             elif qt == "proof":
                 pform = NewExampleProblemPFForm(request.POST, instance = ep)
@@ -1761,6 +1843,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt)
                     prob.save()
+                    ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
     qt=ep.question_type.question_type
     if qt == 'short answer':
@@ -1789,6 +1872,7 @@ class TextBlockUpdateView(UpdateView):
         textblock = TextBlock.objects.get(id=self.textblock_id)
         textblock.text_display = newtexcode(textblock.text_code, 'textblock_'+str(textblock.pk), "")
         compileasy(textblock.text_code,'textblock_'+str(textblock.pk))
+        textblock.increment_version()
         return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':textblock.slide_object}),'sopk':textblock.slide_object.pk})
 
     def get_object(self, queryset=None):
@@ -1819,6 +1903,7 @@ class TheoremUpdateView(UpdateView):
         theorem = Theorem.objects.get(id=self.theorem_id)
         theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
         compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
+        theorem.increment_version()
         return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':theorem.slide_object}),'sopk':theorem.slide_object.pk})
 
     def get_object(self, queryset=None):
@@ -1849,6 +1934,7 @@ class ProofUpdateView(UpdateView):
         proof = Proof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
         compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
+        proof.increment_version()
         return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':proof.slide_object}),'sopk':proof.slide_object.pk})
 
 
@@ -1893,7 +1979,6 @@ def alphagrade(request,**kwargs):
         raise Http404('Not a proof question')
     responses = problem_object.response_set.order_by('user_problemset__userunitobject__user_unit__user_class__userprofile__user__username')
     return render(request,'teacher/publishedclasses/alphagrading.html',{'problem_object':problem_object,'responses':responses,'class':my_class,'problemset':problemset,'nbar':'teacher'})
-
 
 
 
@@ -2124,6 +2209,7 @@ def save_duedate(request):
                 return JsonResponse({'error': 'Due date is before start date'})
         problemset.due_date = tz_due_date
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
@@ -2135,6 +2221,7 @@ def save_duedate(request):
                 return JsonResponse({'error': 'Due date is before start date'})
         test.due_date = tz_due_date
         test.save()
+        test.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'test':test,'request':request})})
     
 @login_required
@@ -2144,11 +2231,13 @@ def delete_duedate(request):
         problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
         problemset.due_date = None
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('pk'))
         test.due_date = None
         test.save()
+        test.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'test' : test,'request':request})})
 
 
@@ -2183,6 +2272,7 @@ def save_startdate(request):
                 return JsonResponse({'error': 'Start date is after end date'})
         problemset.start_date = tz_start_date
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
@@ -2194,6 +2284,7 @@ def save_startdate(request):
                 return JsonResponse({'error': 'Start date is after end date'})
         test.start_date = tz_start_date
         test.save()
+        test.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'test':test,'request':request})})
     
 @login_required
@@ -2203,11 +2294,13 @@ def delete_startdate(request):
         problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
         problemset.start_date = None
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('pk'))
         test.start_date = None
         test.save()
+        test.increment_version()
         return JsonResponse({'date_snippet':render_to_string('teacher/editingtemplates/due_date_snippet.html',{'test' : test,'request':request})})
 
 
@@ -2243,6 +2336,7 @@ def save_timelimit(request):
         hours = request.POST.get('hours')
         problemset.time_limit = time(hour=int(hours),minute=int(minutes))
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'time_snippet':render_to_string('teacher/editingtemplates/time_limit_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
@@ -2250,6 +2344,7 @@ def save_timelimit(request):
         hours = request.POST.get('hours')
         test.time_limit = time(hour=int(hours),minute=int(minutes))
         test.save()
+        test.increment_version()
         return JsonResponse({'time_snippet':render_to_string('teacher/editingtemplates/time_limit_snippet.html',{'test':test,'request':request})})
 
 @login_required
@@ -2259,11 +2354,13 @@ def delete_timelimit(request):
         problemset = get_object_or_404(ProblemSet,pk=request.POST.get('pk'))
         problemset.time_limit = None
         problemset.save()
+        problemset.increment_version()
         return JsonResponse({'time_snippet':render_to_string('teacher/editingtemplates/time_limit_snippet.html',{'problemset':problemset,'request':request})})
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('pk'))
         test.time_limit = None
         test.save()
+        test.increment_version()
         return JsonResponse({'time_snippet':render_to_string('teacher/editingtemplates/time_limit_snippet.html',{'test':test,'request':request})})
 
 

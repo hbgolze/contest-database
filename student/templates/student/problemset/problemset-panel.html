@@ -2,7 +2,7 @@
 
             <a name="{{prob_label}}"></a>
 	    <div class="card mb-3">
-<form class="prob-panel" id="prob-panel-{{prob_label}}">
+<form class="prob-panel" id="prob-panel-{{prob_label}}" autocomplete="off">
 	      <div class="card-header"><!--header-->
 		<h3>Problem {{forloop.counter}} ({{resp.point_value}} Points)<span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="fa fa-star"></span>{% else %}<span class="fa fa-star-o"></span>{% endif %}</span></h3>
 	      </div><!--end heading-->

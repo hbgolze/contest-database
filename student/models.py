@@ -55,6 +55,7 @@ class UserUnit(models.Model):
         points_earned = 0
         total_points = 0
         num_correct = 0
+        num_problemsets = 0
         for uo in self.userunitobject_set.all():
             try:
                 u_pset = uo.userproblemset
@@ -63,12 +64,15 @@ class UserUnit(models.Model):
                 points_earned += u_pset.points_earned
                 num_correct += u_pset.num_correct
                 num_problems += u_pset.num_problems
+                num_problemsets += 1
             except:
                 a=0
         self.points_earned = points_earned
         self.total_points = total_points
         self.num_correct = num_correct
         self.num_problems = num_problems
+        self.num_problemsets = num_problemsets
+        self.order = self.published_unit.order# not updating stats, but prevents redundancy
         self.save()
     def response_initialize(self):
         for uo in self.userunitobject_set.all():
@@ -79,11 +83,11 @@ class UserUnit(models.Model):
                 a=0
 
 class UserUnitObject(models.Model):
+    unit_object = models.ForeignKey('teacher.PublishedUnitObject',null = True)
     user_unit = models.ForeignKey(UserUnit)
     order = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
-
 
 class UserProblemSet(models.Model):
     userunitobject = models.OneToOneField(
@@ -92,20 +96,18 @@ class UserProblemSet(models.Model):
 #        primary_key=True,
         null = True,
     )
-    problemset = models.ForeignKey('teacher.ProblemSet',null=True)
-    published_problemset = models.ForeignKey('teacher.PublishedProblemSet',null=True)
+    problemset = models.ForeignKey('teacher.ProblemSet',null = True)
+    published_problemset = models.ForeignKey('teacher.PublishedProblemSet',null = True)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
-    order = models.IntegerField(default = 0)
-    num_problems = models.IntegerField(default=0)
-    num_correct = models.IntegerField(default=0)
-    is_initialized = models.BooleanField(default=0)
-    in_progress = models.BooleanField(default=0)
-    is_graded = models.BooleanField(default=0)
-    start_time = models.DateTimeField(null=True)
-    class Meta:
-        ordering = ['order']
+    num_problems = models.IntegerField(default = 0)
+    num_correct = models.IntegerField(default = 0)
+    is_initialized = models.BooleanField(default = 0)
+    in_progress = models.BooleanField(default = 0)
+    is_graded = models.BooleanField(default = 0)
+    start_time = models.DateTimeField(null = True)
     def update_stats(self):
+        print(self.pk,'update ups start')
         self.num_problems = self.published_problemset.problem_objects.count()
         total_points = 0
         for po in self.published_problemset.problem_objects.all():
@@ -118,23 +120,31 @@ class UserProblemSet(models.Model):
                 if po.question_type.question_type == 'multiple choice':
                     if r.response == po.problem.mc_answer:
                         num_correct += 1
-                        points += r.point_value
+                        points += r.point_value 
                 elif po.question_type.question_type == 'short answer':
                     if r.response == po.problem.sa_answer:
                         num_correct += 1
                         points += r.point_value
             else:
-                if r.response == po.answer:
-                    num_correct += 1
-                    points += r.point_value
+                if po.question_type.question_type == 'multiple choice':
+                    if r.response == po.mc_answer:
+                        num_correct += 1
+                        points += r.point_value
+                elif po.question_type.question_type == 'short answer':
+                    if r.response == po.sa_answer:
+                        num_correct += 1
+                        points += r.point_value
         self.points_earned = points
         self.total_points = total_points
         self.num_correct = num_correct
+        print('mid')
+        print('mid2')
         self.save()
+        print(self.pk,'update ups end')
     def response_initialize(self):
-        R=self.response_set.all()
+        R = self.response_set.all()
         for p in self.published_problemset.problem_objects.all():
-            if R.filter(publishedproblem_object = p).exists()==False:
+            if R.filter(publishedproblem_object = p).exists() == False:
                 r = Response(publishedproblem_object = p, user_problemset = self,order=p.order,point_value = p.point_value,response="")
                 r.save()
         self.is_initialized = True
@@ -149,10 +159,7 @@ class UserSlides(models.Model):
     )
     slides = models.ForeignKey('teacher.SlideGroup',null=True)
     published_slides = models.ForeignKey('teacher.PublishedSlideGroup',null=True)
-    order = models.IntegerField(default = 0)
     num_slides = models.IntegerField(default = 0)
-    class Meta:
-        ordering = ['order']
 
 class UserTest(models.Model):
     userunitobject = models.OneToOneField(
@@ -165,15 +172,12 @@ class UserTest(models.Model):
     published_test = models.ForeignKey('teacher.PublishedTest',null=True)
     total_points = models.IntegerField()
     points_earned = models.FloatField()
-    order = models.IntegerField(default = 0)
     num_problems = models.IntegerField(default = 0)
     num_correct = models.IntegerField(default = 0)
     is_initialized = models.BooleanField(default = 0)
     in_progress = models.BooleanField(default = 0)
     is_graded = models.BooleanField(default = 0)
     start_time = models.DateTimeField(null = True)
-    class Meta:
-        ordering = ['order']
     def is_in_progress(self):
         if self.start_time == None:
             return False
@@ -217,14 +221,15 @@ class UserTest(models.Model):
         self.num_correct = num_correct
         self.save()
     def response_initialize(self):
-        R=self.response_set.all()
+        R = self.response_set.all()
         for p in self.published_test.problem_objects.all():
-            if R.filter(publishedproblem_object = p).exists()==False:
-                r = Response(publishedproblem_object = p, user_test = self,order=p.order,point_value = p.point_value,response="")
+            if R.filter(publishedproblem_object = p).exists() == False:
+                r = Response(publishedproblem_object = p, user_test = self,order = p.order,point_value = p.point_value,response = "")
                 r.save()
         self.is_initialized = True
         self.save()
 
+#? Is order changed?
 class Response(models.Model):
     problem_object = models.ForeignKey('teacher.ProblemObject',null=True)
     publishedproblem_object = models.ForeignKey('teacher.PublishedProblemObject',null=True)

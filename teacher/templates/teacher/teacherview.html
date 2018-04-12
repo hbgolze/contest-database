@@ -36,6 +36,7 @@ document.write("</div>");
 	    <tr>
 	      <th>Class Name</th>
 	      <th>Number of Enrolled Students</th>
+	      <th>Sync Options</th>
 	    </tr>
 	  </thead>
 	  <tbody>
@@ -372,7 +373,25 @@ $(document).on('submit',"#remove-class-form",function(e) {
   });
   return false;
 });
-
+$(document).on('click',".sync_class",function(e) {
+  e.preventDefault();
+  pk = $(this).attr('id').split('-')[1];
+  $("#sync_class-"+pk).html("<span class='fa fa-spinner fa-spin'></span>");
+  $.ajax({
+    type: 'GET',
+    url: '/teacher/sync/'+pk+'/',
+    dataType: 'json',
+    success: function(result) {
+console.log(result['error']);
+      if (result['error'] == 0) {
+        $("#sync_class-"+pk).html("Up-to-date");
+      } else {
+        $("#sync_class-"+pk).html("Error");
+      }
+    }
+  });
+  return false;
+});
 </script>
 
 

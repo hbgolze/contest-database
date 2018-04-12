@@ -2,11 +2,12 @@
       {% with prob=probobj.problem %}
       {% if probobj.question_type.question_type == "multiple choice" %}
       <p>
-        {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+  {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
+
       </p>
       {% else %}
       <p>
-        {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} [{{prob.readable_label}}]
+  {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
       </p>
       {% endif %}
       {% endwith %}

@@ -24,12 +24,12 @@ def classview(request):
 
 
 #pointsum
-    weekofresponses = userprofile.student_responselog.filter(modified_date__date__gte=datetime.today().date()-timedelta(days=7)).filter(correct=1)
-    daycorrect=[((datetime.today().date()-timedelta(days=i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)).count()),pointsum(weekofresponses.filter(modified_date__date=datetime.today().date()-timedelta(days=i)))) for i in range(1,7)]
+    weekofresponses = userprofile.student_responselog.filter(modified_date__date__gte = datetime.today().date() - timedelta(days = 7)).filter(correct = 1)
+    daycorrect=[((datetime.today().date() - timedelta(days = i)).strftime('%A, %B %d'),str(weekofresponses.filter(modified_date__date = datetime.today().date() - timedelta(days = i)).count()),pointsum(weekofresponses.filter(modified_date__date = datetime.today().date() - timedelta(days = i)))) for i in range(1,7)]
 
-    todaycorrect=str(userprofile.student_responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1).count())
-    pointtoday=str(pointsum(userprofile.student_responselog.filter(modified_date__date=datetime.today().date()).filter(correct=1)))
-    context={}
+    todaycorrect = str(userprofile.student_responselog.filter(modified_date__date = datetime.today().date()).filter(correct = 1).count())
+    pointtoday = str(pointsum(userprofile.student_responselog.filter(modified_date__date = datetime.today().date()).filter(correct = 1)))
+    context = {}
     context['nbar'] = 'student'
 
     context['todaycorrect'] = todaycorrect
@@ -61,6 +61,7 @@ def problemsetview(request,**kwargs):
             context['too_early'] = 1
             return render(request,'student/problemsetview.html',context)
     if user_problemset.is_initialized == 0:
+        print('not_init')
         user_problemset.response_initialize()
     if user_problemset.published_problemset.due_date != None:
         if user_problemset.published_problemset.due_date < timezone.now():

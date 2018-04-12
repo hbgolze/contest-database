@@ -1,4 +1,5 @@
             <tr>
               <td><a href="class/{{cls.pk}}/">{{cls.name}}</a></td>
               <td>{{cls.enrolled_students.count}} (<a href="class/{{cls.pk}}/roster/">Roster</a>)</td>
+	      <td><span id="sync_class-{{cls.pk}}">{% if cls.version_number != cls.parent_class.version_number %}<a href="sync/{{cls.pk}}/" class="sync_class" id="sync_class_link-{{cls.pk}}">Sync</a>{% else %}Up-to-date{% endif %}</span></td>
             </tr>
