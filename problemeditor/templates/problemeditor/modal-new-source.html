@@ -1,0 +1,35 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <form id="new-source-form">
+      <div class="modal-header">
+        <h5 class="modal-title">Add New {% if source_type == "book" %}Book{% elif source_type == "contest" %}Contest{% else %}Person{% endif %} Source</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      <div class="modal-body">
+		
+        {{ form.non_field_errors }}
+        <div class="form-group">
+	  <input type="hidden" name="source_type" value="{{source_type}}">
+          {% for field in form %}
+          <div class="form-group">
+            {% if field.errors %}
+            <ul class="form-errors">
+              {% for error in field.errors %}
+              <li><span class="fa fa-exclamation-triangle"></span> <strong>{{ error|escape }}</strong></li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+            {% if field in form.visible_fields %}{{ field.label_tag }}{% endif %} {{ field }}
+            {% if field.help_text %}<div class="form-text text-muted">{{ field.help_text |linebreaks}}</div>{% endif %}
+          </div>
+	  {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" >
+        <input type="submit" class="btn btn-primary" value="Add Source">
+      </div>
+    </form>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+

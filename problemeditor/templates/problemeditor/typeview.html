@@ -44,10 +44,8 @@
       
       <tr>
 	<td>{{type.label}}</td>
-        <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% else %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% endif %}</td>
-        <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">View by Test</a></td>{% else %}<a href="CM/bytopic/{{type.type}}">View Problems</a>{% endif %}
-	
-        
+        <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% elif type.is_sourced == 0 %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% else %}<a href="sources/">View Sources</a>{% endif %}</td>
+        <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">View by Test</a></td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">View Problems</a>{% endif %}
         <td>{{untagged}}/{{type.problems.count}}</td>
         <td>{{unsolution}}/{{type.problems.count}}</td>
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
@@ -59,7 +57,7 @@
       </table>
       {% endif %}
       {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" %}
-      <a class="btn btn-primary" href="addproblemform/">Add a problem</a>
+      <a class="btn btn-primary" href="addproblemform/">Add a CleverMath problem</a>
       {% endif %}
       
     </div>

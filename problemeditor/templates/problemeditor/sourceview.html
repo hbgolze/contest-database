@@ -1,0 +1,184 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Choose a Source{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    <li class="breadcrumb-item active">Sourced Problems</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problem Editor</h2> 
+  <div class="row">
+    <div class="col">
+      <p>Please select a source.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h3>Books</h3>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Title</th>
+	    <th>Number of Untagged Problems</th>
+	    <th>Number of Problems with no Solution</th>
+	    <th>Total Number of Problems</th>
+	  </tr>
+	</thead>
+	<tbody id="book-rows">
+	  {% for source,untag,unsolution,num in book_rows %}
+	  {% include 'problemeditor/source-row.html' with source_type="book" %}
+	  {% endfor %}
+	</tbody>
+      </table>
+      <p style="margin-bottom:20px">
+	<button class="btn btn-primary" id="add_book">Add Book</button>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h3>Contests</h3>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Contest Name</th>
+	    <th>Number of Untagged Problems</th>
+	    <th>Number of Problems with no Solution</th>
+	    <th>Total Number of Problems</th>
+	  </tr>
+	</thead>
+	<tbody id="contest-rows">
+	  {% for source,untag,unsolution,num in contest_rows %}
+	  {% include 'problemeditor/source-row.html' with source_type="contest" %}
+	  {% endfor %}
+	</tbody>
+      </table>
+      <p style="margin-bottom:20px">
+	<button class="btn btn-primary" id="add_contest">Add Contest</button>
+      </p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <h3>People</h3>
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Name</th>
+	    <th>Number of Untagged Problems</th>
+	    <th>Number of Problems with no Solution</th>
+	    <th>Total Number of Problems</th>
+	  </tr>
+	</thead>
+	<tbody id="person-rows">
+	  {% for source,untag,unsolution,num in person_rows %}
+	  {% include 'problemeditor/source-row.html' with source_type="person" %}
+	  {% endfor %}
+	</tbody>
+      </table>
+      <button class="btn btn-primary" id="add_person">Add Person</button>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="new-source-modal" role="dialog">
+
+</div>
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('click',"#add_book",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-book/',
+        dataType: 'json',
+        success: function(result) {
+            $("#new-source-modal").html(result['modal-html']);
+            $("#new-source-modal").modal("show");
+        }
+    });
+    return false;
+});
+$(document).on('click',"#add_contest",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-contest/',
+        dataType: 'json',
+        success: function(result) {
+            $("#new-source-modal").html(result['modal-html']);
+            $("#new-source-modal").modal("show");
+        }
+    });
+    return false;
+});
+$(document).on('click',"#add_person",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-person/',
+        dataType: 'json',
+        success: function(result) {
+            $("#new-source-modal").html(result['modal-html']);
+            $("#new-source-modal").modal("show");
+        }
+    });
+    return false;
+});
+$(document).on('submit',"#new-source-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-source/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['st'] == 'book') {
+                $("#book-rows").append(result['source-row']);
+            } else if (result['st'] == 'contest') {
+                $("#contest-rows").append(result['source-row']);
+            } else if (result['st'] == 'person') {
+                $("#person-rows").append(result['source-row']);
+            }
+               $("#new-source-modal").hide();
+               $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+</script>
+
+{% endblock %}

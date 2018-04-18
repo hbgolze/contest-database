@@ -35,6 +35,7 @@
 	    <th>Number of Problems with no Solution</th>
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
 	    <th>Add Test</th>
+<th></th>
 	    {% endif %}
 	  </tr>
 	</thead>
@@ -50,7 +51,7 @@
         <td>{{untagged}}/{{type.problems.count}}</td>
         <td>{{unsolution}}/{{type.problems.count}}</td>
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
-	    <td><button class="btn btn-secondary btn-sm add-test" id="addtest__{{type.label}}__{{type.type}}">Add Test</button></td>
+	    <td>{% if type.is_contest %}<button class="btn btn-secondary btn-sm add-test" id="addtest__{{type.label}}__{{type.type}}">Add Test</button>{% endif %}</td><td>{% if type.is_contest %}<button class="btn btn-secondary btn-sm upload-test" id="uploadtest__{{type.type}}">Upload Test</button>{% endif %}</td>
 	    {% endif %}
       </tr>
       {% endfor %}
@@ -97,6 +98,11 @@ $(document).on('click',".add-test", function(e) {
     $("#type-label").html(type_label);
     $("#type-type").val(type_type);
     $("#add-test-modal").modal("show");
+});
+$(document).on('click',".upload-test", function(e) {
+    e.preventDefault();
+    var type_type = $(this).attr("id").split('__')[1];
+    window.location='uploadcontest/'+type_type+'/';
 });
 $(document).on('submit',"#add-test-form",function(e) {
     e.preventDefault();

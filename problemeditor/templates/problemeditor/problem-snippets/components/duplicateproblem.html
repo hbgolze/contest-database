@@ -1,4 +1,4 @@
-{% if prob.type_new.is_contest %}
+{% if prob.type_new.is_contest or prob.type_new.is_sourced %}
               <div id="duplicate_problems_{{prob.pk}}">
                 {% include "problemeditor/problem-snippets/components/duplicateproblemlist.html" %}
               </div>

@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType,Source,BookChapter
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from randomtest.utils import newsoltexcode,compileasy
 
@@ -419,3 +419,123 @@ class NewRoundForm(forms.ModelForm):
 
 class HTMLLatexForm(forms.Form):
     html_code = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}))
+
+class NewBookSourceForm(forms.ModelForm):
+    class Meta:
+        model = Source
+        fields = ('title', 'author', 'year',)
+        widgets = {
+            'title': forms.TextInput(attrs={"class":"form-control"}),
+            'author': forms.TextInput(attrs={"class":"form-control"}),
+            'year': forms.TextInput(attrs={"class":"form-control"}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(NewBookSourceForm, self).__init__(*args, **kwargs)   
+        self.fields['year'].required = False
+        self.fields['year'].help_text = "Optional"
+        self.fields['author'].label = "Author(s)"
+
+class NewContestSourceForm(forms.ModelForm):
+    class Meta:
+        model = Source
+        fields = ('year', 'contest_name', 'contest_short_name',)
+        widgets = {
+            'year': forms.TextInput(attrs={"class":"form-control"}),
+            'contest_name': forms.TextInput(attrs={"class":"form-control"}),
+            'contest_short_name': forms.TextInput(attrs={"class":"form-control"}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(NewContestSourceForm, self).__init__(*args, **kwargs)   
+        self.fields['contest_short_name'].help_text = "Shortened name of contest for use in labels."
+
+class NewPersonSourceForm(forms.ModelForm):
+    class Meta:
+        model = Source
+        fields = ('author',)
+        widgets = {
+            'author': forms.TextInput(attrs={"class":"form-control"}),
+            }
+
+class NewChapterForm(forms.ModelForm):
+    class Meta:
+        model = BookChapter
+        fields = ('name','chapter_number')
+        widgets = {
+            'name': forms.TextInput(attrs={"class":"form-control"}),
+            'chapter_number': forms.NumberInput(attrs={"class":"form-control"}),
+            }
+
+class NewProblemMCForm(forms.ModelForm):
+    problem_id = forms.CharField(widget=forms.HiddenInput())
+    class Meta:
+        model = Problem
+        fields = ('problem_text','answer_A','answer_B','answer_C','answer_D','answer_E','mc_answer','problem_number',)
+        widgets = {
+            'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
+            }
+    def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
+        super(NewProblemMCForm, self).__init__(*args, **kwargs)
+        self.fields['problem_text'].required = True
+        self.fields['answer_A'].required = True
+        self.fields['answer_B'].required = True
+        self.fields['answer_C'].required = True
+        self.fields['answer_D'].required = True
+        self.fields['answer_E'].required = True
+        self.fields['mc_answer'].required = True
+        self.fields['mc_answer'].label = 'Answer'
+        self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False
+
+
+class NewProblemSAForm(forms.ModelForm):
+    problem_id = forms.CharField(widget=forms.HiddenInput())
+    class Meta:
+        model = Problem
+        fields = ('problem_text','sa_answer','problem_number',)
+        widgets = {
+            'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
+        super(NewProblemSAForm, self).__init__(*args, **kwargs)
+        self.fields['problem_text'].required = True
+        self.fields['sa_answer'].required = True
+        self.fields['sa_answer'].label = 'Answer'
+        self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False
+
+class NewProblemPFForm(forms.ModelForm):
+    problem_id = forms.CharField(widget=forms.HiddenInput())
+    class Meta:
+        model = Problem
+        fields = ('problem_text','problem_number',)
+        widgets = {
+            'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            }
+    def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
+        super(NewProblemPFForm, self).__init__(*args, **kwargs)
+#        self.fields['problem_code'].required = True
+        self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False

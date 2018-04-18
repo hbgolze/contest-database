@@ -1,0 +1,121 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Choose a Chapter{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+    <li class="breadcrumb-item"><a href="../../">Sourced Problems</a></li>
+    <li class="breadcrumb-item active">Book: {{book.title}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Problems from Book: {{book.title}}</h2>
+  <p class="text-muted">Author(s): {{book.author}}</p>
+  <div class="row">
+    <div class="col">
+      <p>Please select a chapter.</p>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+            <th>Chapter</th>
+	    <th>Number of Untagged Problems</th>
+	    <th>Number of Problems with no Solution</th>
+	    <th>Total Number of Problems</th>
+	  </tr>
+	</thead>
+	<tbody id="chapter-rows">
+	  {% for chapter,chapter_label,untag,unsolution,num in rows %}
+	  {% include 'problemeditor/book-chapter-row.html' %}
+	  {% endfor %}
+	</tbody>
+      </table>
+      <button class="btn btn-primary" id="add_chapter">Add a Chapter</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="new-chapter-modal" role="dialog">
+
+</div>
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('click',"#add_chapter",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-new-chapter/',
+        data: "pk={{book.pk}}",
+        dataType: 'json',
+        success: function(result) {
+            $("#new-chapter-modal").html(result['modal-html']);
+            $("#new-chapter-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-chapter-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-chapter/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            var inserted = 0;
+            var ch_num = parseInt(result['chapter-number']);
+            $("#chapter-rows").children("tr").each(function() {
+                var new_ch_num = parseInt($(this).attr('id').split('-')[1]);
+                if (inserted == 0 && new_ch_num > ch_num) {
+                    inserted = 1;
+                    $(this).before(result['chapter-row']);
+                }
+            });
+            if (inserted == 0) {
+                $("#chapter-rows").append(result['chapter-row']);
+            }
+            $("#new-chapter-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+</script>
+{% endblock %}

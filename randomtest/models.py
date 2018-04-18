@@ -54,6 +54,7 @@ class Type(models.Model):
     readable_label_pre_form = models.CharField(max_length=50,default = '')
     readable_label_post_form = models.CharField(max_length=50,default = '')
     allow_form_letter = models.BooleanField(default = 0)
+    is_sourced = models.BooleanField(default = 0)
     def __str__(self):
         return self.label
     class Meta:
@@ -69,6 +70,35 @@ class Round(models.Model):
         return self.name
     class Meta:
         ordering = ['name']
+
+class SourceType(models.Model):
+    name = models.CharField(max_length = 15)
+    def __str__(self):
+        return self.name
+
+class Source(models.Model):
+    source_type = models.ForeignKey(SourceType,null= True)#book; contest; person
+    title = models.CharField(max_length = 200,default = '')#book
+    author = models.CharField(max_length = 200,default = '')#for book; person...
+    year = models.CharField(max_length = 4,default = '',blank=True)#all? optional though (except contest)
+    contest_name = models.CharField(max_length = 30,default = '')
+    contest_short_name = models.CharField(max_length = 30,default = '')
+    def __str__(self):
+        if self.source_type.name == "book":
+            return self.title
+        elif self.source_type.name == "contest":
+            return self.year+' '+self.contest_name
+        elif self.source_type.name == "person":
+            return self.author
+
+class BookChapter(models.Model):
+    source = models.ForeignKey(Source,null = True)
+    name = models.CharField(max_length = 200,default = '')
+    chapter_number = models.IntegerField()
+    class Meta:
+        ordering = ['chapter_number']
+    def __str__(self):
+        return self.name
 
 class ProblemApproval(models.Model):
     approval_user = models.ForeignKey(User,blank=True,null=True)
@@ -119,49 +149,51 @@ class Comment(models.Model):
         return self.problem_label+' comment '+str(self.created_date)+', '+str(self.author)
 
 class Problem(models.Model):
-    problem_number = models.IntegerField(default=0)
-    tags = models.ManyToManyField(Tag,related_name='problems',blank=True)#related name is used correctly here...
-    newtags = models.ManyToManyField(NewTag,related_name='problems',blank=True)
+    problem_number = models.IntegerField(default = 0)
+    tags = models.ManyToManyField(Tag,related_name = 'problems',blank = True)#related name is used correctly here...
+    newtags = models.ManyToManyField(NewTag,related_name = 'problems',blank = True)
 #    tags = models.ManyToManyField(Tag,blank=True)
-    type_new = models.ForeignKey(Type,related_name='problems',blank=True,null=True)#new(should replace)
-    round = models.ForeignKey(Round,related_name='problems',blank=True,null=True)
-    question_type_new = models.ForeignKey(QuestionType,related_name='question_type_new',blank=True,null=True)#new(should replace), then replace again.
-    year = models.IntegerField(default=2016)
-    difficulty = models.IntegerField(blank=True,null=True)
+    type_new = models.ForeignKey(Type,related_name='problems',blank = True,null = True)#new(should replace)
+    round = models.ForeignKey(Round,related_name = 'problems',blank = True,null = True)
+    question_type_new = models.ForeignKey(QuestionType,related_name = 'question_type_new',blank = True,null = True)#new(should replace), then replace again.
+    year = models.IntegerField(default = 2018)
+    difficulty = models.IntegerField(blank = True,null = True)
     types = models.ManyToManyField(Type)#allows for  multiple types, should be replaced
-    answer = models.CharField(max_length=20,blank=True)#should be replaced
-    latexanswer = models.CharField(max_length=100,blank=True)#should be replaced
-    label = models.CharField(max_length=20)
-    readable_label = models.CharField(max_length=20,blank=True)
-    latex_label = models.CharField(max_length=20,blank=True)
-    problem_text = models.TextField(blank=True)
-    mc_problem_text = models.TextField(blank=True)
-    display_problem_text = models.TextField(blank=True)
-    display_mc_problem_text = models.TextField(blank=True)
+    answer = models.CharField(max_length = 20,blank = True)#should be replaced
+    latexanswer = models.CharField(max_length = 100,blank = True)#should be replaced
+    label = models.CharField(max_length = 20)
+    readable_label = models.CharField(max_length = 20,blank = True)
+    latex_label = models.CharField(max_length = 20,blank = True)
+    problem_text = models.TextField(blank = True)
+    mc_problem_text = models.TextField(blank = True)
+    display_problem_text = models.TextField(blank = True)
+    display_mc_problem_text = models.TextField(blank = True)
     needs_answers = models.BooleanField(default = 0)
-    answer_choices = models.TextField(blank=True)#should be replaced
-    answer_A = models.CharField(max_length=500,blank=True)
-    answer_B = models.CharField(max_length=500,blank=True)
-    answer_C = models.CharField(max_length=500,blank=True)
-    answer_D = models.CharField(max_length=500,blank=True)
-    answer_E = models.CharField(max_length=500,blank=True)
-    mc_answer = models.CharField(max_length=1,blank=True)
-    sa_answer = models.CharField(max_length=150,blank=True)
-    form_letter = models.CharField(max_length=2,blank=True)
-    test_label = models.CharField(max_length=50,blank=True)
-    question_type = models.ManyToManyField(QuestionType)
-    solutions = models.ManyToManyField(Solution,blank=True)
-    top_solution_number = models.IntegerField(blank=True,null=True)
-    author = models.ForeignKey(User,related_name='author',blank=True,null=True)
-    author_name = models.CharField(max_length=50,blank=True)
+    answer_choices = models.TextField(blank = True)#should be replaced
+    answer_A = models.CharField(max_length = 500,blank = True)
+    answer_B = models.CharField(max_length = 500,blank = True)
+    answer_C = models.CharField(max_length = 500,blank = True)
+    answer_D = models.CharField(max_length = 500,blank = True)
+    answer_E = models.CharField(max_length = 500,blank = True)
+    mc_answer = models.CharField(max_length = 1,blank = True)
+    sa_answer = models.CharField(max_length = 150,blank = True)
+    form_letter = models.CharField(max_length = 2,blank = True)
+    test_label = models.CharField(max_length = 50,blank = True)
+    question_type = models.ManyToManyField(QuestionType)#deprecated?
+    solutions = models.ManyToManyField(Solution,blank = True)
+    top_solution_number = models.IntegerField(blank = True,null = True)
+    author = models.ForeignKey(User,related_name = 'author',blank = True,null = True)
+    author_name = models.CharField(max_length = 50,blank = True)
     created_date = models.DateTimeField(default = timezone.now)
-    approval_status = models.BooleanField(default=0)#deprecated
-    approval_user = models.ForeignKey(User,related_name='approval_user',blank=True,null=True)#deprecated
-    comments = models.ManyToManyField(Comment,blank=True)
-    approvals = models.ManyToManyField(ProblemApproval,blank=True)
-    duplicate_problems = models.ManyToManyField("self",blank=True)
-    problem_number_prefix = models.CharField(max_length=5,default="")
-    notes = models.TextField(blank=True)
+    approval_status = models.BooleanField(default = 0)#deprecated
+    approval_user = models.ForeignKey(User,related_name = 'approval_user',blank = True,null = True)#deprecated
+    comments = models.ManyToManyField(Comment,blank = True)
+    approvals = models.ManyToManyField(ProblemApproval,blank = True)
+    duplicate_problems = models.ManyToManyField("self",blank = True)
+    problem_number_prefix = models.CharField(max_length = 5,default = "")
+    notes = models.TextField(blank = True)
+    source = models.ForeignKey(Source,blank = True,null = True)
+    book_chapter = models.ForeignKey(BookChapter,blank = True,null = True)
     def __str__(self):
         return self.label
     def print_tags(self):

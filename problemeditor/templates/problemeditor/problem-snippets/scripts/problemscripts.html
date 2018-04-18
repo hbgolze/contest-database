@@ -269,7 +269,8 @@ $(document).on('submit',"#edit_latex_form",function(event) {
 
 {% endif %}
 
-$(".solution-link").click(function(event) {
+$(document).on('click',".solution-link",function(event) {
+console.log('asd');
     event.preventDefault();
     var prob_pk = $(this).attr('id').split('_')[1];
     var target = "/problemeditor/ajax/load_sol/"+prob_pk+"/";
@@ -419,6 +420,93 @@ $(document).on("click","#preview-latex-button", function(e) {
     $("#preview-latex").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
 });
+
+{% if is_sourced %}
+
+$(document).on('click',".add-sourced-problem",function(event) {
+    event.preventDefault();
+    var source_type = $(this).attr('id').split('-')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-add-sourced-problem/',
+        data: "&st="+source_type,
+        dataType: 'json',
+        success: function(result) {
+            $("#add-problem").html(result['modal-html']);
+            $("#add-problem").modal({backdrop: 'static', keyboard: false});//prevents clicking off
+        }
+    });
+    return false;
+});
+
+$(document).on('change',"#question-type",function(event) {
+    event.preventDefault();
+    $('#add-sourced-problem-button').prop('disabled',false);
+    if ($(this).val()=='short answer') {
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-sourced-problem/',
+        data: "&qt=sa&st="+$("#input-source-type").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#question-fields").html(result);
+        }
+    });
+    return false;
+
+    } else if ($(this).val()=='multiple choice') {
+
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-sourced-problem/',
+        data: "&qt=mc&st="+$("#input-source-type").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#question-fields").html(result);
+        }
+    });
+    return false;
+    } else if ($(this).val()=='proof') {
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-sourced-problem/',
+        data: "&qt=pf&st="+$("#input-source-type").val(),
+        dataType: 'html',
+        success: function(result) {
+            $("#question-fields").html(result);
+        }
+    });
+    return false;
+    }
+});
+
+$(document).on('submit',"#form-add-sourced-problem",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: 'add-sourced-problem/',
+        data: $(this).serialize()+"&st="+$("#input-source-type").val(),
+        dataType: 'json',
+        success: function(result) {
+            if ('error' in result) {
+                $("#add-problem-error-message").html(result['error']);
+                $("#add-problem-error-message").show();
+                setTimeout(function() {
+                    $("#add-problem-error-message").fadeOut().empty();
+                },5000);
+            } else {
+                $("#add-problem").hide();
+                $("[data-dismiss=modal]").trigger({ type: "click" });
+                $("#problemList").append(result['list-item']);
+                 MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problem_"+result['pk']]);
+//            $("#msg-no-problems").hide();
+            }
+        }
+    });
+    return false;
+});
+{% endif %}
+
 </script>
 
 

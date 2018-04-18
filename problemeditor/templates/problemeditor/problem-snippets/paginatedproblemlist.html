@@ -2,17 +2,12 @@
     <div class="col-12">
       <div id="problemList" class="list-group">
         {% for prob in rows %}
-        <div class="list-group-item" id="problem_{{prob.pk}}">
-	  <div class="row">
-	    <div class="col-1">
-	      {% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}.{% else %}{{forloop.counter}}.{% endif %}
 
-	    </div>
-	    <div class="col-11">
-              {% include 'problemeditor/problem-snippets/problem-item.html' %}
-	    </div>
-	  </div>
-        </div>
+	{% if rows.start_index %}
+	{% include 'problemeditor/problem-snippets/paginated-list-item.html' with forcount=forloop.counter|add:rows.start_index|add:-1 %}
+	{% else %}
+	{% include 'problemeditor/problem-snippets/paginated-list-item.html' with forcount=forloop.counter %}
+	{% endif %}
         {% endfor %}
       </div><!--list-group-->
     </div>

@@ -7,8 +7,19 @@
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
+{% if is_sourced %}
+{% if is_chapter %}
+    <li class="breadcrumb-item"><a href="../../../../">Sourced Problems</a></li>
+    <li class="breadcrumb-item"><a href="../../">Book: {{source.title}}</a></li>
+    <li class="breadcrumb-item"><a href="../">{{chapter_name}}</a></li>
+{% else %}
+    <li class="breadcrumb-item"><a href="../../../">Sourced Problems</a></li>
+    <li class="breadcrumb-item"><a href="../">{{tag}}</a></li>
+{% endif %}
+{% else %}
     <li class="breadcrumb-item"><a href="../../">{{typelabel}}</a></li>
     <li class="breadcrumb-item"><a href="../">{{tag}}</a></li>
+{% endif %}
     <li class="breadcrumb-item active">{{prob.readable_label}}</li>
   </ol>
 </nav>

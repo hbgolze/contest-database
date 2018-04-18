@@ -70,6 +70,20 @@ class Round(models.Model):
     class Meta:
         ordering = ['name']
 
+class SourceType(models.Model):
+    name = models.CharField(max_length = 15)
+    def __str__(self):
+        return self.name
+
+class Source(models.Model):
+    source_type = models.ForeignKey(SourceType,null= True)#book; contest; person
+    title = models.CharField(max_length = 200,default = '')#book
+    author = models.CharField(max_length = 200,default = '')#for book; person...
+    year = models.CharField(max_length = 4,default = '',blank=True)#all? optional though (except contest)
+    contest_name = models.CharField(max_length = 30,default = '')
+    contest_short_name = models.CharField(max_length = 30,default = '')
+    form_letter(models.CharField(max_length = 2,default = '')
+#contest country
 class ProblemApproval(models.Model):
     approval_user = models.ForeignKey(User,blank=True,null=True)
     APPROVAL_CHOICES = (
@@ -162,6 +176,7 @@ class Problem(models.Model):
     duplicate_problems = models.ManyToManyField("self",blank=True)
     problem_number_prefix = models.CharField(max_length=5,default="")
     notes = models.TextField(blank=True)
+    source = models.ForeignKey(Source,blank = True,null=True)
     def __str__(self):
         return self.label
     def print_tags(self):
@@ -342,7 +357,7 @@ class UserProfile(models.Model):
     my_classes = models.ManyToManyField('teacher.Class',related_name='userprofiles')
     owned_my_classes = models.ManyToManyField('teacher.Class',related_name='owneruserprofiles')
     editable_my_classes = models.ManyToManyField('teacher.Class',related_name='editoruserprofiles')
-    readonly_my_classes = models.ManyToManyField('teacher.Class',related_name='readonlyuserprofiles')
+    readonly_my_classes = models.ManyToManyField('teacher.Class',related_name='readeruserprofiles')
     my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
     my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name='TA_userprofiles')
     time_zone = models.CharField(max_length=100, blank=True, null=True, choices=TIMEZONES)

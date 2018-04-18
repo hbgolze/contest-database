@@ -14,10 +14,10 @@ from django.views.generic import UpdateView,CreateView,DeleteView,ListView,Detai
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
-from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm
+from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely
 
 from django.db.models import Count
@@ -222,6 +222,380 @@ def typeview(request):
     return HttpResponse(template.render(context,request))
 
 @login_required
+def sourceview(request):
+    books = SourceType.objects.get(name="book").source_set.all()
+    contests = SourceType.objects.get(name="contest").source_set.all()
+    people = SourceType.objects.get(name="person").source_set.all()
+    book_rows = []
+    contest_rows = []
+    person_rows = []
+    for b in books:
+        P = b.problem_set.all()
+        num_problems = P.count()
+        num_untagged = P.filter(newtags__isnull = True).count()#
+        num_nosolutions = P.filter(solutions__isnull = True).count()
+        book_rows.append((b,num_untagged,num_nosolutions,num_problems))
+    for c in contests:
+        P = c.problem_set.all()
+        num_problems = P.count()
+        num_untagged = P.filter(newtags__isnull = True).count()#
+        num_nosolutions = P.filter(solutions__isnull = True).count()
+        contest_rows.append((c,num_untagged,num_nosolutions,num_problems))
+    for p in people:
+        P = p.problem_set.all()
+        num_problems = P.count()
+        num_untagged = P.filter(newtags__isnull = True).count()#
+        num_nosolutions = P.filter(solutions__isnull = True).count()
+        person_rows.append((p,num_untagged,num_nosolutions,num_problems))
+    context = {}
+    context['book_rows'] = book_rows
+    context['contest_rows'] = contest_rows
+    context['person_rows'] = person_rows
+    context['nbar'] = 'problemeditor'
+    return render(request, 'problemeditor/sourceview.html',context)
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_new_book(request,**kwargs):
+    form = NewBookSourceForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-source.html',{'form':form,'source_type':'book'})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_new_contest(request,**kwargs):
+    form = NewContestSourceForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-source.html',{'form':form,'source_type':'contest'})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_new_person(request,**kwargs):
+    form = NewPersonSourceForm()
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-source.html',{'form':form,'source_type':'person'})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def save_source(request,**kwargs):
+    st_name = request.POST.get('source_type','')
+    source_type =  get_object_or_404(SourceType,name = st_name)
+    if st_name == 'book':
+        form = NewBookSourceForm(request.POST)
+        form.save()
+        form.instance.source_type = source_type
+        form.instance.save()
+        return JsonResponse({'st':st_name,'source-row':render_to_string('problemeditor/source-row.html',{'source_type':st_name,'source':form.instance,'untag':0,'unsolution':0,'num':0})})
+    elif st_name == 'contest':
+        form = NewContestSourceForm(request.POST)
+        form.save()
+        form.instance.source_type = source_type
+        form.instance.save()
+        return JsonResponse({'st':st_name,'source-row':render_to_string('problemeditor/source-row.html',{'source_type':st_name,'source':form.instance,'untag':0,'unsolution':0,'num':0})})
+    elif st_name == 'person':
+        form = NewPersonSourceForm(request.POST)
+        form.save()
+        form.instance.source_type = source_type
+        form.instance.save()
+        return JsonResponse({'st':st_name,'source-row':render_to_string('problemeditor/source-row.html',{'source_type':st_name,'source':form.instance,'untag':0,'unsolution':0,'num':0})})
+
+@login_required
+def bookview(request,pk):
+    book = get_object_or_404(Source, pk=pk)
+    if book.source_type.name != "book":
+        raise Http404("Incorrect source type")
+    book_chapters = book.bookchapter_set.all()
+#    num_untagged = book_problems.filter(newtags__isnull = True).count()
+    rows = []
+    for chap in book_chapters:
+        chapter_problems = chap.problem_set.all()
+        rows.append((chap, 'Chapter '+str(chap.chapter_number)+': '+chap.name,chapter_problems.filter(newtags__isnull = True).count(),chapter_problems.filter(solutions__isnull = True).count(),chapter_problems.count()))
+    context = {}
+    context['book'] = book
+    context['nbar'] = 'problemeditor'
+    context['rows'] = rows
+    return render(request,'problemeditor/bookview.html',context)
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_new_chapter(request,**kwargs):
+    form = NewChapterForm()
+    book_pk = request.GET.get('pk')
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-chapter.html',{'form':form,'book_pk':book_pk})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def save_chapter(request,**kwargs):
+    book_pk = request.POST.get('book_pk','')
+    book =  get_object_or_404(Source,pk = book_pk)
+    form = NewChapterForm(request.POST)
+    form.save()
+    form.instance.source = book
+    form.instance.save()
+    return JsonResponse({'chapter-row':render_to_string('problemeditor/book-chapter-row.html',{'chapter':form.instance,'chapter_label': "Chapter "+str(form.instance.chapter_number)+": "+form.instance.name,'untag':0,'unsolution':0,'num':0}),'chapter-number':form.instance.chapter_number})
+
+@user_passes_test(lambda u: mod_permission(u))
+def chapterview(request,book_pk,chapter_pk):
+    book = get_object_or_404(Source, pk = book_pk)
+    if book.source_type.name != "book":
+        raise Http404("Incorrect source type")
+#        problems = list(Problem.objects.filter(test_label=testlabel))
+    chapter = get_object_or_404(BookChapter, pk = chapter_pk)
+    problems = chapter.problem_set.all()
+#    problems = sorted(problems, key=lambda x:(x.year,x.problem_number))
+
+    paginator=Paginator(problems,150)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    template = loader.get_template('problemeditor/typetagview.html')
+    context = {
+        'rows' : prows,
+        'nbar': 'problemeditor',
+#        'type':typ.type,
+        'typelabel': 'Sourced Problems',
+        'tag':'Chapter '+str(chapter.chapter_number)+': '+chapter.name,
+        'tags':NewTag.objects.exclude(tag='root'),
+        'is_sourced':1,
+        'is_chapter':1,
+        'source':book,
+        }
+    return HttpResponse(template.render(context,request))
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_addproblemform(request,**kwargs):
+    st = request.GET.get('st')
+    print('st1',st)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-problem.html',{'source_type' : st})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_qt_addproblemform(request,**kwargs):
+    qt = request.GET.get('qt','')
+    st = request.GET.get('st','')
+    print('st',st)
+    if qt == 'sa':
+        form = NewProblemSAForm(st=st)
+    if qt == 'mc':
+        form = NewProblemMCForm(st=st)
+    if qt == 'pf':
+        form = NewProblemPFForm(st=st)
+    return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
+
+@user_passes_test(lambda u: mod_permission(u))
+def add_sourced_problem(request,**kwargs):
+#depends on book, person, or contest....
+    userprofile = request.user.userprofile
+    is_chapter = 0
+    is_contest = 0
+    tags = NewTag.objects.exclude(tag='root')
+    st = request.POST.get('st','')
+    if 'book_pk' in kwargs:
+        source = get_object_or_404(Source,pk = kwargs['book_pk'])
+    if 'chapter_pk' in kwargs:
+        chapter = get_object_or_404(BookChapter,pk = kwargs['chapter_pk'])
+        is_chapter = 1
+    if 'person_pk' in kwargs:
+        source = get_object_or_404(Source,pk = kwargs['person_pk'])
+    if 'contest_pk' in kwargs:
+        source = get_object_or_404(Source,pk = kwargs['contest_pk'])
+        is_contest = 1
+    if request.method == "POST":
+        form = request.POST
+        qt = form.get('question-type','')
+        typ = Type.objects.get(label = "Sourced")
+        question_type = QuestionType.objects.get(question_type = qt)
+        if qt == "multiple choice":
+            pform = NewProblemMCForm(request.POST,st = st)
+
+            if pform.is_valid():
+                if is_contest:
+                    if source.problem_set.filter(problem_number = int(pform.cleaned_data['problem_number'])).exists():
+                        return JsonResponse({'error':'Problem with number already exists'})
+                prob = pform.save()
+                prob.type_new = typ
+                prob.types.add(typ)
+#####problem_number....
+                if is_contest == 1:
+                    prob.label = str(source.year) + source.contest_short_name + str(prob.problem_number)
+                    prob.readable_label = str(source.year) + ' ' + source.contest_name + ' #' + str(prob.problem_number)
+                else:
+                    prob.label = 'Problem' + str(prob.pk)
+                    prob.readable_label = 'Problem ' + str(prob.pk)
+#####
+                prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+                prob.mc_problem_text = prob.problem_text
+                prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
+                compileasy(prob.mc_problem_text,prob.label)
+                compileasy(prob.problem_text,prob.label)
+                compiletikz(prob.mc_problem_text,prob.label)
+                compiletikz(prob.problem_text,prob.label)
+                prob.question_type_new = question_type
+                prob.question_type.add(question_type)
+                prob.author = request.user
+                prob.answer_choices = prob.answers()
+                prob.answer = prob.mc_answer
+                prob.top_solution_number = 0
+                try:
+                    prob.year = int(source.year)###maybe bad
+                except ValueError:
+                    prob.year = 0
+                prob.source = source
+                if is_chapter == 1:
+                    prob.book_chapter = chapter
+                    forcount = chapter.problem_set.count() + 1
+                else:
+                    forcount = source.problem_set.count() + 1
+                prob.save()
+#problem_number
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+        elif qt == "short answer":
+            pform = NewProblemSAForm(request.POST,st=st)
+            if pform.is_valid():
+                if is_contest:
+                    if source.problem_set.filter(problem_number = int(pform.cleaned_data['problem_number'])).exists():
+                        return JsonResponse({'error':'Problem with number already exists'})
+                prob = pform.save()
+                prob.type_new = typ
+                prob.types.add(typ)
+                if is_contest == 1:
+                    prob.label = str(source.year) + source.contest_short_name + str(prob.problem_number)
+                    prob.readable_label = str(source.year) + ' ' + source.contest_name + ' #' + str(prob.problem_number)
+                else:
+                    prob.label = 'Problem' + str(prob.pk)
+                    prob.readable_label = 'Problem ' + str(prob.pk)
+                prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+                prob.mc_problem_text = prob.problem_text
+                prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,'')
+                compileasy(prob.mc_problem_text,prob.label)
+                compileasy(prob.problem_text,prob.label)
+                compiletikz(prob.mc_problem_text,prob.label)
+                compiletikz(prob.problem_text,prob.label)
+                prob.question_type_new = question_type
+                prob.question_type.add(question_type)
+                prob.author = request.user
+                prob.answer_choices = ''
+                prob.answer = prob.sa_answer
+                prob.top_solution_number = 0
+                try:
+                    prob.year = int(source.year)###maybe bad
+                except ValueError:
+                    prob.year = 0
+                prob.source = source
+                if is_chapter == 1:
+                    prob.book_chapter = chapter
+                    forcount = chapter.problem_set.count() + 1
+                else:
+                    forcount = source.problem_set.count() + 1
+                prob.save()
+#problem_number
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+        elif qt == "proof":
+            pform = NewProblemPFForm(request.POST,st=st)
+            if pform.is_valid():
+                if is_contest:
+                    if source.problem_set.filter(problem_number = int(pform.cleaned_data['problem_number'])).exists():
+                        return JsonResponse({'error':'Problem with number already exists'})
+                prob = pform.save()
+                prob.type_new = typ
+                prob.types.add(typ)
+                if is_contest == 1:
+                    prob.label = str(source.year)+source.contest_short_name + str(prob.problem_number)
+                    prob.readable_label = str(source.year) + ' ' + source.contest_name + ' #' + str(prob.problem_number)
+                else:
+                    prob.label = 'Problem' + str(prob.pk)
+                    prob.readable_label = 'Problem ' + str(prob.pk)
+                prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+                prob.mc_problem_text = prob.problem_text
+                prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,'')
+                compileasy(prob.mc_problem_text,prob.label)
+                compileasy(prob.problem_text,prob.label)
+                compiletikz(prob.mc_problem_text,prob.label)
+                compiletikz(prob.problem_text,prob.label)
+                prob.question_type_new = question_type
+                prob.question_type.add(question_type)
+                prob.author = request.user
+#                prob.answer_choices = prob.answers()
+                prob.answer = ''
+                prob.top_solution_number = 0
+                try:
+                    prob.year = int(source.year)###maybe bad
+                except ValueError:
+                    prob.year = 0
+                prob.source = source
+                if is_chapter == 1:
+                    prob.book_chapter = chapter
+                    forcount = chapter.problem_set.count() + 1
+                else:
+                    forcount = source.problem_set.count() + 1
+                prob.save()
+#problem_number
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+
+@user_passes_test(lambda u: mod_permission(u))
+def personview(request,person_pk):
+#check to make sure correct source type
+    person = get_object_or_404(Source, pk = person_pk)
+    if person.source_type.name != "person":
+        raise Http404("Incorrect source type")
+    problems = person.problem_set.all()
+
+    paginator=Paginator(problems,150)
+    page = request.GET.get('page')
+    try:
+        prows=paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    template = loader.get_template('problemeditor/typetagview.html')
+    context = {
+        'rows' : prows,
+        'nbar': 'problemeditor',
+#        'type':typ.type,
+        'typelabel': 'Sourced Problems',
+        'tag':'Person: '+person.author,
+        'tags':NewTag.objects.exclude(tag='root'),
+        'is_sourced':1,
+#        'is_chapter':1,
+        'source':person,
+        }
+    return HttpResponse(template.render(context,request))
+
+@user_passes_test(lambda u: mod_permission(u))
+def contestview(request,contest_pk):
+    contest = get_object_or_404(Source, pk = contest_pk)
+    if contest.source_type.name != "contest":
+        raise Http404("Incorrect source type")
+    problems = contest.problem_set.order_by('problem_number')
+
+    paginator = Paginator(problems,150)
+    page = request.GET.get('page')
+    try:
+        prows = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    template = loader.get_template('problemeditor/typetagview.html')
+    context = {
+        'rows' : prows,
+        'nbar' : 'problemeditor',
+#        'type':typ.type,
+        'typelabel' : 'Sourced Problems',
+        'tag' : 'Contest: '+str(contest),
+        'tags' : NewTag.objects.exclude(tag='root'),
+        'is_sourced' : 1,
+#        'is_chapter':1,
+        'source' : contest,
+        }
+    return HttpResponse(template.render(context,request))
+
+
+@login_required
 def tagview(request,type):
     typ = get_object_or_404(Type, type = type)
     newtags = NewTag.objects.all().exclude(label = 'root').order_by('tag')
@@ -407,33 +781,57 @@ def CMtopicview(request,type):#unapprovedview
 #####Check it
 @login_required
 def problemview(request,**kwargs):#,type,tag,label):
+    context = {}
+    context['nbar'] = 'problemeditor'
+    context['tags'] = NewTag.objects.exclude(tag = 'root')
     if 'type' in kwargs:
         type = kwargs['type']
-    if 'tag' in kwargs:
-        tag = kwargs['tag']
-        tag=goodtag(tag)
-    if 'label' in kwargs:
-        label = kwargs['label']
-    if 'pk' in kwargs:
-        tag_object = get_object_or_404(NewTag,pk=kwargs['pk'])
-        tag = tag_object.tag
-    typ=get_object_or_404(Type, type=type)
-    prob=get_object_or_404(Problem, label=label)
-
-    context={}
-    context['rows']=prob.solutions.all()
-    context['prob']=prob
-    context['nbar']='problemeditor'
-    context['typelabel']= typ.label
-    context['label'] = label
-    context['tag'] = tag
-    context['tags'] = NewTag.objects.exclude(tag='root')
-    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
-    return render(request, 'problemeditor/view.html', context)
-
-
-
-
+        if 'tag' in kwargs:
+            tag = kwargs['tag']
+            tag = goodtag(tag)
+        if 'label' in kwargs:
+            label = kwargs['label']
+        if 'pk' in kwargs:
+            tag_object = get_object_or_404(NewTag,pk = kwargs['pk'])
+            tag = tag_object.tag
+        typ = get_object_or_404(Type, type = type)
+        prob = get_object_or_404(Problem, label = label)
+        context['rows'] = prob.solutions.all()
+        context['prob'] = prob
+        context['typelabel'] = typ.label
+        context['label'] = label
+        context['tag'] = tag
+#        userprofile = request.user.userprofile
+        return render(request, 'problemeditor/view.html', context)
+    else:
+        context['is_sourced'] = 1
+        if 'chapter_pk' in kwargs and 'book_pk' in kwargs:
+            context['is_chapter'] = 1
+            chapter = get_object_or_404(BookChapter,pk = kwargs['chapter_pk'])
+            book = get_object_or_404(Source,pk = kwargs['book_pk'])
+#            context['chapter'] = chapter
+            context['source'] = book
+            prob = get_object_or_404(Problem,pk = kwargs['problem_pk'])
+            context['prob'] = prob
+            context['rows'] = prob.solutions.all()
+            context['chapter_name'] = 'Chapter '+str(chapter.chapter_number)+': '+chapter.name
+            return render(request, 'problemeditor/view.html', context)
+        if 'contest_pk' in kwargs:
+            contest = get_object_or_404(Source,pk = kwargs['contest_pk'])
+            context['source'] = contest
+            prob = get_object_or_404(Problem,pk = kwargs['problem_pk'])
+            context['prob'] = prob
+            context['rows'] = prob.solutions.all()
+            context['tag'] = 'Contest: '+str(contest)
+            return render(request, 'problemeditor/view.html', context)
+        if 'person_pk' in kwargs:
+            person = get_object_or_404(Source,pk = kwargs['contest_pk'])
+            context['source'] = person
+            prob = get_object_or_404(Problem,pk = kwargs['problem_pk'])
+            context['prob'] = prob
+            context['rows'] = prob.solutions.all()
+            context['tag'] = 'Person: '+str(person)
+            return render(request, 'problemeditor/view.html', context)
 
 
 class SolutionDeleteView(DeleteView):
@@ -673,14 +1071,22 @@ def my_activity(request):
 
 @login_required
 def redirectproblem(request,pk):
-    p=get_object_or_404(Problem,pk=pk)
+    p = get_object_or_404(Problem,pk=pk)
     if p.type_new not in request.user.userprofile.user_type_new.allowed_types.all():
         raise Http404("Unauthorized")
-    if p.type_new.is_contest==True:
+    if p.type_new.is_contest == True:
         return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
     else:
-        return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
-
+        if p.type_new.is_sourced == True:
+            if p.source.source_type.name == 'book':
+                return redirect('/problemeditor/sources/book/'+str(p.source.pk)+'/'+str(p.book_chapter.pk)+'/'+str(p.pk)+'/')
+            if p.source.source_type.name == 'contest':
+                return redirect('/problemeditor/sources/contest/'+str(p.source.pk)+'/'+str(p.pk)+'/')
+            if p.source.source_type.name == 'person':
+                return redirect('/problemeditor/sources/person/'+str(p.source.pk)+'/'+str(p.pk)+'/')
+        else:
+            return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
+    
 
 #######THIS MUST BE UPDATED TO USE ROUNDS PROPERLY.
 @login_required
