@@ -1,0 +1,10 @@
+<h3>Currently Displayed Solutions</h3>
+<div class="list-group" id="displayed-solutions">
+{% for sol in po.solution_objects.all %}
+{% include 'teacher/editingtemplates/modals/displayed-solution.html' %}
+{% endfor %}
+</div>
+
+
+
+

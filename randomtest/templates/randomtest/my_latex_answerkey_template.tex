@@ -22,6 +22,8 @@
 \NewDocumentEnvironment{ans}{m}{}{}
 \newif\ifsolution
 \solutionfalse
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
 \title{ {{name}} Answer Key}
 \author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }

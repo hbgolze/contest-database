@@ -5,7 +5,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey,GenericRelation
 from django.contrib.contenttypes.models import ContentType
 
 from randomtest.models import Problem,Solution,QuestionType
-from randomtest.utils import newtexcode, compileasy
+from randomtest.utils import newtexcode, compileasy,newsoltexcode
 from student.models import UserClass,UserUnit,UserUnitObject,UserProblemSet,UserSlides,UserTest
 # Create your models here.
 
@@ -810,11 +810,15 @@ class PublishedProblemSet(models.Model):#like NewTest
         print('middle 1')
         for po in self.problem_objects.all():
             if po.parent_problemobject not in self.parent_problemset.problem_objects.all():
+                print('if')
                 po.response_set.all().delete()
                 po.delete()
             else:
+                print('else')
                 if po.version_number != po.parent_problemobject.version_number:
+                    print('be else')
                     po.sync_to_parent()
+                    print('af else')
                 parent_po_pks.append(po.parent_problemobject.pk)
         print('middle 2')
         for po in self.parent_problemset.problem_objects.exclude(pk__in = parent_po_pks):
@@ -993,6 +997,10 @@ class ProblemObject(models.Model):
                 new_po.problem_display = newtexcode(new_po.problem_code, 'publishedoriginalproblem_'+str(new_po.pk), "")
             new_po.save()
             compileasy(new_po.problem_code,'publishedoriginalproblem_'+str(new_po.pk))
+##check this after allowing solution viewing in new format.
+        for so in self.solution_objects.all():
+            so.publish(published_problemobject = new_po)
+##
         return new_po
     def increment_version(self):
         self.version_number = self.version_number + 1
@@ -1047,7 +1055,6 @@ class PublishedProblemObject(models.Model):
             s+='\\qquad\\textbf{(E) }'+self.answer_E
         return s+'$\n\n'
     def sync_to_parent(self):
-        print('po hi')
         self.order = self.parent_problemobject.order
         self.point_value = self.parent_problemobject.point_value
         self.problem_code = self.parent_problemobject.problem_code
@@ -1075,13 +1082,73 @@ class PublishedProblemObject(models.Model):
                 else:
                     r.attempted = 1
             r.save()
-        print('po bye')
+        parent_so_pks = []
+        for so in self.solution_objects.all():
+            if so.parent_solutionobject not in self.parent_problemobject.solution_objects.all():
+                so.delete()
+            else:
+                if so.version_number != so.parent_solutionobject.version_number:
+                    so.sync_to_parent()
+                parent_so_pks.append(so.parent_solutionobject.pk)
+        for so in self.parent_problemobject.solution_objects.exclude(pk__in = parent_so_pks):
+            new_so = so.publish(published_problemobject = self)
+            new_so.save()
 
 
-##delete this model....but this also means that i want to make a foreignkey to Test; ProblemSet in problemobject (instead of manytomany)
-#1: add foreign key
-#2: Perform migrations and links
-#3: delete manytomany field
+
+class SolutionObject(models.Model):
+    problem_object = models.ForeignKey(ProblemObject,null = True, related_name = "solution_objects")
+    order = models.IntegerField(default = 0)
+    solution_code = models.TextField(blank=True)
+    solution_display = models.TextField(blank=True)
+    isSolution = models.BooleanField(default=0)
+    solution = models.ForeignKey(Solution,blank=True,null=True)
+    author = models.ForeignKey(User,related_name='solution_object',blank=True,null=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    version_number = models.IntegerField(default = 0)
+    class Meta:
+        ordering = ['order']
+    def publish(self,published_problemobject=None):
+        new_so = PublishedSolutionObject(order = self.order,solution_code = self.solution_code,solution_display="",isSolution=self.isSolution, solution=self.solution,author=self.author,parent_solutionobject = self,problem_object = published_problemobject,version_number = self.version_number)
+        new_so.save()
+        if new_so.isSolution == 0:
+            new_so.solution_display = newsoltexcode(new_so.solution_code, 'publishedoriginalsolution_'+str(new_so.pk))###
+            new_so.save()
+            compileasy(new_so.solution_code,'publishedoriginalsolution_'+str(new_so.pk))
+        return new_so
+    def increment_version(self):
+        self.version_number = self.version_number + 1
+        self.problem_object.increment_version()
+        self.save()
+
+
+class PublishedSolutionObject(models.Model):
+    problem_object = models.ForeignKey(PublishedProblemObject,null=True,related_name="solution_objects")
+    parent_solutionobject = models.ForeignKey(SolutionObject,null=True,on_delete=models.SET_NULL)
+    order = models.IntegerField(default = 0)
+    solution_code = models.TextField(blank=True)
+    solution_display = models.TextField(blank=True)
+    isSolution = models.BooleanField(default=0)
+    solution = models.ForeignKey(Solution,blank=True,null=True)
+    author = models.ForeignKey(User,related_name='published_solution_object',blank=True,null=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    version_number = models.IntegerField(default = 0)
+    class Meta:
+        ordering = ['order']
+    def sync_to_parent(self):
+        self.order = self.parent_solutionobject.order
+        self.solution_code = self.parent_solutionobject.solution_code
+        self.isSolution = self.parent_solutionobject.isSolution
+        self.solution = self.parent_solutionobject.solution
+        self.author = self.parent_solutionobject.author
+        self.save()
+        self.solution_display = newsoltexcode(self.solution_code, 'publishedoriginalsolution_'+str(self.pk))
+        self.version_number = self.parent_solutionobject.version_number
+        self.save()
+        compileasy(self.solution_code,'publishedoriginalsolution_'+str(self.pk))
+
+
+
 
 
 

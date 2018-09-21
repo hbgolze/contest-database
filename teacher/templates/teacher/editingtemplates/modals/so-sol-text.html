@@ -1,0 +1,5 @@
+                  {% if sol.isSolution %}
+                    {% autoescape off %}{{sol.solution.display_solution_text|linebreaks}}{% endautoescape %}
+                  {% else %}
+                  {% autoescape off %}{{sol.solution_display|linebreaks}}{% endautoescape %}
+                  {% endif %}

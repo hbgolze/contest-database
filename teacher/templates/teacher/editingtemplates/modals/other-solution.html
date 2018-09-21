@@ -1,0 +1,18 @@
+		<div class="list-group-item" id="other_sol-{{sol.pk}}">
+		  <div class="container">
+		  <div class="row">
+		    <div class="col-10">
+		      <b>Solution:</b>
+                      {% autoescape off %}{{sol.display_solution_text|linebreaks}}{% endautoescape %}
+		    </div>
+		    <div class="col-2">
+		      <b>Options:</b>
+		      <button class="btn btn-secondary btn-sm display-sol" id="display_button-{{po.pk}}-{{sol.pk}}">Display</button>
+		    </div>
+		  </div>
+		  </div>
+		</div>
+
+
+
+

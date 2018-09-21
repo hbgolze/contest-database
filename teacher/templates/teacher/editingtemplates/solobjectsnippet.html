@@ -1,0 +1,30 @@
+          <div class="list-group-item" id="displayed-solution_{{sol_obj.pk}}">
+<!--            <input type="hidden" name="unitobjectinput" value="unitobject_{{unitobj.pk}}">-->
+            <div class="row">
+              <div class="col-1">
+                {{forcount}}.
+              </div>
+              <div class="col-10">
+		{% if sol_obj.isSolution %}
+		{% autoescape off %}{{sol_obj.solution.display_solution_text|linebreaks}} {% endautoescape %}
+		{% else %}
+		{% autoescape off %}{{sol_obj.solution.solution_display|linebreaks}} {% endautoescape %}
+		{% endif %}
+
+<div class="d-flex flex-row">
+  <div class="p-2 mr-auto">
+  </div>
+  <div class="p-2">
+<button class="btn btn-primary edit-sol-link" id="editsol_{{sol_obj.pk}}">Edit</button>
+  </div>
+</div>
+
+
+              </div>
+              <div class="col-1">
+		{% if sharing_type != "read" %}
+		<button type="button" class="btn btn-danger delete-test" id="delete_btn-{{sol_obj.pk}}"><span class="fa fa-remove"></span></button>
+		{% endif %}
+              </div>
+            </div>
+          </div>

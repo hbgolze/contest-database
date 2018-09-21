@@ -3,24 +3,46 @@
   <!-- Modal content-->
   <div class="modal-content">
     <div class="modal-header">
-      <h5 class="modal-title">Solutions to {{object.problem.readable_label}}</h5>
+      <h5 class="modal-title">Solutions to {% if object.isProblem %}{{object.problem.readable_label}}{% else %}Problem {{object.pk}}{% endif %}</h5>
       <button type="button" class="close" data-dismiss="modal">&times;</button>
     </div>
     <div class="modal-body">
-      {% with object.problem as prob %}
-      {% include "problemeditor/snippetprobtext.html" %}
-      {% endwith %}
-      
-      {% if object.problem.solutions.count > 0 %}
-      {% for solution in object.problem.solutions.all %}
-      <h3>Solution {{forloop.counter}}</h3>
-      {% autoescape off %} {{solution.display_solution_text|linebreaks}} {% endautoescape %}<br><br>
-      {% endfor %}
-      {% else %}
-      No current solutions.
-      {% endif %}
-      
-      
+      <div class="container">
+	<div class="row">
+	  <h3>Problem</h3>
+
+	  <div class="col-12">
+            {% if object.isProblem %}
+            {% if object.question_type.question_type == "multiple choice" %}
+            {% autoescape off %}{{object.problem.display_mc_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{object.problem.readable_label}}]</span>
+            {% else %}
+            {% autoescape off %}{{object.problem.display_problem_text|linebreaks}} {% endautoescape %} <span class="pull-right"> [{{object.problem.readable_label}}]</span>
+            {% endif %}
+            {% else %}
+            {% autoescape off %}{{object.problem_display|linebreaks}} {% endautoescape %}
+            {% endif %}
+	  </div>
+	  <div class="col-12 pt-3">
+	    {% if object.solution_objects.count > 0 %}
+	    <div class="list-group">
+	      {% for sol_obj in object.solution_objects.all %}
+	      <div class="list-group-item">
+		<h3>Solution {{forloop.counter}}</h3>
+		{% if sol_obj.isSolution %}
+		{% autoescape off %} {{sol_obj.solution.display_solution_text|linebreaks}} {% endautoescape %}
+		{% else %}
+		{% autoescape off %} {{sol_obj.solution_display|linebreaks}} {% endautoescape %}
+		{% endif %}
+	      </div>
+	      {% endfor %}
+	    </div>
+	    {% else %}
+	    No current solutions.
+	    {% endif %}
+	  </div>
+	</div> 
+      </div>
+
     </div>
     <div class="modal-footer">
       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

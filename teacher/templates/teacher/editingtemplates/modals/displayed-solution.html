@@ -1,0 +1,26 @@
+		<div class="list-group-item" id="sol_object-{{sol.pk}}">
+                  <div class="container">
+                  <div class="row">
+                    <div class="col-10">
+		  <b>Solution:</b>
+<div id="sol-text_{{sol.pk}}">
+{% include 'teacher/editingtemplates/modals/so-sol-text.html' %}
+</div>
+                    </div>
+                    <div class="col-2">
+                      <b>Options:</b>
+		      {% if sol.isSolution %}
+		            <button class="btn btn-secondary btn-sm undisplay-sol" id="undisplay_button-{{sol.pk}}">Don't Display</button>
+		      {% else %}
+		            <button class="btn btn-secondary btn-sm edit-sol" id="edit_sol_button-{{sol.pk}}">Edit</button>
+		            <button class="btn btn-danger btn-sm delete-sol" id="delete_sol_button-{{sol.pk}}">Delete</button>
+		      {% endif %}
+                    </div>
+                  </div>
+                  </div>
+		</div>
+
+
+
+
+

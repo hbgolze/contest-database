@@ -1,7 +1,7 @@
 from django import forms
 #from django.contrib.auth.models import User
-from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem,ProblemSet,Class,Unit,SlideGroup,Test,Slide
-from randomtest.utils import newtexcode
+from teacher.models import ProblemObject,TextBlock,Theorem,Proof,ExampleProblem,ProblemSet,Class,Unit,SlideGroup,Test,Slide,SolutionObject
+from randomtest.utils import newtexcode,newsoltexcode,compileasy
 from randomtest.models import NewTag
 
 from django.contrib.admin.widgets import AdminDateWidget 
@@ -311,3 +311,36 @@ class EditSlideTitleForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class':'form-control'}),
             }
 
+
+class NewSolutionObjectForm(forms.ModelForm):
+    class Meta:
+        model = SolutionObject
+        fields = ('solution_code',)
+        widgets = {
+            'solution_code': forms.Textarea(attrs={"class":"form-control","min-width":"100%", 'rows': 15,'id' : 'codetext'})
+        }
+    def __init__(self,  *args, **kwargs):
+        super(NewSolutionObjectForm, self).__init__(*args, **kwargs)
+        self.fields['solution_code'].required = True
+    def save(self,commit=True):
+        instance = super(SolutionObjectForm, self).save(commit=False)
+        instance.solution_display = newsoltexcode(instance.solution_code, 'publishedoriginalsolution_'+str(instance.pk))
+        compileasy(instance.solution_code,'publishedoriginalsolution_'+str(instance.pk))
+        if commit:
+            instance.save()
+        return instance
+
+class EditSolutionObjectForm(forms.ModelForm):
+    class Meta:
+        model = SolutionObject
+        fields = ('solution_code',)
+        widgets = {
+            'solution_code': forms.Textarea(attrs={"class":"form-control","min-width":"100%", 'rows': 15,'id' : 'codetext'})
+        }
+    def save(self,commit=True):
+        instance = super(EditSolutionObjectForm, self).save(commit=False)
+        instance.solution_display = newsoltexcode(instance.solution_code,'publishedoriginalsolution_'+str(instance.pk))
+        compileasy(instance.solution_code,'publishedoriginalsolution_'+str(instance.pk))
+        if commit:
+            instance.save()
+        return instance

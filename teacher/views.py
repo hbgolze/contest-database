@@ -14,12 +14,12 @@ from datetime import datetime,timedelta,time
 from django.utils import timezone
 import pytz
 
-from randomtest.utils import newtexcode,compileasy,pointsum
-from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse
+from randomtest.utils import newtexcode,compileasy,pointsum,newsoltexcode
+from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse,Solution
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
-from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest
-from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm,EditClassNameForm,EditUnitNameForm,EditProblemSetNameForm,EditTestNameForm,EditSlideGroupNameForm,EditSlideTitleForm
+from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest,SolutionObject
+from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm,EditClassNameForm,EditUnitNameForm,EditProblemSetNameForm,EditTestNameForm,EditSlideGroupNameForm,EditSlideTitleForm,NewSolutionObjectForm,EditSolutionObjectForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
 
@@ -1008,7 +1008,165 @@ def savequestiontype(request,**kwargs):
         po.increment_version()
         return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
 
+@login_required
+def load_new_solution_form(request,**kwargs):
+    userprofile = request.user.userprofile
+    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    so = SolutionObject()
+    form = NewSolutionObjectForm(instance = so)
+    if po.isProblem:
+        name = po.problem.readable_label
+    else:
+        name = "Problem "+str(po.pk)
+    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'name':name,'popk':po.pk})
 
+@login_required
+def save_new_solution(request,**kwargs):
+    userprofile = request.user.userprofile
+    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    so = SolutionObject(problem_object = po, order = po.solution_objects.count()+1, solution_code = request.POST.get('solution_code'),author = request.user)#, version_number = 
+    so.save()
+    so.solution_display = newsoltexcode(so.solution_code, 'originalsolution_'+str(so.pk))
+    so.save()
+    po.increment_version()
+    compileasy(so.solution_code,'originalsolution_'+str(so.pk))
+    return JsonResponse({});
+
+@login_required
+def load_manage_solutions(request,**kwargs):
+    userprofile = request.user.userprofile
+    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+#need to find solutions in DB that aren't in the problem_object list.
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    other_solutions = []
+    if po.isProblem:
+        S=[]
+        for so in po.solution_objects.all():
+            if so.isSolution:
+                S.append(so.solution.pk)
+        other_solutions = po.problem.solutions.exclude(id__in= S)
+
+    return JsonResponse({'form': render_to_string('teacher/editingtemplates/modals/modal-manage-solutions.html',{'po':po, 'other_solutions': other_solutions})})
+
+@login_required
+def display_solution(request,**kwargs):
+    userprofile = request.user.userprofile
+    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    sol = get_object_or_404(Solution,pk=request.POST.get('spk'))
+    so = SolutionObject(problem_object = po, order = po.solution_objects.count()+1, solution = sol,author = request.user,isSolution = 1)
+    so.save()
+    po.increment_version()
+    return JsonResponse({'sol': render_to_string('teacher/editingtemplates/modals/displayed-solution.html',{'sol':so})})
+
+@login_required
+def undisplay_solution(request,**kwargs):
+    userprofile = request.user.userprofile
+    so = get_object_or_404(SolutionObject,pk=request.POST.get('sopk'))
+    po = so.problem_object
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    s = so.solution
+    po = so.problem_object
+    so.delete()
+    po.increment_version()
+    return JsonResponse({'sol': render_to_string('teacher/editingtemplates/modals/other-solution.html',{'sol':s,'po': po})})
+
+@login_required
+def delete_solution(request,**kwargs):
+    userprofile = request.user.userprofile
+    so = get_object_or_404(SolutionObject,pk=request.POST.get('sopk'))
+    po = so.problem_object
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+
+    so.delete()
+    po.increment_version()
+    return JsonResponse({})
+
+@login_required
+def load_edit_sol(request,**kwargs):
+    userprofile = request.user.userprofile
+#    popk = request.POST.get('popk','')
+    sopk = request.POST.get('sopk','')
+#    po =  get_object_or_404(ProblemObject,pk=popk)
+    so =  get_object_or_404(SolutionObject,pk=sopk)
+    po = so.problem_object
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+
+    form = EditSolutionObjectForm(instance=so)
+    return JsonResponse({'sol_form':render_to_string('teacher/editingtemplates/modals/edit_sol_form.html',{'form':form})})
+
+@login_required
+def save_edited_solution(request,**kwargs):
+    userprofile = request.user.userprofile
+    sopk = request.POST.get('sopk','')
+    so =  get_object_or_404(SolutionObject,pk=sopk)
+    po = so.problem_object
+    if po.test != None:
+        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    elif po.problemset != None:
+        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+            raise Http404("Unauthorized.")
+    else:
+        raise Http404("Problem does not belong to a valid class.")
+    so.solution_code = request.POST.get('solution_text')
+    so.save()
+    so.increment_version()
+    so.solution_display = newsoltexcode(so.solution_code, 'originalsolution_'+str(so.pk))
+    so.save()
+    compileasy(so.solution_code,'originalsolution_'+str(so.pk))
+    return JsonResponse({'sol_code':render_to_string('teacher/editingtemplates/modals/so-sol-text.html',{'sol':so})})
 
 @login_required
 def numprobsmatching(request,pk,upk,ppk):#changing tag to pk
