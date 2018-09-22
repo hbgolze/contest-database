@@ -314,10 +314,32 @@ $(document).on('click',".save-sol-link",function(event) {
             $("#soltext_"+sol_id).html(result['sol_text']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"soltext_"+sol_id]);
               $("#editsolplaceholder_"+sol_id).empty()
+            $("#soltext_"+sol_id).show();
         }
     });
     return false;
 });
+
+
+$(document).on('click',".edit-primitive-preview-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $("#preview_soltext_"+sol_id).html($("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val());
+    $("#soltext_"+sol_id).hide();
+    $("#preview_soltext_"+sol_id).show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview_soltext_"+sol_id]);
+});
+
+$(document).on('click',".cancel-edit-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $("#editsolplaceholder_"+sol_id).empty()
+    $("#soltext_"+sol_id).show();
+    $("#editsol_"+prob_id+"_"+sol_id).show();
+});
+
 
 $(document).on('click',".change-qt-link",function(event) {
     event.preventDefault();
