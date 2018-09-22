@@ -270,7 +270,6 @@ $(document).on('submit',"#edit_latex_form",function(event) {
 {% endif %}
 
 $(document).on('click',".solution-link",function(event) {
-console.log('asd');
     event.preventDefault();
     var prob_pk = $(this).attr('id').split('_')[1];
     var target = "/problemeditor/ajax/load_sol/"+prob_pk+"/";
@@ -392,11 +391,22 @@ $("#editsol_"+prob_id+"_"+sol_id).show();
     return false;
 });
 
+$(document).on('click',".edit-primitive-preview-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $("#preview_soltext_"+sol_id).html($("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val());
+    $("#soltext_"+sol_id).hide();
+    $("#preview_soltext_"+sol_id).show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview_soltext_"+sol_id]);
+});
+
 $(document).on('click',".cancel-edit-sol-link",function(event) {
     event.preventDefault();
     var sol_id = $(this).attr('id').split('_')[2];
     var prob_id = $(this).attr('id').split('_')[1];
     $("#editsolplaceholder_"+sol_id).empty()
+    $("#soltext_"+sol_id).show();
     $("#editsol_"+prob_id+"_"+sol_id).show();
 });
 

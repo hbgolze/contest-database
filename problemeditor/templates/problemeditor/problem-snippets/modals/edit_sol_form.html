@@ -1,3 +1,6 @@
+<div id="preview_soltext_{{form.instance.pk}}" style="display:none">
+
+</div>
 {{form.as_p}}
 
 
@@ -6,6 +9,9 @@
   </div>
   <div class="p-2">
 <button class="btn btn-primary save-sol-link" id="savesol_{{prob.pk}}_{{form.instance.pk}}">Save</button>
+  </div>
+  <div class="p-2">
+<button class="btn btn-primary edit-primitive-preview-link" id="edit-preview_{{prob.pk}}_{{form.instance.pk}}">Primitive Preview</button>
   </div>
   <div class="p-2">
 <button class="btn btn-secondary cancel-edit-sol-link" id="cancelsol_{{prob.pk}}_{{form.instance.pk}}">Cancel</button>
