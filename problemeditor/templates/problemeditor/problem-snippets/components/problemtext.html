@@ -17,6 +17,5 @@
               {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}
               </div>
               {% endif %}
-              {% if not no_readable_label %}[{{prob.readable_label}}]{% endif %}
-	      {% if not no_link %}(<a href="/problemeditor/redirectproblem/{{prob.pk}}/">Edit Tags/Solutions</a>){% endif %}
+              {% if not no_readable_label %}[{% if not no_link %}<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>{% else %}{{prob.readable_label}}{% endif %}]{% endif %}
             </p>

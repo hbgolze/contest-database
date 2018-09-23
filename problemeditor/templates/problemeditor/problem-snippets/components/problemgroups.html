@@ -4,7 +4,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request}}">
                 <label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
-                <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
+                <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control form-control-sm mb-1">
                   <option value="" disabled selected>Select a Group</option>
                   {% for pg in probgroups %}
                   <option value="{{pg.pk}}">{{pg.name}}

@@ -4,7 +4,7 @@
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request}}">
                 <label for="addtag_{{prob.pk}}">Add Tag:</label>
-                <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+                <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control form-control-sm mb-1">
                   <option value="" disabled selected>Select a Tag</option>
                   {% for tagg in tags %}
                   <option value="{{tagg.pk}}">{{tagg}}
