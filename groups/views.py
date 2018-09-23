@@ -127,16 +127,20 @@ def viewtaggroup(request,pk):
     return HttpResponse(template.render(context,request))
 
 
+
 @login_required
-def deletegroup(request,pk):
+def delete_group(request):
+    pk = request.POST.get('pk','')
     pg = get_object_or_404(ProblemGroup, pk=pk)
     userprofile = request.user.userprofile
     if pg in userprofile.problem_groups.all():
         pg.delete()
-    return redirect('/problemgroups/')
+    return JsonResponse({})
+
 
 @login_required
-def removegroup(request,pk):
+def remove_group(request):
+    pk = request.POST.get('pk','')
     pg = get_object_or_404(ProblemGroup, pk=pk)
     userprofile = request.user.userprofile
     if pg in userprofile.owned_problem_groups.all():
@@ -148,7 +152,7 @@ def removegroup(request,pk):
     elif pg in userprofile.readonly_problem_groups.all():
         userprofile.readonly_problem_groups.remove(pg)
         userprofile.save()
-    return redirect('/problemgroups/')
+    return JsonResponse({})
 
 #use post to select problems for test...
 #also edit search and 'contest collection' to allow adding to problemgroup...

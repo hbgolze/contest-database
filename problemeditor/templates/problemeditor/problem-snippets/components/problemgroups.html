@@ -1,0 +1,19 @@
+          <div class="row">
+            <div class="col-6">
+              <form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request}}">
+                <label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
+                <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
+                  <option value="" disabled selected>Select a Group</option>
+                  {% for pg in probgroups %}
+                  <option value="{{pg.pk}}">{{pg.name}}
+                  </option>
+                  {% endfor %}
+                </select>
+                <div id="adding-status-{{prob.pk}}" class="js-adding-status">
+
+                </div>
+              </form>
+            </div>
+	  </div>

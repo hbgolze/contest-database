@@ -1,8 +1,8 @@
-
-              <div class="btn-group btn-group-sm" role="group" aria-label="...">
-              <a class="btn btn-secondary" href="{{ta.pk}}"><span class="badge badge-success">{{ta.label}}</span></a>
-
-
+<div class="btn-toolbar" role="toolbar" aria-label="Toolbar with button groups">
+              <div class="btn-group btn-group-sm mr-1" role="group" aria-label="Tag ({{ta.label}})">
+              <a class="btn btn-success" href="{{ta.pk}}">{{ta.label}}</a>
+	      </div>
+	      <div class="btn-group btn-group-sm" role="group" aria-label="Tag Options">
                 {% if request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod' %}
 
 {% if not_leaf %}
@@ -16,3 +16,4 @@
                 {% endif %}
                 <button data-target="#info-tag" data-toggle="modal" class="btn btn-secondary info-tag-link" id="info_tag/{{ta.pk}}"><span style="color:green" class="fa fa-info" aria-hidden="true"></span></button>
               </div>
+</div>

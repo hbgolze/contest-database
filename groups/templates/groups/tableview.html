@@ -34,7 +34,7 @@
       </table>
     </div>
   </div>
-  <div id="shared-pgs"{% if editor_pgs.count == 0 and readonly_pgs.count == 0 %} style="display:none;"{% endif %}>
+  <div id="shared-pgs"{% if editor_pgs.count == 0 and readonly_pgs.count == 0 and co_owned_pgs.count == 0 %} style="display:none;"{% endif %}>
     <h2>Problem Groups Shared with Me</h2>
     <div class="row">
       <div class="col-12 col-lg-9">
@@ -210,5 +210,33 @@ $(document).on('change',".change-permission", function(e) {
   return false;
 });
 
+$(document).on("click", ".delete-group-link", function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('id').split('_')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/delete-group/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#pg-row_"+pk).remove();
+    }
+  });
+  return false;
+});
+$(document).on("click", ".remove-group-link", function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('id').split('_')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/remove-group/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#pg-row_"+pk).remove();
+    }
+  });
+  return false;
+});
 </script>
 {% endblock %}

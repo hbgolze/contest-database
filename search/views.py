@@ -96,18 +96,26 @@ def searchresults(request):
             else:
                 yearend=int(yearend)
 
+            sol_opts = form.get('sol_opts','')
+            if sol_opts == "sols":
+                P = Problem.objects.exclude(solutions=None)
+            elif sol_opts == "nosols":
+                P = Problem.objects.filter(solutions=None)
+            else:
+                P = Problem.objects.all()
+
             if len(tag)>0:
                 if round_or_type == "T":
-                    P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)#
                 else:
-                    P = Problem.objects.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)#
                 P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
 
             else:
                 if round_or_type == "T":
-                    P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()#
                 else:
-                    P=Problem.objects.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()#
 
 #            if form.get('solution_search','') is not None:
 #                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
@@ -144,8 +152,7 @@ def searchresults(request):
                 # If page is out of range (e.g. 9999), deliver last page of results.
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
-            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.exclude(tag='root'),
-                     }
+            context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.exclude(tag='root')}
             return HttpResponse(template.render(context,request))
 
 @login_required

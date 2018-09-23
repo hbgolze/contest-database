@@ -432,6 +432,34 @@ $(document).on("click","#preview-latex-button", function(e) {
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
 });
 
+$("select.js-problem-group-select").change(function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_to_group' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {
+$("#adding-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Problem has been added to group.</div>");
+$("#adding-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#adding-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+            } else {
+$("#adding-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem is  already in group.</div>");
+$("#adding-status-"+data['prob_pk']).show();
+setTimeout(function() {
+$("#adding-status-"+data['prob_pk']).fadeOut().empty();
+},5000);
+            }
+
+        }
+    });
+    return false;
+});
+
 {% if is_sourced %}
 
 $(document).on('click',".add-sourced-problem",function(event) {
