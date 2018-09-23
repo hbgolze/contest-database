@@ -108,7 +108,7 @@ You cannot submit two answers to the same problem within one minute of each othe
 
 		    
 		    {% if answer == response or past_due%}
-		      {% if resp.publishedproblem_object.isProblem == 1 and resp.publishedproblem_object.problem.solutions.count > 0 %}
+		      {% if resp.publishedproblem_object.solution_objects.count > 0%}
 		        <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{resp.publishedproblem_object.pk}}/">Solution</button>
 		      {% else %}
 		        <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>

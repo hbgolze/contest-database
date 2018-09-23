@@ -39,7 +39,7 @@
 		  </div><!--Answer input-->
 		  {% if problem_object.question_type.question_type == 'short answer' or problem_object.question_type.question_type == 'multiple choice' %}
 		  <div class="col-6" id="check-button-{{prob_label}}" align="right"><!--button div-->  
-		    {% if problem_object.isProblem == 1 and problem_object.problem.solutions.count > 0 %}
+		    {% if problem_object.solution_objects.count > 0 %}
 		    <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{problem_object.pk}}/">Solution</button>
 		    {% else %}
 		    <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
@@ -57,7 +57,7 @@
 		    <button class="btn btn-secondary" onclick="location.href='alpha/{{problem_object.pk}}/'" type="button">Grade (alphabetical)</button>
 		    <button class="btn btn-secondary" onclick="location.href='blind/{{problem_object.pk}}/'" type="button">Grade (blind)</button>
 
-		    {% if problem_object.isProblem == 1 and problem_object.problem.solutions.count > 0 %}
+		    {% if problem_object.solution_objects.count > 0 %}
 		    <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{problem_object.pk}}/">Solution</button>
 		    {% else %}
 		    <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
