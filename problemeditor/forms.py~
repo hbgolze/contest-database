@@ -469,48 +469,73 @@ class NewProblemMCForm(forms.ModelForm):
     problem_id = forms.CharField(widget=forms.HiddenInput())
     class Meta:
         model = Problem
-        fields = ('problem_text','answer_A','answer_B','answer_C','answer_D','answer_E','mc_answer',)
+        fields = ('problem_text','answer_A','answer_B','answer_C','answer_D','answer_E','mc_answer','problem_number',)
         widgets = {
             'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
             }
     def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
         super(NewProblemMCForm, self).__init__(*args, **kwargs)
-#        self.fields['problem_code'].required = True
-#        self.fields['answer_A'].required = True
-#        self.fields['answer_B'].required = True
-#        self.fields['answer_C'].required = True
-#        self.fields['answer_D'].required = True
-#        self.fields['answer_E'].required = True
-#        self.fields['mc_answer'].required = True
+        self.fields['problem_text'].required = True
+        self.fields['answer_A'].required = True
+        self.fields['answer_B'].required = True
+        self.fields['answer_C'].required = True
+        self.fields['answer_D'].required = True
+        self.fields['answer_E'].required = True
+        self.fields['mc_answer'].required = True
         self.fields['mc_answer'].label = 'Answer'
         self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False
+
 
 class NewProblemSAForm(forms.ModelForm):
     problem_id = forms.CharField(widget=forms.HiddenInput())
     class Meta:
         model = Problem
-        fields = ('problem_text','sa_answer',)
+        fields = ('problem_text','sa_answer','problem_number',)
         widgets = {
             'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
         super(NewProblemSAForm, self).__init__(*args, **kwargs)
-#        self.fields['problem_code'].required = True
-#        self.fields['sa_answer'].required = True
+        self.fields['problem_text'].required = True
+        self.fields['sa_answer'].required = True
         self.fields['sa_answer'].label = 'Answer'
         self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False
 
 class NewProblemPFForm(forms.ModelForm):
     problem_id = forms.CharField(widget=forms.HiddenInput())
     class Meta:
         model = Problem
-        fields = ('problem_text',)
+        fields = ('problem_text','problem_number',)
         widgets = {
             'problem_text': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
             }
     def __init__(self, *args, **kwargs):
+        source_type = kwargs.pop('st')
         super(NewProblemPFForm, self).__init__(*args, **kwargs)
 #        self.fields['problem_code'].required = True
         self.fields['problem_id'].initial = str(self.instance.pk)
+        if source_type == "contest":
+            self.fields['problem_number'].widget = forms.NumberInput(attrs={'class':'form-control'})
+            self.fields['problem_number'].initial = False
+            self.fields['problem_number'].required = True
+        else:
+            self.fields['problem_number'].widget = forms.HiddenInput()
+            self.fields['problem_number'].required = False

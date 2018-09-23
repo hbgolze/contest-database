@@ -343,7 +343,12 @@ class MCProblemTextForm(forms.ModelForm):
         model = Problem
         fields = ('mc_problem_text','answer_A','answer_B','answer_C','answer_D','answer_E',)
         widgets = {
-            'mc_problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'mc_problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
+            'answer_A': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_B': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_C': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_D': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_E': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(MCProblemTextForm, self).__init__(*args, **kwargs)
@@ -354,7 +359,7 @@ class SAProblemTextForm(forms.ModelForm):
         model = Problem
         fields = ('problem_text',)
         widgets = {
-            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_text': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(SAProblemTextForm, self).__init__(*args, **kwargs)   
