@@ -1,8 +1,12 @@
 {% if prob.duplicate_problems.count > 0 %}
               <label>Duplicate Problems:</label>
-                <ul>
+                <ul style="list-style:none">
                   {% for dp in prob.duplicate_problems.all %}
-                  <li>{{dp.readable_label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>) {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} <span class="remove_duplicate" id="remove_duplicate_{{prob.pk}}_{{dp.pk}}" style="cursor:pointer;color:red;">&#10006;</span>{% endif %}</li>
+                  <li>
+<div class="btn-group btn-group-sm mb-1">
+  <a class="btn btn-info btn-sm" href="/problemeditor/redirectproblem/{{dp.pk}}">{{dp.readable_label}}</a>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} <div class="remove_duplicate btn btn-danger btn-sm" id="remove_duplicate_{{prob.pk}}_{{dp.pk}}"><span class="fa fa-remove"></span></div>{% endif %}
+</div>
+</li>
                   {% endfor %}
                 </ul>
 

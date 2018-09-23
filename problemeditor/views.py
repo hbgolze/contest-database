@@ -1512,7 +1512,7 @@ def remove_duplicate_problem(request,**kwargs):
         if prob.duplicate_problems.filter(pk=dpk).exists():
             prob.duplicate_problems.remove(Problem.objects.get(pk=dpk))
             prob.save()
-    return JsonResponse({'duplicate_problems':render_to_string('problemeditor/duplicate_problems.html',{'prob':prob,'request':request})})
+    return JsonResponse({'duplicate_problems':render_to_string('problemeditor/problem-snippets/components/duplicateproblemlist.html',{'prob':prob,'request':request})})
 
 @login_required
 def add_duplicate_problem(request, **kwargs):
@@ -1523,7 +1523,7 @@ def add_duplicate_problem(request, **kwargs):
         q=Problem.objects.get(label=linked_problem_label)
         prob.duplicate_problems.add(q)
         prob.save()
-        return JsonResponse({'duplicate_problems':render_to_string('problemeditor/duplicate_problems.html',{'prob':prob,'request':request}),'status':1,'prob_pk':pk})
+        return JsonResponse({'duplicate_problems':render_to_string('problemeditor/problem-snippets/components/duplicateproblemlist.html',{'prob':prob,'request':request}),'status':1,'prob_pk':pk})
     return JsonResponse({'status':0,'prob_pk':pk})
 
 @login_required

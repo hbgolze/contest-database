@@ -1,9 +1,0 @@
-{% if prob.duplicate_problems.count > 0 %}
-              <label>Duplicate Problems:</label>
-                <ul>
-                  {% for dp in prob.duplicate_problems.all %}
-                  <li>{{dp.readable_label}}: (<a href="/problemeditor/contest/bytest/{{dp.type_new.type}}/{{dp.test_label}}/{{dp.label}}/">Tags/Solutions</a>) {% if request.user.is_superuser %} <span class="remove_duplicate" id="remove_duplicate_{{prob.pk}}_{{dp.pk}}" style="cursor:pointer;color:red;">&#10006;</span>{% endif %}</li>
-                  {% endfor %}
-                </ul>
-
-{% endif %}
