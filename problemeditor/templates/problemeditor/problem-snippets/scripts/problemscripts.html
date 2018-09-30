@@ -429,7 +429,9 @@ $(document).on("change","select.change-needs-answers",function(event) {
 });
 
 $(document).on("click","#preview-latex-button", function(e) {
-    $("#preview-latex").html($("#codetext[name=new_solution_text]").val());
+    sol_text = $("#codetext[name=new_solution_text]").val().trim();
+    sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+    $("#preview-latex").html(sol_text);
     $("#preview-latex").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
 });
