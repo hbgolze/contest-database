@@ -396,8 +396,7 @@ $(document).on('click',".edit-primitive-preview-link",function(event) {
     event.preventDefault();
     var sol_id = $(this).attr('id').split('_')[2];
     var prob_id = $(this).attr('id').split('_')[1];
-    sol_text = $("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val();
-console.log(sol_text.indexOf('<'));
+    sol_text = $("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val().trim();
     sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
     $("#preview_soltext_"+sol_id).html(sol_text);
     $("#soltext_"+sol_id).hide();
