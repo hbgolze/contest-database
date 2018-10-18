@@ -1603,6 +1603,13 @@ def save_latex(request,**kwargs):
             )
         return JsonResponse({'qt':qt,'pk':pk,'prob-text':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_problem_text})})
 
+@login_required
+def view_mc_latex(request,**kwargs):
+    pk = request.GET.get('pk','')
+    prob = get_object_or_404(Problem,pk=pk)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-view-latex.html',{'prob':prob})})
+
+
 class SolutionView(DetailView):
     model = Problem
     template_name = 'problemeditor/problem-snippets/modals/load_sol.html'

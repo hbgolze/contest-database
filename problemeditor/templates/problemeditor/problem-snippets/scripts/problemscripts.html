@@ -268,6 +268,22 @@ $(document).on('submit',"#edit_latex_form",function(event) {
 });
 
 {% endif %}
+$(document).on('click',".view-mc-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href");
+
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/view-mc-latex/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#view-latex-modal").html(result['modal-html']);
+            $("#view-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
 
 $(document).on('click',".solution-link",function(event) {
     event.preventDefault();

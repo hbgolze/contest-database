@@ -66,6 +66,7 @@ urlpatterns = [
     url(r'^ajax/add_duplicate/$', views.add_duplicate_problem, name='add_duplicate'),
     url(r'^ajax/load-edit-answer/$', views.load_edit_answer, name='load_edit_answer'),
     url(r'^ajax/load-edit-latex/$', views.load_edit_latex, name='load_edit_latex'),
+    url(r'^ajax/view-mc-latex/$', views.view_mc_latex, name='view_mc_latex'),
     url(r'^ajax/save-latex/$', views.save_latex, name='save_latex'),
     url(r'^ajax/save-answer/$', views.save_answer, name='save_answer'),
     url(r'^ajax/load_sol/(?P<pk>\w+)/$', login_required(views.SolutionView.as_view()), name='load_solution'),
