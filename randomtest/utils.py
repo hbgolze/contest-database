@@ -448,8 +448,8 @@ def newtexcode(texcode,label,answer_choices,temp = False):
     return newtexcode
 
 def newsoltexcode(texcode,label):
-    texcode=texcode.replace('<',' < ')
-    repl=asyreplacementindexes(texcode)
+    texcode = texcode.replace('<',' < ')
+    repl = asyreplacementindexes(texcode)
     newtexcode=''
     if len(repl)==0:
         newtexcode+=texcode

@@ -14,6 +14,9 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
   <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
 <link rel="stylesheet" href="{% static 'randomtest/font-awesome-4.7.0/css/font-awesome.min.css' %}" />
+
+<script src="{% static 'randomtest/js/latexlib.js' %}"></script>
+
     <title>{% block title %}Random Contest{% endblock %}</title>
 
 <script type="text/x-mathjax-config">
@@ -24,7 +27,6 @@
 <script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
 </script>
-
 
 {% block head %} {% endblock %}
 
@@ -60,7 +62,7 @@
           <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
           <div class="dropdown-menu dropdown-menu-right">
 	    <a class="dropdown-item" href="{% url 'my_activity' %}">My Activity</a>
-{% if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmanager" or user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "sitemanager" or user.userprofile.user_type_new.name == "manager" or user.userprofile.user_type_new.name == "teacher" %}
+{% if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmanager" or user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "sitemanager" or user.userprofile.user_type_new.name == "manager" or user.userprofile.user_type_new.name == "teacher" or user.userprofile.user_type_new.name == "contestmod" %}
 	    <a class="dropdown-item" href="{% url 'manage_collaborators' %}">Manage Collaborators</a>
 {% endif %}
 	    <a class="dropdown-item" href="{% url 'changetimezoneview' %}">Change Time Zone</a>
@@ -83,7 +85,7 @@
     {% if request.user.userprofile.userclasses.count > 0 %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'student' %}active{% endif %}" href="/student/">My Enrolled Classes</a></li>
     {% endif %}
-    {% if request.user.userprofile.user_type_new.name == 'contestmanager' or request.user.userprofile.user_type_new.name == 'super' %}
+    {% if request.user.userprofile.user_type_new.name == 'contestmanager' or request.user.userprofile.user_type_new.name == 'super' or request.user.userprofile.user_type_new.name == 'contestmod' %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'teacher' %}active{% endif %}" href="/teacher/">Teacher Tools</a></li>
     {% endif %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'viewmytests' %}active{% endif %}" href="/randomtest/">View My Tests</a></li>
