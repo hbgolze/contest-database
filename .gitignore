@@ -21,6 +21,7 @@ instructions.py*
 harmonize.py
 probclass.py
 dbclass.py
+parsedata.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

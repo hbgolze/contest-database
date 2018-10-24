@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'handouts.apps.HandoutsConfig',
     'teacher.apps.TeacherConfig',
     'student.apps.StudentConfig',
+    'results.apps.ResultsConfig',
 ]
 
 MIDDLEWARE = [
