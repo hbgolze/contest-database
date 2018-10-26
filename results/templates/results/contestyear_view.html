@@ -1,0 +1,149 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">Contest Results</a></li>
+    <li class="breadcrumb-item"><a href="../">{{contest.name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{year.year}}</li>
+  </ol>
+</nav>
+
+<div class="container">
+
+
+
+  <div class="row">
+    <div class="col">
+      <h2>{{year.year}} {{contest.name}} Results</h2>
+    </div>
+  </div>
+  {% if multiple_divisions or multiple_sites %}
+  <div class="row">
+    <div class="col">
+      <form action="." method="get">
+	{% if multiple_divisions %}
+	<div class="row">
+	  <div class="col-3">
+	    Divison:<br>
+	    {% for div,chk in valid_divisions %}
+	    <div class="form-check">
+	      <input class="form-check-input" type="checkbox" value="{{div}}" id="div_check" name="div"{% if chk %} checked{% endif %}>
+	      <label class="form-check-label" for="div_{{div}}_check">
+		Division {{div}}
+	      </label>
+	    </div>
+	    {% endfor %}
+	  </div>
+	</div>
+	{% endif %}
+
+	{% if multiple_sites %}
+	<div class="row">
+	  <div class="col-3">
+	    Site:<br>
+	    {% for site,chk in valid_sites %}
+	    <div class="form-check">
+	      <input class="form-check-input" type="checkbox" value="{{site.letter}}" id="site_check" name="site"{% if chk %} checked{% endif %}>
+	      <label class="form-check-label" for="site_{{site.letter}}_check">
+		{{site.label}}
+	      </label>
+	    </div>
+	    {% endfor %}
+	  </div>
+	</div>
+	{% endif %}
+	<input type="hidden" name="refresh" value="1">
+        <input class="btn btn-primary" type="submit" value="Refresh">
+      </form>
+    </div>
+  </div>
+  {% endif %}
+  <!--
+      Order By: (have something at the top of each numeric column...integer field...
+    -->
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	<tr>
+	  <th>
+	    Rank
+	  </th>	  <th>
+	    Team Name
+	  </th>
+	  <th>
+	    Division
+	  </th>
+	  <th>
+	    Site
+	  </th>
+	  {% for i in year.indiv_problems.all %}
+	  <th>
+	    {{i.prefix}}-{{i.problem_number}}
+	  </th>
+	  {% endfor %}
+	  <th>
+	    Indiv. Total
+	  </th>
+	  {% for i in year.relay_problems.all %}
+	  <th>
+	    R-{{i.problem_number}}
+	  </th>
+	  {% endfor %}
+	  <th>
+	    Team Round
+	  </th>
+	  <th>
+	    Power Round
+	  </th>
+	  <th>
+	    Total Score
+	  </th>
+	</tr>
+	</thead>
+	{% for rank,team in results %}
+	<tr>
+	  <td>
+	    {{rank}}
+	  </td>
+	  <td>
+	    {{team.name}}
+	  </td>
+	  <td>
+	    {{team.division}}
+	  </td>
+	  <td>
+	    {{team.new_site.letter}}
+	  </td>
+	  {% for i in team.indiv_problems.all %}
+	  <td>
+	    {{i.num_correct}}
+	  </td>
+	  {% endfor %}
+	  <td>
+	    {{team.total_indiv_score}}
+	  </td>
+	  {% for i in team.relay_problems.all %}
+	  <td>
+	    {{i.num_points}}
+	  </td>
+	  {% endfor %}
+	  <td>
+	    {{team.team_score}}
+	  </td>
+	  <td>
+	    {{team.power_score}}
+	  </td>
+	  <td>
+	    {{team.total_score}}
+	  </td>	  
+	</tr>
+	{% endfor %}
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

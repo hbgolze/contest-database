@@ -1,0 +1,30 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Contest Results</li>
+  </ol>
+</nav>
+
+<div class="container">
+
+
+
+  <div class="row">
+    <div class="col">
+      <h2>Results</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-3">
+      <div class="list-group">
+	{% for contest in all_contests %}
+	<a class="list-group-item" href="{{contest.name}}">{{contest.name}}</a>
+	{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

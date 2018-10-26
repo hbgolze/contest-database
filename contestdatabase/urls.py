@@ -37,6 +37,7 @@ urlpatterns = [
 #    url(r'^handouts/', include('handouts.urls')),
     url(r'^teacher/', include('teacher.urls')),
     url(r'^student/', include('student.urls')),
+    url(r'^results/', include('results.urls')),
 ]
 if settings.DEBUG is True:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
