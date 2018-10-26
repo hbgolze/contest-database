@@ -33,7 +33,7 @@
 	<tbody>
 	  {% for org in contest.organizations.all %}
 	  <tr>
-	    <td><a href="{{org.name}}/">{{org.name}}</a></td>
+	    <td><a href="{{org.pk}}/">{{org.name}}</a></td>
 	    <td>{{org.teams.count}}</td>
 	    <td>{{org.num_years}}</td>
 	    <td>{{org.last_year}}</td>

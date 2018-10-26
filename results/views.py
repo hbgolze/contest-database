@@ -14,6 +14,8 @@ from django.utils import timezone
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
+import urllib
+
 from .models import Contest,ContestYear,IndivProb_format1,Site,Organization
 # Create your views here.
 
@@ -113,8 +115,8 @@ def organization_view(request,contest_name):
     return render(request,'results/organization_view.html',{'contest':contest})
 
 @login_required
-def organization_team_view(request,contest_name,org_name):
+def organization_team_view(request,contest_name,org_pk):
     contest = get_object_or_404(Contest,name=contest_name)
-    org = get_object_or_404(Organization,name=org_name)
+    org = get_object_or_404(Organization,pk = org_pk)
     teams = org.teams.order_by('-year')
     return render(request,'results/organization_team_view.html',{'contest':contest,'org':org,'teams':teams})
