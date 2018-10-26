@@ -1,0 +1,52 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../../">Contest Results</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{contest.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../">Organizations</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{org}}</li>
+  </ol>
+</nav>
+
+<div class="container">
+
+
+
+  <div class="row">
+    <div class="col">
+      <h2>View Organization: {{org.name}}</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Year</th>
+	    <th>Name</th>
+	    <th>Division</th>
+	    <th>Divisional Rank</th>
+	    <th>Score</th>
+	    <th>Overall Rank</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for team in teams %}
+	  <tr>
+	    <td>{{team.year.year}}</td>
+	    <td>{{team.name}}</td>
+	    <td><span class="badge {% if team.division == 'A' %}badge-success{% elif team.division == 'B' %}badge-danger{% else %}badge-info{% endif %}">{{team.division}}</span></td>
+	    <td>{{team.divisional_rank}}</td>
+	    <td>{{team.total_score}}</td>
+	    <td>{{team.overall_rank}}/{{team.year.num_teams}}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">Contest Results</a></li>
+    <li class="breadcrumb-item"><a href="../">{{contest.name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Organizations</li>
+  </ol>
+</nav>
+
+<div class="container">
+
+
+
+  <div class="row">
+    <div class="col">
+      <h2>{{contest.name}} Organizations</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+	<thead>
+	  <tr>
+	    <th>Name</th>
+	    <th>Number of Teams</th>
+	    <th>Number of Years Participated</th>
+	    <th>Last Participation</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for org in contest.organizations.all %}
+	  <tr>
+	    <td><a href="{{org.name}}/">{{org.name}}</a></td>
+	    <td>{{org.teams.count}}</td>
+	    <td>{{org.num_years}}</td>
+	    <td>{{org.last_year}}</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

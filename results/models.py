@@ -36,10 +36,32 @@ class ContestYear(models.Model):
                     rank = i+1
                     current_leader = r_tuple
                 else:
-                    print(r)
                     r.overall_rank = rank
                     r.save()
-            
+        divs = []
+        for t in teams:
+            divs.append(t.division)
+        divs = list(set(divs))
+        for D in divs:
+            div_teams = teams.filter(division = D)
+            div_results = sorted(div_teams,key = lambda x:(-x.total_score,-x.total_team_score,-x.total_relay_score,-x.total_indiv_score))
+            if len(div_results) > 0:
+                r = div_results[0]
+                r.divisional_rank = 1
+                r.save()
+                current_leader = (-r.total_score,-r.total_team_score,-r.total_relay_score,-r.total_indiv_score)
+                rank = 1
+                for i in range(1,len(div_results)):
+                    r = div_results[i]
+                    r_tuple = (-r.total_score,-r.total_team_score,-r.total_relay_score,-r.total_indiv_score)
+                    if r_tuple > current_leader:
+                        r.divisional_rank = i+1
+                        r.save()
+                        rank = i+1
+                        current_leader = r_tuple
+                    else:
+                        r.divisional_rank = rank
+                        r.save()
 
 class Site(models.Model):
     letter = models.CharField(max_length = 1)
@@ -52,8 +74,20 @@ class Site(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(max_length = 100)
+    contest = models.ForeignKey(Contest,related_name = "organizations",null=True)
+    num_years = models.IntegerField(default = 0)
+    last_year = models.CharField(max_length = 4,default = "")
     def __str__(self):
         return self.name
+    def update(self):
+        Y=[]
+        for t in self.teams.all():
+            Y.append(t.year.year)
+        Y = list(set(Y))
+        Y.sort()
+        self.num_years = len(Y)
+        self.last_year = Y[-1]
+        self.save()
 
 class Team_format1(models.Model):
     year = models.ForeignKey(ContestYear,related_name="teams")
@@ -69,6 +103,7 @@ class Team_format1(models.Model):
     division = models.CharField(max_length = 1)
     organization = models.ForeignKey(Organization,related_name="teams",null=True)
     overall_rank = models.IntegerField(default = 0)
+    divisional_rank = models.IntegerField(default = 0)
     award = models.CharField(max_length = 5,default = '')
     class Meta:
         ordering = ['overall_rank']

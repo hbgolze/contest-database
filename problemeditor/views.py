@@ -1920,6 +1920,9 @@ def delete_comment(request, **kwargs):
 def matrixview(request,type):    
     typ = get_object_or_404(Type, type = type)
     probsoftype = Problem.objects.filter(type_new = typ)
+#get function to only look at round...
+
+
 #    num_untagged = probsoftype.filter(newtags__isnull = True).count()
     testlabels = []
     pot = list(probsoftype)
