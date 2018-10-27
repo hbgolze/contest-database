@@ -112,7 +112,8 @@ def contestyear_view(request,contest_name,year):
 @login_required
 def organization_view(request,contest_name):
     contest = get_object_or_404(Contest,name=contest_name)
-    return render(request,'results/organization_view.html',{'contest':contest})
+    orgs = contest.organizations.order_by('-last_year','name')
+    return render(request,'results/organization_view.html',{'contest':contest,'orgs':orgs})
 
 @login_required
 def organization_team_view(request,contest_name,org_pk):
