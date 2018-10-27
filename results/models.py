@@ -111,14 +111,16 @@ class Team_format1(models.Model):
         return str(self.year) + ': ' + self.name
     def update(self):
         self.total_team_score = self.team_score + self.power_score
-        t = 0
-        for i in self.indiv_problems.all():
-            t += i.num_correct
-        self.total_indiv_score = t
-        t=0
-        for r in self.relay_problems.all():
-            t += r.num_points
-        self.total_relay_score = t
+        if self.indiv_problems.count() >0:
+            t = 0
+            for i in self.indiv_problems.all():
+                t += i.num_correct
+            self.total_indiv_score = t
+        if self.relay_problems.count() >0:
+            t=0
+            for r in self.relay_problems.all():
+                t += r.num_points
+            self.total_relay_score = t
         self.total_score = self.total_team_score + self.total_indiv_score + self.total_relay_score
         self.save()
     def soft_update(self):

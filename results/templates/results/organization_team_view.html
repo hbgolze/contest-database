@@ -29,6 +29,10 @@
 	    <th>Name</th>
 	    <th>Division</th>
 	    <th>Divisional Rank</th>
+	    <th>T</th>
+	    <th>P</th>
+	    <th>I</th>
+	    <th>R</th>
 	    <th>Score</th>
 	    <th>Overall Rank</th>
 	  </tr>
@@ -40,6 +44,10 @@
 	    <td>{{team.name}}</td>
 	    <td><span class="badge {% if team.division == 'A' %}badge-success{% elif team.division == 'B' %}badge-danger{% else %}badge-info{% endif %}">{{team.division}}</span></td>
 	    <td>{{team.divisional_rank}}</td>
+	    <td>{{team.team_score}}</td>
+	    <td>{{team.power_score}}</td>
+	    <td>{{team.total_indiv_score}}</td>
+	    <td>{{team.total_relay_score}}</td>
 	    <td>{{team.total_score}}</td>
 	    <td>{{team.overall_rank}}/{{team.year.num_teams}}</td>
 	  </tr>
