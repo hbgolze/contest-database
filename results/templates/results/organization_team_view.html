@@ -36,7 +36,7 @@
 	<tbody>
 	  {% for team in teams %}
 	  <tr>
-	    <td>{{team.year.year}}</td>
+	    <td><a href="../../{{team.year.year}}">{{team.year.year}}</a></td>
 	    <td>{{team.name}}</td>
 	    <td><span class="badge {% if team.division == 'A' %}badge-success{% elif team.division == 'B' %}badge-danger{% else %}badge-info{% endif %}">{{team.division}}</span></td>
 	    <td>{{team.divisional_rank}}</td>

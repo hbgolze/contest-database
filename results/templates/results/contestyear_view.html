@@ -109,7 +109,7 @@
 	    {{rank}}
 	  </td>
 	  <td>
-	    {{team.name}}
+	    {% if team.organization %}<a href="../organizations/{{team.organization.pk}}/">{{team.name}}</a>{% else %}{{team.name}}{% endif %}
 	  </td>
 	  <td>
 	    {{team.division}}
