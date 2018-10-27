@@ -121,6 +121,11 @@ class Team_format1(models.Model):
         self.total_relay_score = t
         self.total_score = self.total_team_score + self.total_indiv_score + self.total_relay_score
         self.save()
+    def soft_update(self):
+        self.total_team_score = self.team_score + self.power_score
+        self.total_score = self.total_team_score + self.total_indiv_score + self.total_relay_score
+        self.save()
+
 class IndivProb_format1(models.Model):
     prefix = models.CharField(max_length = 16,default ="I")
     year = models.ForeignKey(ContestYear,related_name="indiv_problems")

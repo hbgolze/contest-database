@@ -23,8 +23,8 @@
   <div class="row">
     <div class="col">
       <form action="." method="get">
-	{% if multiple_divisions %}
 	<div class="row">
+	{% if multiple_divisions %}
 	  <div class="col-3">
 	    Divison:<br>
 	    {% for div,chk in valid_divisions %}
@@ -36,11 +36,9 @@
 	    </div>
 	    {% endfor %}
 	  </div>
-	</div>
 	{% endif %}
 
 	{% if multiple_sites %}
-	<div class="row">
 	  <div class="col-3">
 	    Site:<br>
 	    {% for site,chk in valid_sites %}
@@ -52,8 +50,8 @@
 	    </div>
 	    {% endfor %}
 	  </div>
-	</div>
 	{% endif %}
+	</div>
 	<input type="hidden" name="refresh" value="1">
         <input class="btn btn-primary" type="submit" value="Refresh">
       </form>
