@@ -8,5 +8,6 @@ urlpatterns = [
     url(r'^(?P<contest_name>\w+)/$', views.contest_view, name='contest_view'),
     url(r'^(?P<contest_name>\w+)/organizations/$', views.organization_view, name='organization_view'),
     url(r'^(?P<contest_name>\w+)/organizations/(?P<org_pk>\w+)/$', views.organization_team_view, name='organization_team_view'),
+    url(r'^(?P<contest_name>\w+)/indiv_problems/$', views.individual_ranks, name='individual_ranks'),
     url(r'^(?P<contest_name>\w+)/(?P<year>\w+)/$', views.contestyear_view, name='contestyear_view'),
 ]

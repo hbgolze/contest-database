@@ -20,7 +20,9 @@
   </div>
   <div class="row">
     <div class="col-3">
-      <div class="list-group">
+      <a href="organizations" class="btn btn-primary mb-1">View Organizations</a>
+      <a href="indiv_problems" class="btn btn-primary">View Individual Problem Rankings</a>
+      <div class="list-group mt-3">
 	{% for year in contest.years.all %}
 	<a class="list-group-item" href="{{year.year}}">{{year.year}}</a>
 	{% endfor %}

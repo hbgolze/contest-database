@@ -119,5 +119,11 @@ def organization_view(request,contest_name):
 def organization_team_view(request,contest_name,org_pk):
     contest = get_object_or_404(Contest,name=contest_name)
     org = get_object_or_404(Organization,pk = org_pk)
-    teams = org.teams.order_by('-year')
+    teams = org.teams.order_by('year')
     return render(request,'results/organization_team_view.html',{'contest':contest,'org':org,'teams':teams})
+
+@login_required
+def individual_ranks(request,contest_name):
+    contest = get_object_or_404(Contest, name=contest_name)
+    indivs = IndivProb_format1.objects.order_by('perc_correct')
+    return render(request,'results/indiv_view.html',{'contest':contest,'indivs':indivs})

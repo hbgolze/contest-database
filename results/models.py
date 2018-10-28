@@ -1,5 +1,6 @@
 from django.db import models
 
+from randomtest.models import Problem
 # Create your models here.
 
 class Contest(models.Model):
@@ -15,7 +16,7 @@ class ContestYear(models.Model):
     max_power_score = models.IntegerField(default = 50)
     max_relay_score = models.IntegerField(default = 25)
     class Meta:
-        ordering = ['year']
+        ordering = ['-year']
     def __str__(self):
         return self.year + str(self.contest)
     def update_ranks(self):
@@ -133,6 +134,8 @@ class IndivProb_format1(models.Model):
     year = models.ForeignKey(ContestYear,related_name="indiv_problems")
     problem_number = models.IntegerField(default=0)
     total_num_correct = models.IntegerField(default = 0)
+    perc_correct = models.FloatField(default = 0)
+    problem = models.ForeignKey(Problem,null=True,on_delete = models.SET_NULL)
     class Meta:
         ordering = ['problem_number']
     def percent_correct(self):
@@ -154,6 +157,7 @@ class RelayProb_format1(models.Model):
     year = models.ForeignKey(ContestYear,related_name="relay_problems")
     total_num_points = models.IntegerField(default = 0)
     problem_number = models.IntegerField(default=0)
+    avg_points = models.FloatField(default = 0)
     class Meta:
         ordering = ['problem_number']
     def percent_points(self):

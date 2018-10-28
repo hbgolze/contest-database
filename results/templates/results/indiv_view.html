@@ -1,0 +1,47 @@
+{% extends "randomtest/base.html" %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="../../">Contest Results</a></li>
+    <li class="breadcrumb-item"><a href="../">{{contest.name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Individual Problems</li>
+  </ol>
+</nav>
+
+<div class="container">
+
+
+
+  <div class="row">
+    <div class="col">
+      <h2>{{contest.name}} Results: Individual Problems</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+	    <th>Difficulty Ranking</th>
+            <th>Problem</th>
+            <th>Number Correct/Est. Participants</th>
+            <th>Percent Correct</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for prob in indivs %}
+          <tr>
+	    <td>{{forloop.counter}}</td>
+	    <td>{% if prob.problem %}<a href="/problemeditor/redirectproblem/{{prob.problem.pk}}">{{prob}}</a>{% else %}{{prob}}{% endif %}</td>
+	    <td>{{prob.total_num_correct}}/<script>document.write({{prob.year.num_teams}}*15);</script></td>
+	    <td>{{prob.perc_correct}}%</td>
+	  </tr>
+	  {% endfor %}
+	</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
