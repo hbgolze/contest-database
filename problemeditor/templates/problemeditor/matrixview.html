@@ -12,7 +12,18 @@
   <h2>Problem Editor</h2>
   <div class="row">
     <div class="col">
-      <p>Pleae select a problem. The entry in the matrix shows the number of solutions, as well as whether it has been tagged or not.</p>
+
+{% if type.rounds.count > 0 %}
+<b>Rounds</b>
+<p>
+<div class="list-group">
+{% for r in type.rounds.all %}
+<a href="?round={{r.pk}}" class="list-group-item">{{r.name}}</a>
+{% endfor %}
+</div>
+</p>
+{% endif %}
+      <p>Please select a problem. The entry in the matrix shows the number of solutions, as well as whether it has been tagged or not.</p>
     </div>
   </div>
   <div class="row">

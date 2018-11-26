@@ -1924,6 +1924,11 @@ def matrixview(request,type):
 
 
 #    num_untagged = probsoftype.filter(newtags__isnull = True).count()
+
+    if request.method =="GET" and request.GET.get('round'):
+        probsoftype2 = probsoftype.filter(round__pk =request.GET.get('round'))
+        if probsoftype2.count() >0:
+            probsoftype = probsoftype2
     testlabels = []
     pot = list(probsoftype)
     for i in range(0,len(pot)):
@@ -1951,7 +1956,7 @@ def matrixview(request,type):
     else:
         numbers = [str(i) for i in range(1,maxcount+1)]
     template = loader.get_template('problemeditor/matrixview.html')
-    context = { 'type' : typ.type, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}
+    context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
 def mod_permission(user):
