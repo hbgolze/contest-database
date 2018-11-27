@@ -596,6 +596,9 @@ table.table.table-striped tr td.cell-danger {
 table.table.table-striped tr td.cell-success {
     background-color:#dff0d8;
 }
+table.table.table-striped tr td.cell-super-success {
+    background-color:#8BBA84;
+}
 
 
 

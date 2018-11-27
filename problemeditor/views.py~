@@ -1925,10 +1925,10 @@ def matrixview(request,type):
 
 #    num_untagged = probsoftype.filter(newtags__isnull = True).count()
 
-#    if request.method =="GET" and request.GET.get('round'):
-#        probsoftype2 = probsoftype.filter(round__pk =request.GET.get('round'))
-#        if probsoftype2.count() >0:
-#            probsoftype = probsoftype2
+    if request.method =="GET" and request.GET.get('round'):
+        probsoftype2 = probsoftype.filter(round__pk =request.GET.get('round'))
+        if probsoftype2.count() >0:
+            probsoftype = probsoftype2
     testlabels = []
     pot = list(probsoftype)
     for i in range(0,len(pot)):

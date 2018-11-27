@@ -1937,17 +1937,26 @@ def matrixview(request,type):
     testlabels.sort()
     rows2 = []
     maxcount = 0
+    total_sol_count = len(pot)-probsoftype.filter(solutions=None).count()
     if typ.type == "Putnam":
         for i in range(0,len(testlabels)):
             P = probsoftype.filter(test_label = testlabels[i]).order_by('label')
-            rows2.append((testlabels[i],P))
+            no_sol_count = P.filter(solutions=None).count()
+            sol_complete = 0
+            if no_sol_count ==0:
+                sol_complete = 1
+            rows2.append((testlabels[i],P,sol_complete))
             n = P.count()
             if n > maxcount:
                 maxcount = n
     else:
         for i in range(0,len(testlabels)):
             P = probsoftype.filter(test_label = testlabels[i]).order_by('problem_number')
-            rows2.append((testlabels[i],P))
+            no_sol_count = P.filter(solutions=None).count()
+            sol_complete = 0
+            if no_sol_count ==0:
+                sol_complete = 1
+            rows2.append((testlabels[i],P,sol_complete))
             n = P.count()
             if n > maxcount:
                 maxcount = n
@@ -1956,7 +1965,7 @@ def matrixview(request,type):
     else:
         numbers = [str(i) for i in range(1,maxcount+1)]
     template = loader.get_template('problemeditor/matrixview.html')
-    context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers}# changed typ.type to typ
+    context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': len(pot)}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
 def mod_permission(user):

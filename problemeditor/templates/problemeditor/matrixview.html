@@ -10,7 +10,7 @@
   </ol>
 </nav>
 <div class="container">
-  <h2>Problem Editor</h2>
+  <h2>{{typelabel}} Problem Matrix</h2>
   <div class="row">
     <div class="col">
 
@@ -25,6 +25,13 @@
 </p>
 {% endif %}
       <p>Please select a problem. The entry in the matrix shows the number of solutions, as well as whether it has been tagged or not.</p>
+<p>
+<b>Total Progress:</b> <script>document.write((Math.round({{total_sol_count}}*100/Math.max({{num_probs}},1)*100)/100).toString())</script>&#37;
+<div class="progress">
+<script>document.write("<div class='progress-bar{% if num_probs != total_sol_count %} progress-bar-striped{% endif %} bg-success' role='progressbar' style='width:"+Math.round({{total_sol_count}}*100/Math.max({{num_probs}},1)).toString()+"%' aria-valuenow='"+Math.round({{total_sol_count}}*100/Math.max({{num_probs}},1)).toString()+"' aria-valuemin='0' aria-valuemax='100'>"+"</div>");</script>
+</div>
+
+</p>
     </div>
   </div>
   <div class="row">
@@ -39,12 +46,12 @@
 	  </tr>
 	</thead>
 	<tbody>
-	  {% for testlabel,problems in rows2 %}
+	  {% for testlabel,problems,sol_complete in rows2 %}
 	  
 	  <tr>
             <td><a href="../{{testlabel}}">{{testlabel}}</a></td>
 	    {% for p in problems %}
-            <td class="{% if p.solutions.count == 0 %}cell-danger{% else %}cell-success{% endif %}"><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
+            <td class="{% if p.solutions.count == 0 %}cell-danger{% else %}cell-{% if sol_complete %}super-{%endif%}success{% endif %}"><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
 	    {% endfor %}
 	  </tr>
 	  {% endfor %}

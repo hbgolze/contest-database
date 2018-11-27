@@ -588,3 +588,14 @@ background: #006699; color: #fff; }
 /* add padding  */
 .left-addon input  { padding-left:  30px; }
 .right-addon input { padding-right: 30px; }
+
+/* modify bootstrap table colors */
+table.table.table-striped tr td.cell-danger {
+    background-color:#f2dede;
+}
+table.table.table-striped tr td.cell-success {
+    background-color:#dff0d8;
+}
+
+
+
