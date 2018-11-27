@@ -43,7 +43,7 @@
 	  <tr>
             <td><a href="../{{testlabel}}">{{testlabel}}</a></td>
 	    {% for p in problems %}
-            <td><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
+            <td class="{% if p.solutions.count == 0 %}cell-danger{% else %}cell-success{% endif %}"><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
 	    {% endfor %}
 	  </tr>
 	  {% endfor %}

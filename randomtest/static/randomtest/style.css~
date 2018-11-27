@@ -56,7 +56,6 @@ a img { border:none; }
   font-size:inherit;
 }
 img.displayed {
-    display: block;
     margin-left: auto;
     margin-right: auto;
     zoom: 50%; 
