@@ -2,6 +2,8 @@
 
 {% block title %}{{username}}'s Activity{% endblock %}
 
+{% load tz %}
+
 {% block content %}
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
@@ -20,19 +22,19 @@
 	{% for entry,islinked in log %}
 	{% if islinked == True %}
         {% if entry.content_type.name == "solution" %}
-        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</a>
         {% elif entry.content_type.name == "problem" %}
-        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</a>
         {% elif entry.content_type.name == "problem approval" %}
-        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time}})</a>
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</a>
         {% endif %}
 	{% else %}
         {% if entry.content_type.name == "solution" %}
-        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</li>
         {% elif entry.content_type.name == "problem" %}
-        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</li>
         {% elif entry.content_type.name == "problem approval" %}
-        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time}})</li>
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</li>
         {% endif %}
 	{% endif %}
 	{% endfor %}
