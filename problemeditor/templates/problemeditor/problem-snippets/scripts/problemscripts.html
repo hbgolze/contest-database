@@ -87,6 +87,22 @@ $(document).on('click',".delete-tag-link",function(event) {
 
 {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
 
+$(document).on('click',".view-log-btn",function(event) {
+    event.preventDefault();
+    var prob_id = $(this).attr('id').split('-')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/view_log/',
+        data: "pk="+prob_id,
+        dataType: 'json',
+        success: function(result) {
+            $("#log-modal").html(result['modal-html']);
+            $("#log-modal").modal("show");
+        }
+    });
+    return false;
+});
+
 $(document).on('click',".remove_duplicate",function(event) {
     event.preventDefault();
     var dupl_id = $(this).attr('id').split('_')[3];

@@ -1,0 +1,32 @@
+{% load tz %}
+<div class="modal-dialog modal-lg">
+  
+  <!-- Modal content-->
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Log for {{prob.readable_label}}</h5>
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+    </div>
+    <div class="modal-body">
+      {% if entries|length > 0 %}
+      <div id="all_entries" class="list-group">
+	{% for entry_user,entry in entries %}
+        {% if entry.content_type.name == "solution" %}
+        <div class="list-group-item">{{entry_user}}{% if entry.action_flag == 1 %} added a new {% elif entry.action_flag == 2 %} edited a {% elif entry.action_flag == 3 %} deleted a {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</div>
+        {% elif entry.content_type.name == "problem" %}
+        <div class="list-group-item">{{entry_user}}{% if entry.action_flag == 1 %} added the {% elif entry.action_flag == 2 %} edited the {% elif entry.action_flag == 3 %} deleted the {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</div>
+	{% endif %}
+        {% endfor %}
+
+      </div>
+      {% endif %}
+      <div id="no-entries" {% if entries|length > 0%}style="display:none"{% endif %}>
+	Nothing in the log.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+  
+</div>

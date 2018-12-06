@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.utils import timezone
 from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
+from django.contrib.auth.admin import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.views.generic import UpdateView,CreateView,DeleteView,ListView,DetailView
@@ -2015,3 +2016,32 @@ def save_round(request):
             new_round = form.save()
         return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-round-row.html',{'round':new_round}),'type_id' : new_round.type.pk})
     return JsonResponse({'success':0})
+
+@user_passes_test(lambda u: mod_permission(u))
+def view_entry_log(request):
+    pk = request.GET.get('pk')
+    prob = get_object_or_404(Problem,pk = pk)
+    prob_entries = list(LogEntry.objects.filter(object_id = pk))
+    sol_entries = []
+    for sol in prob.solutions.all():
+        sol_entries += list(LogEntry.objects.filter(object_id = sol.pk))
+    entries = prob_entries+sol_entries
+    entries = sorted(entries,key=lambda x: x.action_time)
+    L = []
+    users = {}
+    bad_users = {}
+    for e in entries:
+        if e.user_id in users:
+            L.append((users[e.user_id],e))
+        else:
+            if e.user_id in bad_users:
+                L.append(('?',e))
+            else:
+                if User.objects.filter(pk=e.user_id).exists():
+                    users[e.user_id] = User.objects.get(pk=e.user_id)
+                    L.append((users[e.user_id],e))
+                else:
+                    bad_users[e.user_id] = '?'
+                    L.append(('?',e))
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_log.html',{'prob':prob,'entries':L,'request':request})})
+

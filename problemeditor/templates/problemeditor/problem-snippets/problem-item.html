@@ -42,3 +42,8 @@
   </div>
 </div>
 {% endif %}
+
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+<button class="btn btn-secondary btn-sm mt-2 view-log-btn" id="viewlog-{{prob.pk}}">View Log</button>
+{% endif %}
+
