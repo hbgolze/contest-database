@@ -2021,10 +2021,10 @@ def save_round(request):
 def view_entry_log(request):
     pk = request.GET.get('pk')
     prob = get_object_or_404(Problem,pk = pk)
-    prob_entries = list(LogEntry.objects.filter(object_repr = prob.label).filter(content_type_id = ContentType.objects.get_for_model(prob).pk))
-    sol_entries = []
-    for sol in prob.solutions.all():
-        sol_entries += list(LogEntry.objects.filter(object_repr__startswith = prob.label+" sol").filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
+    prob_entries = list(LogEntry.objects.filter(object_repr = prob.label))#.filter(content_type_id = ContentType.objects.get_for_model(prob).pk))
+    sol_entries = list(LogEntry.objects.filter(object_repr__startswith = prob.label+" sol"))#.filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
+#    for sol in prob.solutions.all():
+#        sol_entries += list(LogEntry.objects.filter(object_repr__startswith = prob.label+" sol").filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
     entries = prob_entries+sol_entries
     entries = sorted(entries,key=lambda x: x.action_time)
     L = []
