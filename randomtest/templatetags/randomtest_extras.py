@@ -9,3 +9,7 @@ def poundsafe(value):
 @register.filter
 def surroundbracket(value):
     return '{'+value+'}'
+
+@register.filter
+def replacearrow(value):
+    return value.replace('>','$\\to$')

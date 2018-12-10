@@ -64,10 +64,19 @@ function fixchecks() {
 <div class="container">
   <h2>Problem Group: {{prob_group.name}}</h2>
   <div class="row">
-    <div class="col-lg-9">
+    <div class="col-10">
+      <p>There are {{prob_group.problems.count}} problems in this group.</p>
 {% if can_delete %}
       <p>If you remove problems, you must click "Save" for your changes to be saved.</p>
 {% endif %}
+    </div>
+    <div class="col-2" style="text-align:right">
+      <p><button class="btn btn-primary" id="view-PDF">View as PDF</button></p>
+    </div>
+
+  </div>
+  <div class="row">
+    <div class="col-10">
       {% if prob_group.problems.count > 0 %}
       <form action="." method="POST" id="problems">
 {% csrf_token %}
@@ -129,6 +138,68 @@ No problems checked!
     You have unsaved changes! Please click "Save" before navigating away.
   </div>
 </div>
+
+
+<div class="modal fade" id="PDF-options" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="get" action="pdf/" id="PDF-form">
+        <div class="modal-header">
+          <h5 class="modal-title">View Problem Group as PDF</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+	  <div class="container">
+	  <div class="row">
+	    <div class="col">
+	      Select Options
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-acs" name="include-acs" checked>
+		<label class="form-check-label" for="include-acs">
+		  Include Answer Choices
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-pls" name="include-pls" checked>
+		<label class="form-check-label" for="include-pls">
+		  Include Problem Labels
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-tags" name="include-tags">
+		<label class="form-check-label" for="include-tags">
+		  Include Tags
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-sols" name="include-sols">
+		<label class="form-check-label" for="include-sols">
+		  Include Solutions
+		</label>
+	      </div>
+	      <div class="form-check">
+		<input class="form-check-input" type="checkbox" value="" id="include-acs" name="include-ans">
+		<label class="form-check-label" for="include-ans">
+		  Include Answers
+		</label>
+	      </div>
+	    </div>
+	  </div>
+	  </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" name="download-PDF" class="btn btn-primary">Download PDF</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+
+
+
+</div>
+
 
 
 <script>
@@ -212,6 +283,20 @@ $("#loading").hide();
     }
   });
   return false;
+});
+
+$(document).on('click','#view-PDF',function(e) {
+  e.preventDefault();
+  $("#PDF-options").modal("show");
+});
+
+$(document).on('submit','#PDF-form',function(e) {
+    e.preventDefault();
+    var form = this;
+    form.submit();
+    $("#PDF-options").modal('hide');
+
+    return false;
 });
 </script>
 {% endblock %}
