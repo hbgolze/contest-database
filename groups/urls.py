@@ -15,5 +15,6 @@ urlpatterns = [
     url(r'^ajax/change-permission/$', views.change_permission, name='change_permission'),
     url(r'^ajax/delete-group/$', views.delete_group, name='delete_group'),
     url(r'^ajax/remove-group/$', views.remove_group, name='remove_group'),
+    url(r'^ajax/add-to-group/$', views.add_to_group, name='groups_add_to_group'),
     url(r'^(?P<pk>\d+)/pdf/$', views.test_as_pdf, name='pgpdfview'),
 ]

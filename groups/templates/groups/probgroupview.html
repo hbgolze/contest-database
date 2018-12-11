@@ -114,6 +114,29 @@ function fixchecks() {
       {% else %}
     <p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>
     {% endif %}
+    <h2>Add Selected Problems to Other Problem Group</h2>
+    
+
+              <form action="." method="post" class="js-problem-group-form mb-3">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request}}">
+<!--                <label for="add_to_problemgroup">Add to Problem Group:</label>-->
+                <select name="add_to_problemgroup" class="js-problem-group-select form-control">
+                  <option value="" disabled selected>Select a Group</option>
+                  {% for pg in prob_groups %}
+                  <option value="{{pg.pk}}">{{pg.name}}
+                  </option>
+                  {% endfor %}
+                </select>
+                <div id="adding-status" class="js-adding-status">
+
+                </div>
+              </form>
+
+
+
+
+
     <h2>Create a Test from Selected Problems</h2>
     <form action="." method="POST" id="new-test-form">
 {% csrf_token %}
@@ -121,11 +144,11 @@ function fixchecks() {
 	<label for="testname">Name of test:</label>
 	<input type="text" name="testname" value="New Test" class="form-control">
       </p>
-<div id="error-message" style="display:none">
-  <div class="alert alert-danger">
-No problems checked!
-  </div>
-</div>
+      <div id="error-message" style="display:none">
+	<div class="alert alert-danger">
+	  No problems checked!
+	</div>
+      </div>
       <p><button type="submit" class="btn btn-primary" name="newtest" value="newtest">Create Test</button><span class="fa fa-spinner fa-spin fa-3x fa-fw" style="display:none" id="loading"></span></p>
     </form>
 </div>
@@ -178,7 +201,7 @@ No problems checked!
 		</label>
 	      </div>
 	      <div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="include-acs" name="include-ans">
+		<input class="form-check-input" type="checkbox" value="" id="include-ans" name="include-ans">
 		<label class="form-check-label" for="include-ans">
 		  Include Answers
 		</label>
@@ -296,6 +319,42 @@ $(document).on('submit','#PDF-form',function(e) {
     form.submit();
     $("#PDF-options").modal('hide');
 
+    return false;
+});
+
+
+$("select.js-problem-group-select").change(function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '/problemgroups/ajax/add-to-group/',
+        data: form.serialize()+"&"+$("#problems").serialize(),
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 2) {
+$("#adding-status").html("<div class='alert alert-success' role='alert'>Problems have been added to group.</div>");
+$("#adding-status").show();
+setTimeout(function() {
+$("#adding-status").fadeOut().empty();
+},5000);
+            } else if (data['status'] == 1) {
+$("#adding-status").html("<div class='alert alert-warning' role='alert'>No problems selected.</div>");
+$("#adding-status").show();
+setTimeout(function() {
+$("#adding-status").fadeOut().empty();
+},5000);
+
+            } else {
+$("#adding-status").html("<div class='alert alert-warning' role='alert'>All selected problems are already in group.</div>");
+$("#adding-status").show();
+setTimeout(function() {
+$("#adding-status").fadeOut().empty();
+},5000);
+            }
+
+        }
+    });
     return false;
 });
 </script>

@@ -29,6 +29,7 @@ from .forms import GroupModelForm
 from random import shuffle
 import time
 from datetime import datetime,timedelta
+from itertools import chain
 
 # Create your views here.
 
@@ -72,6 +73,11 @@ def viewproblemgroup(request,pk):
     context = {}
     context['nbar'] = 'groups'
     context['prob_group'] = prob_group
+    context['request'] = request
+    owned_groups = userprofile.problem_groups.exclude(pk = pk)
+    editable_groups = userprofile.editable_problem_groups.exclude(pk = pk)
+    probgroups = list(chain(owned_groups,editable_groups))
+    context['prob_groups'] = probgroups
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all():
         context['can_delete'] = 1
     template = loader.get_template('groups/probgroupview.html')
@@ -400,3 +406,30 @@ def test_as_pdf(request,**kwargs):
             with open(os.path.join(tempdir, 'texput.log')) as f:
                 error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'problemgroup','name':prob_group.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+@login_required
+def add_to_group(request):
+    form = request.POST
+    userprofile = request.user.userprofile
+    if "chk" in form:
+        checked = form.getlist("chk")
+        if len(checked)>0:
+            P = Problem.objects.filter(label__in=checked)
+            problem_groups = [(d,p) for d, p in request.POST.items() if d.startswith('add_to_problemgroup')]
+            for i in problem_groups:
+                p_group = get_object_or_404(ProblemGroup,pk = i[1])
+                problems_all_in_group = 1
+                for prob in P:
+                    if p_group.problems.filter(pk = prob.pk).exists() == False:
+                        problems_all_in_group = 0
+                        p_group.problems.add(prob)
+                if problems_all_in_group == 1:
+                    return JsonResponse({'status':0})
+                p_group.save()
+
+            return JsonResponse({'status':2})
+
+    return JsonResponse({'status':1})#no problems checked
+
+
+
