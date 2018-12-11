@@ -66,20 +66,20 @@ function fixchecks() {
   <div class="row">
     <div class="col-10">
       <p>There are {{prob_group.problems.count}} problems in this group.</p>
-{% if can_delete %}
+      {% if can_delete %}
       <p>If you remove problems, you must click "Save" for your changes to be saved.</p>
-{% endif %}
+      {% endif %}
     </div>
     <div class="col-2" style="text-align:right">
       <p><button class="btn btn-primary" id="view-PDF">View as PDF</button></p>
     </div>
-
+    
   </div>
   <div class="row">
     <div class="col-10">
       {% if prob_group.problems.count > 0 %}
-      <form action="." method="POST" id="problems">
-{% csrf_token %}
+	<form action="." method="POST" id="problems">
+	{% csrf_token %}
 	<p class="ml-4"><input type="checkbox" id="toggler" onclick="togglemarked()" checked> Select/Deselect All</p>
 	<input type="hidden" name="startform" value="{{prob_group.pk}}">
 	<div class="list-group mb-3">	  
@@ -89,6 +89,7 @@ function fixchecks() {
 	      <div class="col-1">
 		{{forloop.counter}}.<br>
 		<input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked>
+		<input type="hidden" name="probs" value="{{prob.label}}">
 	      </div>
 	      <div class="col-10">
 		{% if prob.question_type_new.question_type == 'multiple choice' %}
@@ -97,41 +98,41 @@ function fixchecks() {
 		{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
 		{% endif %}
 	      </div>
-{% if can_delete %}
+	      {% if can_delete %}
 	      <div class="col-1" style="text-align:right">
-<button class="btn btn-sm btn-danger delete-problem-link"><span class="fa fa-remove"></span></button>
+		<button class="btn btn-sm btn-danger delete-problem-link"><span class="fa fa-remove"></span></button>
 	      </div>
-{% endif %}
+	      {% endif %}
 	    </div>
 	  </div>
 	  {% endfor %}
 	</div>
-{% if can_delete %}	
+	{% if can_delete %}	
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
-	<p><button type="submit" class="btn btn-primary" id="save-prob-group" name="save" value="save">Save</button></p>
-{% endif %}
-      </form>
+	<span><button type="submit" class="btn btn-primary" id="save-prob-group" name="save" value="save">Save</button></span><span class="float-right"><button class="btn btn-danger" id="delete-selected-problems">Delete Selected Problems</button></span>
+	{% endif %}
+        </form>
       {% else %}
     <p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>
     {% endif %}
     <h2>Add Selected Problems to Other Problem Group</h2>
     
 
-              <form action="." method="post" class="js-problem-group-form mb-3">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{ request}}">
-<!--                <label for="add_to_problemgroup">Add to Problem Group:</label>-->
-                <select name="add_to_problemgroup" class="js-problem-group-select form-control">
-                  <option value="" disabled selected>Select a Group</option>
-                  {% for pg in prob_groups %}
-                  <option value="{{pg.pk}}">{{pg.name}}
-                  </option>
-                  {% endfor %}
-                </select>
-                <div id="adding-status" class="js-adding-status">
-
-                </div>
-              </form>
+    <form action="." method="post" class="js-problem-group-form mb-3">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request}}">
+      <!--                <label for="add_to_problemgroup">Add to Problem Group:</label>-->
+      <select name="add_to_problemgroup" class="js-problem-group-select form-control">
+        <option value="" disabled selected>Select a Group</option>
+        {% for pg in prob_groups %}
+        <option value="{{pg.pk}}">{{pg.name}}
+        </option>
+        {% endfor %}
+      </select>
+      <div id="adding-status" class="js-adding-status">
+	
+      </div>
+    </form>
 
 
 
@@ -139,7 +140,7 @@ function fixchecks() {
 
     <h2>Create a Test from Selected Problems</h2>
     <form action="." method="POST" id="new-test-form">
-{% csrf_token %}
+      {% csrf_token %}
       <p>
 	<label for="testname">Name of test:</label>
 	<input type="text" name="testname" value="New Test" class="form-control">
@@ -151,7 +152,7 @@ function fixchecks() {
       </div>
       <p><button type="submit" class="btn btn-primary" name="newtest" value="newtest">Create Test</button><span class="fa fa-spinner fa-spin fa-3x fa-fw" style="display:none" id="loading"></span></p>
     </form>
-</div>
+  </div>
 </div>
 </div>  
 
@@ -323,7 +324,7 @@ $(document).on('submit','#PDF-form',function(e) {
 });
 
 
-$("select.js-problem-group-select").change(function(event) {
+$(document).on('change', "select.js-problem-group-select",function(event) {
     event.preventDefault();
     var form = $(this).closest("form");
     $.ajax({
@@ -333,21 +334,24 @@ $("select.js-problem-group-select").change(function(event) {
         dataType: 'json',
         success: function(data) {
             if (data['status'] == 2) {
-$("#adding-status").html("<div class='alert alert-success' role='alert'>Problems have been added to group.</div>");
+$("#adding-status").html("<div class='alert alert-success' role='alert'>Problems have been added to group "+data['name']+".</div>");
 $("#adding-status").show();
+$(".js-problem-group-select").val("");
 setTimeout(function() {
 $("#adding-status").fadeOut().empty();
 },5000);
             } else if (data['status'] == 1) {
 $("#adding-status").html("<div class='alert alert-warning' role='alert'>No problems selected.</div>");
 $("#adding-status").show();
+$(".js-problem-group-select").val("");
 setTimeout(function() {
 $("#adding-status").fadeOut().empty();
 },5000);
 
             } else {
-$("#adding-status").html("<div class='alert alert-warning' role='alert'>All selected problems are already in group.</div>");
+$("#adding-status").html("<div class='alert alert-warning' role='alert'>All selected problems are already in group "+data['name']+".</div>");
 $("#adding-status").show();
+$(".js-problem-group-select").val("");
 setTimeout(function() {
 $("#adding-status").fadeOut().empty();
 },5000);
@@ -356,6 +360,19 @@ $("#adding-status").fadeOut().empty();
         }
     });
     return false;
+});
+$(document).on('click',"#delete-selected-problems",function(e) {
+  e.preventDefault();
+  var work = 0;
+  $("#problems input:checkbox:checked").each(function() {
+    work = 1;
+    $(this).closest('.list-group-item').remove();
+  });
+  if (work == 1) {
+    fixchecks();
+    $("#save-message").hide();
+    $("#unsaved-message").show();
+  }
 });
 </script>
 {% endblock %}

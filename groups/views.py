@@ -173,7 +173,7 @@ def savegroup(request,**kwargs):
     userprofile = request.user.userprofile
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or prob_group in userprofile.editable_problem_groups.all():
         P = prob_group.problems.all()
-        checked = form.getlist("chk")
+        checked = form.getlist("probs")
         for i in P:
             if i.label not in checked:
                 prob_group.problems.remove(i)
@@ -424,10 +424,10 @@ def add_to_group(request):
                         problems_all_in_group = 0
                         p_group.problems.add(prob)
                 if problems_all_in_group == 1:
-                    return JsonResponse({'status':0})
+                    return JsonResponse({'status':0,'name':p_group.name})
                 p_group.save()
 
-            return JsonResponse({'status':2})
+            return JsonResponse({'status':2,'name':p_group.name})
 
     return JsonResponse({'status':1})#no problems checked
 
