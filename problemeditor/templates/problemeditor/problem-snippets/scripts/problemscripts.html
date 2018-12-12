@@ -351,6 +351,20 @@ $(document).on('click',".pre-delete-sol-link",function(e) {
   $("#confirmdelete_"+sol_id).show();
 });
 
+$(document).on('click',".copy-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[1];  
+  var sol_text = $("textarea#latex_"+sol_id).val();
+
+  var aux = document.createElement("input");
+  aux.setAttribute("value", sol_text);
+  document.body.appendChild(aux);
+  aux.select();
+  document.execCommand("copy");
+  document.body.removeChild(aux);
+
+
+});
+
 $(document).on('click',".no-delete-sol-link",function(e) {
   var sol_id = $(this).attr('id').split('_')[2];  
   $("#confirmdelete_"+sol_id).hide();
