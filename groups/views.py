@@ -405,7 +405,43 @@ def test_as_pdf(request,**kwargs):
         else:
             with open(os.path.join(tempdir, 'texput.log')) as f:
                 error_text = f.read()
-                return render(request,'randomtest/latex_errors.html',{'nbar':'problemgroup','name':prob_group.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+                return render(request,'randomtest/latex_errors.html',{'nbar':'groups','name':prob_group.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+
+@login_required
+def latex_view(request,**kwargs):
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = True
+    else:
+        include_problem_labels = False
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    if 'include-ans' in form:
+        include_ans = True
+    else:
+        include_ans = False
+    prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
+    P = prob_group.problems.all()
+    context = {
+            'name' : prob_group.name,
+            'rows' : P,
+            'pk' : kwargs['pk'],
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices' : include_answer_choices,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            'nbar' : 'groups',
+            'group' : prob_group,
+            }
+    return render(request, 'groups/latex_view.html',context)
 
 @login_required
 def add_to_group(request):

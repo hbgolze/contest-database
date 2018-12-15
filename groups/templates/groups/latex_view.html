@@ -1,0 +1,88 @@
+{% extends "randomtest/base.html" %}
+
+{% load randomtest_extras %}
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/groups/">My Problem Groups</a></li>
+    <li class="breadcrumb-item"><a href="../">{{group.name}}</a></li>
+    <li class="breadcrumb-item active">View LaTeX Code</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h2>LaTeX Code: "{{group.name}}"</h2>
+  <div class="row">
+    <div class="col">
+      <div class="card pl-2" style="background-color:#dddddd">
+        <div class="card-body">
+	  <pre style="white-space: pre-wrap"><code>
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: }}{\end{framed}}
+\begin{document}
+\begin{enumerate}
+{% for prob in rows %}
+\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
+
+{% if prob.question_type_new.question_type == "multiple choice" %}
+{% if include_answer_choices or prob.needs_answers %}                                                
+\vspace{6pt}
+
+{{prob.answers|linebreaks}}
+{% endif %}   
+{% endif %}
+
+{% if include_ans %}
+{% if prob.question_type_new.question_type == "multiple choice" %}
+\textbf{Answer:} $\textbf{({{prob.mc_answer}})\,}$
+{% elif prob.question_type_new.question_type == "short answer" %}
+\textbf{Answer:} ${{prob.sa_answer}}\,$
+
+{% elif prob.question_type_new.question_type == "multiple choice short answer" %}
+\textbf{Answer:} $\textbf{\,({{prob.mc_answer}})}$, or ${{prob.sa_answer}}\,$
+{% endif %}
+{% endif %}
+
+{% if include_sols %}
+{% for solution in prob.solutions.all %}
+\textbf{Solution{% if solutions|length > 1 %} {{forloop.counter}}{% endif %}:}
+{{solution.solution_text|linebreaks}}
+
+{% endfor %}
+\rule{\textwidth}{.5pt}
+{% endif %}
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+</code>
+</pre>
+	</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

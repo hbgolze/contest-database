@@ -17,4 +17,5 @@ urlpatterns = [
     url(r'^ajax/remove-group/$', views.remove_group, name='remove_group'),
     url(r'^ajax/add-to-group/$', views.add_to_group, name='groups_add_to_group'),
     url(r'^(?P<pk>\d+)/pdf/$', views.test_as_pdf, name='pgpdfview'),
+    url(r'^(?P<pk>\d+)/latex/$', views.latex_view, name='pglatexview'),
 ]
