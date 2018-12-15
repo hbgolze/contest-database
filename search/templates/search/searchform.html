@@ -13,13 +13,20 @@
   <div class="row">
     <div class="col">
       <p>Enter a search term, and select more specific options if desired. This will search for problems with text matching the keywords.</p>
+{% if userprofile.user_type_new.name == "super" or userprofile.user_type_new.name == "contestmod" %}
+{% if not advanced %}
+<p><a class="btn btn-secondary" href="?advanced">Advanced Mode</a></p>
+{% else %}
+<p><a class="btn btn-secondary" href="/search/">Basic Mode</a></p>
+{% endif %}
+{% endif %}
     </div>
   </div>
 
 
   <div class="row">
     <div class="col">
-      <form action="results/" method="get">
+      <form action="{% if advanced %}advanced_{% endif %}results/" method="get">
 	<input type="hidden" name="searchform" value="start">
 	<div class="row">
 	  <div class="form-group col-lg-3">
@@ -29,8 +36,8 @@
 	</div>
 	<div class="row">
 	  <div class="form-group col-lg-3">
-	    <label for="testtype" class="control-label">Problem Type:</label>
-	    <select name="testtype" class="form-control">
+	    <label for="tp" class="control-label">Problem Type:</label>
+	    <select{% if advanced %} multiple{% endif %} name="tp" class="form-control"{% if advanced %} size="10"{% endif %}>
 	      {% for typ in types %}
 	      <option value="T_{{typ.pk}}">{{typ.label}} Problems</option>
 {% for round in typ.rounds.all %}
@@ -44,8 +51,8 @@
 	  <div class="form-group col-lg-5">
 	    <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
 	    
-	    <select name="tag" class="form-control">
-	      <option value="">Unspecified</option>
+	    <select{% if advanced %} multiple{% endif %} name="tag" class="form-control"{% if advanced %} size="10"{% endif %}>
+{% if not advanced %}	      <option value="">Unspecified</option>{% endif %}
 	      {% for t in tags %}
 	      <option value="{{t.tag}}">{{t.tag}}</option>
 	      {% endfor %}
@@ -73,7 +80,7 @@
 	    <div class="form-check">
 	      <label class="form-check-label">
 		<input class="form-check-input" type="checkbox" name="solutionsearch" value="">
-		Search Solutions
+		Search Solutions {% if advanced %}(Under Construction){% endif %}
 	      </label>
 	    </div>
 	  </div>
