@@ -18,7 +18,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution
+from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution,Round
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -157,6 +157,12 @@ def searchresults(request):
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
             context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.exclude(tag='root')}
+            if tag != "":
+                context['tag_list'] = [tag]
+            if round_or_type == 'T':
+                context['testtypes'] = [Type.objects.get(pk=rt_pk)]
+            else:
+                context['testtypes'] = [Round.objects.get(pk=rt_pk)]
             return HttpResponse(template.render(context,request))
 
 @login_required
@@ -188,29 +194,29 @@ def advanced_searchresults(request):
 #########TAGS
             tag_list = form.getlist('tag')
 
-            probbegin=form.get('probbegin','')
-            if probbegin is None or probbegin==u'':
-                probbegin=0
+            probbegin = form.get('probbegin','')
+            if probbegin is None or probbegin == u'':
+                probbegin = 0
             else:
-                probbegin=int(probbegin)
+                probbegin = int(probbegin)
 
-            probend=form.get('probend','')
-            if probend is None or probend==u'':
-                probend=10000
+            probend = form.get('probend','')
+            if probend is None or probend == u'':
+                probend = 10000
             else:
-                probend=int(probend)
+                probend = int(probend)
 
-            yearbegin=form.get('yearbegin','')
-            if yearbegin is None or yearbegin==u'':
-                yearbegin=0
+            yearbegin = form.get('yearbegin','')
+            if yearbegin is None or yearbegin == u'':
+                yearbegin = 0
             else:
-                yearbegin=int(yearbegin)
+                yearbegin = int(yearbegin)
 
-            yearend=form.get('yearend','')
-            if yearend is None or yearend==u'':
-                yearend=10000
+            yearend = form.get('yearend','')
+            if yearend is None or yearend == u'':
+                yearend = 10000
             else:
-                yearend=int(yearend)
+                yearend = int(yearend)
 
             sol_opts = form.get('sol_opts','')
             if sol_opts == "sols":
@@ -221,7 +227,7 @@ def advanced_searchresults(request):
                 P = Problem.objects.all()
             P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend)
             if len(type_pks) + len(round_pks) > 0:
-                P = P.filter(Q(type_new__pk__in = type_pks)|Q(round__pk__in=round_pks))
+                P = P.filter(Q(type_new__pk__in = type_pks)|Q(round__pk__in = round_pks))
             if len(tag_list) > 0:
                 every_tag = []
                 for t in tag_list:
@@ -230,23 +236,16 @@ def advanced_searchresults(request):
                 P = P.filter(newtags__in = NewTag.objects.filter(pk__in = tag_pks)).distinct()
 
 
-
-#            if 'solutionsearch' in form:
-#                if round_or_type == "T":
-#                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).distinct()
-#                else:
-#                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).distinct()
-#                for i in keywords:
-#                    S = S.filter(solution_text__contains = i)
-#                for i in keywords:
-#                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
-#                P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
-#            else:
-#                for i in keywords:
-#                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
-
             for i in keywords:
                 P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+
+            if 'solutionsearch' in form:
+                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend)
+                S = S.filter(Q(parent_problem__type_new__pk__in = type_pks)|Q(parent_problem__round__pk__in = round_pks)).distinct()
+                for i in keywords:
+                    S = S.filter(solution_text__contains = i)
+                P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
+
             P = list(P)
             P = sorted(P,key = lambda x:(x.problem_number,x.year))
             owned_groups = userprofile.problem_groups.all()
@@ -264,6 +263,17 @@ def advanced_searchresults(request):
                 prows = paginator.page(paginator.num_pages)
             template = loader.get_template('search/searchresults.html')
             context={'nbar' : 'search', 'rows' : prows, 'searchterm': searchterm, 'current_url' : current_url,'matchnums':len(P), 'probgroups' : probgroups,'request' : request, 'tags':NewTag.objects.exclude(tag='root')}
+            if len(tag_list) > 0:
+                context['tag_list'] = tag_list
+            types = Type.objects.filter(pk__in=type_pks)
+            rounds = Round.objects.filter(pk__in=round_pks)
+            type_names = []
+            for i in types:
+                type_names.append(i.label)
+            for i in rounds:
+                type_names.append(i.name)
+            type_names.sort()
+            context['testtypes'] = type_names
             return HttpResponse(template.render(context,request))
 
 @login_required
