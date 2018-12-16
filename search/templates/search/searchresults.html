@@ -11,66 +11,50 @@
 
 
 <div class="container">
+<div class="row">
+<div class="col-lg-9">
   <h2>Search results</h2>
 <p>Keywords: "{{searchterm}}"</p>
 {% if testtypes %}
+<p>
+{% if testtypes|length > 1 %}
 Types:<br>
-<ul style="list-style:none">
+{% else %}
+Type:<br>
+{% endif %}
+<ul class="list-group-horizontal">
 {% for t in testtypes %}
-<li>
-<div class="btn-group btn-group-sm mt-1">
-<button class="btn btn-info" disabled>
+<li class="list-group-item list-group-item-info">
 {{t}}
-</button>
-</div>
 </li>
 {% endfor %}
 </ul>
-{% else %}
-Type: 
-{% for t in testtypes %}
-<span class="btn-group btn-group-sm mt-1">
-<button class="btn btn-info" disabled>
-{{t}}
-</button>
-</span>
-{% endfor %}
 </p>
 {% endif %}
-
 {% if tag_list %}
 <p>
 {% if tag_list|length > 1%}
 Tags:<br>
-<ul style="list-style:none">
+{% else %}
+Tag:<br>
+{% endif %}
+<ul class="list-group">
 {% for t in tag_list %}
-<li>
-<div class="btn-group btn-group-sm mt-1">
-<button class="btn btn-info" disabled>
+<li class="list-group-item list-group-item-info">
 {{t}}
-</button>
-</div>
 </li>
 {% endfor %}
 </ul>
-{% else %}
-Tag: 
-{% for t in tag_list %}
-<span class="btn-group btn-group-sm mt-1">
-<button class="btn btn-info" disabled>
-{{t}}
-</button>
-</span>
-{% endfor %}
-{% endif %}
 </p>
 {% endif %}
-<p>{% if matchnums == 0 %}No problems match the query.{% else %}Viewing results {{rows.start_index}}-{{rows.end_index}} of {{matchnums}}.{% endif %}</p>
 
+<p>{% if matchnums == 0 %}No problems match the query.{% else %}Viewing results {{rows.start_index}}-{{rows.end_index}} of {{matchnums}}.{% endif %}</p>
+</div>
+</div>
 
   <div class="row">
-    <div class="col">
-<div class="float-right">
+    <div class="col-lg-9">
+      <div class="float-right">
       {% if rows.has_other_pages %}
       <nav aria-label="Search result pages">
         <ul class="pagination">
@@ -106,7 +90,7 @@ Tag:
         </ul>
       </nav>
       {% endif %}
-</div>
+      </div>
     </div>
   </div>
 

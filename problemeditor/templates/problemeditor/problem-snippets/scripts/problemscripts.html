@@ -355,13 +355,12 @@ $(document).on('click',".copy-sol-link",function(e) {
   var sol_id = $(this).attr('id').split('_')[1];  
   var sol_text = $("textarea#latex_"+sol_id).val();
 
-  var aux = document.createElement("input");
-  aux.setAttribute("value", sol_text);
+  var aux = document.createElement("textarea");
+  aux.innerHTML = sol_text;
   document.body.appendChild(aux);
   aux.select();
   document.execCommand("copy");
   document.body.removeChild(aux);
-
 
 });
 
