@@ -12,6 +12,7 @@ from django.contrib.auth.admin import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.views.generic import UpdateView,CreateView,DeleteView,ListView,DetailView
+from django.db.models import Max,Min
 
 from formtools.wizard.views import SessionWizardView
 
@@ -218,7 +219,10 @@ def typeview(request):
         num_problems = P.count()
         num_untagged = P.filter(newtags__isnull = True).count()#
         num_nosolutions = P.filter(solutions__isnull = True).count()
-        rows.append((i,num_untagged,num_nosolutions))
+        min_year = P.aggregate(Min('year'))
+        max_year = P.aggregate(Max('year'))
+        print(min_year)
+        rows.append((i,num_untagged,num_nosolutions,min_year['year__min'],max_year['year__max']))
     template = loader.get_template('problemeditor/typeview.html')
     context = {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
@@ -2021,10 +2025,10 @@ def save_round(request):
 def view_entry_log(request):
     pk = request.GET.get('pk')
     prob = get_object_or_404(Problem,pk = pk)
-    prob_entries = list(LogEntry.objects.filter(object_id = pk).filter(content_type_id = ContentType.objects.get_for_model(prob).pk)
-    sol_entries = []
-    for sol in prob.solutions.all():
-        sol_entries += list(LogEntry.objects.filter(object_id = sol.pk).filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
+    prob_entries = list(LogEntry.objects.filter(object_repr = prob.label))#.filter(content_type_id = ContentType.objects.get_for_model(prob).pk))
+    sol_entries = list(LogEntry.objects.filter(object_repr__startswith = prob.label+" sol"))#.filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
+#    for sol in prob.solutions.all():
+#        sol_entries += list(LogEntry.objects.filter(object_repr__startswith = prob.label+" sol").filter(content_type_id = ContentType.objects.get_for_model(sol).pk))
     entries = prob_entries+sol_entries
     entries = sorted(entries,key=lambda x: x.action_time)
     L = []

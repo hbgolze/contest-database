@@ -12,6 +12,7 @@ from django.contrib.auth.admin import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.views.generic import UpdateView,CreateView,DeleteView,ListView,DetailView
+from django.db.models import Max,Min
 
 from formtools.wizard.views import SessionWizardView
 
@@ -218,7 +219,9 @@ def typeview(request):
         num_problems = P.count()
         num_untagged = P.filter(newtags__isnull = True).count()#
         num_nosolutions = P.filter(solutions__isnull = True).count()
-        rows.append((i,num_untagged,num_nosolutions))
+        min_year = P.aggregate(Min('year'))
+        max_year = P.aggregate(Max('year'))
+        rows.append((i,num_untagged,num_nosolutions,min_year['year__min'],max_year['year__max']))
     template = loader.get_template('problemeditor/typeview.html')
     context = {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
