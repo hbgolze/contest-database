@@ -7,7 +7,7 @@
                 <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control form-control-sm mb-1">
                   <option value="" disabled selected>Select a Tag</option>
                   {% for tagg in tags %}
-                  <option value="{{tagg.pk}}">{{tagg}}
+                  <option value="{{tagg.pk}}" title="{{tagg.description}}">{{tagg}}
                   </option>
                   {% endfor %}
                 </select>
