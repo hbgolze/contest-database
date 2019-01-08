@@ -10,7 +10,15 @@
 	
 	
         {% csrf_token %}
-	
+        <div class="container">
+          <div class="row">
+            <div class="col">
+	      <span style="font-weight:bold">{{theorem.prefix}}{% if theorem.name != "" %} ({{theorem.name}}){% endif %}: </span>
+	      {% autoescape off %}{{theorem.theorem_display|linebreaks}}{% endautoescape%}
+            </div>
+          </div>
+        </div>
+
 	
         {{ form.non_field_errors }}
 	

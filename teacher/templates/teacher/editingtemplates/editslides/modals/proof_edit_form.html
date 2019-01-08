@@ -10,7 +10,8 @@
 	
 	
         {% csrf_token %}
-	
+	<span style="font-weight:bold">{{proof.prefix}}: </span>
+        {% autoescape off %}{{proof.proof_display|linebreaks}}{% endautoescape %}	
 	
         {{ form.non_field_errors }}
           {% for field in form %}
