@@ -10,8 +10,16 @@
 	
 	
         {% csrf_token %}
-	<span style="font-weight:bold">{{proof.prefix}}: </span>
-        {% autoescape off %}{{proof.proof_display|linebreaks}}{% endautoescape %}	
+	<div class="container">
+          <div class="row">
+            <div class="col">
+	      <span style="font-weight:bold" id="proof-preview-prefix">{{proof.prefix}}: </span>
+	      <div id="proof-preview_{{proof.pk}}">
+		{% autoescape off %}{{proof.proof_display|linebreaks}}{% endautoescape %}
+	      </div>
+            </div>
+          </div>
+        </div>
 	
         {{ form.non_field_errors }}
           {% for field in form %}
@@ -30,6 +38,7 @@
         </div>
         <div class="modal-footer">
           <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
+	  <button class="btn btn-primary proof-primitive-preview-link" id="proof-preview_{{proof.pk}}">Primitive Preview</button>
           <input type="submit" class="btn btn-primary" value="Save" />
         </div>
     </form>

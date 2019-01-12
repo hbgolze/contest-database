@@ -12,7 +12,7 @@
         {% csrf_token %}
 	<div class="container">
 	  <div class="row">
-	    <div class="col">
+	    <div class="col" id="textblock-preview_{{textblock.pk}}">
 	      {% autoescape off %}{{textblock.text_display|linebreaks}}{% endautoescape %}
 	    </div>
 	  </div>
@@ -35,6 +35,7 @@
       </div>
       <div class="modal-footer">
         <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
+	<button class="btn btn-primary textblock-primitive-preview-link" id="textblock-preview_{{textblock.pk}}">Primitive Preview</button>
         <input type="submit" class="btn btn-primary" value="Save"/>
       </div>
     </form>

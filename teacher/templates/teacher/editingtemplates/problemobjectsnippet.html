@@ -1,11 +1,12 @@
 
 <div class="list-group-item">
   <input type="hidden" name="problemobjectinput" value="problemobject_{{probobj.pk}}">
+<div class="container">
   <div class="row">
-    <div class="col-sm-1">
+    <div class="col-1">
       {{forcount}}.
     </div>
-    <div class="col-sm-8 col-md-9" id="problemtext_{{probobj.pk}}">
+    <div class="col-9" id="problemtext_{{probobj.pk}}">
       {% if probobj.problem %}
       {% with prob=probobj.problem %}
       {% if probobj.question_type.question_type == "multiple choice" %}
@@ -24,41 +25,46 @@
       </p>
       {% endif %}
     </div>
-    <div class="col-sm-3 col-md-2" style="text-align:right">
-      {% if sharing_type != "read" %}
-      <div><span class="js-remove" style="color:red; cursor:pointer"><span class="fa fa-remove"></span></span></div>
-      {% endif %}
-      <div>
-        <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
-        <span id="pointvalue_{{probobj.pk}}">
-          {{probobj.point_value}}
-        </span>
-      {% if sharing_type != "read" %}
-        (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
-{% endif %}
-      </div>
-{% if probobj.blank_point_value %}
-      <div>
-        <label for="blankpointvalue_{{probobj.pk}}">Blank Point Value:</label>
-        <span id="blankpointvalue_{{probobj.pk}}">
-          {{probobj.blank_point_value}}
-        </span>
+    <div class="col-2">
+      <p class="float-right">
 	{% if sharing_type != "read" %}
-        (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
+	<button class="btn btn-sm btn-danger js-remove"><span class="fa fa-remove"></span></button>
 	{% endif %}
-      </div>
-{% endif %}
-      <div>
-        <label for="qt_{{probobj.pk}}">Question Type:</label>
-        <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
-	{% if sharing_type != "read" %}
-        (<small><a data-target="#edit-question-type" class="edit-qt-link" href="#/" data-toggle="modal" id="edit-qt_{{probobj.pk}}">Edit</a></small>)
+      </p>
+      <p class="float-right">
+          <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
+          <span id="pointvalue_{{probobj.pk}}">
+            {{probobj.point_value}}
+          </span>
+	  {% if sharing_type != "read" %}
+          (<small><a data-target="#edit-point-value" class="edit-pv-link" href="edit-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
+	  {% endif %}
+      </p>
+      <p class="float-right">
+	{% if probobj.blank_point_value %}
+          <label for="blankpointvalue_{{probobj.pk}}">Blank Point Value:</label>
+          <span id="blankpointvalue_{{probobj.pk}}">
+            {{probobj.blank_point_value}}
+          </span>
+	  {% if sharing_type != "read" %}
+          (<small><a data-target="#edit-blank-point-value" class="edit-bpv-link" href="edit-blank-point-value/{{probobj.pk}}/" data-toggle="modal">Edit</a></small>)
+	  {% endif %}
 	{% endif %}
-      </div>
-      <div>
-	<label>Solutions:</label>
-	<small>(<a data-target="#view-sols" class="view-sols-link" href="#/" data-toggle="modal" id="view-sols_{{probobj.pk}}">View{% if sharing_type != "read" %}/Change{% endif %}</a>){% if sharing_type != "read" %} (<a data-target="#new-sol" class="new-sol-link" href="#/" data-toggle="modal" id="new-sol_{{probobj.pk}}">Add</a>){% endif %}</small>
-      </div>
+</p>
+<p class="float-right">
+          <label for="qt_{{probobj.pk}}">Question Type:</label>
+          <span id="qt_{{probobj.pk}}">{{probobj.question_type}}</span>
+	  {% if sharing_type != "read" %}
+          (<small><a data-target="#edit-question-type" class="edit-qt-link" href="#/" data-toggle="modal" id="edit-qt_{{probobj.pk}}">Edit</a></small>)
+	  {% endif %}
+</p>
+<p class="float-right">
+
+	  <label>Solutions:</label>
+	  <small>(<a data-target="#view-sols" class="view-sols-link" href="#/" data-toggle="modal" id="view-sols_{{probobj.pk}}">View{% if sharing_type != "read" %}/Change{% endif %}</a>){% if sharing_type != "read" %} (<a data-target="#new-sol" class="new-sol-link" href="#/" data-toggle="modal" id="new-sol_{{probobj.pk}}">Add</a>){% endif %}</small>
+
+      </p>
     </div>
   </div>
+</div>
 </div>

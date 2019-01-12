@@ -1,0 +1,70 @@
+{% if ep_qt == 'multiple choice' %}
+<p>
+<label for="id_answer_A">Answer A:</label>
+<input class="form-control" id="id_answer_A" maxlength="500" name="answer_A" type="text" value="{{ep.answer_A}}" required>
+</p>
+<p>
+<label for="id_answer_B">Answer B:</label>
+<input class="form-control" id="id_answer_B" maxlength="500" name="answer_B" type="text" value="{{ep.answer_B}}" required>
+</p>
+<p>
+<label for="id_answer_C">Answer C:</label>
+<input class="form-control" id="id_answer_C" maxlength="500" name="answer_C" type="text" value="{{ep.answer_C}}" required>
+</p>
+<p>
+<label for="id_answer_D">Answer D:</label>
+<input class="form-control" id="id_answer_D" maxlength="500" name="answer_D" type="text" value="{{ep.answer_D}}" required>
+</p>
+<p>
+<label for="id_answer_E">Answer E:</label>
+<input class="form-control" id="id_answer_E" maxlength="500" name="answer_E" type="text" value="{{ep.answer_E}}" required>
+</p>
+<p><label>Answer:</label> </p>
+<div class="container">
+<div class="row">
+<div class="col">
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="mc_answer" id="id_mc_answer_0" value="A" maclength="1" {% if ep.mc_answer == "A" %} checked{% endif %} required>
+  <label class="form-check-label" for="id_mc_answer_0">
+    Answer A
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="mc_answer" id="id_mc_answer_1" value="B" maclength="1" {% if ep.mc_answer == "B" %} checked{% endif %} required>
+  <label class="form-check-label" for="id_mc_answer_1">
+    Answer B
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="mc_answer" id="id_mc_answer_2" value="C" maclength="1" {% if ep.mc_answer == "C" %} checked{% endif %} required>
+  <label class="form-check-label" for="id_mc_answer_2">
+    Answer C
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="mc_answer" id="id_mc_answer_3" value="D" maclength="1" {% if ep.mc_answer == "D" %} checked{% endif %} required>
+  <label class="form-check-label" for="id_mc_answer_3">
+    Answer D
+  </label>
+</div>
+<div class="form-check">
+  <input class="form-check-input" type="radio" name="mc_answer" id="id_mc_answer_4" value="E" maclength="1" {% if ep.mc_answer == "E" %} checked{% endif %} required>
+  <label class="form-check-label" for="id_mc_answer_4">
+    Answer E
+  </label>
+</div>
+</div>
+</div>
+</div>
+</p>
+
+{% elif ep_qt == 'short answer' %}
+
+<p>
+<label for="id_sa_answer">Answer:</label>
+<input class="form-control" id="id_sa_answer" maxlength="20" name="sa_answer" type="text" value="{{ep.sa_answer}}" required>
+<input id="id_problem_id" name="problem_id" type="hidden" value="{{ep.pk}}">
+</p>
+{% elif ep_qt == 'proof' %}
+
+{% endif %}

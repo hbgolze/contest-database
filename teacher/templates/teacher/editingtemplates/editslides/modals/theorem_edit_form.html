@@ -13,8 +13,10 @@
         <div class="container">
           <div class="row">
             <div class="col">
-	      <span style="font-weight:bold">{{theorem.prefix}}{% if theorem.name != "" %} ({{theorem.name}}){% endif %}: </span>
-	      {% autoescape off %}{{theorem.theorem_display|linebreaks}}{% endautoescape%}
+	      <span style="font-weight:bold" id="theorem-preview-prefix">{{theorem.prefix}}{% if theorem.name != "" %} ({{theorem.name}}){% endif %}: </span>
+	      <div id="theorem-preview_{{theorem.pk}}">
+		{% autoescape off %}{{theorem.theorem_display|linebreaks}}{% endautoescape %}
+              </div>
             </div>
           </div>
         </div>
@@ -38,6 +40,7 @@
       </div>
       <div class="modal-footer">
         <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" />
+	<button class="btn btn-primary theorem-primitive-preview-link" id="theorem-preview_{{theorem.pk}}">Primitive Preview</button>
         <input type="submit" class="btn btn-primary" value="Save" />
       </div>
     </form>

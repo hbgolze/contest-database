@@ -29,16 +29,6 @@ PROOFS = (
     ('Solution','Solution'),
     )
 
-class EditProblemProblemObjectForm(forms.ModelForm):
-    problem_id = forms.CharField(widget=forms.HiddenInput())
-    class Meta:
-        model = ProblemObject
-        fields = ('problem_code',)
-        widgets = {'problem_code': forms.HiddenInput()}
-    def __init__(self, *args, **kwargs):
-        super(EditProblemProblemObjectForm, self).__init__(*args, **kwargs)
-        self.fields['problem_id'].initial = str(self.instance.pk)
-
 
 class NewProblemObjectMCForm(forms.ModelForm):
     problem_id = forms.CharField(widget=forms.HiddenInput())
@@ -46,8 +36,13 @@ class NewProblemObjectMCForm(forms.ModelForm):
         model = ProblemObject
         fields = ('problem_code','answer_A','answer_B','answer_C','answer_D','answer_E','mc_answer',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
+            'answer_A': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_B': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_C': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_D': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_E': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(NewProblemObjectMCForm, self).__init__(*args, **kwargs)
@@ -67,7 +62,7 @@ class NewProblemObjectSAForm(forms.ModelForm):
         model = ProblemObject
         fields = ('problem_code','sa_answer',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
@@ -83,7 +78,7 @@ class NewProblemObjectPFForm(forms.ModelForm):
         model = ProblemObject
         fields = ('problem_code',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(NewProblemObjectPFForm, self).__init__(*args, **kwargs)
@@ -98,8 +93,13 @@ class NewExampleProblemMCForm(forms.ModelForm):
         model = ExampleProblem
         fields = ('problem_code','answer_A','answer_B','answer_C','answer_D','answer_E','mc_answer',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'mc_answer': forms.RadioSelect(choices=ANSWER_CHOICES),
+            'answer_A': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_B': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_C': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_D': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_E': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(NewExampleProblemMCForm, self).__init__(*args, **kwargs)
@@ -119,7 +119,7 @@ class NewExampleProblemSAForm(forms.ModelForm):
         model = ExampleProblem
         fields = ('problem_code','sa_answer',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'sa_answer': forms.TextInput(attrs={'class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
@@ -135,7 +135,7 @@ class NewExampleProblemPFForm(forms.ModelForm):
         model = ExampleProblem
         fields = ('problem_code',)
         widgets = {
-            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'problem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(NewExampleProblemPFForm, self).__init__(*args, **kwargs)
@@ -209,7 +209,7 @@ class TextBlockForm(forms.ModelForm):
         model = TextBlock
         fields = ('text_code',)
         widgets = {
-            'text_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'text_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             }
     def __init__(self, *args, **kwargs):
         super(TextBlockForm, self).__init__(*args, **kwargs)
@@ -225,7 +225,7 @@ class TheoremForm(forms.ModelForm):
         model = Theorem
         fields = ('prefix','name','theorem_code',)
         widgets = {
-            'theorem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'theorem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'prefix': forms.Select(choices=THEOREMS, attrs={'class':'form-control'}),
             'name': forms.TextInput(attrs={'class':'form-control'}),
             }
@@ -244,7 +244,7 @@ class ProofForm(forms.ModelForm):
         model = Proof
         fields = ('prefix','proof_code',)
         widgets = {
-            'proof_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
+            'proof_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
             'prefix': forms.Select(choices=PROOFS,attrs={'class':'form-control'})
             }
     def __init__(self, *args, **kwargs):

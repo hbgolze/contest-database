@@ -19,7 +19,8 @@ from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewRespon
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
 from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest,SolutionObject
-from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,EditProblemProblemObjectForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm,BlankPointValueForm,EditClassNameForm,EditUnitNameForm,EditProblemSetNameForm,EditTestNameForm,EditSlideGroupNameForm,EditSlideTitleForm,NewSolutionObjectForm,EditSolutionObjectForm
+from teacher.forms import NewProblemObjectMCForm, NewProblemObjectSAForm, NewProblemObjectPFForm,PointValueForm,SearchForm,AddProblemsForm,TheoremForm,ProofForm,TextBlockForm,ImageForm,LabelForm,NewExampleProblemMCForm,NewExampleProblemSAForm,NewExampleProblemPFForm
+from teacher.forms import BlankPointValueForm,EditClassNameForm,EditUnitNameForm,EditProblemSetNameForm,EditTestNameForm,EditSlideGroupNameForm,EditSlideTitleForm,NewSolutionObjectForm,EditSolutionObjectForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
 
@@ -781,8 +782,8 @@ def saveproblemsetname(request):
 
 @login_required
 def loadoriginalproblemform(request,**kwargs):
-    qt=request.GET.get('qt','')
-    po=ProblemObject()
+    qt = request.GET.get('qt','')
+    po = ProblemObject()
     if qt == 'sa':
         form = NewProblemObjectSAForm(instance=po)
     if qt == 'mc':
@@ -793,46 +794,45 @@ def loadoriginalproblemform(request,**kwargs):
 
 @login_required
 def loadcqtoriginalproblemform(request,**kwargs):
-    qt=request.GET.get('qt','')
-    pk=request.GET.get('pk','')
-    po=get_object_or_404(ProblemObject,pk=pk)
+    qt = request.GET.get('qt','')
+    pk = request.GET.get('pk','')
+    po = get_object_or_404(ProblemObject,pk=pk)
+    qt_dict = {'mc' : 'multiple choice', 'sa' : 'short answer', 'pf' : 'proof'}
+    answers = ''
     if po.isProblem==0:
         if qt == 'sa':
             form = NewProblemObjectSAForm(instance=po)
         if qt == 'mc':
             form = NewProblemObjectMCForm(instance=po)
+            answers = po.answers()
         if qt == 'pf':
             form = NewProblemObjectPFForm(instance=po)
-        return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
-    form = EditProblemProblemObjectForm(instance=po)
-    return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
+
+        return JsonResponse({'answer_code' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-answers.html', {'ep' : po, 'ep_qt' : qt_dict[qt]}), 'latex_display' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html', {'problem_display' : newtexcode(po.problem_code,'originalproblem_'+str(po.pk),answers)})})
+
 
 @login_required
 def loadoriginalexampleproblemform(request,**kwargs):
-    qt=request.GET.get('qt','')
-    ep=ExampleProblem()
+    qt = request.GET.get('qt','')
+    ep = ExampleProblem()
     if qt == 'sa':
         form = NewExampleProblemSAForm(instance=ep)
     if qt == 'mc':
         form = NewExampleProblemMCForm(instance=ep)
     if qt == 'pf':
         form = NewExampleProblemPFForm(instance=ep)
-    return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
+    return JsonResponse({'latex-input' : render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form})})
 
 @login_required
 def loadcqtexampleproblemform(request,**kwargs):
-    qt=request.GET.get('qt','')
-    pk=request.GET.get('pk','')
-    ep=get_object_or_404(ExampleProblem,pk=pk)
-    if ep.isProblem==0:
-        if qt == 'sa':
-            form = NewExampleProblemSAForm(instance=ep)
-        if qt == 'mc':
-            form = NewExampleProblemMCForm(instance=ep)
-        if qt == 'pf':
-            form = NewExampleProblemPFForm(instance=ep)
-        return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
-    return HttpResponse('')
+    qt = request.POST.get('qt','')
+    pk = request.POST.get('pk','')
+    ep = get_object_or_404(ExampleProblem,pk = pk)
+    qt_dict = {'mc' : 'multiple choice', 'sa' : 'short answer', 'pf' : 'proof'}
+    answers = ''
+    if qt == 'mc':
+        answers = ep.answers()
+    return JsonResponse({'answer_code' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-answers.html', {'ep' : ep, 'ep_qt' : qt_dict[qt]}), 'latex_display' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html', {'problem_display' : newtexcode(ep.problem_code,'exampleproblem_'+str(ep.pk),answers)})})
 
 @login_required
 def addoriginalproblem(request,pk,upk,ppk):
@@ -924,89 +924,90 @@ def update_point_value(request,pk,upk,ppk,pppk):
 
 @login_required
 def loadeditquestiontype(request,**kwargs):
-    userprofile=request.user.userprofile
-    po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
-    if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
-            raise Http404("Unauthorized.")
-    elif po.problemset!=None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
-            raise Http404("Unauthorized.")
-    else:
-        raise Http404("Problem does not belong to a valid class.")
-    qt=po.question_type.question_type
-    if po.isProblem == 0:
-        if qt == 'short answer':
-            form = NewProblemObjectSAForm(instance=po)
-        if qt == 'multiple choice':
-            form = NewProblemObjectMCForm(instance=po)
-        if qt == 'proof':
-            form = NewProblemObjectPFForm(instance=po)
-        return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qt':qt,'qts':[1,1,1]})#qts: mc,sa,pf
-
-    form = EditProblemProblemObjectForm(instance=po)
-    if po.problem.question_type_new.question_type == 'multiple choice':
-        qts=[1,0,1]
-    if po.problem.question_type_new.question_type == 'short answer':
-        qts=[0,1,1]
-    if po.problem.question_type_new.question_type == 'multiple choice short answer':
-        qts=[1,1,1]
-    if po.problem.question_type_new.question_type == 'proof':
-        qts=[0,0,1]
-    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qts':qts,'qt':qt})
-
-@login_required
-def savequestiontype(request,**kwargs):
     userprofile = request.user.userprofile
-    form = request.POST
-    qt = form.get('cqt-question-type','')
-    po = get_object_or_404(ProblemObject,pk=form.get('problem_id',''))
+#copied from slides....
+    if request.method == "GET":
+        form = request.GET
+    elif request.method == "POST":
+        form = request.POST
+    po = get_object_or_404(ProblemObject,pk=form.get('popk'))
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     elif po.problemset!=None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+    qt_dict = {'mc' : 'multiple choice', 'sa' : 'short answer', 'pf' : 'proof'}
+    if request.method == "POST":
+        qt = form.get('cqt-question-type','')
+        if po.isProblem == 0:
+            if qt == "mc":
+                pform = NewProblemObjectMCForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
+                    compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
+                    prob.author = request.user
+                    prob.save()
+                    po.increment_version()
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt_dict[qt]})
+            elif qt == "sa":
+                pform = NewProblemObjectSAForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
+                    prob.save()
+                    po.increment_version()
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt_dict[qt]})
+            elif qt == "pf":
+                pform = NewProblemObjectPFForm(request.POST, instance = po)
+                if pform.is_valid():
+                    prob = pform.save()
+                    prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
+                    compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
+                    prob.save()
+                    po.increment_version()
+                    return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt_dict[qt]})
+        else:
+            po.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
+            po.save()
+            po.increment_version()
+            return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt_dict[qt]})
 
     if po.isProblem == 0:
-        if qt == "multiple choice":
-            pform = NewProblemObjectMCForm(request.POST, instance = po)
-            if pform.is_valid():
-                prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
-                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type = qt)
-                prob.author = request.user
-                prob.save()
-                prob.increment_version()
-                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-        elif qt == "short answer":
-            pform = NewProblemObjectSAForm(request.POST, instance = po)
-            if pform.is_valid():
-                prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type = qt)
-                prob.save()
-                prob.increment_version()
-                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
-        elif qt == "proof":
-            pform = NewProblemObjectPFForm(request.POST, instance = po)
-            if pform.is_valid():
-                prob = pform.save()
-                prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
-                compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
-                prob.question_type = QuestionType.objects.get(question_type = qt)
-                prob.save()
-                prob.increment_version()
-                return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':prob}),'qt':qt})
+        return JsonResponse({'modal-html' : render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html', {'ep' : po})})
     else:
-        po.question_type = QuestionType.objects.get(question_type = qt)
-        po.save()
-        po.increment_version()
-        return JsonResponse({'prob':render_to_string('teacher/editingtemplates/problemsnippet.html',{'probobj':po}),'qt':qt})
+        pqt =  po.problem.question_type_new.question_type
+        qt =  po.question_type.question_type
+        if pqt == 'multiple choice':
+            qts=[1,0,1]
+            qts=['mc','pf']
+        if pqt == 'short answer':
+            qts=[0,1,1]
+            qts=['sa','pf']
+        if pqt == 'multiple choice short answer':
+            qts=[1,1,1]
+            qts=['mc','sa','pf']
+        if pqt == 'proof':
+            qts=[0,0,1]
+            qts=['pf']
+        if qt == 'multiple choice':
+            answers = po.answers()
+            problem_display = newtexcode(po.problem.mc_problem_text,str(po.problem.label),answers)
+        else:
+            problem_display = po.problem.display_problem_text
+        return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html',{'ep':po,'qts':qts}), 'latex_display' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html', {'problem_display' : problem_display})})
 
 @login_required
 def load_new_solution_form(request,**kwargs):
@@ -1052,7 +1053,6 @@ def save_new_solution(request,**kwargs):
 def load_manage_solutions(request,**kwargs):
     userprofile = request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
-#need to find solutions in DB that aren't in the problem_object list.
     if po.test != None:
         if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
             raise Http404("Unauthorized.")
@@ -1275,17 +1275,6 @@ def reviewproblemgroup(request,pk,upk,ppk):
     context['prob_group'] = prob_group
     return render(request,'teacher/editingtemplates/review-problem-group.html',context)
 
-###Test###
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/$', views.testeditview, name='testeditview'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/load-original-problem/$', views.testloadoriginalproblemform, name='test-load-original-problem'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/add-original-problem/$', views.testaddoriginalproblem, name='testadd-original-problem'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/find-num-probs-matching-tag/$', views.testnumprobsmatching, name='testnumprobsmatching'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/add-tagged-problems/$', views.testreviewmatchingproblems, name='testreviewmatchingproblems'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/review-problem-group/$', views.testreviewproblemgroup, name='testreviewproblemgroup'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-point-value/(?P<pppk>\d+)/$', views.testupdate_point_value, name='testedit-point-value'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-blank-value/(?P<pppk>\d+)/$', views.testupdate_blank_value, name='testedit-blank-value'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/edit-question-type/(?P<pppk>\d+)/$', views.testeditquestiontype, name='testedit-question-type'),
-#    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/change-qt-original-problem/$', views.testloadcqtoriginalproblemform, name='testloadcqtoriginalproblemform'),
 
 @login_required
 def testeditview(request,pk,upk,tpk):
@@ -1367,21 +1356,24 @@ def testloadoriginalproblemform(request,**kwargs):
         form = NewProblemObjectPFForm(instance = po)
     return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
 
+
 @login_required
 def testloadcqtoriginalproblemform(request,**kwargs):
     qt = request.GET.get('qt','')
     pk = request.GET.get('pk','')
-    po = get_object_or_404(ProblemObject,pk = pk)
-    if po.isProblem == 0:
+    po = get_object_or_404(ProblemObject,pk=pk)
+    qt_dict = {'mc' : 'multiple choice', 'sa' : 'short answer', 'pf' : 'proof'}
+    answers = ''
+    if po.isProblem==0:
         if qt == 'sa':
-            form = NewProblemObjectSAForm(instance = po)
+            form = NewProblemObjectSAForm(instance=po)
         if qt == 'mc':
-            form = NewProblemObjectMCForm(instance = po)
+            form = NewProblemObjectMCForm(instance=po)
+            answers = po.answers()
         if qt == 'pf':
-            form = NewProblemObjectPFForm(instance = po)
-        return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
-    form = EditProblemProblemObjectForm(instance = po)
-    return HttpResponse(render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}))
+            form = NewProblemObjectPFForm(instance=po)
+        return JsonResponse({'answer_code' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-answers.html', {'ep' : po, 'ep_qt' : qt_dict[qt]}), 'latex_display' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html', {'problem_display' : newtexcode(po.problem_code,'originalproblem_'+str(po.pk),answers)})})
+
 
 @login_required
 def testaddoriginalproblem(request,pk,upk,ppk):
@@ -1950,7 +1942,7 @@ def examplebytagproblems(request,**kwargs):
 
 @login_required
 def editexampleproblem(request,pk,upk,spk,sspk,sopk):
-    userprofile=request.user.userprofile
+    userprofile = request.user.userprofile
     my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     if sharing_type == 'none' or sharing_type == 'read':
@@ -1971,46 +1963,40 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
     if request.method == "POST":
         form = request.POST
         qt = form.get('cqt-question-type','')
+        qt_dict = {'mc' : 'multiple choice', 'sa' : 'short answer', 'pf' : 'proof'}
         if ep.isProblem == 0:
-            if qt == "multiple choice":
+            if qt == "mc":
                 pform = NewExampleProblemMCForm(request.POST, instance = ep)
                 if pform.is_valid():
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_' + str(prob.pk),prob.answers())
                     compileasy(prob.problem_code,'exampleproblem_' + str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.author = request.user
                     prob.save()
                     ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
-            elif qt == "short answer":
+            elif qt == "sa":
                 pform = NewExampleProblemSAForm(request.POST, instance = ep)
                 if pform.is_valid():
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
-            elif qt == "proof":
+            elif qt == "pf":
                 pform = NewExampleProblemPFForm(request.POST, instance = ep)
                 if pform.is_valid():
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
-                    prob.question_type = QuestionType.objects.get(question_type = qt)
+                    prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
-    qt=ep.question_type.question_type
-    if qt == 'short answer':
-        form = NewExampleProblemSAForm(instance=ep)
-    if qt == 'multiple choice':
-        form = NewExampleProblemMCForm(instance=ep)
-    if qt == 'proof':
-        form = NewExampleProblemPFForm(instance=ep)
-    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'qt':qt})
+    return JsonResponse({'modal-html' : render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html', {'ep' : ep})})
 
 class TextBlockUpdateView(UpdateView):
     model = TextBlock
@@ -2189,9 +2175,6 @@ def viewproblemgroup(request,pk):
             for i in P:
                 if i.label not in remaining_problems:
                     prob_group.problems.remove(i)
-#        if request.POST.get("add-problems"):
-#            form=request.POST
-#            print(form)
     P = prob_group.problems.all()
     name = prob_group.name
     context = {}

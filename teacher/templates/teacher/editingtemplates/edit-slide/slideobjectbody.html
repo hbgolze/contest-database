@@ -1,4 +1,36 @@
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
+<div class="row">
+
+              <div class="col">
+		<div class="float-right">
+{% if sharing_type != "read" %}
+          <div class="p-2">
+            <div class="btn-group btn-group-sm" role="group" aria-label="options to edit slide object">
+                {% if s.textblock %}
+              <button type="button" class="btn btn-secondary edit-textblock-link" id="edit-tb_{{s.textblock.pk}}"><span class="fa fa-pencil"></span></button>
+
+                {% endif %}
+                {% if s.proof %}
+              <button type="button" class="btn btn-secondary edit-proof-link" id="edit-pf_{{s.proof.pk}}"><span class="fa fa-pencil"></span></button>
+                {% endif %}
+                {% if s.theorem %}
+              <button type="button" class="btn btn-secondary edit-theorem-link" id="edit-th_{{s.theorem.pk}}"><span class="fa fa-pencil"></span></button>
+                {% endif %}
+                {% if s.exampleproblem %}
+{% if s.exampleproblem.isProblem == False %}
+              <button type="button" class="btn btn-secondary edit-exampleproblem-link" id="edit-ex_{{s.exampleproblem.pk}}"><span class="fa fa-pencil"></span></button>
+{% endif %}
+                {% endif %}
+                {% if s.imagemodel %}
+<!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
+                {% endif %}
+              <button type="button" class="btn btn-danger js-remove"><span class="fa fa-remove"></span></button>
+            </div>
+          </div>
+{% endif %}
+</div>
+              </div>
+</div>
             <div class="row">
               <div class="col-11">
                 {% if s.textblock %}
@@ -35,28 +67,5 @@
                 {% if s.imagemodel %}
                 <img class="img-responsive center-block" src="/{{s.imagemodel.image.url }}/"/>
                 {% endif %}
-              </div>
-              <div class="col-1">
-{% if sharing_type != "read" %}
-                <div class="js-remove"><span style="color:red; cursor:pointer" class="fa fa-remove"></span></div>
-
-                {% if s.textblock %}
-                <a href="edit-textblock/{{s.textblock.pk}}" class="edit-textblock-link"><span class="fa fa-pencil"></span></a>
-                {% endif %}
-                {% if s.proof %}
-                <a href="edit-proof/{{s.proof.pk}}" class="edit-proof-link"><span class="fa fa-pencil"></span></a>
-                {% endif %}
-                {% if s.theorem %}
-                <a href="edit-theorem/{{s.theorem.pk}}"  class="edit-theorem-link"><span class="fa fa-pencil"></span></a>
-                {% endif %}
-                {% if s.exampleproblem %}
-{% if s.exampleproblem.isProblem == False %}
-                <a href="edit-exampleproblem/{{s.exampleproblem.pk}}" class="edit-exampleproblem-link"><span class="fa fa-pencil"></span></a>
-{% endif %}
-                {% endif %}
-                {% if s.imagemodel %}
-<!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
-                {% endif %}
-{% endif %}
               </div>
             </div><!--row-->

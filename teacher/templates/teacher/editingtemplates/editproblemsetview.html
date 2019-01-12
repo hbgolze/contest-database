@@ -15,7 +15,7 @@
     <li class="breadcrumb-item"><a href="../../../../../../">My Classes</a></li>
     <li class="breadcrumb-item"><a href="../../../../">{{my_class.name}}</a></li>
     <li class="breadcrumb-item"><a href="../../">{{unit.name}}</a></li>
-    <li class="breadcrumb-item active"><span id="bc-problemset-name">{{problemset.name}}</span></li>
+    <li class="breadcrumb-item active"><span id="bc-problemset-name">Problem Set: {{problemset.name}}</span></li>
   </ol>
 </nav>
 
@@ -70,7 +70,7 @@
 
 
 <div class="modal fade" id="edit-qt-placeholder" tabindex="-1" role="dialog">
-  <div class="modal-dialog modal-lg" role="document">
+<!--  <div class="modal-dialog modal-lg" role="document">
     
     <div class="modal-content">
       <form method="post" action="." id="form-change-question-type">
@@ -80,6 +80,9 @@
 	</div>
 	<div class="modal-body">
           {% csrf_token %}
+	  <div id="edit-qt-preview">
+
+	  </div>
           <div class="form-group">
             <label for="cqt-question-type" class="control-label">Question Type</label>
 	    <select name="cqt-question-type" id="cqt-question-type" class="form-control">
@@ -95,12 +98,13 @@
 	</div>
 	<div class="modal-footer">
           <button type="submit" id="change-qt" name="change-qt" class="btn btn-primary">Change Question Type</button>
+	  <button class="btn btn-primary edit-originalproblem-primitive-preview-link" id="originalproblem-preview">Primitive Preview</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 	</div>
       </form>
     </div>
     
-  </div>
+  </div>-->
 </div>
 <div class="modal fade" id="edit-pv-modal" tabindex="-1" role="dialog">
   
@@ -318,27 +322,18 @@ $.ajaxSetup({
     },
 });
 
+
 $(document).on('click',".edit-qt-link",function(event) {
     event.preventDefault();
     var popk = $(this).attr("id").split('_')[1];
     $.ajax({
-        type: 'POST',
+        type: 'GET',
         url: "/teacher/ajax/problemobject/load-edit-questiontype/",
-        dataType: 'json',
         data: "popk="+popk,
+        dataType: 'json',
         success: function(result) {
-            $('#cqt-question-type').empty();
-            if (result['qts'][0] == 1) {
-                $("#cqt-question-type").append("<option value='multiple choice'>Multiple Choice</option>");
-            }
-            if (result['qts'][1] == 1) {
-                $("#cqt-question-type").append("<option value='short answer'>Short Answer</option>");
-            }
-            if (result['qts'][2] == 1) {
-                $("#cqt-question-type").append("<option value='proof'>Proof</option>");
-            }
-            $("#qt-question-fields").html(result['form']);
-            $("#cqt-question-type").val(result['qt']);
+            $("#edit-qt-placeholder").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#original-question-preview"]);
             $("#edit-qt-placeholder").modal("show");
         }
     });
@@ -412,43 +407,30 @@ $(document).on('change',"#question-type",function(event) {
     }
 });
 
-$('#cqt-question-type').on('change',function(event) {
+$(document).on('change',"#cqt-question-type",function(event) {
     event.preventDefault();
-    if ($(this).val()=='short answer') {
-    $.ajax({
-        type: 'GET',
-        url: 'change-qt-original-problem/',
-        data: "&qt=sa&pk="+$("#id_problem_id").val(),
-        dataType: 'html',
-        success: function(result) {
-            $("#qt-question-fields").html(result);
-        }
-    });
-    return false;
-
-    } else if ($(this).val()=='multiple choice') {
-    $.ajax({
-        type: 'GET',
-        url: 'change-qt-original-problem/',
-        data: "&qt=mc&pk="+$("#id_problem_id").val(),
-        dataType: 'html',
-        success: function(result) {
-            $("#qt-question-fields").html(result);
-        }
-    });
-    return false;
-    } else if ($(this).val()=='proof') {
-    $.ajax({
-        type: 'GET',
-        url: 'change-qt-original-problem/',
-        data: "&qt=pf&pk="+$("#id_problem_id").val(),
-        dataType: 'html',
-        success: function(result) {
-            $("#qt-question-fields").html(result);
-        }
-    });
-    return false;
+    var qt;
+    if ($(this).val()=='sa') {
+      qt='sa';
+    } else if ($(this).val()=='mc') {
+      qt='mc';
+    } else if ($(this).val()=='pf') {
+      qt='pf';
     }
+    if ($("#cqt_isProblem").val() == "0") {
+    $.ajax({
+        type: 'GET',
+        url: 'change-qt-original-problem/',
+        data: "&qt="+qt+"&pk="+$("#id_problem_id").val(),
+        dataType: 'json',
+        success: function(result) {
+            $("#original-answer-div").html(result['answer_code']);
+            $("#original-question-preview").html(result['latex_display']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#original-question-preview"]);
+        }
+    });
+    }
+    return false;
 });
 
 $("#form-add-original-problem").on('submit',function(event) {
@@ -469,13 +451,13 @@ $("#form-add-original-problem").on('submit',function(event) {
     return false;
 });
 
-$("#form-change-question-type").on('submit',function(event) {
+$(document).on('submit',"#form-change-question-type",function(event) {
     event.preventDefault();
-    var prob_id=$("#id_problem_id").val();
+    var prob_id = $("#id_problem_id").val();
     $.ajax({
         type: 'POST',
-        url: "/teacher/ajax/problemobject/save-questiontype/",
-        data: $(this).serialize(),
+        url: "/teacher/ajax/problemobject/load-edit-questiontype/",
+        data: $(this).serialize()+"&popk="+prob_id,
         dataType: 'json',
         success: function(result) {
             $("#edit-qt-placeholder").hide();
@@ -841,6 +823,23 @@ $(document).on('submit',"#form-add-original-solution",function(e) {
     }
   });
   return false;
+});
+
+$(document).on('click',".exampleproblem-primitive-preview-link",function(e) {
+    event.preventDefault();
+    var po_id= $(this).attr('id').split('_')[1];
+    po_text = $("#edit-qt-placeholder #original_problem_code").val().trim();
+
+    po_text = '<p>'+po_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    po_text = replace_images(po_text,'originalproblem_' + po_id);
+    po_text = replace_enumitem(po_text);
+    po_text = replace_center(po_text);
+    if ($("#cqt-question-type").val() == "mc") {
+        po_text = po_text+ "$\\textbf{(A) }"+$("#form-change-question-type input[name=answer_A]").val()+"\\qquad\\textbf{(B) }"+$("#form-change-question-type input[name=answer_B]").val()+"\\qquad\\textbf{(C) }"+$("#form-change-question-type input[name=answer_C]").val()+"\\qquad\\textbf{(D) }"+$("#form-change-question-type input[name=answer_D]").val()+"\\qquad\\textbf{(E) }"+$("#form-change-question-type input[name=answer_E]").val()+"$<br>";
+    }
+    $("#original-question-preview").html(po_text);
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"original-question-preview"]);
 });
 
 </script>

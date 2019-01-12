@@ -594,7 +594,7 @@ class PublishedTheorem(models.Model):
         compileasy(self.theorem_code,'publishedtheoremblock_'+str(self.pk))
 
 class ExampleProblem(models.Model):
-    name=models.CharField(max_length=150, default="")
+    name = models.CharField(max_length=150, default="")
     prefix = models.CharField(max_length=20,default="")#Example, Exercise
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)

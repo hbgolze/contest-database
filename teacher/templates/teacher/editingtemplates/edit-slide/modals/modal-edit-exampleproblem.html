@@ -1,0 +1,57 @@
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="post" action="." id="form-change-question-type">
+        <div class="modal-header">
+          <h5 class="modal-title">{% if ep.isProblem == 0 %}Edit Original Question{% else %}Edit Question Type{% endif %}</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+	  <input type="hidden" id="cqt_isProblem" value="{% if ep.isProblem == 0 %}0{% else %}1{%endif %}">
+          <div id="original-question-preview">{% if ep.isProblem == 0 %}{% include 'teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html' with problem_display=ep.problem_display %}{% else %}{% endif %}</div>
+{% if ep.isProblem == 0 %}
+          <div class="form-group">
+	    <input type="hidden" id="id_problem_id" name="problem_id" value="{{ep.pk}}">
+            <label for="cqt-question-type" class="control-label">Question Type</label>
+            <select name="cqt-question-type" id="cqt-question-type" class="form-control">
+              <option value="mc"{% if ep.question_type.question_type == "multiple choice" %} selected{% endif %}>Multiple Choice</option>
+              <option value="sa"{% if ep.question_type.question_type == "short answer" %} selected{% endif %}>Short Answer</option>
+              <option value="pf"{% if ep.question_type.question_type == "proof" %} selected{% endif %}>Proof</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="original_problem_code" class="control-label">Problem Code:</label>
+            <textarea class="form-control codetext" cols="40" rows="15" name="problem_code" id="original_problem_code" style="min-width: 100%; margin-top: 0px; margin-bottom: 0px; height: 230px;" required>{{ep.problem_code}}</textarea>
+          </div>
+          <div id="original-answer-div">{% include 'teacher/editingtemplates/edit-slide/modals/exampleproblem-answers.html' with ep_qt=ep.question_type.question_type %}</div>
+{% else %}
+          <div class="form-group">
+	    <input type="hidden" id="id_problem_id" name="problem_id" value="{{ep.pk}}">
+
+            <label for="cqt-question-type" class="control-label">Question Type</label>
+            <select name="cqt-question-type" id="cqt-question-type" class="form-control">
+{% if 'mc' in qts %}
+              <option value="mc"{% if ep.question_type.question_type == "multiple choice" %} selected{% endif %}>Multiple Choice</option>
+{% endif %}
+{% if 'sa' in qts %}
+              <option value="sa"{% if ep.question_type.question_type == "short answer" %} selected{% endif %}>Short Answer</option>
+{% endif %}
+{% if 'pf' in qts %}
+              <option value="pf"{% if ep.question_type.question_type == "proof" %} selected{% endif %}>Proof</option>
+{% endif %}
+            </select>
+          </div>
+
+{% endif %}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" id="change-qt" name="change-qt" class="btn btn-primary">Save</button>
+{% if ep.isProblem == 0 %}
+	  <button class="btn btn-primary exampleproblem-primitive-preview-link" id="exampleproblem-preview_{{ep.pk}}">Primitive Preview</button>
+{% endif %}
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
