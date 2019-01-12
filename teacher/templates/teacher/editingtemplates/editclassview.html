@@ -3,7 +3,6 @@
 
 {% block content %}
 
-<!--<script src="//rubaxa.github.io/Sortable/Sortable.js"></script>-->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js"></script>
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
@@ -76,6 +75,7 @@ You have unsaved changes! Please click "Save" before navigating away.</div>
 
 <div class="modal fade" id="edit-name-placeholder" role="dialog">
 </div>
+
 
 	      
 <script type="text/javascript">
@@ -195,6 +195,7 @@ $(document).on('submit',"#edit-class-name-form",function(e) {
   });
   return false;
 });
+
 </script>
 {% endif %}
 {% endblock %}

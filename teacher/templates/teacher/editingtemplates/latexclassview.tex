@@ -1,5 +1,5 @@
 {% load randomtest_extras %}
-\documentclass{book}
+\documentclass{% if dc == "book" %}{book}{% else %}{article}{% endif %}
 \usepackage{amsmath}
 \usepackage{enumerate}
 \usepackage{amsfonts,amssymb,amsthm}
@@ -36,16 +36,16 @@
 \begin{document}
 \maketitle
 {% for unit in my_class.unit_set.all %}
-\chapter{ {% autoescape off %}{{unit.name}}{% endautoescape %} }
+{% if dc == "book" %}\chapter{% else %}\section{% endif %}{ {% autoescape off %}{{unit.name}}{% endautoescape %} }
 
 {% for unit_object in unit.unit_objects.all %}
 
 {% if unit_object.slidegroup %}
 {% with slides=unit_object.slidegroup %}
 
-\section{ {% autoescape off %}{{slides.name}} {% endautoescape %} }
+\{% if dc == "article" %}sub{% endif %}section{ {% autoescape off %}{{slides.name}} {% endautoescape %} }
 {% for slide in slides.slides.all %}
-\subsection{ {% autoescape off %}{{slide.title}}{% endautoescape %} }
+\{% if dc == "article" %}sub{% endif %}subsection{ {% autoescape off %}{{slide.title}}{% endautoescape %} }
 {% for s in slide.slide_objects.all %}
 {% if s.textblock %}
 {% autoescape off %}{{s.textblock.text_code}}{% endautoescape %}
@@ -82,7 +82,7 @@
 {% elif unit_object.problemset %}
 {% with pset=unit_object.problemset %}
 
-\section{Problem Set: {% autoescape off %}{{pset.name}} {% endautoescape %} }
+\{% if dc == "article" %}sub{% endif %}section{Problem Set: {% autoescape off %}{{pset.name}} {% endautoescape %} }
 {% if pset.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in pset.problem_objects.all %}
@@ -114,7 +114,7 @@
 {% elif unit_object.test %}
 {% with test=unit_object.test %}
 
-\section{Test: {% autoescape off %}{{test.name}} {% endautoescape %} }
+\{% if dc == "article" %}sub{% endif %}section{Test: {% autoescape off %}{{test.name}} {% endautoescape %} }
 {% if test.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in test.problem_objects.all %}
