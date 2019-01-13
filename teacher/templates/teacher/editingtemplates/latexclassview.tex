@@ -63,7 +63,7 @@
 {% if s.exampleproblem %}
 \begin{{s.exampleproblem.prefix|lower|surroundbracket}}
 {% if s.exampleproblem.isProblem == 1 %}
-{% if s.exampleproblem.problem.question_type_new.question_type == "multiple_choice" %}
+{% if s.exampleproblem.question_type.question_type == "multiple_choice" %}
 {% autoescape off %}{{s.exampleproblem.problem.mc_problem_text}}{% endautoescape %} [{{s.exampleproblem.problem.readable_label|poundsafe}}]
 {% else %}
 {% autoescape off %}{{s.exampleproblem.problem.problem_text}}{% endautoescape %} [{{s.exampleproblem.problem.readable_label|poundsafe}}]

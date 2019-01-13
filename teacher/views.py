@@ -1766,12 +1766,14 @@ def editslideview(request,pk,upk,spk,sspk):
             prefix = form.get("example-prefix","")
             source = form.get("problem-source","")
             if source == "bylabel":
+                print('asdfsadfsadfdsfsd')
                 problem_label = form.get("problem-label","")
                 if Problem.objects.filter(label = problem_label).exists():
                     p = Problem.objects.get(label = problem_label)
                     if p.type_new in userprofile.user_type_new.allowed_types.all():
                         s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                         s.save()
+                        print(p.question_type_new)
                         ep = ExampleProblem(slide_object = s,isProblem = 1,problem = p,question_type = p.question_type_new,prefix=prefix)
                         ep.save()
                         slide.top_order_number = slide.top_order_number + 1
@@ -1998,7 +2000,34 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     prob.save()
                     ep.increment_version()
                     return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'qt':qt,'sopk':so.pk})
-    return JsonResponse({'modal-html' : render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html', {'ep' : ep})})
+        else:
+            ep.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
+            ep.save()
+            ep.increment_version()
+            return JsonResponse({'prob':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':so}),'sopk': so.pk})
+    if ep.isProblem == 0:
+        return JsonResponse({'modal-html' : render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html', {'ep' : ep})})
+    else:
+        pqt =  ep.problem.question_type_new.question_type
+        qt =  ep.question_type.question_type
+        if pqt == 'multiple choice':
+            qts=[1,0,1]
+            qts=['mc','pf']
+        if pqt == 'short answer':
+            qts=[0,1,1]
+            qts=['sa','pf']
+        if pqt == 'multiple choice short answer':
+            qts=[1,1,1]
+            qts=['mc','sa','pf']
+        if pqt == 'proof':
+            qts=[0,0,1]
+            qts=['pf']
+        if qt == 'multiple choice':
+            answers = ep.problem.answers()#added.problem here....check on loadeditproblem...
+            problem_display = newtexcode(ep.problem.mc_problem_text,str(ep.problem.label),answers)
+        else:
+            problem_display = ep.problem.display_problem_text
+        return JsonResponse({'modal-html':render_to_string('teacher/editingtemplates/edit-slide/modals/modal-edit-exampleproblem.html',{'ep':ep,'qts':qts}), 'latex_display' : render_to_string('teacher/editingtemplates/edit-slide/modals/exampleproblem-latex.html', {'problem_display' : problem_display})})
 
 class TextBlockUpdateView(UpdateView):
     model = TextBlock

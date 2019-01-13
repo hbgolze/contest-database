@@ -724,7 +724,7 @@ $(document).on('click',".edit-exampleproblem-link",function(event) {
 
 $(document).on('change','#cqt-question-type',function(event) {
     event.preventDefault();
-
+if ($("#cqt_isProblem").val() == "0") {
     $.ajax({
         type: 'POST',
         url: 'change-qt/',
@@ -736,6 +736,7 @@ $(document).on('change','#cqt-question-type',function(event) {
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#original-question-preview"]);
         }
     });
+}
     return false;
 });
 
