@@ -1766,14 +1766,12 @@ def editslideview(request,pk,upk,spk,sspk):
             prefix = form.get("example-prefix","")
             source = form.get("problem-source","")
             if source == "bylabel":
-                print('asdfsadfsadfdsfsd')
                 problem_label = form.get("problem-label","")
                 if Problem.objects.filter(label = problem_label).exists():
                     p = Problem.objects.get(label = problem_label)
                     if p.type_new in userprofile.user_type_new.allowed_types.all():
                         s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                         s.save()
-                        print(p.question_type_new)
                         ep = ExampleProblem(slide_object = s,isProblem = 1,problem = p,question_type = p.question_type_new,prefix=prefix)
                         ep.save()
                         slide.top_order_number = slide.top_order_number + 1
