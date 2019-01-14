@@ -5,13 +5,14 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse,Http404,HttpResponse
 
 from django.contrib.auth.models import User
-from django.template import loader
+from django.template import loader,Context
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from datetime import datetime,timedelta,time
 from django.utils import timezone
+from django.conf import settings
 import pytz
 
 from randomtest.utils import newtexcode,compileasy,pointsum,newsoltexcode
@@ -24,6 +25,9 @@ from teacher.forms import BlankPointValueForm,EditClassNameForm,EditUnitNameForm
 from groups.forms import GroupModelForm
 from student.models import UserClass,UserUnit,UserProblemSet,UserUnitObject,UserSlides,Response
 
+from subprocess import Popen,PIPE
+import tempfile
+import os
 
 from random import shuffle
 #from teacher.forms import UnitForm
@@ -713,6 +717,124 @@ def latexclassview(request,pk):
     response = HttpResponse(render_to_string('teacher/editingtemplates/latexclassview.tex',context), content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+
+@login_required
+def class_as_pdf(request,pk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    sharing_type = get_permission_level(request,my_class)
+    dc = request.GET.get('dc')
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    filename = my_class.name+".pdf"
+
+
+    form = request.GET
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = True
+    else:
+        include_problem_labels = False
+    if 'include-tags' in form:
+        include_tags = True
+    else:
+        include_tags = False
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    if 'include-ans' in form:
+        include_ans = True
+    else:
+        include_ans = False
+    context = Context({
+            'my_class' : my_class,
+            'dc' : dc,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices' : include_answer_choices,
+            'include_tags' : include_tags,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            })
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('teacher/editingtemplates/latexclassview.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = Context({
+                'my_class' : my_class,
+                'dc' : dc,
+                'include_problem_labels' : include_problem_labels,
+                'include_answer_choices':include_answer_choices,
+                'include_tags' : include_tags,
+                'include_sols' : include_sols,
+                'include_ans' : include_ans,
+                'tempdirect' : tempdir,
+                })
+        template = get_template('teacher/editingtemplates/latexclassview.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+my_class.name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                error_lines = error_text.split('\n')
+                error_inds = []
+                for i in range(0,len(error_lines)):
+                    if len(error_lines[i]) > 0 and error_lines[i][0] == '!':
+                        error_inds.append(i)
+                errors_only = ''
+                for i in range(0,len(error_inds)):
+                    errors_only += error_lines[error_inds[i]]+'\n'
+                    errors_only += error_lines[error_inds[i]+1]+'\n'
+#                    errors_only += error_lines[error_inds[i]+2]+'\n'
+                return render(request,'randomtest/latex_errors.html',{'nbar':'teacher','name':my_class.name,'error_text':'Attempt to Parse Errors Only:\n'+errors_only+'\n\n\nFull Log\n'+error_text})#####Perhaps the error page needs to be customized...              
+
+
 
 @login_required
 def problemseteditview(request,pk,upk,ppk):

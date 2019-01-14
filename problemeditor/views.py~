@@ -221,7 +221,6 @@ def typeview(request):
         num_nosolutions = P.filter(solutions__isnull = True).count()
         min_year = P.aggregate(Min('year'))
         max_year = P.aggregate(Max('year'))
-        print(min_year)
         rows.append((i,num_untagged,num_nosolutions,min_year['year__min'],max_year['year__max']))
     template = loader.get_template('problemeditor/typeview.html')
     context = {'rows': rows, 'nbar': 'problemeditor'}
