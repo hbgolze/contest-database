@@ -14,6 +14,7 @@
       <h2>New {{typ}} Contest</h2>
       <form action="." method="post" id="new-contest-form">
 	{% csrf_token %}
+        <input type="hidden" id="question-type" value="{% if mc %}multiple choice{% else %}{% endif %}">
 	{{form.as_p}}
       {% if custom_labels %}
       <div id="error-message" style="display:none">
@@ -23,14 +24,15 @@
       </div>
       {% endif %}
 	<button type="submit" class="btn btn-primary" value="Save Contest">Save Contest</button>
+	<button class="btn btn-secondary" id="primitive-preview-link">Primitive Preview</button>
       </form>
     </div>
   </div>
 </div>
 
+<script>
 
 {% if custom_labels %}
-<script>
 
 $(document).on('submit',"#new-contest-form",function(e) {
     var cust_labs = {};
@@ -55,6 +57,31 @@ $(document).on('submit',"#new-contest-form",function(e) {
     }
 });
 
-</script>
 {% endif %}
+$(document).on('click',"#primitive-preview-link", function(e) {
+  e.preventDefault();
+  $('.preview-latex').each(function(index) {
+    $(this).remove();
+  });
+  $('[id=codetext]').each(function(index) {
+    var p_num = $(this).attr('name');
+    p_num = p_num.substring(12,p_num.length);
+
+
+    p_text = $(this).val().trim();
+
+    p_text = '<p>'+p_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    p_text = replace_images(p_text,'void_');
+    p_text = replace_enumitem(p_text);
+    p_text = replace_center(p_text);
+    if ($("#question-type").val() == "multiple choice") {
+      p_text = p_text + "$\\textbf{(A) }"+$("#new-contest-form input[name=answer_A"+p_num+"]").val()+"\\qquad\\textbf{(B) }"+$("#new-contest-form input[name=answer_B"+p_num+"]").val()+"\\qquad\\textbf{(C) }"+$("#new-contest-form input[name=answer_C"+p_num+"]").val()+"\\qquad\\textbf{(D) }"+$("#new-contest-form input[name=answer_D"+p_num+"]").val()+"\\qquad\\textbf{(E) }"+$("#new-contest-form input[name=answer_E"+p_num+"]").val()+"$<br>";
+    }
+    $(this).before("<div class='preview-latex mt-1 mb-3'>"+p_text+"</div>");
+  });
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,".preview-latex"]);
+});
+
+</script>
 {% endblock %}
