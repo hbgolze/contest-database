@@ -181,8 +181,8 @@ class AddProblemWizard(SessionWizardView):
         compiletikz(prob.problem_text,prob.label)
 
 
-        prob.display_problem_text=newtexcode(prob.problem_text,prob.label,'')
-        prob.display_mc_problem_text=newtexcode(prob.mc_problem_text,prob.label,prob.answers())
+        prob.display_problem_text = newtexcode(prob.problem_text,prob.label,'')
+        prob.display_mc_problem_text = newtexcode(prob.mc_problem_text,prob.label,prob.answers())
 
         sol = Solution(solution_text = D['solution_text'],parent_problem = prob)
         sol.save()

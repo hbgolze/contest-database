@@ -43,7 +43,7 @@
       {% for type,untagged,unsolution,min_year,max_year in rows %}
       
       <tr>
-	<td>{{type.label}} ({{min_year}}-{{max_year}})</td>
+	<td>{{type.label}}{% if type.is_contest == 1 %} ({{min_year}}-{{max_year}}){% endif %}</td>
         <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% elif type.is_sourced == 0 %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% else %}<a href="sources/">View Sources</a>{% endif %}</td>
         <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">View by Test</a></td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">View Problems</a>{% endif %}
         <td>{{untagged}}/{{type.problems.count}}</td>

@@ -78,6 +78,12 @@
 	    <input type="hidden" id="type-type" value="">
 	    <label for="num-problems">Number of Problems</label>
 	    <input type="number" class="form-control" id="num-problems" required>
+	    <label for="custom-labels">Custom Labels</label>
+	    <select class="form-control" id="custom-labels">
+	      <option value="0">No</option>
+	      <option value="1">Yes</option>
+	    </select>
+
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -104,7 +110,9 @@ $(document).on('click',".upload-test", function(e) {
 });
 $(document).on('submit',"#add-test-form",function(e) {
     e.preventDefault();
-    window.location='addcontest/'+$("#type-type").val()+'/'+$("#num-problems").val()+'/';
+    var cust_lab = ''
+    if ($("#custom-labels").val() == "1") {cust_lab = "?custom_labels";}
+    window.location='addcontest/' + $("#type-type").val()+'/'+$("#num-problems").val()+'/'+cust_lab;
 });
 </script>
 {% endif %}

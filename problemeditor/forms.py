@@ -240,7 +240,8 @@ class AddContestForm(forms.Form):
 #    formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
     def __init__(self, *args, **kwargs):
         num_probs = kwargs.pop('num_probs')
-        typ = Type.objects.get(type=kwargs.pop('type'))
+        typ = Type.objects.get(type = kwargs.pop('type'))
+        custom_labels = kwargs.pop('custom_labels')
         super(AddContestForm,self).__init__(*args,**kwargs)
         if typ.allow_form_letter == True:
             self.fields['formletter'] = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
@@ -248,7 +249,9 @@ class AddContestForm(forms.Form):
 #            self.fields['round'] = forms.ChoiceField(label="Round", widget = forms.Select(attrs={'class':'form-control'}), choices = tuple((r.pk,r.name) for r in typ.rounds.all()),required=True)
             self.fields['round'] = forms.ModelChoiceField(queryset=typ.rounds.all(), widget = forms.Select(attrs={'class':'form-control'}),empty_label="Select a Round")
         for i in range(1,num_probs+1):
-            self.fields['problem_text%s' % i] = forms.CharField(widget=forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}),label='Problem %s' % i)
+            if custom_labels:
+                self.fields['custom_label%s' % i] = forms.CharField(max_length = 10, label='Custom Problem Number (A1, A2, etc.) for Problem %s' %i, widget = forms.TextInput(attrs = {'class' : 'form-control'}))
+            self.fields['problem_text%s' % i] = forms.CharField(widget = forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}),label='Problem %s' % i)
             if typ.default_question_type=='mc':
                 self.fields['answer_A%s' % i] = forms.CharField(max_length=255,label='Answer A',widget=forms.TextInput(attrs={'class':'form-control'}))
                 self.fields['answer_B%s' % i] = forms.CharField(max_length=255,label='Answer B',widget=forms.TextInput(attrs={'class':'form-control'}))
