@@ -11,14 +11,50 @@
 <div class="container">
   <div class="row">
     <div class="col">
-  <h2>New {{typ}} Contest</h2>
-      <form action="." method="post">
+      <h2>New {{typ}} Contest</h2>
+      <form action="." method="post" id="new-contest-form">
 	{% csrf_token %}
 	{{form.as_p}}
+      {% if custom_labels %}
+      <div id="error-message" style="display:none">
+	<div class="alert alert-danger">
+	  Two problems cannot have the same custom label!
+	</div>
+      </div>
+      {% endif %}
 	<button type="submit" class="btn btn-primary" value="Save Contest">Save Contest</button>
       </form>
     </div>
   </div>
 </div>
 
+
+{% if custom_labels %}
+<script>
+
+$(document).on('submit',"#new-contest-form",function(e) {
+    var cust_labs = {};
+    var dist = 1;
+    $('[id^=id_custom_label]').each(function(index) {
+      if (cust_labs[$(this).val()] != 1) {
+        cust_labs[ $(this).val()] = 1;
+      } else {
+        dist = 0;
+        return false;
+      }
+    });
+    if (dist == 0) {
+      e.preventDefault();
+      $("#error-message").show();
+      setTimeout(function() {
+        $("#error-message").fadeOut();
+      },5000);
+      return false;
+    } else {
+      return true;
+    }
+});
+
+</script>
+{% endif %}
 {% endblock %}

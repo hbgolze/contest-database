@@ -374,14 +374,12 @@ def chapterview(request,book_pk,chapter_pk):
 @user_passes_test(lambda u: mod_permission(u))
 def load_addproblemform(request,**kwargs):
     st = request.GET.get('st')
-    print('st1',st)
     return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-problem.html',{'source_type' : st})})
 
 @user_passes_test(lambda u: mod_permission(u))
 def load_qt_addproblemform(request,**kwargs):
     qt = request.GET.get('qt','')
     st = request.GET.get('st','')
-    print('st',st)
     if qt == 'sa':
         form = NewProblemSAForm(st=st)
     if qt == 'mc':
@@ -927,35 +925,40 @@ def untaggedview(request,type):
 
 @login_required
 def detailedproblemview(request,**kwargs):
-    pk=kwargs['pk']
-    prob=get_object_or_404(Problem, pk=pk)
-    context={}
+    pk = kwargs['pk']
+    prob = get_object_or_404(Problem, pk = pk)
+    context = {}
     if 'tag' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../../',typ.label),('../',goodtag(kwargs['tag'])),]
+        typ = get_object_or_404(Type, type = kwargs['type'])
+        breadcrumbs = [('../../',typ.label),('../',goodtag(kwargs['tag'])),]
     elif 'type' in kwargs:
-        typ=get_object_or_404(Type, type=kwargs['type'])
-        breadcrumbs=[('../',typ.label+' Problems'),]
+        typ = get_object_or_404(Type, type = kwargs['type'])
+        breadcrumbs = [('../',typ.label+' Problems'),]
     else:
-        breadcrumbs=[]
+        breadcrumbs = []
     context['prob'] = prob
     context['nbar'] = 'problemeditor'
     context['breadcrumbs'] = breadcrumbs
-    context['tags'] = NewTag.objects.exclude(tag='root')
+    context['tags'] = NewTag.objects.exclude(tag = 'root')
     return render(request, 'problemeditor/detailedview.html', context)
 
 
 @user_passes_test(lambda u: mod_permission(u))
 def addcontestview(request,type,num):
-    typ=get_object_or_404(Type, type=type)
-    num=int(num)
+    custom_labels = False
+    if 'custom_labels' in request.GET:
+#        if request.GET.get('custom_labels') == 'true':
+        custom_labels = True
+    typ = get_object_or_404(Type, type=type)
+    num = int(num)
     sa = QuestionType.objects.get(question_type='short answer')
     mc = QuestionType.objects.get(question_type='multiple choice')
     pf = QuestionType.objects.get(question_type='proof')
     if request.method == "POST":
-        form=request.POST
-        F=form#.cleaned_data
+        form = request.POST
+        F = form#.cleaned_data
         formletter = ''
+        print(F)
         if 'formletter' in F:
             formletter = F['formletter']
         year = F['year']
@@ -971,10 +974,13 @@ def addcontestview(request,type,num):
             default_question_type = typ.default_question_type
             readablelabel = readablelabel.rstrip()
             post_label = typ.readable_label_post_form
-            label = F['year'] + type + formletter#####
+            label = F['year'] + type + formletter
         if default_question_type=='mc':
             for i in range(1,num+1):
-                p=Problem(mc_problem_text = F['problem_text'+str(i)],
+                problem_number_label = str(i)
+                if 'custom_label'+str(i) in F:
+                    problem_number_label = F['custom_label'+str(i)]
+                p = Problem(mc_problem_text = F['problem_text'+str(i)],
                           problem_text = F['problem_text'+str(i)],
                           answer = F['answer'+str(i)],
                           mc_answer = F['answer'+str(i)],
@@ -984,8 +990,8 @@ def addcontestview(request,type,num):
                           answer_C = F['answer_C'+str(i)],
                           answer_D = F['answer_D'+str(i)],
                           answer_E = F['answer_E'+str(i)],
-                          label = label+str(i),
-                          readable_label = readablelabel+post_label+str(i),
+                          label = label + problem_number_label,
+                          readable_label = readablelabel+post_label + problem_number_label,
                           type_new = typ,
                           question_type_new = mc,
                           problem_number = i,
@@ -1009,11 +1015,14 @@ def addcontestview(request,type,num):
                 p.save()
         if default_question_type == 'sa':
             for i in range(1,num + 1):
+                problem_number_label = str(i)
+                if 'custom_label'+str(i) in F:
+                    problem_number_label = F['custom_label'+str(i)]
                 p = Problem(problem_text = F['problem_text' + str(i)],
                           answer = F['answer' + str(i)],
                           sa_answer = F['answer' + str(i)],
-                          label = label + str(i),
-                          readable_label = readablelabel + post_label + str(i),
+                          label = label + problem_number_label,
+                          readable_label = readablelabel + post_label + problem_number_label,
                           type_new = typ,
                           question_type_new = sa,
                           problem_number = i,
@@ -1035,11 +1044,14 @@ def addcontestview(request,type,num):
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        if default_question_type=='pf':
+        if default_question_type == 'pf':
             for i in range(1,num+1):
-                p=Problem(problem_text=F['problem_text'+str(i)],
-                          label = label+str(i),
-                          readable_label = readablelabel + post_label + str(i),
+                problem_number_label = str(i)
+                if 'custom_label'+str(i) in F:
+                    problem_number_label = F['custom_label'+str(i)]
+                p = Problem(problem_text = F['problem_text'+str(i)],
+                          label = label + problem_number_label,
+                          readable_label = readablelabel + post_label + problem_number_label,
                           type_new = typ,
                           question_type_new = pf,
                           problem_number = i,
@@ -1078,8 +1090,8 @@ def addcontestview(request,type,num):
         tc.tests.add(t)
         tc.save()
         return redirect('/problemeditor/')
-    form=AddContestForm(request.POST or None,num_probs=num,type=type)
-    context={'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
+    form = AddContestForm(request.POST or None,num_probs = num,type = type,custom_labels = custom_labels)
+    context = {'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
     if typ.default_question_type=='mc':
         context['mc']=True
     elif typ.default_question_type=='sa':
