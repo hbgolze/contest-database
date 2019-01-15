@@ -725,6 +725,8 @@ def class_as_pdf(request,pk):
     my_class = get_object_or_404(Class,pk = pk)
     sharing_type = get_permission_level(request,my_class)
     dc = request.GET.get('dc')
+    if dc == None:
+        dc = 'article'
     if sharing_type == 'none':
         raise Http404("Unauthorized.")
     filename = my_class.name+".pdf"
