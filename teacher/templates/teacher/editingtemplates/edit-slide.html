@@ -74,6 +74,7 @@
         </div>
         <div class="modal-body">
           {% csrf_token %}
+	  <div id="new-textblock-preview"></div>
           <div class="form-group">
             <label for="textblock-text" class="control-label">Text Block</label>
             <textarea class="form-control codetext" id="codetextblock" name="codetextblock" rows="10"></textarea>
@@ -81,6 +82,7 @@
         </div>
         <div class="modal-footer">
 	  <button type="submit" name="addtextblock" class="btn btn-primary">Add Text Block</button>
+	  <button class="btn btn-primary new-textblock-primitive-preview-link" id="new-textblock-preview">Primitive Preview</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
@@ -99,6 +101,8 @@
         </div>
         <div class="modal-body">
           {% csrf_token %}
+	  <span style="font-weight:bold" id="new-theorem-preview-prefix"></span>
+	  <div id="new-theorem-preview"></div>
           <div class="form-group">
             <label for="theorem-prefix">Type</label>
             <select class="form-control" id="theorem-prefix" name="theorem-prefix">
@@ -120,6 +124,7 @@
         </div>
         <div class="modal-footer">
           <button type="submit" name="addtheorem" class="btn btn-primary">Add Theorem</button>
+	  <button class="btn btn-primary new-theorem-primitive-preview-link" id="new-theorem-preview">Primitive Preview</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
@@ -137,6 +142,8 @@
         </div>
         <div class="modal-body">
           {% csrf_token %}
+	  <span style="font-weight:bold" id="new-proof-preview-prefix"></span>
+	  <div id="new-proof-preview"></div>
           <div class="form-group">
             <label for="proof-prefix">Type</label>
             <select class="form-control" id="proof-prefix" name="proof-prefix">
@@ -151,6 +158,7 @@
         </div>
         <div class="modal-footer">
           <button type="submit" name="addproof" class="btn btn-primary">Add Proof</button>
+	  <button class="btn btn-primary new-proof-primitive-preview-link" id="new-proof-preview">Primitive Preview</button>
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         </div>
       </form>
@@ -914,6 +922,57 @@ $(document).on('click',".exampleproblem-primitive-preview-link",function(e) {
     $("#original-question-preview").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"original-question-preview"]);
 });
+
+$(document).on('click',".new-textblock-primitive-preview-link",function(e) {
+    event.preventDefault();
+    tb_text = $("#codetextblock").val().trim();
+
+    tb_text = '<p>'+tb_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    tb_text = replace_images(tb_text,'textblock_NA');
+    tb_text = replace_enumitem(tb_text);
+    tb_text = replace_center(tb_text);
+
+    $("#new-textblock-preview").html(tb_text);
+    $("#new-textblock-preview").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-textblock-preview"]);
+
+});
+
+$(document).on('click',".new-theorem-primitive-preview-link",function(e) {
+    event.preventDefault();
+    th_text = $("#codetheoremblock").val().trim();
+
+
+    th_text = '<p>'+th_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    th_text = replace_images(th_text,'theoremblock_NA');
+    th_text = replace_enumitem(th_text);
+    th_text = replace_center(th_text);
+    var th_name = "";
+    th_name = $("#add-theorem-form input[name=theorem-name]").val()
+    if (th_name != "") {th_name = " ("+th_name+")"}
+    $("#new-theorem-preview-prefix").html($("#add-theorem-form select[name=theorem-prefix]").val()+th_name+": ");
+    $("#new-theorem-preview").html(th_text);
+    $("#new-theorem-preview").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-theorem-preview"]);
+});
+
+$(document).on('click',".new-proof-primitive-preview-link",function(e) {
+    event.preventDefault();
+    pf_text = $("#codeproofblock").val().trim();
+
+    pf_text = '<p>'+pf_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    pf_text = replace_images(pf_text,'proofblock_NA');
+    pf_text = replace_enumitem(pf_text);
+    pf_text = replace_center(pf_text);
+    $("#new-proof-preview-prefix").html($("#add-proof-form select[name=proof-prefix]").val()+": ");
+    $("#new-proof-preview").html(pf_text);
+    $("#new-proof-preview").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-proof-preview"]);
+});
+
 </script>
 {% endif %}	  
 {% endblock %}
