@@ -98,16 +98,26 @@ Tag:<br>
   <div class="row mb-3">
     <div class="col-lg-9 list-group">
       {% for prob in rows %}
-      <div class="list-group-item">    
+      <div class="list-group-item">
+	<div class="row mb-1">
+	  <div class="col" style="text-align:right">
+            <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
+              <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}" title="Copy"><span class="fa fa-copy"></span></button>
+              <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}" title="Fullscreen Display"><span class="fa fa-desktop"></span></button>
+	    </div>
+	  </div>
+	</div>
 	<div class="row">
 	  <div class="col-1">
 	    {{ forloop.counter|add:rows.start_index|add:-1 }}.
 	  </div>
 	  <div class="col-11">
 	    {% if prob.question_type_new.question_type == 'multiple choice' %}
-	    {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    <div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
 	    {% else %}
-	    {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    <div id="sa_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
 	    {% endif %}
 	    
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
@@ -201,7 +211,9 @@ Tag:<br>
   </div>
 </div>
 
-
+<div class="modal fade" id="fullscreen-problem-modal" role="dialog">
+  {% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
+</div>
 
 
 
@@ -284,6 +296,31 @@ $(document).on('click',".delete-tag-link",function(event) {
     return false;
 });
 {% endif %}
+
+
+$(document).on('click',".copy-latex-link",function(e) {
+  var prob_id = $(this).attr('id').split('_')[1];
+  var prob_text = $("textarea#latex_"+prob_id).val().replace('<br>','\n\r').replace('<br>','\n\r');
+  var aux = document.createElement("textarea");
+  aux.innerHTML =  prob_text;
+  document.body.appendChild(aux);
+  aux.select();
+  document.execCommand("copy");
+  document.body.removeChild(aux);
+});
+
+$(document).on('click',".fullscreen-disp-link",function(event) {
+    event.preventDefault();
+    var qt = $(this).attr('id').split('_')[1];
+    var pk = $(this).attr('id').split('_')[2];
+    if (qt == "mc") {
+      $("#fullscreen-modal-problem-text").html($("#mc_prob_text_"+pk).html());
+    } else {
+      $("#fullscreen-modal-problem-text").html($("#sa_prob_text_"+pk).html());
+    }
+    $("#fullscreen-problem-modal").modal("show");
+//Can probably show readable label and give options.
+});
 </script>
 
 {% endblock %}

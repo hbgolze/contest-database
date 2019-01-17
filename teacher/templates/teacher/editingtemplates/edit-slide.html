@@ -335,6 +335,8 @@ $('#add-theorem-form').on('submit',function(event) {
             $("#theorem-prefix").val('Theorem');
             $("#theorem-name").val('');
             $("#codetheoremblock").val('');
+            $("#new-theorem-preview-prefix").html('');
+            $("#new-theorem-preview").html('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
             $("#msg-no-problems").hide();
         }
@@ -353,6 +355,7 @@ $('#add-textblock-form').on('submit',function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#slideobjectList").append(result['textblock']);
             $("#codetextblock").val('');
+            $("#new-textblock-preview").html('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
             $("#msg-no-problems").hide();
         }
@@ -372,6 +375,8 @@ $('#add-proof-form').on('submit',function(event) {
             $("#slideobjectList").append(result['proof']);
             $("#proof-prefix").val('Proof');
             $("#codeproofblock").val('');
+            $("#new-proof-preview-prefix").html('');
+            $("#new-proof-preview").html('');
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"slideobject_"+result["sopk"]]);
             $("#msg-no-problems").hide();
         }

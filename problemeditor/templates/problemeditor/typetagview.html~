@@ -5,9 +5,15 @@
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/problemeditor/">Select Type</a></li>
-    <li class="breadcrumb-item"><a href="../">{{typelabel}}</a></li>
+{% if is_sourced %}
 {% if is_chapter %}
-    <li class="breadcrumb-item"><a href="../">Book: {{book.title}}</a></li>
+    <li class="breadcrumb-item"><a href="../../../">{{typelabel}}</a></li>
+    <li class="breadcrumb-item"><a href="../">Book: {{source.title}}</a></li>
+{% else %}
+    <li class="breadcrumb-item"><a href="../../">{{typelabel}}</a></li>
+{% endif %}
+{% else %}
+    <li class="breadcrumb-item"><a href="../">{{typelabel}}</a></li>
 {% endif %}
     <li class="breadcrumb-item active">{{tag}}</li>
   </ol>
@@ -60,15 +66,15 @@
   </div>
     
     {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' %}
-  {% if is_chapter %}
+  {% if is_sourced %}
   <div class="row">
     <div class="col">
-      <button class="btn btn-primary" id="add-sourced-problem">Add a Problem</button>
+      <button class="btn btn-primary add-sourced-problem" id="add_source-{{source.source_type}}">Add a Problem</button>
     </div>
   </div>
 {% endif %}
 </div>
-{% if is_chapter %}
+{% if is_sourced %}
 <div class="modal fade" id="add-problem" role="dialog">
 </div>
 {% endif %}

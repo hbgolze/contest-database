@@ -8,29 +8,67 @@
               {% include "problemeditor/problem-snippets/components/needs-answer.html" %}
 {% endif %}
 {% endif %}
-{% if not no_editlatex %}
-              {% include "problemeditor/problem-snippets/components/editlatex.html" %}
-{% endif %}
+
 {% if not no_duplicate %}
               {% include "problemeditor/problem-snippets/components/duplicateproblem.html" %}
 {% endif %}
+<div id="toolbar_{{prob.pk}}" class="mt-1 mb-1">
+  {% if not no_duplicate %}
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+  <button class="btn btn-secondary btn-sm add-linked-problem mb-1 mt-1 mr-2" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</button>
+  {% endif %}
+  {% endif %}
+  {% if not no_solutions %}
+  <div class="btn-group btn-group-sm mr-2 mb-1 mt-1" role="group" aria-label="Solution options">
+    <button class="btn btn-sm btn-secondary solution-link" id="solution-link_{{prob.pk}}">View Solutions ({{prob.solutions.count}})</button>
+    <button class="btn btn-sm btn-primary new-sol" id="new-sol_{{prob.pk}}" title="Add New Solution"><span class="fa fa-plus"></span></button>
+  </div>
+  {% endif %}
+  {% if not no_editlatex %}
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+    {% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
+      <button class="btn btn-secondary btn-sm edit-mc-latex mr-2 mb-1 mt-1" href="{{prob.pk}}" title="Edit LaTeX Code">Edit LaTeX Code{% if prob.question_type_new.question_type == 'multiple choice short answer' %}(MC){% endif %}</button>
+    {% endif %}
+    {% if prob.question_type_new.question_type != 'multiple choice' %}
+      <button class="btn btn-secondary btn-sm edit-latex mr-2 mb-1 mt-1" href="{{prob.pk}}" title="Edit LaTeX Code">Edit LaTeX Code{% if prob.question_type_new.question_type == 'multiple choice short answer' %}(SA){% endif %}</button>
+    {% endif %}
+  {% endif %}
+  {% endif %}
+  <div class="btn-group btn-group-sm mt-1 mb-1" role="group" aria-label="Problem Options">
+    <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}" title="Copy LaTeX"><span class="fa fa-copy"></span></button>
+    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+    <button class="btn btn-secondary btn-sm view-log-btn" id="viewlog-{{prob.pk}}" title="View Log"><span class="fa fa-file"></span></button>
+    {% endif %}
+    <button class="btn btn-secondary btn-sm fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}" title="Fullscreen Display"><span class="fa fa-desktop"></span></button>
+  </div>
+</div>
+
+  {% if not no_duplicate %}
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+
+<div id="duplicate-status-{{prob.pk}}"></div>
+{% endif %}
+{% endif %}
+
 {% if not no_tags %}
               {% include "problemeditor/problem-snippets/components/currenttags.html" %}
-              {% include "problemeditor/problem-snippets/components/addtagform.html" %}
+{% endif %}
+<div class="row mb-1 mt-1">
+{% if not no_tags %}
+{% include "problemeditor/problem-snippets/components/addtagform.html" %}
 {% endif %}
 
 {% include "problemeditor/problem-snippets/components/problemgroups.html" %}
+</div>
 
-{% if not no_solutions %}
-              {% include "problemeditor/problem-snippets/components/solutiondiv.html" %}
-{% endif %}
-
+<div>
 {% if prob.notes != "" %}
 <label>Notes:</label>
 <div>
 {{prob.notes}}
 </div>
 {% endif %}
+</div>
 
 {% if prob.difficulty > 0 %}
 <label>Difficulty: {{prob.difficulty}}</label>
@@ -42,8 +80,3 @@
   </div>
 </div>
 {% endif %}
-
-{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
-<button class="btn btn-secondary btn-sm mt-2 view-log-btn" id="viewlog-{{prob.pk}}">View Log</button>
-{% endif %}
-

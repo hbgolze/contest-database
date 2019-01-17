@@ -17,5 +17,12 @@
               {% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}
               </div>
               {% endif %}
-              {% if not no_readable_label %}[{% if not no_link %}<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>{% else %}{{prob.readable_label}}{% endif %}]{% endif %}
+{% if prob.question_type_new.question_type == 'multiple choice'  or prob.question_type_new.question_type == 'multiple choice short answer'%}
+<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
+{% else %}
+<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
+{% endif %}
+</p>
+<p>
+              {% if not no_readable_label %}<span id="readable_label_{{prob.pk}}">[{% if not no_link %}<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>{% else %}{{prob.readable_label}}{% endif %}]</span>{% endif %}
             </p>

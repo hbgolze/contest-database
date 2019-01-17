@@ -2,11 +2,4 @@
               <div id="duplicate_problems_{{prob.pk}}">
                 {% include "problemeditor/problem-snippets/components/duplicateproblemlist.html" %}
               </div>
-
-              {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
-              <p>
-                <a class="btn btn-secondary btn-sm add-linked-problem" href="{{prob.pk}}" data-toggle="modal">Link to Duplicate Problem</a>
-              </p>
-              <div id="duplicate-status-{{prob.pk}}"></div>
-              {% endif %}
 {% endif %}

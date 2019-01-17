@@ -85,6 +85,20 @@ $(document).on('click',".delete-tag-link",function(event) {
 });
 
 
+
+$(document).on('click',".fullscreen-disp-link",function(event) {
+    event.preventDefault();
+    var qt = $(this).attr('id').split('_')[1];
+    var pk = $(this).attr('id').split('_')[2];
+    if (qt == "mc") {
+      $("#fullscreen-modal-problem-text").html($("#mc_prob_text_"+pk).html());
+    } else {
+      $("#fullscreen-modal-problem-text").html($("#sa_prob_text_"+pk).html());
+    }
+    $("#fullscreen-problem-modal").modal("show");
+//Can probably show readable label and give options.
+});
+
 {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
 
 $(document).on('click',".view-log-btn",function(event) {
@@ -607,4 +621,14 @@ $(document).on('submit',"#form-add-sourced-problem",function(event) {
 });
 {% endif %}
 
+$(document).on('click',".copy-latex-link",function(e) {
+  var prob_id = $(this).attr('id').split('_')[1];
+  var prob_text = $("textarea#latex_"+prob_id).val().replace('<br>','\n\r').replace('<br>','\n\r');
+  var aux = document.createElement("textarea");
+  aux.innerHTML =  prob_text;
+  document.body.appendChild(aux);
+  aux.select();
+  document.execCommand("copy");
+  document.body.removeChild(aux);
+});
 </script>

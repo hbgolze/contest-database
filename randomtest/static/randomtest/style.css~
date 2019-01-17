@@ -122,12 +122,12 @@ background: #006699; color: #fff; }
 		       margin-right: 0;
 }
 .list-group-horizontal .list-group-item:first-child {
-		       border-top-right-radius:0;
+		       border-top-right-radius:4px;//
 		       border-bottom-left-radius:4px;
 }
 .list-group-horizontal .list-group-item:last-child {
 		       border-top-right-radius:4px;
-		       border-bottom-left-radius:0;
+		       border-bottom-left-radius:4px;//
 }
 
 .icon-green {
@@ -600,5 +600,11 @@ table.table.table-striped tr td.cell-super-success {
     background-color:#8BBA84;
 }
 
+.modal-full {
+    min-width: 100%;
+    margin: 0;
+}
 
-
+.modal-full .modal-content {
+    min-height: 100vh;
+}
