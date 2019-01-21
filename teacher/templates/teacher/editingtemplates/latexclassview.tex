@@ -105,6 +105,28 @@
 {% endif %}
 {% endif %}
 
+{% if include_sols %}
+{% if prob.isProblem %}
+{% for sol in prob.problem.solutions.all %}
+\vspace{3mm}
+
+\textbf{Solution{% if prob.problem.solutions.count > 1 %} {{forloop.counter}} {% endif %}:}
+{% autoescape off %}{{sol.solution_text}}{% endautoescape %}
+
+\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}   
+{% endfor %}
+{% else %}
+{% for sol in prob.solution_objects.all %}
+\vspace{3mm}
+
+\textbf{Solution{% if prob.solution_objects.count > 1 %} {{forloop.counter}} {% endif %}:}
+{% autoescape off %}{{sol.solution_code}}{% endautoescape %}
+
+\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}   
+{% endfor %}
+{% endif %}
+{% endif %}
+
 {% endfor %}
 \end{enumerate}
 {% endif %}
