@@ -947,7 +947,6 @@ def detailedproblemview(request,**kwargs):
 def addcontestview(request,type,num):
     custom_labels = False
     if 'custom_labels' in request.GET:
-#        if request.GET.get('custom_labels') == 'true':
         custom_labels = True
     typ = get_object_or_404(Type, type=type)
     num = int(num)
@@ -1073,9 +1072,9 @@ def addcontestview(request,type,num):
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
-        P = Problem.objects.filter(test_label=label)
-        if len(P)>0:
-            t=Test(name=readablelabel)
+        P = Problem.objects.filter(test_label = label)
+        if len(P) > 0:
+            t = Test(name = readablelabel)
 #            if 'round' in F:
 #                t=Test(name = F['year']+round.name)
 #            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + formletter
@@ -1086,49 +1085,50 @@ def addcontestview(request,type,num):
             t.problems.add(i)
         t.types.add(typ)
         t.save()
-        tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
+        tc,boolcreated = TestCollection.objects.get_or_create(name = typ.label)
         tc.tests.add(t)
         tc.save()
-        return redirect('/problemeditor/')
+        return redirect('/problemeditor/contest/bytest/' + typ.type + '/' + label + '/')
     form = AddContestForm(request.POST or None,num_probs = num,type = type,custom_labels = custom_labels)
     context = {'nbar': 'problemeditor','num': num,'typ':typ,'nums':[i for i in range(1,num+1)]}
-    if typ.default_question_type=='mc':
-        context['mc']=True
-    elif typ.default_question_type=='sa':
-        context['sa']=True
-    elif typ.default_question_type=='mcsa':
-        context['mc']=True
-        context['sa']=True
+    if typ.default_question_type == 'mc':
+        context['mc'] = True
+    elif typ.default_question_type == 'sa':
+        context['sa'] = True
+    elif typ.default_question_type == 'mcsa':
+        context['mc'] = True
+        context['sa'] = True
     else:
-        context['pf']=True
-    context['form']=form
-    return render(request, 'problemeditor/addcontestform.html', context=context)
+        context['pf'] = True
+    context['form'] = form
+    context['custom_labels'] = custom_labels
+    return render(request, 'problemeditor/addcontestform.html', context = context)
 
 
 @login_required
 def my_activity(request):
     log = LogEntry.objects.filter(user_id = request.user.id).filter(change_message__contains="problemeditor")
-    linkedlog=[]
+    linkedlog = []
     for i in log:
-        if i.content_type.name=='problem':
-            if Problem.objects.filter(pk=i.object_id).exists():
+        if i.content_type.name == 'problem':
+            if Problem.objects.filter(pk = i.object_id).exists():
                 linkedlog.append((i,True))
             else:
                 linkedlog.append((i,False))
-        if i.content_type.name=='solution':
-            if Solution.objects.filter(pk=i.object_id).exists():
+        if i.content_type.name == 'solution':
+            if Solution.objects.filter(pk = i.object_id).exists():
                 linkedlog.append((i,True))
             else:
                 linkedlog.append((i,False))
-        if i.content_type.name=='problem approval':
-            if ProblemApproval.objects.filter(pk=i.object_id).exists():
+        if i.content_type.name == 'problem approval':
+            if ProblemApproval.objects.filter(pk = i.object_id).exists():
                 linkedlog.append((i,True))
             else:
                 linkedlog.append((i,False))
-    paginator=Paginator(linkedlog,50)
+    paginator = Paginator(linkedlog,50)
     page = request.GET.get('page')
     try:
-        plog=paginator.page(page)
+        plog = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         plog = paginator.page(1)
@@ -1139,7 +1139,7 @@ def my_activity(request):
 
 @login_required
 def redirectproblem(request,pk):
-    p = get_object_or_404(Problem,pk=pk)
+    p = get_object_or_404(Problem,pk = pk)
     if p.type_new not in request.user.userprofile.user_type_new.allowed_types.all():
         raise Http404("Unauthorized")
     if p.type_new.is_contest == True:
