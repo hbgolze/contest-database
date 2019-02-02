@@ -957,7 +957,6 @@ def addcontestview(request,type,num):
         form = request.POST
         F = form#.cleaned_data
         formletter = ''
-        print(F)
         if 'formletter' in F:
             formletter = F['formletter']
         year = F['year']
@@ -1673,6 +1672,7 @@ def save_new_solution(request,**kwargs):
         )
     return JsonResponse({'pk':pk,'sol_count':prob.solutions.count()})
 
+@login_required
 def delete_sol(request,**kwargs):
     pk = request.POST.get('pk','')
     spk = request.POST.get('spk','')

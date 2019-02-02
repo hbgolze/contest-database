@@ -31,7 +31,9 @@
 \newcommand{\cis}[1]{\text{cis}#1}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
+{% if include_title %} 
 \maketitle
+{% endif %}
 \begin{enumerate}
 {% for prob,problemcode,problemlabel,answerchoices,solutions in rows %}
 \item {{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}

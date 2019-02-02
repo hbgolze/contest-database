@@ -15,7 +15,7 @@
   <link rel="stylesheet" type="text/css" href="{% static 'randomtest/style.css' %}" />
 <link rel="stylesheet" href="{% static 'randomtest/font-awesome-4.7.0/css/font-awesome.min.css' %}" />
 
-<script src="{% static 'randomtest/js/latexlib.js' %}"></script>
+<script src="{% static 'js/latexlib.js' %}"></script>
 
     <title>{% block title %}Random Contest{% endblock %}</title>
 

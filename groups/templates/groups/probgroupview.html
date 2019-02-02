@@ -73,6 +73,7 @@ function fixchecks() {
     <div class="col-2" style="text-align:right">
       <p><button class="btn btn-primary mb-1" id="view-PDF">View as PDF</button></p>
       <p><button class="btn btn-primary" id="view-latex">View LaTeX</button></p>
+      <p><button class="btn btn-secondary" id="show-answers">Show/Hide Answers</button></p>
     </div>
     
   </div>
@@ -95,9 +96,13 @@ function fixchecks() {
 	      <div class="col-10">
 		{% if prob.question_type_new.question_type == 'multiple choice' %}
 		<div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+		<div class="answer" style="display:none">Answer: {{prob.mc_answer}}</div>
 		<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
 		{% else %}
                 <div id="sa_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+		{% if prob.question_type_new.question_type != "proof" %}
+		<div class="answer" style="display:none">Answer: {{prob.sa_answer}}</div>
+		{% endif %}
 		<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
 		{% endif %}
 	      </div>
@@ -469,6 +474,10 @@ $(document).on('click',".fullscreen-disp-link",function(event) {
     }
     $("#fullscreen-problem-modal").modal("show");
 //Can probably show readable label and give options.
+});
+
+$(document).on('click','#show-answers',function(e) {
+  $(".answer").toggle();
 });
 </script>
 {% endblock %}

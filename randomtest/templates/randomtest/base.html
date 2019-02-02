@@ -47,7 +47,6 @@
 	{% if user.is_authenticated %}
 	<p class="navbar-text">Hello, {{user.username}}!&nbsp;&nbsp;&nbsp;</p>
 
-	
 	{% if request.user.userprofile.students.count > 0 %}
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Students</a>
@@ -58,11 +57,12 @@
 	  </div>
         </li>
 	{% endif %}
+
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#"  data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Account</a>
           <div class="dropdown-menu dropdown-menu-right">
 	    <a class="dropdown-item" href="{% url 'my_activity' %}">My Activity</a>
-{% if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmanager" or user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "sitemanager" or user.userprofile.user_type_new.name == "manager" or user.userprofile.user_type_new.name == "teacher" or user.userprofile.user_type_new.name == "contestmod" %}
+{% if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmanager" or user.userprofile.user_type_new.name == "sitemanager" or user.userprofile.user_type_new.name == "manager" or user.userprofile.user_type_new.name == "teacher" or user.userprofile.user_type_new.name == "contestmod" %}
 	    <a class="dropdown-item" href="{% url 'manage_collaborators' %}">Manage Collaborators</a>
 {% endif %}
 	    <a class="dropdown-item" href="{% url 'changetimezoneview' %}">Change Time Zone</a>

@@ -1171,7 +1171,8 @@ def uploadcontestview(request,type):
             if 'formletter' in form.cleaned_data:
                 formletter = form.cleaned_data['formletter']
             if 'round' in form.cleaned_data:
-                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+#                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+                round = form.cleaned_data['round']
                 readablelabel = year + ' ' + round.readable_label_pre_form + formletter
                 default_question_type = round.default_question_type
                 readablelabel = readablelabel.rstrip()
@@ -1296,7 +1297,8 @@ def uploadpreview(request,type):
             if 'formletter' in form.cleaned_data:
                 formletter = form.cleaned_data['formletter']
             if 'round' in form.cleaned_data:
-                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+#                round = get_object_or_404(Round, pk=form.cleaned_data['round'])
+                round = form.cleaned_data['round']
                 readablelabel = year + ' ' + round.readable_label_pre_form + formletter
                 default_question_type = round.default_question_type
                 readablelabel = readablelabel.rstrip()

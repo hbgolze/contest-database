@@ -31,7 +31,9 @@
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
+{% if include_title %}
 \maketitle
+{% endif %}
 \begin{enumerate}
 {% for prob,problemcode,problemlabel,answerchoices in rows %}
 \item \begin{minipage}[t]{\linewidth}

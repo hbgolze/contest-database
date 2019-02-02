@@ -90,18 +90,23 @@ function itemenum_beginend_pop(s,start_index = 0) {
 	    D['begin_enum'] = s_mod.indexOf('\\begin{enumerate}')+start_index;
 	}
     }
+
     if (s_mod.indexOf('\\begin{itemize}') !==-1) {
 	D['begin_itemize'] = s_mod.indexOf('\\begin{itemize}')+start_index;
     }
+
     if (s_mod.indexOf('\\end{enumerate}') !==-1) {
 	D['end_enum'] = s_mod.indexOf('\\end{enumerate}')+start_index;
     }    
+
     if (s_mod.indexOf('\\end{itemize}') !==-1) {
 	D['end_itemize'] = s_mod.indexOf('\\end{itemize}')+start_index;
     }
+
     if (s_mod.indexOf('\\item ') !==-1) {
 	D['item'] = s_mod.indexOf('\\item ')+start_index;
     }
+
     var min_index = -1;
     var name = "";
     for (var i in D) {
@@ -110,6 +115,7 @@ function itemenum_beginend_pop(s,start_index = 0) {
             name = i;
 	}
     }
+
     return [name,min_index,token];
 }
 

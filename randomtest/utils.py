@@ -424,6 +424,7 @@ def newtexcode(texcode,label,answer_choices,temp = False):
 
     repl2 = tikzreplacementindexes(newtexcode)
     new2texcode = ''
+
     if len(repl2) == 0:
         new2texcode += newtexcode
     else:
@@ -434,7 +435,6 @@ def newtexcode(texcode,label,answer_choices,temp = False):
         new2texcode+='<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+str(len(repl2))+'.png\"/>'
         new2texcode+=texcode[repl2[-1][1]:]
     newtexcode = new2texcode
-
     newtexcode += '<br><br>'+ansscrape(answer_choices)
     newtexcode = newtexcode.replace('\\ ',' ')
 #    newtexcode=replaceitemize(newtexcode)
@@ -445,6 +445,7 @@ def newtexcode(texcode,label,answer_choices,temp = False):
 
     newtexcode = newtexcode.replace('\\begin{center}','<p style="text-align:center;\">')####dangerous....
     newtexcode = newtexcode.replace('\\end{center}','</p>\n')
+
     return newtexcode
 
 def newsoltexcode(texcode,label):
