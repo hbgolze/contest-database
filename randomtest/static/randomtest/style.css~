@@ -590,13 +590,13 @@ background: #006699; color: #fff; }
 .right-addon input { padding-right: 30px; }
 
 /* modify bootstrap table colors */
-table.table.table-striped tr td.cell-danger {
+table.table tr td.cell-danger {
     background-color:#f2dede;
 }
-table.table.table-striped tr td.cell-success {
+table.table tr td.cell-success {
     background-color:#dff0d8;
 }
-table.table.table-striped tr td.cell-super-success {
+table.table tr td.cell-super-success {
     background-color:#8BBA84;
 }
 

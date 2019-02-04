@@ -102,5 +102,17 @@
   </div>
 </div>  
 
-
+<script>
+$(document).ready(function() {
+  if ( window.location.hash != '' ) {
+    //removes the initial hash
+    openval = window.location.hash.slice(1);
+    //opens the relavant accordion
+    $('#' + openval).addClass('show');
+    $('#' + openval).parents().each(function() {
+      $(this).addClass('show');
+    });
+  }
+});
+</script>
 {% endblock %}
