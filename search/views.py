@@ -14,6 +14,9 @@ from django.contrib.auth.forms import PasswordChangeForm
 from django.utils import timezone
 from django.conf import settings
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.views.generic import DetailView
+
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -280,10 +283,10 @@ def advanced_searchresults(request):
 def add_to_group(request):
     problem_groups = [(d,p) for d, p in request.POST.items() if d.startswith('problemgroup')]
     for i in problem_groups:
-        problem_pk=i[0].split('_')[1]
-        prob=get_object_or_404(Problem,pk=problem_pk)
-        p_group = get_object_or_404(ProblemGroup,pk=i[1])
-        if p_group.problems.filter(pk=problem_pk).exists():
+        problem_pk = i[0].split('_')[1]
+        prob = get_object_or_404(Problem,pk = problem_pk)
+        p_group = get_object_or_404(ProblemGroup,pk = i[1])
+        if p_group.problems.filter(pk = problem_pk).exists():
             return JsonResponse({'prob_pk':problem_pk,'status':1})
         p_group.problems.add(prob)
         p_group.save()
@@ -293,10 +296,10 @@ def add_to_group(request):
 def add_tag(request):
     tags = [(d,p) for d, p in request.POST.items() if d.startswith('addtag')]
     for i in tags:
-        problem_pk=i[0].split('_')[1]
-        prob=get_object_or_404(Problem,pk=problem_pk)
-        tag = get_object_or_404(NewTag,pk=i[1])
-        if tag.problems.filter(pk=problem_pk).exists():
+        problem_pk = i[0].split('_')[1]
+        prob = get_object_or_404(Problem,pk = problem_pk)
+        tag = get_object_or_404(NewTag,pk = i[1])
+        if tag.problems.filter(pk = problem_pk).exists():
             return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
         prob.newtags.add(tag)
         prob.save()
@@ -305,15 +308,20 @@ def add_tag(request):
 
 @login_required
 def delete_tag(request):
-    delete_tag=request.POST.get('problem_tag_id','')
-    del_list=delete_tag.split('_')
-    problem_pk=del_list[1]
-    prob=get_object_or_404(Problem,pk=problem_pk)
+    delete_tag = request.POST.get('problem_tag_id','')
+    del_list = delete_tag.split('_')
+    problem_pk = del_list[1]
+    prob = get_object_or_404(Problem,pk = problem_pk)
     tag_pk = del_list[2]
-    tag = get_object_or_404(NewTag,pk=tag_pk)
+    tag = get_object_or_404(NewTag,pk = tag_pk)
     prob.newtags.remove(tag)
     prob.save()
-    response_string="<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
-    L= prob.newtags.all()
+    response_string = "<label for=\"tag-list-"+str(prob.pk)+"\">Current Tags</label>\n<ul id=\"tag-list-"+str(prob.pk)+"\">\n"
+    L = prob.newtags.all()
     response_string = render_to_string("search/tag_snippet.html",{'prob':prob})
     return JsonResponse({'prob_pk':problem_pk,'tag_list':response_string,'tag_count':prob.newtags.count()})
+
+@login_required
+def load_sols(request,pk):
+    prob = get_object_or_404(Problem,pk=pk)
+    return JsonResponse({'modal-html': render_to_string("randomtest/load_sol.html",{'object' : prob})})

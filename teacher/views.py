@@ -324,34 +324,39 @@ def slidesview(request,**kwargs):
     context = {}
     userprofile = request.user.userprofile
     if 'pk' in kwargs:
-        pk=kwargs['pk']
+        pk = kwargs['pk']
         spk = kwargs['spk']
         slidegroup = get_object_or_404(PublishedSlideGroup, pk = spk)
         pub_class = get_object_or_404(PublishedClass, pk = pk)
         if userprofile not in pub_class.userprofiles.all():
-            return HttpResponse('Unauthorized', status=401)
+            return HttpResponse('Unauthorized', status = 401)
     if 'uspk' in kwargs:
         user_slides = get_object_or_404(UserSlides,pk=kwargs['uspk'])
         student_user = get_object_or_404(User,username=kwargs['username'])
         student_userprofile = student_user.userprofile
         slidegroup = user_slides.published_slides
+        context['user_slides'] = user_slides
         if student_user not in userprofile.students.all():
-            return HttpResponse('Unauthorized', status=401)
+            return HttpResponse('Unauthorized', status = 401)
         if user_slides.userunitobject.user_unit.user_class.userprofile != student_userprofile:
-            return HttpResponse('Unauthorized', status=401)
+            return HttpResponse('Unauthorized', status = 401)
         pub_class = user_slides.userunitobject.user_unit.user_class.published_class
     slides = slidegroup.slides.all()
     paginator = Paginator(slides,1)
     page = request.GET.get('page')
     try:
-        rows=paginator.page(page)
+        rows = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         rows = paginator.page(1)
     except EmptyPage:
         # If page is out of range (e.g. 9999), deliver last page of results.
         rows = paginator.page(paginator.num_pages)
-    return render(request,'teacher/publishedclasses/slidesview.html',{'slides':slidegroup,'rows':rows,'class':pub_class,'nbar':'teacher'})
+    context['slides'] = slidegroup
+    context['rows'] = rows
+    context['class'] = pub_class
+    context['nbar'] = 'teacher'
+    return render(request,'teacher/publishedclasses/slidesview.html',context)
 
 def teacherproblemsetview(request,**kwargs):
     context={}

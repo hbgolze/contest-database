@@ -102,6 +102,7 @@ Tag:<br>
 	<div class="row mb-1">
 	  <div class="col" style="text-align:right">
             <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
+	      <button type="button" class="btn btn-sm btn-secondary view-sol-link mr-1" id="view-sol_{{prob.pk}}" title="View Solutions">Solutions ({{prob.solutions.count}})</button>
               <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}" title="Copy"><span class="fa fa-copy"></span></button>
               <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}" title="Fullscreen Display"><span class="fa fa-desktop"></span></button>
 	    </div>
@@ -120,49 +121,48 @@ Tag:<br>
 	    <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
 	    {% endif %}
 	    
-	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
 	    <form action="{% url 'delete_tag' %}" method="post" class="js-tag-delete-form">
 	      {% csrf_token %}
 	      <div class="col-xs-8" id="problem-tags-{{prob.pk}}">
 		{% include "problemeditor/problem-snippets/components/tag_snippet.html" %}
 	      </div>
 	    </form>
-	    
-	    <div class="col-xs-7">
-	      <form action="{% url 'add_tag' %}" method="post" class="js-tag-form">
-		{% csrf_token %}
-		<input type="hidden" name="next" value="{{ request}}">
-		<label for="addtag_{{prob.pk}}">Add Tag:</label>
-		<select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
-		  <option value="" disabled selected>Select a Tag</option>
-		  {% for tag in tags %}
-		  <option value="{{tag.pk}}">{{tag}}
-		  </option>
-		  {% endfor %}
-		</select>
-		<div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
+	    <div class="row">
+	      <div class="col-md-6">
+		<form action="{% url 'add_tag' %}" method="post" class="js-tag-form">
+		  {% csrf_token %}
+		  <input type="hidden" name="next" value="{{ request}}">
+		  <label for="addtag_{{prob.pk}}">Add Tag:</label>
+		  <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+		    <option value="" disabled selected>Select a Tag</option>
+		    {% for tag in tags %}
+		    <option value="{{tag.pk}}">{{tag}}
+		    </option>
+		    {% endfor %}
+		  </select>
+		  <div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
+		    
+		  </div>
+		</form>
+	      </div>
+	      
+	      <div class="col-md-6">
+		<form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
+		  {% csrf_token %}
+		  <input type="hidden" name="next" value="{{ request}}">
+		  <label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
+		  <select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
+		    <option value="" disabled selected>Select a Group</option>
+		    {% for pg in probgroups %}
+		    <option value="{{pg.pk}}">{{pg.name}}
+		    </option>
+		    {% endfor %}
+		  </select>
+		  <div id="adding-status-{{prob.pk}}" class="js-adding-status">
 		  
-		</div>
-	      </form>
-	    </div>
-	    {% endif %}
-	    
-	    <div class="col-xs-7">
-	      <form action="{% url 'add_to_group' %}" method="post" class="js-problem-group-form">
-		{% csrf_token %}
-		<input type="hidden" name="next" value="{{ request}}">
-		<label for="problemgroup_{{prob.pk}}">Add to Problem Group:</label>
-		<select name="problemgroup_{{prob.pk}}" class="js-problem-group-select form-control">
-		  <option value="" disabled selected>Select a Group</option>
-		  {% for pg in probgroups %}
-		  <option value="{{pg.pk}}">{{pg.name}}
-		  </option>
-		  {% endfor %}
-		</select>
-		<div id="adding-status-{{prob.pk}}" class="js-adding-status">
-		  
-		</div>
-	      </form>
+		  </div>
+		</form>
+	      </div>
 	    </div>
 	  </div>
 	</div>
@@ -214,7 +214,7 @@ Tag:<br>
 <div class="modal fade" id="fullscreen-problem-modal" role="dialog">
   {% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
 </div>
-
+<div class="modal fade" id="sol-placeholder" role="dialog"></div>
 
 
 
@@ -247,7 +247,7 @@ $("#adding-status-"+data['prob_pk']).fadeOut().empty();
     });
     return false;
 });
-{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
+
 $("select.js-add-tag-select").change(function(event) {
     event.preventDefault();
     var form = $(this).closest("form");
@@ -295,7 +295,6 @@ $(document).on('click',".delete-tag-link",function(event) {
     });
     return false;
 });
-{% endif %}
 
 
 $(document).on('click',".copy-latex-link",function(e) {
@@ -321,6 +320,20 @@ $(document).on('click',".fullscreen-disp-link",function(event) {
     $("#fullscreen-problem-modal").modal("show");
 //Can probably show readable label and give options.
 });
+$(document).on('click',".view-sol-link",function(e) {
+  var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/search/ajax/load_sol/'+prob_id + '/',
+        dataType: 'json',
+        success: function(result) {
+           $("#sol-placeholder").html(result['modal-html']);
+           MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sol-placeholder"]);
+           $("#sol-placeholder").modal("show");
+        }
+    });
+});
+
 </script>
 
 {% endblock %}

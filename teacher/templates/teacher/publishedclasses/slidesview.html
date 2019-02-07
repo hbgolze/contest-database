@@ -4,8 +4,16 @@
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="../../../../">My Classes</a></li>
+
+{% if user_slides %}
+    <li class="breadcrumb-item"><a href="../../#cl_{{user_slides.userunitobject.user_unit.user_class.pk}}">{{class.name}}</a></li>
+    <li class="breadcrumb-item"><a href="../../#un_{{user_slides.userunitobject.user_unit.pk}}">{{slides.unit_object.unit.name}}</a></li>
+    <li class="breadcrumb-item active">{{slides.name}}</li>
+{% else %}
     <li class="breadcrumb-item"><a href="../../">{{class.name}}</a></li>
-    <li class="breadcrumb-item active">{{class.name}} > {{slides.unit_object.unit.name}} > {{slides.name}}</li>
+
+    <li class="breadcrumb-item active">{{slides.unit_object.unit.name}} > {{slides.name}}</li>
+{% endif %}
   </ol>
 </nav>
 <div class="container">
