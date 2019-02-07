@@ -219,9 +219,7 @@ def typeview(request):
         num_problems = P.count()
         num_untagged = P.filter(newtags__isnull = True).count()#
         num_nosolutions = P.filter(solutions__isnull = True).count()
-        min_year = P.aggregate(Min('year'))
-        max_year = P.aggregate(Max('year'))
-        rows.append((i,num_untagged,num_nosolutions,min_year['year__min'],max_year['year__max']))
+        rows.append((i,num_untagged,num_nosolutions))
     template = loader.get_template('problemeditor/typeview.html')
     context = {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
@@ -1071,6 +1069,7 @@ def addcontestview(request,type,num):
                 p.display_problem_text = newtexcode(p.problem_text,p.label,'')
                 p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                 p.save()
+        typ.update_years()
         P = Problem.objects.filter(test_label = label)
         if len(P) > 0:
             t = Test(name = readablelabel)
@@ -1265,6 +1264,7 @@ def uploadcontestview(request,type):
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
                             num += 1
+                typ.update_years()
                 P = Problem.objects.filter(test_label = label)
 
                 if len(P) > 0:
@@ -1274,7 +1274,7 @@ def uploadcontestview(request,type):
                     t.problems.add(i)
                     t.types.add(typ)
                 t.save()
-                tc,boolcreated=TestCollection.objects.get_or_create(name=typ.label)
+                tc,boolcreated = TestCollection.objects.get_or_create(name = typ.label)
                 tc.tests.add(t)
                 tc.save()
                 return redirect('/problemeditor/')
