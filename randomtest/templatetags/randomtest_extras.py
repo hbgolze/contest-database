@@ -13,3 +13,7 @@ def surroundbracket(value):
 @register.filter
 def replacearrow(value):
     return value.replace('>','$\\to$')
+
+@register.filter
+def add_class(modelform_input, css_class):
+    return modelform_input.as_widget(attrs={'class': css_class})

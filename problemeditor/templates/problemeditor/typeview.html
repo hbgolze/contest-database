@@ -28,14 +28,12 @@
       <table class="table table-striped">
 	<thead>
 	  <tr>
-            <th>Test Category</th>
+            <th>View Tests</th>
 	    <th>View by Tag</th>
-	    <th>View by Test</th>
-            <th>Number of Untagged Problems</th>
-	    <th>Number of Problems with no Solution</th>
+            <th># Untagged</th>
+	    <th># with no Solution</th>
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
 	    <th>Add Test</th>
-<th></th>
 	    {% endif %}
 	  </tr>
 	</thead>
@@ -43,13 +41,13 @@
       {% for type,untagged,unsolution in rows %}
       
       <tr>
-	<td>{{type.label}}{% if type.is_contest == 1 %} ({{type.min_year}}-{{type.max_year}}){% endif %}</td>
-        <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% elif type.is_sourced == 0 %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% else %}<a href="sources/">View Sources</a>{% endif %}</td>
-        <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">View by Test</a></td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">View Problems</a>{% endif %}
+        <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">{{type.label}}</a>{% if type.is_contest == 1 %} ({{type.min_year}}-{{type.max_year}}){% endif %}</td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">{{type.label}}</a>{% else %}<a href="sources/">Sourced Problems</a>{% endif %}
+
+        <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% elif type.is_sourced == 0 %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% endif %}</td>
         <td>{{untagged}}/{{type.problems.count}}</td>
         <td>{{unsolution}}/{{type.problems.count}}</td>
 	    {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
-	    <td>{% if type.is_contest %}<button class="btn btn-secondary btn-sm add-test" id="addtest__{{type.label}}__{{type.type}}">Add Test</button>{% endif %}</td><td>{% if type.is_contest %}<button class="btn btn-secondary btn-sm upload-test" id="uploadtest__{{type.type}}">Upload Test</button>{% endif %}</td>
+	    <td>{% if type.is_contest %}<button class="btn btn-secondary btn-sm add-test mr-2" id="addtest__{{type.label}}__{{type.type}}">Add Test</button><button class="btn btn-secondary btn-sm upload-test" id="uploadtest__{{type.type}}">Upload Test</button>{% endif %}</td>
 	    {% endif %}
       </tr>
       {% endfor %}

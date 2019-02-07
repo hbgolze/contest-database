@@ -282,6 +282,8 @@ class UploadContestForm(forms.Form):
         typ = Type.objects.get(type=kwargs.pop('type'))
         super(UploadContestForm,self).__init__(*args,**kwargs)
         self.fields['year'].widget.attrs['class'] = 'form-control'
+        self.fields['contestfile'].widget.attrs['class'] = 'form-control-file'
+        self.fields['contestfile'].label = "Contest File"
         if typ.allow_form_letter == True:
             self.fields['formletter'] = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
         if typ.rounds.count() > 0:
