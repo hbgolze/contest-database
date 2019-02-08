@@ -219,9 +219,7 @@ def typeview(request):
         num_problems = P.count()
         num_untagged = P.filter(newtags__isnull = True).count()#
         num_nosolutions = P.filter(solutions__isnull = True).count()
-        min_year = P.aggregate(Min('year'))
-        max_year = P.aggregate(Max('year'))
-        rows.append((i,num_untagged,num_nosolutions,min_year['year__min'],max_year['year__max']))
+        rows.append((i,num_untagged,num_nosolutions))
     template = loader.get_template('problemeditor/typeview.html')
     context = {'rows': rows, 'nbar': 'problemeditor'}
     return HttpResponse(template.render(context,request))
@@ -769,10 +767,10 @@ def testlabelview(request,type,testlabel):
         problems = typ.problems.filter(newtags__isnull=True)
     problems = sorted(problems, key=lambda x:(x.year,x.problem_number))
 
-    paginator=Paginator(problems,50)
+    paginator = Paginator(problems,50)
     page = request.GET.get('page')
     try:
-        prows=paginator.page(page)
+        prows = paginator.page(page)
     except PageNotAnInteger:
         # If page is not an integer, deliver first page.
         prows = paginator.page(1)
@@ -796,17 +794,19 @@ def testlabelview(request,type,testlabel):
         'tags':NewTag.objects.exclude(tag='root'),
         'probgroups':probgroups,
         }
+    if typ.default_question_type == "mc":
+        context['show_mc_answer'] = True
     return HttpResponse(template.render(context,request))
 
 @login_required
 def CMtopicview(request,type):#unapprovedview
-    typ=get_object_or_404(Type, type=type)
-    rows=[]
-    problems=list(typ.problems.all())
-    problems=sorted(problems, key=lambda x:(x.pk))
-    template=loader.get_template('problemeditor/CMtopicview.html')#unapproved
+    typ = get_object_or_404(Type, type=type)
+    rows = []
+    problems = list(typ.problems.all())
+    problems = sorted(problems, key=lambda x:(x.pk))
+    template = loader.get_template('problemeditor/CMtopicview.html')#unapproved
 
-    paginator=Paginator(problems,50)
+    paginator = Paginator(problems,50)
     page = request.GET.get('page')
     try:
         prows=paginator.page(page)
@@ -1160,8 +1160,8 @@ def redirectproblem(request,pk):
 @login_required
 def uploadcontestview(request,type):
     typ = get_object_or_404(Type, type = type)
-    if typ.default_question_type == 'mc' or typ.default_question_type == 'mcsa':
-        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
+#    if typ.default_question_type == 'mc' or typ.default_question_type == 'mcsa':
+#        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
     if request.POST and request.FILES:
         form = UploadContestForm(request.POST, request.FILES,type = type)
         if form.is_valid():
@@ -1187,7 +1187,7 @@ def uploadcontestview(request,type):
             if contestfile.multiple_chunks()== True:
                 pass
             else:
-                f=contestfile.read().decode('utf-8')
+                f = contestfile.read().decode('utf-8')
 #                print(f.decode("utf-8"))
                 problemtexts = str(f).split('=========')
 #Currently no support for 'mc'
@@ -1230,17 +1230,17 @@ def uploadcontestview(request,type):
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
                             num+=1
-                if default_question_type=='pf':
+                if default_question_type == 'pf':
                     pf = QuestionType.objects.get(question_type = 'proof')
                     num = 1
                     prefix_pn = ''
                     for i in range(1,len(problemtexts)):
-                        ptext=problemtexts[i]
+                        ptext = problemtexts[i]
                         if '===' in ptext:
                             prefix_pn = ptext[ptext.index('===') + 3]
                             num = 1
                         else:
-                            p=Problem(problem_text = ptext,
+                            p = Problem(problem_text = ptext,
                                       label = label + prefix_pn + str(num),
                                       readable_label = readablelabel + post_label + prefix_pn + str(num),
                                       type_new = typ,
@@ -1266,6 +1266,92 @@ def uploadcontestview(request,type):
                             p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
                             p.save()
                             num += 1
+                if default_question_type == 'mc':#prefix_pn not supported
+                    mc = QuestionType.objects.get(question_type = 'multiple choice')
+                    num = 1
+                    print(len(problemtexts))
+                    for i in range(1,len(problemtexts)):
+                        problem_comps = problemtexts[i].split('=====')
+                        problem_text = ''
+                        solutions = []
+                        answer_A = ''
+                        answer_B = ''
+                        answer_C = ''
+                        answer_D = ''
+                        answer_E = ''
+                        mc_answer = ''
+                        for j in range(1,len(problem_comps)):
+                            pc = problem_comps[j]
+                            if pc[0:2] == 'PT':
+                                problem_text = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'SO':
+                                solutions.append(pc[2:].lstrip().rstrip())
+                            if pc[0:2] == 'AA':
+                                answer_A = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AB':
+                                answer_B = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AC':
+                                answer_C = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AD':
+                                answer_D = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AE':
+                                answer_E = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'MC':
+                                mc_answer = pc[2:].lstrip().rstrip()
+                        p = Problem(problem_text = problem_text,
+                                    mc_problem_text = problem_text,
+                                    label = label + str(num),
+                                    readable_label = readablelabel + post_label + str(num),
+                                    type_new = typ,
+                                    question_type_new = mc,
+                                    problem_number = num,
+                                    year = year,
+                                    form_letter = formletter,
+                                    test_label = label,
+                                    top_solution_number = 0,
+                                    )
+                        p.save()
+                        if 'round' in form.cleaned_data:
+                            p.round = round
+                        p.types.add(typ)
+                        p.question_type.add(mc)
+                        p.answer_A = answer_A
+                        p.answer_B = answer_B
+                        p.answer_C = answer_C
+                        p.answer_D = answer_D
+                        p.answer_E = answer_E
+                        p.mc_answer = mc_answer
+                        p.save()
+                        compileasy(p.mc_problem_text,p.label)
+                        compileasy(p.problem_text,p.label)
+                        compiletikz(p.mc_problem_text,p.label)
+                        compiletikz(p.problem_text,p.label)
+                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                        p.save()
+                        for s in solutions:
+                            sol_num = p.top_solution_number+1
+                            p.top_solution_number = sol_num
+                            p.save()
+                            sol = Solution(solution_text = s,solution_number = sol_num,problem_label = p.label,parent_problem = p)
+                            sol.save()
+                            sol.authors.add(request.user)
+                            sol.save()
+                            compileasy(sol.solution_text,p.label,sol='sol'+str(sol_num))
+                            compiletikz(sol.solution_text,p.label,sol='sol'+str(sol_num))
+                            sol.display_solution_text = newsoltexcode(sol.solution_text,p.label+'sol'+str(sol.solution_number))
+                            sol.save()
+                            p.solutions.add(sol)
+                            p.save()
+                            LogEntry.objects.log_action(
+                                user_id = request.user.id,
+                                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                                object_id = sol.id,
+                                object_repr = p.label+' sol '+str(sol.solution_number),
+                                action_flag = ADDITION,
+                                change_message = "problemeditor/redirectproblem/"+str(p.pk)+'/',
+                                )
+                        num += 1
                 typ.update_years()
                 P = Problem.objects.filter(test_label = label)
 
@@ -1287,8 +1373,8 @@ def uploadcontestview(request,type):
 @login_required
 def uploadpreview(request,type):
     typ = get_object_or_404(Type, type = type)
-    if typ.default_question_type == 'mc' or typ.default_question_type == 'mcsa':
-        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
+#    if typ.default_question_type == 'mcsa':
+#        return render(request,'randomtest/error_page.html',{'error_message':"Multiple choice questions currently not supported.",'nbar':'problemeditor'})
     if request.POST and request.FILES:
         form = UploadContestForm(request.POST, request.FILES,type = type)
         if form.is_valid():
@@ -1314,7 +1400,7 @@ def uploadpreview(request,type):
             if contestfile.multiple_chunks()== True:
                 pass
             else:
-                f=contestfile.read().decode('utf-8')
+                f = contestfile.read().decode('utf-8')
                 problemtexts = str(f).split('=========')
 #Currently no support for 'mc'
                 if default_question_type == 'sa' or default_question_type == 'pf':
@@ -1335,7 +1421,65 @@ def uploadpreview(request,type):
                             compileasy(ptext,plabel,temp = True)
                             compiletikz(ptext,plabel,temp = True)
 #can I make the above stuff temp?
-                            num+=1
+                            num += 1
+
+
+
+                if default_question_type == 'mc':#prefix_pn not supported
+                    mc = QuestionType.objects.get(question_type = 'multiple choice')
+                    num = 1
+                    for i in range(1,len(problemtexts)):
+                        problem_comps = problemtexts[i].split('=====')
+                        p_text = ''
+                        solutions = []
+                        answer_A = ''
+                        answer_B = ''
+                        answer_C = ''
+                        answer_D = ''
+                        answer_E = ''
+                        mc_answer = ''
+                        for j in range(1,len(problem_comps)):
+                            pc = problem_comps[j]
+                            if pc[0:2] == 'PT':
+                                p_text = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'SO':
+                                solutions.append(pc[2:].lstrip().rstrip())
+                            if pc[0:2] == 'AA':
+                                answer_A = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AB':
+                                answer_B = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AC':
+                                answer_C = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AD':
+                                answer_D = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'AE':
+                                answer_E = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'MC':
+                                mc_answer = pc[2:].lstrip().rstrip()
+                        answers = "\\textbf{(A) }" + answer_A + "\\qquad"
+                        answers += "\\textbf{(B) }" + answer_B + "\\qquad"
+                        answers += "\\textbf{(C) }" + answer_C + "\\qquad"
+                        answers += "\\textbf{(D) }" + answer_D + "\\qquad"
+                        answers += "\\textbf{(E) }" + answer_E
+                        rows.append((
+                                newtexcode(ptext,label + prefix_pn + str(num),'',temp = True),
+                                readablelabel + post_label + prefix_pn + str(num)
+                                ))
+                        plabel = label + prefix_pn + str(num)
+                        compileasy(ptext,plabel,temp = True)
+                        compiletikz(ptext,plabel,temp = True)
+
+
+                        compileasy(p.mc_problem_text,p.label)
+                        compileasy(p.problem_text,p.label)
+                        compiletikz(p.mc_problem_text,p.label)
+                        compiletikz(p.problem_text,p.label)
+                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                        p.save()
+                        num += 1
+
+
                 return render(request,'problemeditor/uploadpreview.html',context={'nbar': 'problemeditor','rows':rows, 'name':readablelabel})
     return redirect('/problemeditor/')
 
@@ -2064,3 +2208,25 @@ def view_entry_log(request):
                     L.append(('?',e))
     return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_log.html',{'prob':prob,'entries':L,'request':request})})
 
+
+@login_required
+def download_mc_contest_file(request,**kwargs):
+    test_label = kwargs['testlabel']
+    P = Problem.objects.filter(test_label = test_label)
+    return_string = ''
+    for prob in P:
+        s = '=========\n\n'
+        s += '=====PT\n\n' + prob.mc_problem_text
+        s += '=====AA\n\n' + prob.answer_A
+        s += '=====AB\n\n' + prob.answer_B
+        s += '=====AC\n\n' + prob.answer_C
+        s += '=====AD\n\n' + prob.answer_D
+        s += '=====AE\n\n' + prob.answer_E
+        s += '=====MA\n\n' + prob.mc_answer
+        for sol in prob.solutions.all():
+            s += '=====SO\n\n' + sol.solution_text
+        return_string += s
+    filename = test_label + "_latex_code.txt"
+    response = HttpResponse(return_string, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response

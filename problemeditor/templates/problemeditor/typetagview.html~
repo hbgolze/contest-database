@@ -61,9 +61,28 @@
 	  </td>
 	  {% endfor%}
 	</tr>
+	{% if show_mc_answer %}
+	<tr style="display:none" id="mc_answers">
+	  <td>
+	    Answer
+	  </td>
+	  {% for prob in rows %}
+	  <td>
+	    {{prob.mc_answer}}
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endif %}
       </table>
     </div>
   </div>
+{% if show_mc_answer %}
+<div class="row">
+<div class="col">
+<button class="btn btn-secondary" id="toggle_answers" onclick="$('mc_answers').toggle()">Show/Hide Answers</button>
+</div>
+</div>
+{% endif %}
     
     {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' %}
   {% if is_sourced %}
@@ -79,7 +98,9 @@
 </div>
 {% endif %}
 {% include 'problemeditor/problem-snippets/scripts/problemscripts.html' %}
+<script>
 
+</script>
 {% endblock %}
 
 
