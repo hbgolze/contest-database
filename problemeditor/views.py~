@@ -1426,6 +1426,7 @@ def uploadpreview(request,type):
 
 
                 if default_question_type == 'mc':#prefix_pn not supported
+                    rows = []
                     mc = QuestionType.objects.get(question_type = 'multiple choice')
                     num = 1
                     for i in range(1,len(problemtexts)):
@@ -1456,30 +1457,19 @@ def uploadpreview(request,type):
                                 answer_E = pc[2:].lstrip().rstrip()
                             if pc[0:2] == 'MC':
                                 mc_answer = pc[2:].lstrip().rstrip()
-                        answers = "\\textbf{(A) }" + answer_A + "\\qquad"
+                        answers = "\n\n$\\textbf{(A) }" + answer_A + "\\qquad"
                         answers += "\\textbf{(B) }" + answer_B + "\\qquad"
                         answers += "\\textbf{(C) }" + answer_C + "\\qquad"
                         answers += "\\textbf{(D) }" + answer_D + "\\qquad"
-                        answers += "\\textbf{(E) }" + answer_E
+                        answers += "\\textbf{(E) }" + answer_E + "$\n\n"
                         rows.append((
-                                newtexcode(ptext,label + prefix_pn + str(num),'',temp = True),
-                                readablelabel + post_label + prefix_pn + str(num)
+                                newtexcode(p_text,label + str(num),answers,temp = True),
+                                readablelabel + post_label + str(num)
                                 ))
-                        plabel = label + prefix_pn + str(num)
-                        compileasy(ptext,plabel,temp = True)
-                        compiletikz(ptext,plabel,temp = True)
-
-
-                        compileasy(p.mc_problem_text,p.label)
-                        compileasy(p.problem_text,p.label)
-                        compiletikz(p.mc_problem_text,p.label)
-                        compiletikz(p.problem_text,p.label)
-                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                        p.save()
+                        plabel = label + str(num)
+                        compileasy(p_text,plabel,temp = True)
+                        compiletikz(p_text,plabel,temp = True)
                         num += 1
-
-
                 return render(request,'problemeditor/uploadpreview.html',context={'nbar': 'problemeditor','rows':rows, 'name':readablelabel})
     return redirect('/problemeditor/')
 

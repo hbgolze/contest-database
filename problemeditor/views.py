@@ -1296,7 +1296,7 @@ def uploadcontestview(request,type):
                                 answer_D = pc[2:].lstrip().rstrip()
                             if pc[0:2] == 'AE':
                                 answer_E = pc[2:].lstrip().rstrip()
-                            if pc[0:2] == 'MC':
+                            if pc[0:2] == 'MA':
                                 mc_answer = pc[2:].lstrip().rstrip()
                         p = Problem(problem_text = problem_text,
                                     mc_problem_text = problem_text,
@@ -1455,7 +1455,7 @@ def uploadpreview(request,type):
                                 answer_D = pc[2:].lstrip().rstrip()
                             if pc[0:2] == 'AE':
                                 answer_E = pc[2:].lstrip().rstrip()
-                            if pc[0:2] == 'MC':
+                            if pc[0:2] == 'MA':
                                 mc_answer = pc[2:].lstrip().rstrip()
                         answers = "\n\n$\\textbf{(A) }" + answer_A + "\\qquad"
                         answers += "\\textbf{(B) }" + answer_B + "\\qquad"

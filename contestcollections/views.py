@@ -95,14 +95,17 @@ class SolutionView(DetailView):
 @login_required
 def test_as_pdf(request,**kwargs):
     test = get_object_or_404(Test, pk=kwargs['pk'])
-    P=list(test.problems.all())
-    rows=[]
+    P = list(test.problems.all())
+    rows = []
+    outline = False
     if 'opts' in kwargs:
         options = kwargs['opts']
         include_problem_labels = options['pl'] 
         include_answer_choices = options['ac']
         randomize = options['r']
         include_title = options['ti']
+        if 'ol' in options:
+            outline = True
     else:
         include_problem_labels = False
         include_answer_choices = True
@@ -134,7 +137,10 @@ def test_as_pdf(request,**kwargs):
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
-    template = get_template('randomtest/my_latex_template.tex')
+    if outline == True:
+        template = get_template('contestcollections/my_latex_outline_template.tex')
+    else:
+        template = get_template('randomtest/my_latex_template.tex')
     rendered_tpl = template.render(context).encode('utf-8')
     with tempfile.TemporaryDirectory() as tempdir:
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
@@ -151,7 +157,10 @@ def test_as_pdf(request,**kwargs):
                 'tempdirect':tempdir,
                 'include_title': include_title,
                 })
-        template = get_template('randomtest/my_latex_template.tex')
+        if outline == True:
+            template = get_template('contestcollections/my_latex_outline_template.tex')
+        else:
+            template = get_template('randomtest/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
         ftex.write(rendered_tpl)
@@ -402,6 +411,8 @@ def problempdf(request,pk):
             context['seed'] = 0
     else:
         context['r'] = 0
+    if 'ol' in form:
+        context['ol'] = 1
     return test_as_pdf(request,pk=pk,opts = context)
 
 @login_required
