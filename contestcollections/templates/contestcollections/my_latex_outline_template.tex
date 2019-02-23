@@ -55,7 +55,7 @@
 \setlength{\blankwidth}{3.24cm}%2.7cm
 % space between problems
 \newlength{\problemskip}
-\setlength{\problemskip}{2.7cm}
+\setlength{\problemskip}{2cm}
 
 
 \usepackage{xparse}
@@ -78,6 +78,7 @@
 
 \begin{minipage}[t]{\answerwidth}
 \ \underline{\hspace{\blankwidth}}
+
 \end{minipage}
 \begin{minipage}[t]{\problemwidth}
 {{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
@@ -91,6 +92,7 @@
 \vspace{\problemskip}
 
 \vspace{\stretch{1}}
+
 
 {% endfor %}
 \end{enumerate}
