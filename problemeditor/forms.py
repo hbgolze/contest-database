@@ -404,6 +404,36 @@ class NewTypeForm(forms.ModelForm):
         self.fields['user_groups'].choices = choices = tuple((r.pk,r.name) for r in UserType.objects.exclude(name='super'))
         self.fields['user_groups'].help_text = 'super group automatically can access; Typical choice: member, contestmanager,student,teacher,contestmod'
 
+class EditTypeForm(forms.ModelForm):
+    user_groups = forms.MultipleChoiceField(widget=forms.CheckboxSelectMultiple)
+    class Meta:
+        model = Type
+        fields = ('type', 'label','default_question_type','readable_label_pre_form','readable_label_post_form',)
+        widgets = {
+            'type': forms.TextInput(attrs={"class":"form-control"}),
+            'label': forms.TextInput(attrs={"class":"form-control"}),
+            'default_question_type': forms.Select(attrs={'class':'form-control'},choices = DEFAULT_QTS),
+            'readable_label_pre_form': forms.TextInput(attrs={"class":"form-control"}),
+            'readable_label_post_form': forms.TextInput(attrs={"class":"form-control"}),
+#            'user_groups' : forms.CheckboxSelectMultiple,
+            }
+    def __init__(self,*args, **kwargs):
+        super(EditTypeForm,self).__init__(*args, **kwargs)
+        self.fields['type'].help_text = "Name of test category (without spaces)--used in URLs (like \"AMC10\")"
+        self.fields['label'].help_text = "Label for test category--user friendly version (like \"HMMT February\""
+        self.fields['default_question_type'].help_text = 'When adding new problems, they will be added in this format'
+        self.fields['readable_label_pre_form'].help_text = 'Readable labels are of the form [YEAR |READABLE LABEL PRE FORM|FORM LETTER|READABLE LABEL POST FORM|PROBLEM NUMBER], where the | characters are removed.\n For example, for the AMC 10,\nreadable_label_pre_form=\"AMC 10\"\nreadable_label_post_form=\" #\"\nleads to [2018 AMC 10A #12], where other parameters are specified later. Pay attention to spaces!'
+        self.fields['readable_label_pre_form'].strip = False
+        self.fields['readable_label_post_form'].strip = False
+        self.fields['default_question_type'].help_text = ''
+        self.fields['user_groups'].choices = choices = tuple((r.pk,r.name) for r in UserType.objects.exclude(name='super'))
+        self.fields['user_groups'].help_text = 'super group automatically can access; Typical choice: member, contestmanager,student,teacher,contestmod'
+        L = self.instance.usertype_set.all()
+        M = []
+        for i in L:
+            M.append(i.pk)
+        self.fields['user_groups'].initial = M
+
 class NewRoundForm(forms.ModelForm):
     class Meta:
         model = Round

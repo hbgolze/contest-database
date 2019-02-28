@@ -19,7 +19,7 @@ from formtools.wizard.views import SessionWizardView
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
-from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm
+from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely
 
 from django.db.models import Count
@@ -2152,6 +2152,33 @@ def save_type(request):
                 user_type.save()
         return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':new_type})})
     return JsonResponse({'success':0})
+
+@user_passes_test(lambda u: mod_permission(u))
+def load_edit_type(request,**kwargs):
+    pk = request.POST.get('pk')
+    typ = get_object_or_404(Type,pk = pk)
+    form = EditTypeForm(instance = typ)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/modal-new-type.html',{'form':form,'edit_type':1})})
+
+@user_passes_test(lambda u: mod_permission(u))
+def save_edit_type(request):
+    pk = request.POST.get('pk')
+    typ = get_object_or_404(Type,pk = pk)
+    if request.method == "POST":
+        form = EditTypeForm(request.POST,instance=typ)
+        if form.is_valid():
+            form.save()
+            super = UserType.objects.get(name="super")
+            ug_ids = request.POST.getlist('user_groups')
+            for ut in UserType.objects.exclude(pk=super.pk).filter(pk__in=ug_ids):
+                ut.allowed_types.add(typ)
+                ut.save()
+            for ut in UserType.objects.exclude(pk=super.pk).exclude(pk__in=ug_ids):
+                ut.allowed_types.remove(typ)
+                ut.save()
+        return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':typ})})
+    return JsonResponse({'success':0})
+
 
 @user_passes_test(lambda u: mod_permission(u))
 def load_new_round(request,**kwargs):

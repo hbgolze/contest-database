@@ -23,12 +23,9 @@
     </div>
   </div>
 </div>
-<div class="modal fade" id="new-type-placeholder" role="dialog">
-
-</div>
-<div class="modal fade" id="new-round-placeholder" role="dialog">
-
-</div>
+<div class="modal fade" id="new-type-placeholder" role="dialog"></div>
+<div class="modal fade" id="edit-type-placeholder" role="dialog"></div>
+<div class="modal fade" id="new-round-placeholder" role="dialog"></div>
 
 <script>
 function getCookie(name) {
@@ -92,10 +89,41 @@ $(document).on('submit',"#new-type-form",function(event) {
     return false;
 });
 
+$(document).on('click',".edit-type",function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/load-edit-type/',
+        data: "pk="+pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-type-placeholder").html(result['modal-html']);
+            $("#edit-type-placeholder").modal();
+        }
+    });
+    return false;
+});
+$(document).on('submit',"#edit-type-form",function(event) {
+    event.preventDefault();
+    var pk = $("#et_pk").val();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-edit-type/',
+        data: $(this).serialize(),//+"&pk="+pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#typerow_"+pk).replaceWith(result['row'])
+            $("#edit-type-placeholder").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
 $(document).on('click',".new-round",function(event) {
     event.preventDefault();
     type_id = $(this).attr('id').split('-')[1];
-console.log(type_id);
     $.ajax({
         type: 'GET',
         url: '/problemeditor/ajax/load-new-round/',

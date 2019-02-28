@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
-
+from django.db.models import Max,Min
 
 # Create your models here.
 TIMEZONES=(
@@ -69,16 +69,6 @@ class Type(models.Model):
         self.max_year = max_year['year__max']
         self.save()
 
-class ContestTest(models.Model):
-    contest_label =  models.CharField(max_length = 100,blank = True)
-    contest_type = models.ForeignKey(Type,related_name='contests',blank = True,null = True)
-    round =  models.ForeignKey(Round,related_name = 'contests',blank = True,null = True)
-    year = models.IntegerField(default = 2019)
-    form_letter = models.CharField(max_length = 2,blank=True)
-    def __str__(self):
-        return self.contest_label
-    class Meta:
-        ordering = ['year','form_letter']
 
 class Round(models.Model):
     name = models.CharField(max_length = 50)
@@ -90,6 +80,18 @@ class Round(models.Model):
         return self.name
     class Meta:
         ordering = ['name']
+
+class ContestTest(models.Model):
+    contest_label =  models.CharField(max_length = 100,blank = True)
+    contest_type = models.ForeignKey(Type,related_name='contests',blank = True,null = True)
+    round =  models.ForeignKey(Round,related_name = 'contests',blank = True,null = True)
+    year = models.IntegerField(default = 2019)
+    form_letter = models.CharField(max_length = 2,blank=True)
+    def __str__(self):
+        return self.contest_label
+    class Meta:
+        ordering = ['year','form_letter']
+
 
 class SourceType(models.Model):
     name = models.CharField(max_length = 15)

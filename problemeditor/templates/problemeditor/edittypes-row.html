@@ -1,7 +1,7 @@
-        <div class="list-group-item">
+        <div class="list-group-item" id="typerow_{{type.pk}}">
           <div class="row">
             <div class="col-9">
-              <p>{{type.label}}</p>
+              <p>{{type.label}} (<button class="btn btn-sm btn-link edit-type" id="edit-type_{{type.pk}}">Edit</button>)</p>
               <p>
                 <ul id="rounds-{{type.pk}}">
                   {% for round in type.rounds.all %}
