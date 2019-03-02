@@ -93,7 +93,7 @@ $.ajaxSetup({
 $(document).on('click',".refresh-testlabel", function(e) {
   e.preventDefault();
   var testlabel = $(this).attr('id').split('_')[1];
-  $("#refresh-span_"+testlabel).addClass('fa-spin');
+  $(".refresh-span_"+testlabel).addClass('fa-spin');
   $.ajax({
     type: 'POST',
     url: "/problemeditor/ajax/refresh-matrix-row/",
