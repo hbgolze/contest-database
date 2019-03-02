@@ -101,10 +101,10 @@ $(document).on('click',".refresh-testlabel", function(e) {
     dataType: 'json',
     success: function(result) {
       $("#matrix-row_"+testlabel).html(result['matrix-row']);
-      $("#refresh-span_"+testlabel).removeClass('fa-spin');
     }
   });
   return false;
 });
+
 </script>
 {% endblock %}
