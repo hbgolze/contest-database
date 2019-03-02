@@ -2122,6 +2122,27 @@ def matrixview(request,type):
     context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': len(pot)}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
+def refresh_matrix_row(request):
+    tl = request.POST.get('tl')
+    P = Problem.objects.filter(test_label=tl)
+    sol_complete = 0
+    if P.count() > 0:
+        typ = P[0].type_new
+        if typ.type == "Putnam":
+            P = P.order_by('label')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+        else:
+            P = P.order_by('problem_number')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+#            rows2.append((testlabels[i],P,sol_complete))
+    return JsonResponse({'matrix-row':render_to_string('problemeditor/matrixview-row.html',{'testlabel':tl,'problems':P,'sol_complete':sol_complete})})
+
+
+
 def mod_permission(user):
     if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmod":
         return True

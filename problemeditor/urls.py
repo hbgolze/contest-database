@@ -106,6 +106,7 @@ urlpatterns = [
     url(r'^ajax/load-add-sourced-problem/$', views.load_addproblemform, name='load_add_sourced_problem'),
     url(r'^ajax/load-sourced-problem/$', views.load_qt_addproblemform, name='load_qt_sourced_problem'),
     url(r'^ajax/view_log/$', views.view_entry_log, name='view_log'),
+    url(r'^ajax/refresh-matrix-row/$', views.refresh_matrix_row, name='refresh_matrix_row'),
 #    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),

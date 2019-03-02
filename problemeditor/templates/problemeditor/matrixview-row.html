@@ -1,0 +1,6 @@
+            <td><span class="text-nowrap"><a href="../{{testlabel}}">{{testlabel}}</a> <button class="btn btn-secondary btn-sm refresh-testlabel p-1" id="refresh_{{testlabel}}"><i class="fa fa-refresh" id="refresh-span_{{testlabel}}"></i></button></span></td>
+
+            {% for p in problems %}
+            <td class="{% if p.solutions.count == 0 %}cell-danger{% else %}cell-{% if sol_complete %}super-{%endif%}success{% endif %}"><a href="../{{testlabel}}/{{p.label}}/">{{p.solutions.count}}</a> {% if p.newtags.count > 0 %}<span class="fa fa-check" style="color:green"></span>{% else %}<span class="fa fa-remove" style="color:red"></span>{% endif %}</td>
+            {% endfor %}
+<td> <button class="btn btn-secondary btn-sm refresh-testlabel p-1" id="refresh_{{testlabel}}"><i class="fa fa-refresh" id="refresh-span_{{testlabel}}"></i></button></td>

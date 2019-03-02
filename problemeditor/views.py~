@@ -2122,6 +2122,25 @@ def matrixview(request,type):
     context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': len(pot)}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
+def refresh_matrix_row(request):
+    tl = request.POST.get('tl')
+    P = Problem.objects.filter(test_label=tl)
+    sol_complete = 0
+    if P.count() > 0:
+        typ = P[0].type_new
+        if typ.type == "Putnam":
+            P = P.order_by('label')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+        else:
+            P = P.order_by('problem_number')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+#            rows2.append((testlabels[i],P,sol_complete))
+
+
 def mod_permission(user):
     if user.userprofile.user_type_new.name == "super" or user.userprofile.user_type_new.name == "contestmod":
         return True
@@ -2170,14 +2189,13 @@ def save_edit_type(request):
             form.save()
             super = UserType.objects.get(name="super")
             ug_ids = request.POST.getlist('user_groups')
-            for ut in UserType.objects.all():
-                if ut.pk in ug_ids:
-                    ut.allowed_types.add(typ)
-                    ut.save()
-                else:
-                    ut.allowed_types.remove(typ)
-                    ut.save()
-        return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':new_type})})
+            for ut in UserType.objects.exclude(pk=super.pk).filter(pk__in=ug_ids):
+                ut.allowed_types.add(typ)
+                ut.save()
+            for ut in UserType.objects.exclude(pk=super.pk).exclude(pk__in=ug_ids):
+                ut.allowed_types.remove(typ)
+                ut.save()
+        return JsonResponse({'success' : 1, 'row': render_to_string('problemeditor/edittypes-row.html',{'type':typ})})
     return JsonResponse({'success':0})
 
 
