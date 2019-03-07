@@ -9,7 +9,13 @@
 \usepackage{multirow,curves}
 \usepackage{fancyhdr}
 \usepackage{tikz}
-\usepackage{arcs}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
 \setlength{\topmargin}{0in}
 \setlength{\headsep}{.1in}
 \setlength{\textheight}{8.2in}

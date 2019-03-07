@@ -66,6 +66,7 @@
 \setlength{\evensidemargin}{0in}
 \setlength{\parindent}{0.25in}
 \setlength{\parskip}{0.25in}
+\usepackage{arcs}
 \usepackage{xparse}
 \usepackage{framed}
 \NewDocumentEnvironment{prob}{mm}{\item}{}

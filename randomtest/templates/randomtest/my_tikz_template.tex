@@ -7,7 +7,13 @@
 \usepackage{tikz}
 \usepackage{graphicx}
 \usepackage{multirow,curves}
-\usepackage{arcs}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
 \usepackage{xparse}
 \usepackage{framed}
 \usepackage[margin=1in]{geometry}

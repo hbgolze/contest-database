@@ -9,7 +9,15 @@
 \usepackage{environ}
 \usepackage{multirow,curves}
 \usepackage{fancyhdr}
-\usepackage{arcs}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+
+
 \usepackage[letterpaper,margin=.2in]{geometry}
 
 \usepackage{pgf}

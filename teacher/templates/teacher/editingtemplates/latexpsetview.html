@@ -68,7 +68,12 @@
 \setlength{\parskip}{0.25in}
 \usepackage{xparse}
 \usepackage{framed}
-\usepackage{arcs}
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
 \NewDocumentEnvironment{prob}{mm}{\item}{}
 \NewDocumentEnvironment{ans}{m}{}{}
 \newif\ifsolution
