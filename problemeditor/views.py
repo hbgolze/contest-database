@@ -686,6 +686,24 @@ def testview(request,type):
     context = { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest', 'probgroups' : probgroups}
     return HttpResponse(template.render(context,request))
 
+@login_required
+def contest_test_view(request,type):
+    typ = get_object_or_404(Type, type = type)
+    probsoftype = Problem.objects.filter(type_new = typ)
+    num_untagged = probsoftype.filter(newtags__isnull = True).count()
+    rows = []
+    for i in typ.contests.all():
+        rows.append((i,i.problems.filter(newtags__isnull=True).count(),i.problems.filter(solutions__isnull=True).count(),i.problems.count()))
+        
+    userprofile = request.user.userprofile#
+    owned_groups = userprofile.problem_groups.all()#
+    editable_groups = userprofile.editable_problem_groups.all()#
+    probgroups = list(chain(owned_groups,editable_groups))#
+
+    template = loader.get_template('problemeditor/contest_view.html')
+    context = { 'typ' : typ,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows':rows,'prefix':'bytest', 'probgroups' : probgroups}
+    return HttpResponse(template.render(context,request))
+
 
 @login_required
 def typetagview(request,type,pk):#type,tag):

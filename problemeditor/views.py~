@@ -686,6 +686,24 @@ def testview(request,type):
     context = { 'type' : typ.type, 'typelabel':typ.label,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest', 'probgroups' : probgroups}
     return HttpResponse(template.render(context,request))
 
+@login_required
+def contest_test_view(request,type):
+    typ = get_object_or_404(Type, type = type)
+    probsoftype = Problem.objects.filter(type_new = typ)
+    num_untagged = probsoftype.filter(newtags__isnull = True).count()
+    rows = []
+    for i in typ.contests.all():
+        rows.append((i,i.problems.filter(newtags__isnull=True).count(),i.problems.filter(solutions__isnull=True).count(),i.problems.count()))
+        
+    userprofile = request.user.userprofile#
+    owned_groups = userprofile.problem_groups.all()#
+    editable_groups = userprofile.editable_problem_groups.all()#
+    probgroups = list(chain(owned_groups,editable_groups))#
+
+    template = loader.get_template('problemeditor/contest_view.html')
+    context = { 'typ' : typ,'num_untagged': num_untagged, 'nbar': 'problemeditor','rows':rows,'prefix':'bytest', 'probgroups' : probgroups}
+    return HttpResponse(template.render(context,request))
+
 
 @login_required
 def typetagview(request,type,pk):#type,tag):
@@ -967,7 +985,14 @@ def addcontestview(request,type,num):
             readablelabel = readablelabel.rstrip()
             post_label = round.readable_label_post_form
             label = F['year'] + round.name.replace(' ','') + formletter#####no spaces
-            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = F['year'], formletter = formletter)
+            if round.type.allow_form_letter == True:
+                if round.readable_label.pre_form[-1] == ' ':
+                    contest_label = F['year'] + ' ' + round.name + ' ' + formletter
+                else:
+                    contest_label =  F['year'] + ' ' + round.name + formletter
+            else:
+                contest_label =  F['year'] + ' ' + round.name
+            contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = F['year'], form_letter = formletter)
             contest_test.save()
         else:
             readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + formletter
@@ -975,7 +1000,14 @@ def addcontestview(request,type,num):
             readablelabel = readablelabel.rstrip()
             post_label = typ.readable_label_post_form
             label = F['year'] + type + formletter
-            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = F['year'], formletter = formletter)
+            if typ.allow_form_letter == True:
+                if typ.readable_label.pre_form[-1] == ' ':
+                    contest_label = F['year'] + ' ' + typ.label + ' ' + formletter
+                else:
+                    contest_label =  F['year'] + ' ' + typ.label + formletter
+            else:
+                contest_label =  F['year'] + ' ' + typ.label
+            contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = F['year'], form_letter = formletter)
             contest_test.save()
         if default_question_type=='mc':
             for i in range(1,num+1):
@@ -1185,7 +1217,14 @@ def uploadcontestview(request,type):
                 readablelabel = readablelabel.rstrip()
                 post_label = round.readable_label_post_form
                 label = year + round.name.replace(' ','') + formletter#####no spaces
-                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = year, formletter = formletter)
+                if round.type.allow_form_letter == True:
+                    if round.readable_label.pre_form[-1] == ' ':
+                        contest_label = year + ' ' + round.name + ' ' + formletter
+                    else:
+                        contest_label =  year + ' ' + round.name + formletter
+                else:
+                    contest_label =  year + ' ' + round.name
+                contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = year, form_letter = formletter)
                 contest_test.save()
             else:
                 readablelabel = year + ' ' + typ.readable_label_pre_form + formletter
@@ -1193,7 +1232,14 @@ def uploadcontestview(request,type):
                 readablelabel = readablelabel.rstrip()
                 post_label = typ.readable_label_post_form
                 label = year + type + formletter#####
-                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = year, formletter = formletter)
+                if typ.allow_form_letter == True:
+                    if typ.readable_label.pre_form[-1] == ' ':
+                        contest_label = year + ' ' + typ.label + ' ' + formletter
+                    else:
+                        contest_label =  year + ' ' + typ.label + formletter
+                else:
+                    contest_label =  year + ' ' + typ.label
+                contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = year, formletter = form_letter)
                 contest_test.save()
             if contestfile.multiple_chunks()== True:
                 pass

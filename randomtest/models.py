@@ -82,15 +82,16 @@ class Round(models.Model):
         ordering = ['name']
 
 class ContestTest(models.Model):
-    contest_label =  models.CharField(max_length = 100,blank = True)
+    contest_label = models.CharField(max_length = 100,blank = True)
     contest_type = models.ForeignKey(Type,related_name='contests',blank = True,null = True)
     round =  models.ForeignKey(Round,related_name = 'contests',blank = True,null = True)
     year = models.IntegerField(default = 2019)
     form_letter = models.CharField(max_length = 2,blank=True)
+    short_label = models.CharField(max_length = 100,blank = True)
     def __str__(self):
         return self.contest_label
     class Meta:
-        ordering = ['year','form_letter']
+        ordering = ['year','form_letter','contest_label']
 
 
 class SourceType(models.Model):
