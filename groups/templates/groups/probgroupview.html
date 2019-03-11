@@ -5,6 +5,7 @@ Problem Group: {{prob_group.name}}
 {% endblock %}
 
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js"></script>
 <script type="text/javascript">
 function togglemarked() {
     var y=document.getElementById("problems");
@@ -65,7 +66,7 @@ function fixchecks() {
   <h2>Problem Group: {{prob_group.name}}</h2>
   <div class="row">
     <div class="col-md-7">
-      <p>There are {{prob_group.problems.count}} problems in this group.</p>
+      <p>There are <span id="pg_object_count">{{prob_group.problem_objects.count}}</span> problems in this group.</p>
       {% if can_delete %}
       <p>If you remove problems, you must click "Save" for your changes to be saved.</p>
       {% endif %}
@@ -78,59 +79,32 @@ function fixchecks() {
     
   </div>
   <div class="row">
+    <div class="col">
+      <div id="msg-no-problems" style="display:{% if prob_group.problem_objects.count > 0 %}none;{% else %}block;{% endif %}">
+	<p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
     <div class="col-10">
-      {% if prob_group.problems.count > 0 %}
-	<form action="." method="POST" id="problems">
+      <form action="." method="POST" id="problems">
 	{% csrf_token %}
 	<p class="ml-4"><input type="checkbox" id="toggler" onclick="togglemarked()" checked> Select/Deselect All</p>
 	<input type="hidden" name="startform" value="{{prob_group.pk}}">
-	<div class="list-group mb-3">	  
-	  {% for prob in prob_group.problems.all %}
-	  <div class="list-group-item">
-	    <div class="row mb-1">
-	      <div class="col-12 float-right">
-		<div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem options">
-		  <button type="button" class="btn btn-sm btn-secondary view-sol-link mr-1" id="view-sol_{{prob.pk}}" title="View Solutions">Solutions ({{prob.solutions.count}})</button>
-		  <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}"><span class="fa fa-copy"></span></button>
-		  <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}"><span class="fa fa-desktop"></span></button>
-{% if can_delete %}
-		  <button type="button" class="btn btn-sm btn-danger delete-problem-link"><span class="fa fa-remove"></span></button>
-{% endif %}
-		</div>
-
-	      </div>
-	    </div>
-	    <div class="row">
-	      <div class="col-1">
-		{{forloop.counter}}.<br>
-		<input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked>
-		<input type="hidden" name="probs" value="{{prob.label}}">
-	      </div>
-	      <div class="col-11">
-		{% if prob.question_type_new.question_type == 'multiple choice' %}
-		<div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
-		<div class="answer" style="display:none">Answer: {{prob.mc_answer}}</div>
-		<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
-		{% else %}
-                <div id="sa_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
-		{% if prob.question_type_new.question_type != "proof" %}
-		<div class="answer" style="display:none">Answer: ${{prob.sa_answer}}$</div>
-		{% endif %}
-		<textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
-		{% endif %}
-	      </div>
-	    </div>
-	  </div>
+	<div class="list-group mb-3" id="problem_object_list">	  
+	  {% for po in prob_group.problem_objects.all %}
+	  {% include 'groups/probgroup_problem_object.html' with forcount=forloop.counter %}
 	  {% endfor %}
 	</div>
 	{% if can_delete %}	
 	<div id="save-message" class="alert alert-success" style="display:none;" role="alert">Save successful!</div>
 	<span><button type="submit" class="btn btn-primary mb-2" id="save-prob-group" name="save" value="save">Save</button></span><span class="float-right"><button class="btn btn-danger" id="delete-selected-problems">Delete Selected Problems</button></span>
 	{% endif %}
-        </form>
-      {% else %}
-    <p>There are no problems currently in this group. Use the <a href="/search/">Search</a> tab to add problems.</p>
-    {% endif %}
+
+	{% if can_delete %}
+	<div><button class="btn btn-primary add-problems-link mb-3" data-toggle="modal">Add Random Problems</button></div>
+	{% endif %}
+      </form>
     <h2>Add Selected Problems to Other Problem Group</h2>
     
 
@@ -287,6 +261,60 @@ function fixchecks() {
   </div>
 
 </div>
+
+<div class="modal fade" id="addproblems" role="dialog">`
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="GET" action="fetch-problems/" class="add-problems-form" id="add-problems-form_{{prob_group.pk}}">
+        <div class="modal-header">
+          <h5 class="modal-title">Add Random Problems</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="form-group col-lg-12">
+              <label for="contest_type" class="control-label">Contest Type:</label>
+              {{form.contest_type}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-lg-12">
+              <label for="desired_tag" class="control-label">Desired Tag:</label>
+              {{form.desired_tag}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-lg-12">
+              <label for="numproblems" class="control-label">Number of Problems (10 if left blank):</label>
+              {{form.num_problems}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-lg-12">
+              <label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+              <div class="form-inline">
+                {{form.prob_num_low}} to {{form.prob_num_high}}
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="form-group col-lg-12 form-inline">
+              <label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+              <div class="form-inline">
+                {{form.year_low}} to {{form.year_high}}
+              </div>
+            </div>
+          </div>
+	  
+        </div>
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-primary" name="add-problems" value="add-problems">Add Random Problems</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 <div class="modal fade" id="fullscreen-problem-modal" role="dialog">
 {% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
   </div>
@@ -326,9 +354,28 @@ $.ajaxSetup({
 });
 
 
+var editableList = Sortable.create(problem_object_list, {
+  filter: '.js-remove',
+  onFilter: function (evt) {
+    var el = editableList.closest(evt.item); // get dragged item
+    el && el.parentNode.removeChild(el);
+    if (editableList.toArray().length == 0 ) {
+//      $("#msg-no-problems").html("<p><i>You don't have any problems in this problem group yet.</i></p>");
+      $("#msg-no-problems").show();
+    }
+    $("#save-message").hide();
+    $("#unsaved-message").show();
+  },
+  onUpdate: function (evt) {
+    $("#save-message").hide();
+    $("#unsaved-message").show();
+  }
+});
+
 $(document).on('click',".delete-problem-link", function(e) {
   $(this).closest('.list-group-item').remove();
   fixchecks();
+  if (editableList.toArray().length == 0 ) {$("#msg-no-problems").show();}
   $("#save-message").hide();
   $("#unsaved-message").show();
 });
@@ -450,6 +497,7 @@ $(document).on('click',"#delete-selected-problems",function(e) {
     $(this).closest('.list-group-item').remove();
   });
   if (work == 1) {
+    if (editableList.toArray().length == 0 ) {$("#msg-no-problems").show();}
     fixchecks();
     $("#save-message").hide();
     $("#unsaved-message").show();
@@ -497,6 +545,30 @@ $(document).on('click',".view-sol-link",function(e) {
     });
 });
 
+$(".add-problems-link").click(function(event) {
+  event.preventDefault();
+  $("#addproblems").modal('show');
+});
+$(".add-problems-form").on('submit',function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/problemgroups/ajax/fetch-problems/',
+        data: $(this).serialize()+"&pk="+$(this).attr('id').split('_')[1],
+        dataType: 'json',
+        success: function(result) {
+            $("#addproblems").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            probs = result['prob_list'];
+            for (i=0; i < probs.length; i++) {
+                $("#problem_object_list").append(probs[i]);
+            }
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problem_object_list"]);
+            if (result['prob_list'].length > 0) {$("#msg-no-problems").hide();}
+        }
+    });
+    return false;
+});
 </script>
 {% endblock %}
   

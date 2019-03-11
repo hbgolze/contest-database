@@ -22,9 +22,9 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse,ProblemGroupObject
 from randomtest.utils import newtexcode
-from .forms import GroupModelForm
+from .forms import GroupModelForm,AddProblemsForm
 
 from random import shuffle
 import time
@@ -57,8 +57,8 @@ def tableview(request):
 @login_required
 def tagtableview(request):
     userprofile = get_or_create_up(request.user)
-    tags=NewTag.objects.all().exclude(tag='root').order_by('tag')
-    template=loader.get_template('groups/tagtableview.html')
+    tags = NewTag.objects.all().exclude(tag = 'root').order_by('tag')
+    template = loader.get_template('groups/tagtableview.html')
     context = {}
     context['nbar'] = 'groups'
     context['tags'] =  tags
@@ -78,6 +78,7 @@ def viewproblemgroup(request,pk):
     editable_groups = userprofile.editable_problem_groups.exclude(pk = pk)
     probgroups = list(chain(owned_groups,editable_groups))
     context['prob_groups'] = probgroups
+    context['form'] = AddProblemsForm(userprofile=userprofile)
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all():
         context['can_delete'] = 1
     template = loader.get_template('groups/probgroupview.html')
@@ -87,14 +88,14 @@ def viewproblemgroup(request,pk):
 @login_required
 def viewtaggroup(request,pk):
     userprofile = get_or_create_up(request.user)
-    tag = get_object_or_404(NewTag,pk=pk)
+    tag = get_object_or_404(NewTag,pk = pk)
     if request.method == 'POST':
         if request.POST.get("newtest"):
             form = request.POST
 
             if "chk" in form:
                 checked = form.getlist("chk")
-                if len(checked)>0:
+                if len(checked) > 0:
 #                P = prob_group.problems.all()
                     testname = form.get('testname','')
                 
@@ -102,7 +103,7 @@ def viewtaggroup(request,pk):
                     t.save()
                     for i in checked:
                         p = Problem.objects.get(label = i)
-                        t.problems.add(p)
+                        t.problems.add(p)###
                     t.save()
                     userprofile.tests.add(t)
                     ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
@@ -129,7 +130,7 @@ def viewtaggroup(request,pk):
     context['nbar'] = 'groups'
     context['pk'] = pk
     context['userprofile'] = userprofile
-    template=loader.get_template('groups/taggroupview.html')
+    template = loader.get_template('groups/taggroupview.html')
     return HttpResponse(template.render(context,request))
 
 
@@ -166,26 +167,35 @@ def remove_group(request):
 #add to installed apps
 #migrations
 
+
+###change problems to problem_objects
 @login_required
 def savegroup(request,**kwargs):
     form = request.POST
     prob_group = get_object_or_404(ProblemGroup,pk = form.get('startform'))
     userprofile = request.user.userprofile
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or prob_group in userprofile.editable_problem_groups.all():
-        P = prob_group.problems.all()
+        P = prob_group.problem_objects.all()
         checked = form.getlist("probs")
         for i in P:
-            if i.label not in checked:
-                prob_group.problems.remove(i)
+            if i.problem.label not in checked:
+                i.delete()###careful
+            else:
+                i.order = checked.index(i.problem.label)+1
+                i.save()
+#                prob_group.problem_objects.remove(i)
     return JsonResponse({})
 
+
+##is not putting problems in correct order...but I think this is because the 'test' object doesn't do this.
 @login_required
 def create_test(request,**kwargs):
     form = request.POST
     userprofile = request.user.userprofile
     if "chk" in form:
         checked = form.getlist("chk")
-        if len(checked)>0:
+        print(checked)
+        if len(checked) > 0:
             testname = form.get('testname','')
             t = Test(name = testname)
             t.save()
@@ -196,12 +206,13 @@ def create_test(request,**kwargs):
             userprofile.tests.add(t)
             ut = UserTest(test = t,num_probs = P.count(),num_correct = 0,userprof = userprofile)
             ut.save()
-            for i in P:
-                t.problems.add(i)
-                r = NewResponse(response = '',problem_label = i.label,problem = i,usertest = ut)
+            for i in checked:
+                p = Problem.objects.get(label=i)
+                t.problems.add(p)
+                r = NewResponse(response = '',problem_label = p.label,problem = p,usertest = ut)
                 r.save()
             t.save()
-            userprofile.save()            
+            userprofile.save()
             return JsonResponse({'url':'/randomtest/test/'+str(ut.pk)+'/'})
     return JsonResponse({'error-message':'No problems checked!'})
 
@@ -321,27 +332,7 @@ def test_as_pdf(request,**kwargs):
     else:
         include_ans = False
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
-    P = list(prob_group.problems.all())
-    rows=[]
 
-    for i in range(0,len(P)):
-        ptext=''
-        if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
-            ptext = P[i].mc_problem_text
-            rows.append((P[i],ptext,P[i].readable_label,P[i].answers()))
-        else:
-            ptext = P[i].problem_text
-            rows.append((P[i],ptext,P[i].readable_label,''))
-    context = Context({
-            'name' : prob_group.name,
-            'rows' : rows,
-            'pk' : kwargs['pk'],
-            'include_problem_labels' : include_problem_labels,
-            'include_answer_choices' : include_answer_choices,
-            'include_tags' : include_tags,
-            'include_sols' : include_sols,
-            'include_ans' : include_ans,
-            })
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -352,9 +343,7 @@ def test_as_pdf(request,**kwargs):
         fa.write(asyr)
         fa.close()
         context = Context({
-                'name' : prob_group.name,
-                'rows' : rows,
-                'pk' : kwargs['pk'],
+                'group' : prob_group,
                 'include_problem_labels' : include_problem_labels,
                 'include_answer_choices':include_answer_choices,
                 'include_tags' : include_tags,
@@ -431,16 +420,14 @@ def latex_view(request,**kwargs):
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
     P = prob_group.problems.all()
     context = {
-            'name' : prob_group.name,
-            'rows' : P,
-            'pk' : kwargs['pk'],
-            'include_problem_labels' : include_problem_labels,
-            'include_answer_choices' : include_answer_choices,
-            'include_sols' : include_sols,
-            'include_ans' : include_ans,
-            'nbar' : 'groups',
-            'group' : prob_group,
-            }
+        'pk' : kwargs['pk'],
+        'include_problem_labels' : include_problem_labels,
+        'include_answer_choices' : include_answer_choices,
+        'include_sols' : include_sols,
+        'include_ans' : include_ans,
+        'nbar' : 'groups',
+        'group' : prob_group,
+        }
     return render(request, 'groups/latex_view.html',context)
 
 @login_required
@@ -449,23 +436,78 @@ def add_to_group(request):
     userprofile = request.user.userprofile
     if "chk" in form:
         checked = form.getlist("chk")
-        if len(checked)>0:
+        if len(checked) > 0:
             P = Problem.objects.filter(label__in=checked)
             problem_groups = [(d,p) for d, p in request.POST.items() if d.startswith('add_to_problemgroup')]
             for i in problem_groups:
                 p_group = get_object_or_404(ProblemGroup,pk = i[1])
                 problems_all_in_group = 1
                 for prob in P:
-                    if p_group.problems.filter(pk = prob.pk).exists() == False:
+                    if p_group.problem_objects.filter(problem = prob).exists() == False:
                         problems_all_in_group = 0
-                        p_group.problems.add(prob)
+                        pg_object = ProblemGroupObject(problemgroup = p_group,problem=prob,order=p_group.problem_objects.count()+1)
+                        pg_object.save()
+#                        p_group.problem_objects.add(pg_object)
                 if problems_all_in_group == 1:
                     return JsonResponse({'status':0,'name':p_group.name})
-                p_group.save()
+#                p_group.save()
 
             return JsonResponse({'status':2,'name':p_group.name})
 
     return JsonResponse({'status':1})#no problems checked
 
+def fetch_problems(request):
+    print('hi')
+    pk = request.GET.get('pk')
+    userprofile = request.user.userprofile
+    print(pk)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    print('bie')
 
+    if prob_group not in userprofile.problem_groups.all():########FIX Permissions!
+        return HttpResponse('Unauthorized', status=401)
+    form = request.GET
+    try:
+        prob_num_low = int(form.get('prob_num_low',''))
+    except ValueError:
+        prob_num_low = 0
+    try:
+        prob_num_high = int(form.get('prob_num_high',''))
+    except ValueError:
+        prob_num_high = 100
+    try:
+        year_low = int(form.get('year_low',''))
+    except ValueError:
+        year_low = 0
+    try:
+        year_high = int(form.get('year_high',''))
+    except ValueError:
+        year_high = 20000
+    try:
+        num_problems = int(form.get('num_problems',''))
+    except ValueError:
+        num_problems = 10
+    desired_tag = form.get('desired_tag','')
+    if desired_tag == 'Unspecified':
+        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high)
+    else:
+        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).distinct()
+    pks = []
 
+    for i in prob_group.problem_objects.all():
+        pks.append(i.problem.pk)
+    problems = problems.exclude(pk__in=pks)
+    prob_list = list(problems)
+    shuffle(prob_list)
+    prob_list = prob_list[0:num_problems]
+    prob_code = []
+    base_num = prob_group.problem_objects.count()
+    for i in range(0,len(prob_list)):
+        pg_object = ProblemGroupObject(problemgroup = prob_group,problem = prob_list[i],order = base_num + i + 1)
+        pg_object.save()
+        prob_code.append(render_to_string('groups/probgroup_problem_object.html',{'po':pg_object,'forcount':base_num+i+1}))
+#    prob_group.save()
+    data = {
+        'prob_list': prob_code,
+        }
+    return JsonResponse(data)

@@ -321,6 +321,14 @@ class ProblemGroup(models.Model):
     def __str__(self):
         return self.name
 
+class ProblemGroupObject(models.Model):
+    problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects")
+    order = models.IntegerField(default = 0)
+    problem = models.ForeignKey(Problem,blank=True,null=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    class Meta:
+        ordering = ['order']
+
 class Folder(models.Model):
     name = models.CharField(max_length = 50)
     tests = models.ManyToManyField(Test)

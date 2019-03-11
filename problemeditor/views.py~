@@ -1806,7 +1806,7 @@ def save_new_solution(request,**kwargs):
         action_flag = ADDITION,
         change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
         )
-    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count()})
+    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count(),'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_sol.html',{'prob':prob})})
 
 @login_required
 def delete_sol(request,**kwargs):
@@ -2139,6 +2139,8 @@ def refresh_matrix_row(request):
             if no_sol_count ==0:
                 sol_complete = 1
 #            rows2.append((testlabels[i],P,sol_complete))
+    return JsonResponse({'matrix-row':render_to_string('problemeditor/matrixview-row.html',{'testlabel':tl,'problems':P,'sol_complete':sol_complete})})
+
 
 
 def mod_permission(user):

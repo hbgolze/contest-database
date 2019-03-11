@@ -1806,7 +1806,7 @@ def save_new_solution(request,**kwargs):
         action_flag = ADDITION,
         change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
         )
-    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count()})
+    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count(),'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_sol.html',{'object':prob,'request':request})})
 
 @login_required
 def delete_sol(request,**kwargs):

@@ -304,15 +304,6 @@ class TestCollection(models.Model):
     def __str__(self):
         return self.name
 
-#This has not been included in the database....it may potentially speed things up, but it would be better to have clarity on the future structure of ProblemGroups first.
-#class ProblemGroupObject(models.Model):
-#    userprofile = models.ForeignKey('UserProfile',related_name="problem_group_objects")
-#    problem_group = models.ForeignKey('ProblemGroup',related_name="problem_group_objects")
-#    permission = models.CharField(max_length =4)#own,read,edit
-#    is_owner = models.BooleanField(default = 0)
-#    def __str__(self):
-#        return self.problem_group.name
-
 class ProblemGroup(models.Model):
     name = models.CharField(max_length=50)#Perhaps use a default naming scheme
     problems = models.ManyToManyField(Problem)
@@ -320,6 +311,14 @@ class ProblemGroup(models.Model):
     is_shared = models.BooleanField(default = 0)
     def __str__(self):
         return self.name
+
+class ProblemGroupObject(models.Model):
+    problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects")
+    order = models.IntegerField(default = 0)
+    problem = models.ForeignKey(Problem,blank=True,null=True)
+    created_date = models.DateTimeField(default = timezone.now)
+    class Meta:
+        ordering = ['order']
 
 class Folder(models.Model):
     name = models.CharField(max_length = 50)

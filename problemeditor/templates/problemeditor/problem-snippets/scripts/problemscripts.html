@@ -353,8 +353,9 @@ $(document).on('submit',"#new-solution-form",function(event) {
         success: function(result) {
             $("#solution-link_"+result['pk']).text("View Solutions ("+result['sol_count']+")");
 	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
-            $("#edit-latex-modal").hide();
-            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#new-solution-placeholder").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
+            window.location ="#editsolplaceholder_"+sol_id;
         }
     });
     return false;

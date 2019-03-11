@@ -33,21 +33,24 @@
 \newif\ifsolution
 \solutionfalse
 \newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
-\title{ {{name}} }
+\title{ {{group.name}} }
 \author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
 \maketitle
 \begin{enumerate}
-{% for prob,problemcode,problemlabel,answerchoices in rows %}
+{% for p_object in group.problem_objects.all %}
+{% with prob=p_object.problem %}
 \item \begin{minipage}[t]{\linewidth}
-{{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
+{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}{{prob.mc_problem_text}} {% else %}{{prob.problem_text}} {% endif %}{% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
 
 {% if include_answer_choices or prob.needs_answers %}
+{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
 \vspace{6pt}
 
-{{answerchoices}}
+{{prob.answers}}
+{% endif %}
 {% endif %}
 
 {% if include_ans %}
@@ -82,7 +85,6 @@ $\textbf{Answer:}$ {% if prob.question_type_new.question_type == 'short answer' 
 {{sol.solution_text}}
 
 %\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
-
 {% endfor %}
 {% else %}
 No solution in the database.
@@ -92,7 +94,7 @@ No solution in the database.
 
 {% endif %}
 
-
+{% endwith %}
 {% endfor %}
 \end{enumerate}
 \end{document}

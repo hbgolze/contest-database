@@ -21,7 +21,7 @@ from django.views.generic import DetailView
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution,Round
+from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution,Round,ProblemGroupObject
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -286,11 +286,18 @@ def add_to_group(request):
         problem_pk = i[0].split('_')[1]
         prob = get_object_or_404(Problem,pk = problem_pk)
         p_group = get_object_or_404(ProblemGroup,pk = i[1])
-        if p_group.problems.filter(pk = problem_pk).exists():
+        if p_group.problem_objects.filter(problem = prob).exists():
             return JsonResponse({'prob_pk':problem_pk,'status':1})
-        p_group.problems.add(prob)
-        p_group.save()
+        pg_object = ProblemGroupObject(problemgroup = p_group,problem = prob,order = p_group.problem_objects.count() + 1)
+        pg_object.save()
+#        p_group.problems.add(prob)
+#        p_group.save()
     return JsonResponse({'prob_pk':problem_pk,'status':0})
+
+
+
+
+
 
 @login_required
 def add_tag(request):
