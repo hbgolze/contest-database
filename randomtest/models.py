@@ -201,6 +201,7 @@ class Problem(models.Model):
     sa_answer = models.CharField(max_length = 150,blank = True)
     form_letter = models.CharField(max_length = 2,blank = True)
     test_label = models.CharField(max_length = 50,blank = True)
+    contest_test = models.ForeignKey(ContestTest,related_name='problems',blank = True,null = True)#new(should replace)
     question_type = models.ManyToManyField(QuestionType)#deprecated?
     solutions = models.ManyToManyField(Solution,blank = True)
     top_solution_number = models.IntegerField(blank = True,null = True)

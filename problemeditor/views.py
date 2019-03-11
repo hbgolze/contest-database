@@ -16,7 +16,7 @@ from django.db.models import Max,Min
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
 from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm
@@ -967,37 +967,42 @@ def addcontestview(request,type,num):
             readablelabel = readablelabel.rstrip()
             post_label = round.readable_label_post_form
             label = F['year'] + round.name.replace(' ','') + formletter#####no spaces
+            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = F['year'], formletter = formletter)
+            contest_test.save()
         else:
             readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + formletter
             default_question_type = typ.default_question_type
             readablelabel = readablelabel.rstrip()
             post_label = typ.readable_label_post_form
             label = F['year'] + type + formletter
+            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = F['year'], formletter = formletter)
+            contest_test.save()
         if default_question_type=='mc':
             for i in range(1,num+1):
                 problem_number_label = str(i)
                 if 'custom_label'+str(i) in F:
                     problem_number_label = F['custom_label'+str(i)]
                 p = Problem(mc_problem_text = F['problem_text'+str(i)],
-                          problem_text = F['problem_text'+str(i)],
-                          answer = F['answer'+str(i)],
-                          mc_answer = F['answer'+str(i)],
-                          answer_choices = '$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
-                          answer_A = F['answer_A'+str(i)],
-                          answer_B = F['answer_B'+str(i)],
-                          answer_C = F['answer_C'+str(i)],
-                          answer_D = F['answer_D'+str(i)],
-                          answer_E = F['answer_E'+str(i)],
-                          label = label + problem_number_label,
-                          readable_label = readablelabel+post_label + problem_number_label,
-                          type_new = typ,
-                          question_type_new = mc,
-                          problem_number = i,
-                          year = F['year'],
-                          form_letter = formletter,
-                          test_label = label,
-                          top_solution_number = 0,
-                          )
+                            problem_text = F['problem_text'+str(i)],
+                            answer = F['answer'+str(i)],
+                            mc_answer = F['answer'+str(i)],
+                            answer_choices = '$\\textbf{(A) }'+F['answer_A'+str(i)]+'\\qquad\\textbf{(B) }'+F['answer_B'+str(i)]+'\\qquad\\textbf{(C) }'+F['answer_C'+str(i)]+'\\qquad\\textbf{(D) }'+F['answer_D'+str(i)]+'\\qquad\\textbf{(E) }'+F['answer_E'+str(i)]+'$',
+                            answer_A = F['answer_A'+str(i)],
+                            answer_B = F['answer_B'+str(i)],
+                            answer_C = F['answer_C'+str(i)],
+                            answer_D = F['answer_D'+str(i)],
+                            answer_E = F['answer_E'+str(i)],
+                            label = label + problem_number_label,
+                            readable_label = readablelabel+post_label + problem_number_label,
+                            type_new = typ,
+                            question_type_new = mc,
+                            problem_number = i,
+                            year = F['year'],
+                            form_letter = formletter,
+                            test_label = label,
+                            top_solution_number = 0,
+                            contest_test = contest_test,
+                            )
                 p.save()
                 if 'round' in F:
                     p.round = round
@@ -1017,17 +1022,18 @@ def addcontestview(request,type,num):
                 if 'custom_label'+str(i) in F:
                     problem_number_label = F['custom_label'+str(i)]
                 p = Problem(problem_text = F['problem_text' + str(i)],
-                          answer = F['answer' + str(i)],
-                          sa_answer = F['answer' + str(i)],
-                          label = label + problem_number_label,
-                          readable_label = readablelabel + post_label + problem_number_label,
-                          type_new = typ,
-                          question_type_new = sa,
-                          problem_number = i,
-                          year = F['year'],
-                          form_letter = formletter,
-                          test_label = label,
-                          top_solution_number = 0,
+                            answer = F['answer' + str(i)],
+                            sa_answer = F['answer' + str(i)],
+                            label = label + problem_number_label,
+                            readable_label = readablelabel + post_label + problem_number_label,
+                            type_new = typ,
+                            question_type_new = sa,
+                            problem_number = i,
+                            year = F['year'],
+                            form_letter = formletter,
+                            test_label = label,
+                            top_solution_number = 0,
+                            contest_test = contest_test,
                           )
                 p.save()
                 if 'round' in F:
@@ -1048,15 +1054,16 @@ def addcontestview(request,type,num):
                 if 'custom_label'+str(i) in F:
                     problem_number_label = F['custom_label'+str(i)]
                 p = Problem(problem_text = F['problem_text'+str(i)],
-                          label = label + problem_number_label,
-                          readable_label = readablelabel + post_label + problem_number_label,
-                          type_new = typ,
-                          question_type_new = pf,
-                          problem_number = i,
-                          year = F['year'],
-                          form_letter = formletter,
-                          test_label = label,
-                          top_solution_number = 0,
+                            label = label + problem_number_label,
+                            readable_label = readablelabel + post_label + problem_number_label,
+                            type_new = typ,
+                            question_type_new = pf,
+                            problem_number = i,
+                            year = F['year'],
+                            form_letter = formletter,
+                            test_label = label,
+                            top_solution_number = 0,
+                            contest_test = contest_test,
                           )
                 p.save()
                 if 'round' in F:
@@ -1178,12 +1185,16 @@ def uploadcontestview(request,type):
                 readablelabel = readablelabel.rstrip()
                 post_label = round.readable_label_post_form
                 label = year + round.name.replace(' ','') + formletter#####no spaces
+                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = year, formletter = formletter)
+                contest_test.save()
             else:
                 readablelabel = year + ' ' + typ.readable_label_pre_form + formletter
                 default_question_type = typ.default_question_type
                 readablelabel = readablelabel.rstrip()
                 post_label = typ.readable_label_post_form
                 label = year + type + formletter#####
+                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = year, formletter = formletter)
+                contest_test.save()
             if contestfile.multiple_chunks()== True:
                 pass
             else:
@@ -1215,6 +1226,7 @@ def uploadcontestview(request,type):
                                         test_label = label,
                                         top_solution_number = 0,
                                         problem_number_prefix = prefix_pn
+                                        contest_test = contest_test,
                                         )
                             p.save()
                             if 'round' in form.cleaned_data:
@@ -1241,17 +1253,18 @@ def uploadcontestview(request,type):
                             num = 1
                         else:
                             p = Problem(problem_text = ptext,
-                                      label = label + prefix_pn + str(num),
-                                      readable_label = readablelabel + post_label + prefix_pn + str(num),
-                                      type_new = typ,
-                                      question_type_new = pf,
-                                      problem_number = num,
-                                      year = year,
-                                      form_letter = formletter,
-                                      test_label = label,
-                                      top_solution_number = 0,
-                                      problem_number_prefix = prefix_pn,
-                                      )
+                                        label = label + prefix_pn + str(num),
+                                        readable_label = readablelabel + post_label + prefix_pn + str(num),
+                                        type_new = typ,
+                                        question_type_new = pf,
+                                        problem_number = num,
+                                        year = year,
+                                        form_letter = formletter,
+                                        test_label = label,
+                                        top_solution_number = 0,
+                                        problem_number_prefix = prefix_pn,
+                                        contest_test = contest_test,
+                                        )
                             p.save()
                             if 'round' in form.cleaned_data:
                                 p.round = round
@@ -1309,6 +1322,7 @@ def uploadcontestview(request,type):
                                     form_letter = formletter,
                                     test_label = label,
                                     top_solution_number = 0,
+                                    contest_test = contest_test,
                                     )
                         p.save()
                         if 'round' in form.cleaned_data:
