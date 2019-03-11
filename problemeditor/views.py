@@ -967,7 +967,14 @@ def addcontestview(request,type,num):
             readablelabel = readablelabel.rstrip()
             post_label = round.readable_label_post_form
             label = F['year'] + round.name.replace(' ','') + formletter#####no spaces
-            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = F['year'], formletter = formletter)
+            if round.type.allow_form_letter == True:
+                if round.readable_label.pre_form[-1] == ' ':
+                    contest_label = F['year'] + ' ' + round.name + ' ' + formletter
+                else:
+                    contest_label =  F['year'] + ' ' + round.name + formletter
+            else:
+                contest_label =  F['year'] + ' ' + round.name
+            contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = F['year'], form_letter = formletter)
             contest_test.save()
         else:
             readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + formletter
@@ -975,7 +982,14 @@ def addcontestview(request,type,num):
             readablelabel = readablelabel.rstrip()
             post_label = typ.readable_label_post_form
             label = F['year'] + type + formletter
-            contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = F['year'], formletter = formletter)
+            if typ.allow_form_letter == True:
+                if typ.readable_label.pre_form[-1] == ' ':
+                    contest_label = F['year'] + ' ' + typ.label + ' ' + formletter
+                else:
+                    contest_label =  F['year'] + ' ' + typ.label + formletter
+            else:
+                contest_label =  F['year'] + ' ' + typ.label
+            contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = F['year'], form_letter = formletter)
             contest_test.save()
         if default_question_type=='mc':
             for i in range(1,num+1):
@@ -1185,7 +1199,14 @@ def uploadcontestview(request,type):
                 readablelabel = readablelabel.rstrip()
                 post_label = round.readable_label_post_form
                 label = year + round.name.replace(' ','') + formletter#####no spaces
-                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ, round = round,year = year, formletter = formletter)
+                if round.type.allow_form_letter == True:
+                    if round.readable_label.pre_form[-1] == ' ':
+                        contest_label = year + ' ' + round.name + ' ' + formletter
+                    else:
+                        contest_label =  year + ' ' + round.name + formletter
+                else:
+                    contest_label =  year + ' ' + round.name
+                contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = year, form_letter = formletter)
                 contest_test.save()
             else:
                 readablelabel = year + ' ' + typ.readable_label_pre_form + formletter
@@ -1193,7 +1214,14 @@ def uploadcontestview(request,type):
                 readablelabel = readablelabel.rstrip()
                 post_label = typ.readable_label_post_form
                 label = year + type + formletter#####
-                contest_test = ContestTest(contest_label = readablelabel, contest_type = typ,year = year, formletter = formletter)
+                if typ.allow_form_letter == True:
+                    if typ.readable_label.pre_form[-1] == ' ':
+                        contest_label = year + ' ' + typ.label + ' ' + formletter
+                    else:
+                        contest_label =  year + ' ' + typ.label + formletter
+                else:
+                    contest_label =  year + ' ' + typ.label
+                contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = year, formletter = form_letter)
                 contest_test.save()
             if contestfile.multiple_chunks()== True:
                 pass
