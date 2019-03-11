@@ -1225,7 +1225,7 @@ def uploadcontestview(request,type):
                                         form_letter = formletter,
                                         test_label = label,
                                         top_solution_number = 0,
-                                        problem_number_prefix = prefix_pn
+                                        problem_number_prefix = prefix_pn,
                                         contest_test = contest_test,
                                         )
                             p.save()
