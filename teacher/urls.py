@@ -58,11 +58,6 @@ urlpatterns = [
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/test/(?P<ppk>\d+)/change-qt-original-problem/$', views.testloadcqtoriginalproblemform, name='testloadcqtoriginalproblemform'),
 
 #problemgroups
-    url(r'^problemgroups/$', views.grouptableview, name='grouptableview'),
-    url(r'^problemgroups/(?P<pk>\d+)/$', views.viewproblemgroup, name='viewproblemgroup'),
-    url(r'^problemgroups/(?P<pk>\d+)/fetchproblems/$', views.fetchproblems, name='fetchproblems'),
-    url(r'^problemgroups/(?P<pk>\d+)/delete/$', views.deletegroup, name='deletegroup'),
-    url(r'^problemgroups/(?P<pk>\d+)/remove/$', views.removegroup, name='removegroup'),
     url(r'^mystudents/$', views.studentmanager, name='studentmanager'),
     url(r'^mystudents/(?P<username>\w+)/$', views.studentclassview, name='studentclassview'),
     url(r'^mystudents/(?P<username>\w+)/problemset/(?P<upk>\w+)/$', views.studentproblemsetview, name='studentproblemsetview'),
@@ -128,7 +123,6 @@ urlpatterns = [
     url(r'^ajax/save-slidegroup-name/$',views.saveslidegroupname, name="saveslidegroupname"),
     url(r'^ajax/edit-slide-title/$',views.editslidetitle, name="editslidetitle"),
     url(r'^ajax/save-slide-title/$',views.saveslidetitle, name="saveslidetitle"),
-    url(r'^ajax/new-problemgroup/$',views.newproblemgroup,name="newproblemgroup"),
 
     url(r'^ajax/edit-sharing/$', views.load_sharing_modal, name='class_edit_sharing'),
     url(r'^ajax/share-with-user/$', views.share_with_user, name='class_share_with_user'),

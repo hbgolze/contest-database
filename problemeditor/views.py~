@@ -1320,7 +1320,7 @@ def uploadcontestview(request,type):
                         contest_label =  year + ' ' + typ.label + formletter
                 else:
                     contest_label =  year + ' ' + typ.label
-                contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = year, formletter = form_letter,short_label = label)
+                contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = year, form_letter = formletter,short_label = label)
                 contest_test.save()
             if contestfile.multiple_chunks()== True:
                 pass

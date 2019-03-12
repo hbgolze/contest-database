@@ -2290,7 +2290,7 @@ def contest_matrixview(request,type):
             sol_complete = 0
             if no_sol_count ==0:
                 sol_complete = 1
-            rows2.append((contest.contest_label,P,sol_complete))
+            rows2.append((contest,P,sol_complete))
             n = P.count()
             if n > maxcount:
                 maxcount = n
@@ -2301,7 +2301,7 @@ def contest_matrixview(request,type):
             sol_complete = 0
             if no_sol_count ==0:
                 sol_complete = 1
-            rows2.append((contest.contest_label,P,sol_complete))
+            rows2.append((contest,P,sol_complete))
             n = P.count()
             if n > maxcount:
                 maxcount = n
@@ -2309,7 +2309,7 @@ def contest_matrixview(request,type):
         numbers = ['A1','A2','A3','A4','A5','A6','B1','B2','B3','B4','B5','B6']
     else:
         numbers = [str(i) for i in range(1,maxcount+1)]
-    template = loader.get_template('problemeditor/matrixview.html')
+    template = loader.get_template('problemeditor/matrixview-contest.html')
     context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': probsoftype.count()}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
@@ -2331,6 +2331,26 @@ def refresh_matrix_row(request):
                 sol_complete = 1
 #            rows2.append((testlabels[i],P,sol_complete))
     return JsonResponse({'matrix-row':render_to_string('problemeditor/matrixview-row.html',{'testlabel':tl,'problems':P,'sol_complete':sol_complete})})
+
+def contest_refresh_matrix_row(request):
+    tl = request.POST.get('tl')
+    contest = get_object_or_404(ContestTest,short_label = tl)
+    P = contest.problems.all()
+    sol_complete = 0
+    if P.count() > 0:
+        typ = P[0].type_new
+        if typ.type == "Putnam":
+            P = P.order_by('label')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+        else:
+            P = P.order_by('problem_number')
+            no_sol_count = P.filter(solutions=None).count()
+            if no_sol_count ==0:
+                sol_complete = 1
+#            rows2.append((testlabels[i],P,sol_complete))
+    return JsonResponse({'matrix-row':render_to_string('problemeditor/matrixview-row-contest.html',{'contest':contest,'problems':P,'sol_complete':sol_complete})})
 
 
 

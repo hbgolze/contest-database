@@ -222,9 +222,9 @@
 	<div class="modal-body">
 	  <div class="form-group">
 	    <label for="problem-group" class="control-label">Tag</label>
-	    <select name="problem-group" id="problem-group" class="form-control">
+	    <select name="problem-group" id="problem-group" class="form-control" required>
 	      <option value="" disabled selected>Select a Problem Group</option>
-	      {% for prob_group in request.user.userprofile.problem_groups.all %}
+	      {% for prob_group in probgroups %}
 	      <option value="{{prob_group.pk}}">{{prob_group.name}}</option>
 	      {% endfor %}
 	    </select>

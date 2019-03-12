@@ -3,7 +3,7 @@
   <select name="example-problem-group" id="example-problem-group" class="form-control">
     <option value="" disabled selected>Select a Problem Group</option>
     {% for g in pg %}
-    <option value="{{g.pk}}">{{g.name}} ({{g.problems.count}} problems)</option>
+    <option value="{{g.pk}}">{{g.name}} ({{g.problem_objects.count}} problems)</option>
     {% endfor %}
   </select>
 </div>

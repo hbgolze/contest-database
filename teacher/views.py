@@ -29,6 +29,7 @@ from subprocess import Popen,PIPE
 import tempfile
 import os
 
+from itertools import chain
 from random import shuffle
 #from teacher.forms import UnitForm
 # Create your views here.
@@ -882,7 +883,14 @@ def problemseteditview(request,pk,upk,ppk):
             if deleted == 1:
                 problemset.increment_version()
             return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'problemset':problemset})})
+    co_owned_pgs =  userprofile.owned_problem_groups.all()
+    editor_pgs =  userprofile.editable_problem_groups.all()
+    readonly_pgs =  userprofile.readonly_problem_groups.all()
+    owned_pgs = userprofile.problem_groups.all()
+    probgroups = list(chain(owned_pgs,co_owned_pgs,editor_pgs,readonly_pgs))
+
     context = {}
+    context['probgroups'] = probgroups
     context['my_class'] = my_class
     context['unit'] = unit
     context['problemset'] = problemset
@@ -1402,7 +1410,8 @@ def reviewproblemgroup(request,pk,upk,ppk):
         form = request.GET
         prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
         curr_problems = problemset.problem_objects.filter(isProblem = 1)
-        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+        P = prob_group.problem_objects.exclude(problem__pk__in = curr_problems.values('problem_id')).distinct()
+#        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
     context = {}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -1446,7 +1455,12 @@ def testeditview(request,pk,upk,tpk):
             if deleted == 1:
                 test.increment_version()
             return JsonResponse({'problemobject-list':render_to_string('teacher/editingtemplates/problemobjectlist.html',{'test':test})})
-    context={}
+    co_owned_pgs =  userprofile.owned_problem_groups.all()
+    editor_pgs =  userprofile.editable_problem_groups.all()
+    readonly_pgs =  userprofile.readonly_problem_groups.all()
+    owned_pgs = userprofile.problem_groups.all()
+    probgroups = list(chain(owned_pgs,co_owned_pgs,editor_pgs,readonly_pgs))
+    context = {}
     context['my_class'] = my_class
     context['unit'] = unit
     context['test'] = test
@@ -1721,12 +1735,14 @@ def testreviewproblemgroup(request,pk,upk,ppk):
             return redirect('../')
         prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
         curr_problems = test.problem_objects.filter(isProblem = 1)
-        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+        P = prob_group.problem_objects.exclude(problem__pk__in = curr_problems.values('problem_id')).distinct()
+#        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
     if request.method == 'GET':
         form = request.GET
         prob_group = get_object_or_404(ProblemGroup,pk = form.get('problem-group',''))
         curr_problems = test.problem_objects.filter(isProblem = 1)
-        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+#        P = prob_group.problems.exclude(id__in = curr_problems.values('problem_id')).distinct()
+        P = prob_group.problem_objects.exclude(problem__pk__in = curr_problems.values('problem_id')).distinct()
     context = {}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -2027,7 +2043,13 @@ def exampleproblemlabel(request,**kwargs):
 
 @login_required
 def exampleproblemgroups(request,**kwargs):
-    return JsonResponse({'pg-form':render_to_string('teacher/editingtemplates/example-problem-group.html',{'pg':request.user.userprofile.problem_groups.all()})})
+    userprofile = request.user.userprofile
+    co_owned_pgs =  userprofile.owned_problem_groups.all()
+    editor_pgs =  userprofile.editable_problem_groups.all()
+    readonly_pgs =  userprofile.readonly_problem_groups.all()
+    owned_pgs = userprofile.problem_groups.all()
+    probgroups = list(chain(owned_pgs,co_owned_pgs,editor_pgs,readonly_pgs))
+    return JsonResponse({'pg-form':render_to_string('teacher/editingtemplates/example-problem-group.html',{'pg':probgroups})})#request.user.userprofile.problem_groups.all()})})
 
 @login_required
 def exampleaddproblem(request,**kwargs):
@@ -2314,122 +2336,6 @@ def grouptableview(request):
     context['readonly_pgs'] = readonly_pgs
     return HttpResponse(template.render(context,request))
 
-@login_required
-def newproblemgroup(request):
-    userprofile = request.user.userprofile
-    if request.method == 'POST':
-        group_form = GroupModelForm(request.POST)
-        if group_form.is_valid():
-            group = group_form.save()
-            userprofile.problem_groups.add(group)
-            userprofile.save()
-            return JsonResponse({'group-row':render_to_string('groups/grouptablerow.html',{'pg':group,'sharing_type':'own'})})
-
-@login_required
-def viewproblemgroup(request,pk):
-    userprofile = request.user.userprofile
-    prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    if prob_group not in userprofile.problem_groups.all():
-        return HttpResponse('Unauthorized', status=401)
-    if request.method=='POST':
-        if request.POST.get("save"):
-            form=request.POST
-            P=prob_group.problems.all()
-            remaining_problems = form.getlist("chk")
-            for i in P:
-                if i.label not in remaining_problems:
-                    prob_group.problems.remove(i)
-    P = prob_group.problems.all()
-    name = prob_group.name
-    context = {}
-    context['rows'] = P
-    context['name'] = name
-    context['nbar'] = 'teacher'
-    context['pk'] = pk
-    context['form'] = AddProblemsForm(userprofile=userprofile)
-    template=loader.get_template('teacher/problemgroups/probgroupview.html')
-    return HttpResponse(template.render(context,request))
-
-@login_required
-def fetchproblems(request,pk):
-    userprofile = request.user.userprofile
-    prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    if prob_group not in userprofile.problem_groups.all():
-        return HttpResponse('Unauthorized', status=401)
-    form = request.GET
-    try:
-        prob_num_low = int(form.get('prob_num_low',''))
-    except ValueError:
-        prob_num_low = 0
-    try:
-        prob_num_high = int(form.get('prob_num_high',''))
-    except ValueError:
-        prob_num_high = 100
-    try:
-        year_low = int(form.get('year_low',''))
-    except ValueError:
-        year_low = 0
-    try:
-        year_high = int(form.get('year_high',''))
-    except ValueError:
-        year_high = 20000
-    try:
-        num_problems = int(form.get('num_problems',''))
-    except ValueError:
-        num_problems = 10
-    desired_tag = form.get('desired_tag','')
-    if desired_tag == 'Unspecified':
-        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high)
-    else:
-        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).distinct()
-    problems = problems.exclude(pk__in=prob_group.problems.all())
-    prob_list = list(problems)
-    shuffle(prob_list)
-    prob_list = prob_list[0:num_problems]
-    prob_code = []
-    base_num = prob_group.problems.count()
-    for i in range(0,len(prob_list)):
-        prob_group.problems.add(prob_list[i])
-        prob_code.append(render_to_string('teacher/problemgroups/problemsnippet2.html',{'prob':prob_list[i],'forcount':base_num+i+1}))
-    prob_group.save()
-    data = {
-                'prob_list': prob_code,
-            }
-    return JsonResponse(data)
-
-#@login_required
-#def deletegroup(request,pk):
-#    pg = get_object_or_404(ProblemGroup, pk=pk)
-#    userprofile = request.user.userprofile
-#    if pg in userprofile.problem_groups.all():
-#        if pg.is_shared==0:
-#            pg.delete()
-#        else:
-#            userprofile.problem_groups.remove(pg)
-#    return redirect('/teacher/problemgroups/')
-
-@login_required
-def deletegroup(request,pk):
-    pg = get_object_or_404(ProblemGroup, pk=pk)
-    userprofile = request.user.userprofile
-    if pg in userprofile.problem_groups.all():
-        pg.delete()
-    return redirect('/teacher/problemgroups/')
-
-@login_required
-def removegroup(request,pk):
-    pg = get_object_or_404(ProblemGroup, pk=pk)
-    userprofile = request.user.userprofile
-    if pg in userprofile.owned_problem_groups.all():
-        userprofile.owned_problem_groups.remove(pg)
-        userprofile.save()
-    elif pg in userprofile.editable_problem_groups.all():
-        userprofile.editable_problem_groups.remove(pg)
-        userprofile.save()
-    elif pg in userprofile.readonly_problem_groups.all():
-        userprofile.readonly_problem_groups.remove(pg)
-        userprofile.save()
-    return redirect('/teacher/problemgroups/')
 
 @login_required
 def migrate_response(request,username,npk):

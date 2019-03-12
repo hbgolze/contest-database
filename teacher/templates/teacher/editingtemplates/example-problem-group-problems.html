@@ -1,8 +1,9 @@
-{% with rows=problem_group.problems.all %}
+{% with rows=problem_group.problem_objects.all %}
 {% if rows|length > 0 %}
 <ul class="list-group" id="probList">
   
-  {% for prob in rows %}
+  {% for po in rows %}
+{% with prob=po.problem %}
   <li class="list-group-item prob-item" id="prob-item_{{prob.label}}">
     <input type="hidden" name="chk" value="{{prob.label}}"/>
     <div class="row">
@@ -20,6 +21,7 @@
       </div>
     </div>
   </li>
+{% endwith %}
   {% endfor %}
   
 </ul>
