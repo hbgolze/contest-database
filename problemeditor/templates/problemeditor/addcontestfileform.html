@@ -15,6 +15,12 @@
       <form action="." method="post" enctype="multipart/form-data" id="upload-problems-form">
 	{% csrf_token %}
 	{{form.as_p}}
+
+      <div id="error-message2" style="display:none">
+        <div class="alert alert-danger">
+          A contest with the given parameters already exists!
+        </div>
+      </div>
 	<button type="submit" class="btn btn-primary" value="Preview" id="preview">Preview in New Tab</button>
 	<button type="submit" class="btn btn-primary" value="Save Contest" id="save-contest">Save Contest</button>
 	<div style="display:none">
@@ -115,10 +121,30 @@ $(document).on('click','#save-contest', function(e) {
   f = $(this).closest('form');
   f.attr("action", ".");
   f.attr("target","");
-  $("#submit_button").click();
+  var form = $('form')[0];
+  var formData = new FormData(form);
+    $.ajax({
+        type: 'POST',
+        url: ".",
+        data: formData,
+        dataType: 'json',
+        contentType: false,
+        processData: false,
+        success: function(result) {
+           if (result['error']==1) {
+              $("#error-message2").show();
+              setTimeout(function() {
+                $("#error-message2").fadeOut();
+              },5000);
+           } else {
+               window.location = result['url'];
+           }
+
+        }
+    });
+
   return false;
 });
-
 
 </script>
 {% endblock %}
