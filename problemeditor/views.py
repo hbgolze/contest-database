@@ -1947,7 +1947,7 @@ def save_new_solution(request,**kwargs):
         action_flag = ADDITION,
         change_message = "problemeditor/redirectproblem/"+str(prob.pk)+'/',
         )
-    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count(),'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_sol.html',{'object':prob,'request':request})})
+    return JsonResponse({'pk':pk,'sol_count':prob.solutions.count(),'modal-html':render_to_string('problemeditor/problem-snippets/modals/load_sol.html',{'object':prob,'request':request}),'sol_id':sol.pk})
 
 @login_required
 def delete_sol(request,**kwargs):
@@ -2266,14 +2266,16 @@ def matrixview(request,type):
 def contest_matrixview(request,type):    
     typ = get_object_or_404(Type, type = type)
     probsoftype = typ.problems.all()
+    contests = typ.contests.all()
 #get function to only look at round...
 
 #    num_untagged = probsoftype.filter(newtags__isnull = True).count()
     if request.method =="GET" and request.GET.get('round'):
         round = get_object_or_404(Round,pk=request.GET.get('round'))
         probsoftype2 = round.problems.all()
-        if probsoftype2.count() >0:
+        if probsoftype2.count() > 0:
             probsoftype = probsoftype2
+        contests = round.contests.all()
 #    testlabels = []
 #    pot = list(probsoftype)
 #    for i in range(0,len(pot)):
@@ -2284,7 +2286,7 @@ def contest_matrixview(request,type):
     maxcount = 0
     total_sol_count = probsoftype.count()-probsoftype.filter(solutions=None).count()
     if typ.type == "Putnam":
-        for contest in typ.contests.all():
+        for contest in contests:
             P = contest.problems.all().order_by('label')
             no_sol_count = P.filter(solutions=None).count()
             sol_complete = 0
@@ -2295,7 +2297,7 @@ def contest_matrixview(request,type):
             if n > maxcount:
                 maxcount = n
     else:
-        for contest in typ.contests.all():
+        for contest in contests:
             P = contest.problems.all().order_by('problem_number')
             no_sol_count = P.filter(solutions=None).count()
             sol_complete = 0

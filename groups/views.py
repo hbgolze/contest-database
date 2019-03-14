@@ -133,7 +133,16 @@ def viewtaggroup(request,pk):
     template = loader.get_template('groups/taggroupview.html')
     return HttpResponse(template.render(context,request))
 
-
+@login_required
+def newproblemgroup(request):
+    userprofile = request.user.userprofile
+    if request.method == 'POST':
+        group_form = GroupModelForm(request.POST)
+        if group_form.is_valid():
+            group = group_form.save()
+            userprofile.problem_groups.add(group)
+            userprofile.save()
+            return JsonResponse({'group-row':render_to_string('groups/grouptablerow.html',{'pg':group,'sharing_type':'own'})})
 
 @login_required
 def delete_group(request):

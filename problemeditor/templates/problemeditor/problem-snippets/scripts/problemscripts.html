@@ -355,7 +355,8 @@ $(document).on('submit',"#new-solution-form",function(event) {
 	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
             $("#new-solution-placeholder").html(result['modal-html']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
-            window.location ="#editsolplaceholder_"+sol_id;
+            window.location = "#editsolplaceholder_"+result['sol_id'];
+            $('#new-solution-placeholder').data('bs.modal')._config.backdrop = 'true';
         }
     });
     return false;

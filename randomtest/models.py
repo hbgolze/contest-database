@@ -248,6 +248,18 @@ class Problem(models.Model):
         else:
             s += '\\qquad\\textbf{(E) }'+self.answer_E
         return s + '$\n\n'
+    def correct_answer(self):
+        if self.mc_answer == 'A':
+            return self.answer_A
+        if self.mc_answer == 'B':
+            return self.answer_B
+        if self.mc_answer == 'C':
+            return self.answer_C
+        if self.mc_answer == 'D':
+            return self.answer_D
+        if self.mc_answer == 'E':
+            return self.answer_E
+        return ''
 
 class ProofResponse(models.Model):
     problem = models.ForeignKey(Problem)

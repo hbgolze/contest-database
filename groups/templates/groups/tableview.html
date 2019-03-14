@@ -117,7 +117,7 @@ $(document).on('submit',"#new-group-form",function(event) {
   event.preventDefault();
   $.ajax({
     type: 'POST',
-    url: '/teacher/ajax/new-problemgroup/',
+    url: '/problemgroups/ajax/new-problemgroup/',
     data: $(this).serialize(),
     dataType: 'json',
     success: function(data) {
