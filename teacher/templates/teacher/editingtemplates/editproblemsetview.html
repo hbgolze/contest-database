@@ -267,6 +267,8 @@
 	</div>
 	<div class="modal-body">
           {% csrf_token %}
+	  <div id="new-sol-ptext">
+	  </div>
 	  <div id="preview-new-sol" style="display:none">
 	  </div>
 	  <input type="hidden" name="popk" id="new-sol-popk" value="">
@@ -798,8 +800,10 @@ $(document).on('click',".new-sol-link",function(event) {
         success: function(result) {
             $("#sol-problem-name").html(result['name']);
             $("#new-sol-popk").val(result['popk']);
+            $("#new-sol-ptext").html(result['ptext']);
             $("#new-sol-fields").html(result['form']);
             $("#new-sol-placeholder").modal("show");
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-sol-ptext"]);
         }
     });
 });

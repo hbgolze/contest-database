@@ -1172,7 +1172,7 @@ def load_new_solution_form(request,**kwargs):
         name = po.problem.readable_label
     else:
         name = "Problem "+str(po.pk)
-    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'name':name,'popk':po.pk})
+    return JsonResponse({'form':render_to_string('teacher/editingtemplates/modals/originalproblemform.html',{'form':form}),'name':name,'popk':po.pk,'ptext':render_to_string('teacher/editingtemplates/modals/po-problem-text.html',{'po':po})})
 
 @login_required
 def save_new_solution(request,**kwargs):
