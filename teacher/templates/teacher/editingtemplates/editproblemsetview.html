@@ -20,6 +20,7 @@
 </nav>
 
 <div class="container">
+
   <div class="row">
     <div class="col-sm-3 sidebar">
       {% include 'teacher/sidebar.html' with activenav="myclasses" %}
@@ -33,6 +34,90 @@
 	  {% include 'teacher/editingtemplates/editduedate.html' %}
 	</div>
       </div>
+
+
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+        <tr>
+          <td>
+            Problem
+          </td>
+{% if problemset %}
+{% for probobj in problemset.problem_objects.all %}
+          <td style="text-align:center">
+            <a href="#problemtext_{{probobj.pk}}">{{forloop.counter}}</a>
+          </td>
+{% endfor %}
+{% elif test %}
+{% for probobj in test.problem_objects.all %}
+          <td style="text-align:center">
+            <a href="#problemtext_{{probobj.pk}}">{{forloop.counter}}</a>
+          </td>
+{% endfor %}
+{% endif %}
+        </tr>
+        <tr>
+          <td>
+            # Solutions Displayed
+          </td>
+{% if problemset %}
+{% for probobj in problemset.problem_objects.all %}
+          <td style="text-align:center">
+            <span id="num_solutions-{{probobj.pk}}">
+              {{probobj.solution_objects.count}}
+            </span>
+          </td>
+{% endfor %}
+{% elif test %}
+{% for probobj in test.problem_objects.all %}
+          <td style="text-align:center">
+            <span id="num_solutions-{{probobj.pk}}">
+              {{probobj.solution_objects.count}}
+            </span>
+          </td>
+{% endfor %}
+{% endif %}
+        </tr>
+
+        <tr>
+          <td>
+            # Solutions in Database
+          </td>
+{% if problemset %}
+{% for probobj in problemset.problem_objects.all %}
+	  {% if probobj.problem %}
+          <td style="text-align:center">
+            <span id="num_db_solutions-{{probobj.pk}}">
+              {{probobj.problem.solutions.count}}
+            </span>
+          </td>
+	  {% else %}
+	  <td style="text-align:center">
+	    -
+	  </td>
+	  {% endif %}
+{% endfor %}
+{% elif test %}
+{% for probobj in test.problem_objects.all %}
+	  {% if probobj.problem %}
+          <td style="text-align:center">
+            <span id="num_db_solutions-{{probobj.pk}}">
+              {{probobj.problem.solutions.count}}
+            </span>
+          </td>
+	  {% else %}
+	  <td style="text-align:center">
+	    -
+	  </td>
+	  {% endif %}
+{% endfor %}
+{% endif %}
+        </tr>
+      </table>
+    </div>
+  </div>
+
 {% if sharing_type != "read" %}
       <p>Drag problems around to reorder them. If you reorder or delete problems, you must click "Save" for your changes to apply.</p>
 {% endif %}
@@ -809,7 +894,14 @@ $(document).on('click',".new-sol-link",function(event) {
 });
 
 $(document).on("click","#preview-latex-new-sol", function(e) {
-    $("#preview-new-sol").html($("#codetext[name=solution_code]").val());
+    sol_text = $("#codetext[name=solution_code]").val().trim();
+
+    sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    sol_text = replace_enumitem(sol_text);
+    sol_text = replace_center(sol_text);
+
+    $("#preview-new-sol").html(sol_text)
     $("#preview-new-sol").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-new-sol"]);
 });

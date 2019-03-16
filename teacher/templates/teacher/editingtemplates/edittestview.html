@@ -862,7 +862,14 @@ $(document).on('click',".new-sol-link",function(event) {
 });
 
 $(document).on("click","#preview-latex-new-sol", function(e) {
-    $("#preview-new-sol").html($("#codetext[name=solution_code]").val());
+    sol_text = $("#codetext[name=solution_code]").val().trim();
+
+    sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    sol_text = replace_enumitem(sol_text);
+    sol_text = replace_center(sol_text);
+
+    $("#preview-new-sol").html(sol_text);
     $("#preview-new-sol").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-new-sol"]);
 });
