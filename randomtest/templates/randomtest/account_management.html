@@ -1,0 +1,147 @@
+{% extends "./base.html" %}
+
+{% block title %}Accounts{% endblock %}
+
+{% load tz %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active">Manage Accounts</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Manage Accounts</h2>
+  <div class="row">
+    <div class="col">
+      <table class="table table-striped" id="account-table">
+	<thead>
+	  <tr>
+	    <th>#</th>
+	    <th>Username</th>
+	    <th>User Type</th>
+	    <th>Options</th>
+	  </tr>
+	</thead>
+	<tbody>
+	  {% for u in users %}
+	  {% include 'randomtest/account_user_row.html' with forcount=forloop.counter %}
+	  {% endfor %}
+	</tbody>
+      </table>
+      <p>
+	<button class="btn btn-primary" id="add-user">Add User</button>
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="new-user-modal" role="dialog"></div>
+<div class="modal fade" id="edit-user-modal" role="dialog"></div>
+
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+$(document).on('click',"#add-user",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'GET',
+        url: '/randomtest/ajax/load-add-user/',
+        dataType: 'json',
+        success: function(result) {
+            $("#new-user-modal").html(result['modal-html']);
+            $("#new-user-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#new-user-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/randomtest/ajax/add-user/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if ('table-row' in result) {
+              $('#account-table').append(result['table-row']);
+              $("#new-user-modal").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+            }
+            if ('error-message' in result) {
+              $('#error-message').html(result['error-message']);
+                $("#error-message").show();
+                setTimeout(function() {
+                    $("#error-message").fadeOut().empty();
+                },5000);
+            }
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-user",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/randomtest/ajax/load-edit-user/',
+        dataType: 'json',
+        data: 'pk='+$(this).attr('id').split('_')[1],
+        success: function(result) {
+            $("#edit-user-modal").html(result['modal-html']);
+            $("#edit-user-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit-user-form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/randomtest/ajax/edit-user/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if ('table-row' in result) {
+              $('#user-row_'+result['pk']).replaceWith(result['table-row']);
+              $("#edit-user-modal").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+            }
+        }
+    });
+    return false;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,6 @@
+<tr id="user-row_{{u.pk}}">
+<td>{{forcount}}</td>
+<td>{{u.username}}</td>
+<td>{{u.userprofile.user_type_new}}</td>
+<td>{% if u.is_superuser %}{% else %}<button class="btn btn-link edit-user" id="edit-user_{{u.pk}}">Edit</a>{% endif %}</td>
+</tr>

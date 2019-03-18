@@ -7,6 +7,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.splashview, name='splashview'),
+    url(r'^manage_accounts/$', views.manage_accounts, name='manage_accounts'),
     url(r'^randomtest/$', views.tableview, name='tableview'),
     url(r'^randomtest/createtest/$', views.startform, name='startform'),
     url(r'^randomtest/createtest/readme$', views.readme, name='readme'),
@@ -49,6 +50,10 @@ urlpatterns = [
     url(r'^randomtest/editnewtest/(?P<pk>\d+)/$', views.editnewtestview, name='editnewtestview'),
     url(r'^randomtest/edittimezone/$',views.changetimezoneview,name='changetimezoneview'),
     url(r'^randomtest/ajax/deletetest/$',views.delete_usertest,name='delete_usertest'),
+    url(r'^randomtest/ajax/load-add-user/$',views.load_add_user,name='load_add_user'),
+    url(r'^randomtest/ajax/add-user/$',views.add_user,name='add_user'),
+    url(r'^randomtest/ajax/load-edit-user/$',views.load_edit_user,name='load_edit_user'),
+    url(r'^randomtest/ajax/edit-user/$',views.edit_user,name='edit_user'),
     url(r'^collaborators/$',views.managecollaborators,name='manage_collaborators'),
     url(r'^collaborators/ajax/request-collaborator/$',views.send_collab_request,name='request_collaborator'),
     url(r'^collaborators/ajax/accept-request/$',views.accept_request,name='accept_request'),

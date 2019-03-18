@@ -6,7 +6,7 @@ from django.template.loader import get_template,render_to_string
 
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.admin import User
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,user_passes_test
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Q
@@ -24,7 +24,7 @@ import tempfile
 import os
 
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest,UserType
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
 
 from .utils import parsebool,pointsum
@@ -76,11 +76,55 @@ class TestDelete(DeleteView):
 def splashview(request):
     return render(request,'randomtest/splashview.html')
 
+@user_passes_test(lambda u: u.is_superuser)
+def manage_accounts(request):
+    return render(request,'randomtest/account_management.html',{'users':User.objects.all()})
+
+@user_passes_test(lambda u: u.is_superuser)
+def load_add_user(request):
+    return JsonResponse({'modal-html':render_to_string('randomtest/account_new_user_modal.html',{'user_types':UserType.objects.exclude(name='super')})})
+
+@user_passes_test(lambda u: u.is_superuser)
+def add_user(request):
+    form = request.POST
+    username = form.get('new-username')
+    password = form.get('new-password')
+    user_type = get_object_or_404(UserType,pk=form.get('usertype'))
+    is_student = 0;
+    if 'is_student' in form:
+        is_student = 1
+    if User.objects.filter(username=username).exists() == False:
+        user = User.objects.create_user(username=username, password=password)
+        user.save()
+        t = request.user.userprofile
+        if is_student == 1:
+            t.students.add(user)
+        up = UserProfile(user = user,user_type_new=user_type,time_zone = t.time_zone)
+        up.save()
+        return JsonResponse({'table-row':render_to_string('randomtest/account_user_row.html',{'u':user,'forcount':User.objects.count()})})
+    else:
+        return JsonResponse({'error-message':'Username has already been taken'})
+
+@user_passes_test(lambda u: u.is_superuser)
+def load_edit_user(request):
+    user = get_object_or_404(User,pk=request.POST.get('pk'))
+    return JsonResponse({'modal-html':render_to_string('randomtest/account_edit_user_modal.html',{'user_types':UserType.objects.exclude(name='super'),'user':user})})
+
+@user_passes_test(lambda u: u.is_superuser)
+def edit_user(request):
+    user = get_object_or_404(User,pk=request.POST.get('pk'))
+    user_type = get_object_or_404(UserType,pk=request.POST.get('usertype'))
+    up = user.userprofile
+    up.user_type_new = user_type
+    up.save()
+    users = list(User.objects.all())
+    return JsonResponse({'table-row':render_to_string('randomtest/account_user_row.html',{'u':user,'forcount':users.index(user)+1}),'pk':request.POST.get('pk')})
+
 @login_required
 def deletetestresponses(request,pk):
     test = get_object_or_404(Test, pk=pk)
-    isreserved=0
-    TC=TestCollection.objects.all()
+    isreserved = 0
+    TC = TestCollection.objects.all()
     userprofile = get_or_create_up(request.user)
     for i in TC:
         if test in i.tests.all():
@@ -89,7 +133,7 @@ def deletetestresponses(request,pk):
         test.delete()
     else:
         testresponses = Responses.objects.filter(test=test).filter(user_profile=userprofile)
-        if testresponses.count()>=1:
+        if testresponses.count() >= 1:
             testresponses.delete()
         userprofile.tests.remove(test)
     return redirect('/randomtest/')
