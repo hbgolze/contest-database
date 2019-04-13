@@ -35,26 +35,26 @@
 	  </div>
 	</div>
 	<div class="row">
-	  <div class="form-group col-lg-3">
+	  <div class="form-group col-lg-5">
 	    <label for="tp" class="control-label">Problem Type:</label>
 	    <select{% if advanced %} multiple{% endif %} name="tp" class="form-control"{% if advanced %} size="10"{% endif %}>
 	      {% for typ in types %}
-	      <option value="T_{{typ.pk}}">{{typ.label}} Problems</option>
+	      <option value="T_{{typ.pk}}" title="{{typ.label}}">{{typ.label}} Problems</option>
 {% for round in typ.rounds.all %}
-<option value="R_{{round.pk}}">&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
+<option value="R_{{round.pk}}" title="{{round.name}}">&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
 {% endfor %}
 	  {% endfor %}
 	    </select>
 	  </div>
 	</div>
 	<div class="row">
-	  <div class="form-group col-lg-5">
+	  <div class="form-group col-lg-8">
 	    <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
 	    
 	    <select{% if advanced %} multiple{% endif %} name="tag" class="form-control"{% if advanced %} size="10"{% endif %}>
 {% if not advanced %}	      <option value="">Unspecified</option>{% endif %}
 	      {% for t in tags %}
-	      <option value="{{t.tag}}">{{t.tag}}</option>
+	      <option value="{{t.tag}}" title="{{t.tag}}">{{t.tag}}</option>
 	      {% endfor %}
 	    </select>
 	  </div>

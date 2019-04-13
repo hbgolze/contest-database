@@ -117,7 +117,7 @@
 {% for sol in prob.problem.solutions.all %}
 \vspace{3mm}
 
-\textbf{Solution{% if prob.problem.solutions.count > 1 %} {{forloop.counter}} {% endif %}:}
+\textbf{Solution{% if prob.problem.solutions.count > 1 %} {{forloop.counter}}{% endif %}:}
 {% autoescape off %}{{sol.solution_text}}{% endautoescape %}
 
 \noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}   

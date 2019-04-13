@@ -33,6 +33,7 @@ urlpatterns = [
     url(r'^contest/bytest/(?P<type>\w+)/matrix/$', views.matrixview, name='matrixview'),
     url(r'^contest/bytest/(?P<type>\w+)/(?P<testlabel>[-\w]+)/$', views.testlabelview, name='testlabelview'),
     url(r'^contest/bytest/(?P<type>\w+)/(?P<testlabel>[-\w]+)/latex/$', views.download_mc_contest_file, name='download_mc_latex_contest'),
+    url(r'^contest/bytest/(?P<type>\w+)/(?P<testlabel>[-\w]+)/sa_latex/$', views.download_sa_contest_file, name='download_sa_latex_contest'),
     url(r'^contest/bytest/(?P<type>\w+)/(?P<tag>[-\w]+)/(?P<label>[-\w]+)/$', views.problemview, name='problemview'),
     url(r'^CM/bytopic/(?P<type>\w+)/$', views.CMtopicview, name='CMtopicview'),
     url(r'^CM/bytopic/(?P<type>\w+)/(?P<pk>\w+)/$', views.detailedproblemview, name='detailedproblemview'),

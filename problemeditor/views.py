@@ -2481,3 +2481,20 @@ def download_mc_contest_file(request,**kwargs):
     response = HttpResponse(return_string, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+@login_required
+def download_sa_contest_file(request,**kwargs):
+    test_label = kwargs['testlabel']
+    P = Problem.objects.filter(test_label = test_label)
+    return_string = ''
+    for prob in P:
+        s = '=========\n\n'
+        s += '=====PT\n\n' + prob.problem_text
+        s += '=====SA\n\n' + prob.sa_answer
+        for sol in prob.solutions.all():
+            s += '=====SO\n\n' + sol.solution_text
+        return_string += s
+    filename = test_label + "_latex_code.txt"
+    response = HttpResponse(return_string, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
