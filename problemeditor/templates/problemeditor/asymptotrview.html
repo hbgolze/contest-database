@@ -69,6 +69,7 @@ $(document).on('submit', '#asymptote-form', function(e) {
 if ('error' in result) {
       $("#error-message").html(result['error']);
       $("#error-message").show();
+$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
 } else {
 $("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
 }
