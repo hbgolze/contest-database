@@ -538,6 +538,7 @@ def compileasy(texcode, label, sol = '', temp = False):
         template = get_template('asycompile/my_asy_template.asy')
         rendered_tpl = template.render(context).encode('utf-8')
         logger.info('asy test debug prior temp')
+        logger.info(rendered_tpl)
         with tempfile.TemporaryDirectory() as tempdir:
             process = Popen(
                 ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
