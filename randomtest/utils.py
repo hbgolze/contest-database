@@ -9,6 +9,9 @@ import tempfile
 import os,os.path
 import re
 
+import logging
+logger = logging.getLogger(__name__)
+
 #center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
 #class ItemizeEnv:
 #    def __init__(self,itemize_code):
@@ -514,6 +517,7 @@ def goodtag(t):
 
 
 def compileasy(texcode, label, sol = '', temp = False):
+    logger.info('asy test debug')
     tempfolder = ''
     if temp == True:
         tempfolder = 'temp/'
