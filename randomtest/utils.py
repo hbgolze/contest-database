@@ -9,9 +9,6 @@ import tempfile
 import os,os.path
 import re
 
-import logging
-logger = logging.getLogger(__name__)
-
 #center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
 #class ItemizeEnv:
 #    def __init__(self,itemize_code):
@@ -517,7 +514,6 @@ def goodtag(t):
 
 
 def compileasy(texcode, label, sol = '', temp = False):
-    logger.info('asy test debug')
     tempfolder = ''
     if temp == True:
         tempfolder = 'temp/'
@@ -537,8 +533,6 @@ def compileasy(texcode, label, sol = '', temp = False):
                 })
         template = get_template('asycompile/my_asy_template.asy')
         rendered_tpl = template.render(context).encode('utf-8')
-        logger.info('asy test debug prior temp')
-        logger.info(rendered_tpl)
         with tempfile.TemporaryDirectory() as tempdir:
             process = Popen(
                 ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
@@ -546,10 +540,7 @@ def compileasy(texcode, label, sol = '', temp = False):
                 stdout=PIPE,
                 stderr=PIPE,
                 )
-            logger.info('asy test debug Popen')
-            check_error = process.communicate(rendered_tpl)[1].decode("utf-8")
-            logger.info(check_error)
-            logger.info('asy test debug communicate')
+            check_error = process.communicate(rendered_tpl)[1].decode("utf-8").replace("GC Warning: pthread_getattr_np or pthread_attr_getstack failed for main thread","").rstrip().lstrip()
             if check_error != "":
                 error = check_error
             L = os.listdir(tempdir)
