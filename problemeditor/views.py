@@ -2536,7 +2536,7 @@ def asymptotr_pdf(request,**kwargs):
                 stdout=PIPE,
                 stderr=PIPE,
                 )
-            check_error = process.communicate(rendered_tpl,timeout=15)[1].decode("utf-8")
+            check_error = process.communicate(rendered_tpl,timeout=15)[1].decode("utf-8").replace("GC Warning: pthread_getattr_np or pthread_attr_getstack failed for main thread","").rstrip().lstrip()
 #            process.communicate(rendered_tpl)
             if check_error == '':
                 with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:

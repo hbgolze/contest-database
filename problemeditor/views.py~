@@ -2536,7 +2536,7 @@ def asymptotr_pdf(request,**kwargs):
                 stdout=PIPE,
                 stderr=PIPE,
                 )
-            check_error = process.communicate(rendered_tpl)[1].decode("utf-8")
+            check_error = process.communicate(rendered_tpl,timeout=15)[1].decode("utf-8")
 #            process.communicate(rendered_tpl)
             if check_error == '':
                 with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:
