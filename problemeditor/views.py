@@ -2509,7 +2509,9 @@ def asymptotr(request,**kwargs):
         asy_code = request.POST.get('asy_code','')
         asy_code = asy_code.rstrip().lstrip()
         filename = 'asyimg'+str(time()).replace('.','')
-        compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)    
+        error = compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)
+        if error != "":
+            return JsonResponse({'filename':filename,'error': error})
         return JsonResponse({'filename':filename})
     context = {}
     context['nbar'] = 'asy'
@@ -2532,12 +2534,16 @@ def asymptotr_pdf(request,**kwargs):
                 ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
                 stdin=PIPE,
                 stdout=PIPE,
+                stderr=PIPE,
                 )
-            process.communicate(rendered_tpl)
-            with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:
-                pdf = f.read()
-                r = HttpResponse(content_type='application/pdf')
-                r.write(pdf)
-                r['Content-Disposition'] = 'attachment;filename="'+filename+'.pdf"'
-                return r
+            check_error = process.communicate(rendered_tpl)[1].decode("utf-8")
+#            process.communicate(rendered_tpl)
+            if check_error == '':
+                with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:
+                    pdf = f.read()
+                    r = HttpResponse(content_type='application/pdf')
+                    r.write(pdf)
+                    r['Content-Disposition'] = 'attachment;filename="'+filename+'.pdf"'
+                    return r
+    return JsonResponse({'error':check_error})
     return HttpResponse("")

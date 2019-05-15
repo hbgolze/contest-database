@@ -518,6 +518,7 @@ def compileasy(texcode, label, sol = '', temp = False):
     if temp == True:
         tempfolder = 'temp/'
     repl = asyreplacementindexes(texcode)
+    error = ''
     for i in range(0,len(repl)):
         asy_code = texcode[repl[i][0]:repl[i][1]]
         asy_code = asy_code.replace('\\begin{asy}','')
@@ -537,9 +538,12 @@ def compileasy(texcode, label, sol = '', temp = False):
                 ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
                 stdin=PIPE,
                 stdout=PIPE,
+                stderr=PIPE,
                 )
-            process.communicate(rendered_tpl)
-            L=os.listdir(tempdir)
+            check_error = process.communicate(rendered_tpl)[1].decode("utf-8")
+            if check_error != "":
+                error = check_error
+            L = os.listdir(tempdir)
             for j in L:
                 if 'pdf' in j:
                     command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, j, settings.MEDIA_ROOT+tempfolder, j.replace('.pdf','.png'))
@@ -550,6 +554,7 @@ def compileasy(texcode, label, sol = '', temp = False):
                                             stderr=subprocess.PIPE,
                                             )
                     stdout_value = proc.communicate()[0]
+    return error
 
 def compiletikz(texcode,label,sol='',temp = False):
     tempfolder = ''

@@ -2509,10 +2509,12 @@ def asymptotr(request,**kwargs):
         asy_code = request.POST.get('asy_code','')
         asy_code = asy_code.rstrip().lstrip()
         filename = 'asyimg'+str(time()).replace('.','')
-        compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)    
+        error = compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)
+        if error != "":
+            return JsonResponse({'filename':filename,'error': error})
         return JsonResponse({'filename':filename})
     context = {}
-    context['nbar'] = 'problemeditor'
+    context['nbar'] = 'asy'
     return render(request, 'problemeditor/asymptotrview.html',context)
 
 @login_required

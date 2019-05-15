@@ -8,6 +8,7 @@
     <div class="col">
       <p>Edit Asymptote code below. This does not support Asymptote's 3-D features.</p>
       <div id="img-area" style="text-align:center" class="m-4"></div>
+<div class="alert alert-danger" role="alert" style="display:none" id="error-message"></div>
       <form id="asymptote-form" method="post">
 {% csrf_token %}
 	<textarea id="asy_code" name="asy_code" class="codetext form-control mb-2" rows="16">size(5cm);
@@ -58,19 +59,25 @@ $.ajaxSetup({
 });
 $(document).on('submit', '#asymptote-form', function(e) {
       e.preventDefault();
-console.log('sadf');
+      $("#error-message").hide();
       $.ajax({
         type: 'POST',
         url: ".",
         data: $(this).serialize(),
         dataType: 'json',
         success: function(result) {
+if ('error' in result) {
+      $("#error-message").html(result['error']);
+      $("#error-message").show();
+} else {
 $("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
+}
         }
       });
   return false;
 });
 $(document).on('click', '#download_pdf', function(e) { 
+      $("#error-message").hide();
   $('#asy_code_pdf').val($('#asy_code').val());
   $("#download-pdf-form").submit();
   return false;
