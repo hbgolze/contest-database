@@ -1,7 +1,7 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404,JsonResponse
 from django.utils.http import urlquote,urlunquote
-from django.template import loader,RequestContext
+from django.template import loader,RequestContext,Context
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.db.models import Q
@@ -25,6 +25,10 @@ from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy
 from django.db.models import Count
 
 from django import forms
+from time import time
+import tempfile
+from subprocess import Popen,PIPE
+import os
 
 from bs4 import BeautifulSoup
 import bs4
@@ -2498,3 +2502,42 @@ def download_sa_contest_file(request,**kwargs):
     response = HttpResponse(return_string, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+@login_required
+def asymptotr(request,**kwargs):
+    if request.method == "POST":
+        asy_code = request.POST.get('asy_code','')
+        asy_code = asy_code.rstrip().lstrip()
+        filename = 'asyimg'+str(time()).replace('.','')
+        compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)    
+        return JsonResponse({'filename':filename})
+    context = {}
+    context['nbar'] = 'asy'
+    return render(request, 'problemeditor/asymptotrview.html',context)
+
+@login_required
+def asymptotr_pdf(request,**kwargs):
+    if request.method == "POST":
+        asy_code = request.POST.get('asy_code','')
+        asy_code = asy_code.rstrip().lstrip()
+        filename = 'asyimg'+str(time()).replace('.','')
+        context = Context({
+                'asy_code':asy_code,
+                'filename':filename,
+                })
+        template = get_template('asycompile/my_asy_template.asy')
+        rendered_tpl = template.render(context).encode('utf-8')
+        with tempfile.TemporaryDirectory() as tempdir:
+            process = Popen(
+                ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
+                stdin=PIPE,
+                stdout=PIPE,
+                )
+            process.communicate(rendered_tpl)
+            with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+filename+'.pdf"'
+                return r
+    return HttpResponse("")

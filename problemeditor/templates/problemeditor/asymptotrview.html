@@ -1,0 +1,80 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Asymptotr{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2>Asymptotr</h2>
+  <div class="row">
+    <div class="col">
+      <p>Edit Asymptote code below. This does not support Asymptote's 3-D features.</p>
+      <div id="img-area" style="text-align:center" class="m-4"></div>
+      <form id="asymptote-form" method="post">
+{% csrf_token %}
+	<textarea id="asy_code" name="asy_code" class="codetext form-control mb-2" rows="16">size(5cm);
+defaultpen(fontsize(10)+linewidth(.7));
+</textarea>
+	<button type="submit" class="btn btn-primary m-1" id="load_image">Compile Image</button>
+      </form>
+      <form id="download-pdf-form" action="pdf/" method="post">
+{% csrf_token %}
+	<textarea id="asy_code_pdf" name="asy_code" style="display:none"></textarea>
+      </form>
+	<button class="btn btn-primary m-1" id="download_pdf">Download PDF</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+$(document).on('submit', '#asymptote-form', function(e) {
+      e.preventDefault();
+console.log('sadf');
+      $.ajax({
+        type: 'POST',
+        url: ".",
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
+        }
+      });
+  return false;
+});
+$(document).on('click', '#download_pdf', function(e) { 
+  $('#asy_code_pdf').val($('#asy_code').val());
+  $("#download-pdf-form").submit();
+  return false;
+});
+
+</script>
+{% endblock %}

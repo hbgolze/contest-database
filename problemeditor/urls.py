@@ -69,6 +69,8 @@ urlpatterns = [
     url(r'^tags/info_tag/(?P<pk>\d+)/$', views.taginfoview,name="info_tag"),
     url(r'^tags/([\w-]+)/$', views.TagProblemList.as_view(),name="tag_problem_view"),
     url(r'^edittypes/$', views.edittypes,name='edit_types'),
+    url(r'^asy/$', views.asymptotr,name='asymptotr'),
+    url(r'^asy/pdf/$', views.asymptotr_pdf,name='asymptotr_pdf'),
 ###########
     url(r'^ajax/remove_duplicate/$', views.remove_duplicate_problem, name='remove_duplicate'),
     url(r'^ajax/add_duplicate/$', views.add_duplicate_problem, name='add_duplicate'),
