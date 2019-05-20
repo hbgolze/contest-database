@@ -264,6 +264,7 @@ function replace_images(texcode,label,temp=false) {
     var repl = asyreplacementindexes(texcode);
     var newtexcode='';
     var tempdir = '';
+    d = new Date();
     if (repl.length==0) {
 	newtexcode += texcode;
     } else {
@@ -275,14 +276,14 @@ function replace_images(texcode,label,temp=false) {
 	    if (texcode.slice(repl[i][0],repl[i][1]).indexOf('import three') !==-1) {
 		three = '+0_0';
 	    }
-	    newtexcode += '<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+(i+1).toString()+three+'.png\" alt=\"Please save to view image\"/>';
+	    newtexcode += '<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+(i+1).toString()+three+'.png'+"?"+d.getTime()+'\" alt=\"Please save to view image\"/>';
 	    newtexcode += texcode.slice(repl[i][1],repl[i+1][0]);
 	}
         three='';
 	if (texcode.slice(repl[repl.length-1][0],repl[repl.length-1][1]).indexOf('import three') !== -1) {
 	    three = '+0_0';
 	}
-	newtexcode += '<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+repl.length.toString()+three+'.png\" alt=\"Please save to view image\"/>';
+	newtexcode += '<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+repl.length.toString()+three+'.png'+"?"+d.getTime()+'\" alt=\"Please save to view image\"/>';
 	newtexcode += texcode.slice(repl[repl.length-1][1]);
     }
     var repl2 = tikzreplacementindexes(newtexcode);
@@ -294,17 +295,17 @@ function replace_images(texcode,label,temp=false) {
 	new2texcode += newtexcode.slice(0,repl2[0][0]);
 	var i;
 	for (i=0; i < repl2.length-1;i++) {
-            new2texcode += '<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+(i+1).toString()+'.png\" alt=\"Please save to view image\"/>';
+            new2texcode += '<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+(i+1).toString()+'.png'+"?"+d.getTime()+'\" alt=\"Please save to view image\"/>';
 	    new2texcode += newtexcode.slice(repl2[i][1],repl2[i+1][0]);
 	}
-	new2texcode+='<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+repl2.length.toString()+'.png\" alt=\"Please save to view image\"/>';
+	new2texcode+='<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+repl2.length.toString()+'.png'+"?"+d.getTime()+'\" alt=\"Please save to view image\"/>';
 	new2texcode += texcode.slice(repl2[repl2.length-1][1]);
     }
     return new2texcode;
 }
 
 function replace_center(s) {
-    s = s.replace('\\begin{center}','<p style="text-align:center;\">');
-    s = s.replace('\\end{center}','</p>\n');
+    s = s.replace(/\\begin{center}/g,'<p style="text-align:center;\">');
+    s = s.replace(/\\end{center}/g,'</p>\n');
     return s;
 }
