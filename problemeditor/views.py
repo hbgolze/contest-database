@@ -2557,7 +2557,7 @@ def solution_stats(request,**kwargs):
             raise Http404("Unauthorized")
     else:
         user = request.user#get_object_or_404(User, username=username)
-    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution').filter(action_time__date__gte=datetime.today().date() - timedelta(days = 7))[0:50]
+    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution')[0:50]
     linkedlog=[]
     for i in log:
         if Solution.objects.filter(pk=i.object_id).exists():
