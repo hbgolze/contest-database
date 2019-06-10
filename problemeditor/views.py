@@ -2551,7 +2551,12 @@ def asymptotr_pdf(request,**kwargs):
 
 @login_required
 def solution_stats(request,**kwargs):
-    user = request.user#get_object_or_404(User, username=username)
+    if 'username' in kwargs:
+        user = get_object_or_404(User,username=kwargs['username'])
+        if request.user.userprofile.collaborators.filter(username=kwargs['username']).exists()==False:
+            raise Http404("Unauthorized")
+    else:
+        user = request.user#get_object_or_404(User, username=username)
     log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution').filter(action_time__date__gte=datetime.today().date() - timedelta(days = 7))[0:50]
     linkedlog=[]
     for i in log:
@@ -2565,5 +2570,7 @@ def solution_stats(request,**kwargs):
     week_sol_count=[((datetime.today().date() - timedelta(days = i)).strftime('%A, %B %d'),str(week_log.filter(action_time__date = datetime.today().date() - timedelta(days = i)).count())) for i in range(1,7)]
 
     today_sol_count = str(LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution').filter(action_time__date=datetime.today().date()).filter(action_flag=1).count())
-
-    return render(request,'problemeditor/my_solution_stats.html',{'log':linkedlog,'nbar':'problemeditor','sol_count': user.solution_set.count(), 'week_sol_count': week_sol_count,'today_sol_count':today_sol_count})
+    context = {'log':linkedlog,'nbar':'problemeditor','sol_count': user.solution_set.count(), 'week_sol_count': week_sol_count,'today_sol_count':today_sol_count}
+    if 'username' in kwargs:
+        context['username'] = user.username
+    return render(request,'problemeditor/my_solution_stats.html',context)

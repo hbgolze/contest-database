@@ -7,14 +7,14 @@
 {% block content %}
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
-    <li class="breadcrumb-item active">Solution Statistics</li>
+    <li class="breadcrumb-item active">{% if username %}{{username}}'s {% endif %}Solution Statistics</li>
   </ol>
 </nav>
 <div class="container">
-  <h2>Solution Statistics</h2>
+  <h2>{% if username %}{{username}}'s {% endif %}Solution Statistics</h2>
   <div class="row">
     <div class="col">
-      You have contributed to {{sol_count}} solutions in the database.
+      {% if username %}{{username}} has {% else %}You have {% endif %} contributed to {{sol_count}} solutions in the database.
     </div>
   </div>
   <div class="row">

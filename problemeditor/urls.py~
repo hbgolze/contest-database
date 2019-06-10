@@ -17,6 +17,7 @@ addproblem_forms = [AddProblemForm1,
 
 urlpatterns = [
     url(r'^myactivity/$', views.my_activity, name='my_activity'),
+    url(r'^mysolutionstats/$', views.solution_stats, name='solution_stats'),
     url(r'^$', views.typeview, name='typeview'),
     url(r'^contest/bytag/(?P<type>\w+)/$', views.tagview, name='tagview'),
 #    url(r'^contest/bytag/(?P<type>\w+)/(?P<tag>[-\w]+)/$', views.typetagview, name='typetagview'),
