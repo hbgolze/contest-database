@@ -29,6 +29,7 @@ from time import time
 import tempfile
 from subprocess import Popen,PIPE
 import os
+from datetime import datetime,timedelta
 
 from bs4 import BeautifulSoup
 import bs4
@@ -1195,7 +1196,7 @@ def addcontestview(request,type,num):
         if len(P) > 0:
             t = Test(name = readablelabel)
 #            if 'round' in F:
-#                t=Test(name = F['year']+round.name)
+#                t = Test(name = F['year']+round.name)
 #            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + formletter
 #            else:
 #                t=Test(name = readablelabel)# would this change for rounds
@@ -2536,7 +2537,7 @@ def asymptotr_pdf(request,**kwargs):
                 stdout=PIPE,
                 stderr=PIPE,
                 )
-            check_error = process.communicate(rendered_tpl,timeout=15)[1].decode("utf-8")
+            check_error = process.communicate(rendered_tpl,timeout=15)[1].decode("utf-8").replace("GC Warning: pthread_getattr_np or pthread_attr_getstack failed for main thread","").rstrip().lstrip()
 #            process.communicate(rendered_tpl)
             if check_error == '':
                 with open(os.path.join(tempdir, filename+'.pdf'), 'rb') as f:
@@ -2547,3 +2548,22 @@ def asymptotr_pdf(request,**kwargs):
                     return r
     return JsonResponse({'error':check_error})
     return HttpResponse("")
+
+@login_required
+def solution_stats(request,**kwargs):
+    user = request.user#get_object_or_404(User, username=username)
+    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__name='solution').filter(action_time__date__gte=datetime.today().date() - timedelta(days = 7))[0:50]
+    linkedlog=[]
+    for i in log:
+        if Solution.objects.filter(pk=i.object_id).exists():
+            linkedlog.append((i,True))
+        else:
+            linkedlog.append((i,False))
+
+    week_log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__name='solution').filter(action_time__date__gte=datetime.today().date() - timedelta(days = 7)).filter(action_flag=1)
+
+    week_sol_count=[((datetime.today().date() - timedelta(days = i)).strftime('%A, %B %d'),str(week_log.filter(action_time__date = datetime.today().date() - timedelta(days = i)).count()))) for i in range(1,7)]
+
+    today_sol_count = str(LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__name='solution').filter(action_time__date=datetime.today().date()).filter(action_flag=1).count())
+
+    return render(request,'problemeditor/solution_stats.html',{'log':linkedlog,'nbar':'problemeditor','username':username,'sol_count': user.solution_set.count(), 'week_sol_count': week_sol_count,'today_sol_count':today_sol_count})

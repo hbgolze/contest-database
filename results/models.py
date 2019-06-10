@@ -21,6 +21,7 @@ class ContestYear(models.Model):
         return self.year + str(self.contest)
     def update_ranks(self):
         teams = self.teams.all()
+        num_teams = self.teams.count()
         results = sorted(teams,key = lambda x:(-x.total_score,-x.total_team_score,-x.total_relay_score,-x.total_indiv_score))
         if len(results) > 0:
             r = results[0]
