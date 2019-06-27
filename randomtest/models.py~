@@ -230,24 +230,43 @@ class Problem(models.Model):
             s += ', '+L[i].tag
         return s
     def answers(self):
-        s = '\n\n$\\textbf{(A) }'+self.answer_A
-        if len(self.answer_A)>0 and self.answer_A[-1] == '\\':
-            s += '\\\n\\textbf{(B) }'+self.answer_B
+        s = '\n\n$\\textbf{(A) }{'+self.answer_A
+        k = len(self.answer_A)
+        if len(self.answer_A) > 0 and self.answer_A[k-2:k] == '\\\\':
+            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_B
         else:
-            s += '\\qquad\\textbf{(B) }'+self.answer_B
-        if len(self.answer_B)>0 and self.answer_B[-1] == '\\':
-            s += '\\\n\\textbf{(C) }'+self.answer_C
+            s += '}\\qquad\\textbf{(B) }{'+self.answer_B
+        k = len(self.answer_B)
+        if len(self.answer_B) > 0 and self.answer_B[k-2:k] == '\\\\':
+            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_C
+#            s += '}\\\n\\textbf{(C) }{'+self.answer_C
         else:
-            s += '\\qquad\\textbf{(C) }'+self.answer_C
-        if len(self.answer_C)>0 and self.answer_C[-1] == '\\':
-            s += '\\\n\\textbf{(D) }'+self.answer_D
+            s += '}\\qquad\\textbf{(C) }{'+self.answer_C
+        k = len(self.answer_C)
+        if len(self.answer_C) > 0 and self.answer_C[k-2:k] == '\\\\':
+            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_D
+#            s += '}\\\n\\textbf{(D) }{'+self.answer_D
         else:
-            s += '\\qquad\\textbf{(D) }'+self.answer_D
-        if len(self.answer_D)>0 and self.answer_D[-1] == '\\':
-            s += '\\\n\\textbf{(E) }'+self.answer_E
+            s += '}\\qquad\\textbf{(D) }{'+self.answer_D
+        k = len(self.answer_D)
+        if len(self.answer_D) > 0 and self.answer_D[k-2:k] == '\\\\':
+            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_E
+ #           s += '}\\\n\\textbf{(E) }{'+self.answer_E
         else:
-            s += '\\qquad\\textbf{(E) }'+self.answer_E
-        return s + '$\n\n'
+            s += '}\\qquad\\textbf{(E) }{'+self.answer_E
+        return s + '}$\n\n'
+    def correct_answer(self):
+        if self.mc_answer == 'A':
+            return self.answer_A
+        if self.mc_answer == 'B':
+            return self.answer_B
+        if self.mc_answer == 'C':
+            return self.answer_C
+        if self.mc_answer == 'D':
+            return self.answer_D
+        if self.mc_answer == 'E':
+            return self.answer_E
+        return ''
 
 class ProofResponse(models.Model):
     problem = models.ForeignKey(Problem)
