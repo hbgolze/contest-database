@@ -2,7 +2,6 @@
 
 <script>
 
-
 function getCookie(name) {
     var cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -337,7 +336,8 @@ $(document).on('click touchstart',".new-sol",function(event) {
         success: function(result) {
             $("#new-solution-placeholder").html(result['modal-html']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
-            $("#new-solution-placeholder").modal({backdrop: 'static', keyboard: false});
+            $("#new-solution-placeholder").modal("show");
+            $("#new-solution-placeholder").data("bs.modal")._config.backdrop = "static";
         }
     });
     return false;
@@ -353,11 +353,10 @@ $(document).on('submit',"#new-solution-form",function(event) {
         success: function(result) {
             $("#solution-link_"+result['pk']).text("View Solutions ("+result['sol_count']+")");
 	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
-            $("#new-solution-placeholder").hide();
-            $("[data-dismiss=modal]").trigger({ type: "click" });
-            $("#solution-placeholder").html(result['modal-html'])
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-            $("#solution-placeholder").modal("show")
+            $("#new-solution-placeholder").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
+            window.location = "#editsolplaceholder_"+result['sol_id'];
+            $("#new-solution-placeholder").data('bs.modal')._config.backdrop = 'true';
         }
     });
     return false;
