@@ -353,10 +353,11 @@ $(document).on('submit',"#new-solution-form",function(event) {
         success: function(result) {
             $("#solution-link_"+result['pk']).text("View Solutions ("+result['sol_count']+")");
 	    $("#num_solutions-"+result['pk']).html(result['sol_count']);
-            $("#new-solution-placeholder").html(result['modal-html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
-            window.location = "#editsolplaceholder_"+result['sol_id'];
-            $('#new-solution-placeholder').data('bs.modal')._config.backdrop = 'true';
+            $("#new-solution-placeholder").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+            $("#solution-placeholder").html(result['modal-html'])
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+            $("#solution-placeholder").modal("show")
         }
     });
     return false;
