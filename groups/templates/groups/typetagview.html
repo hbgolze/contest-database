@@ -1,0 +1,88 @@
+{% extends "randomtest/base.html" %}
+{% block title %}Choose a Problem{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemgroups/">Problem Groups</a></li>
+    <li class="breadcrumb-item active">Edit Problems: {{tag}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>{{tag}}</h2>
+  <div class="row">
+    <div class="col">
+      <table class="table table-bordered">
+	<tr>
+	  <td>
+	    Problem
+	  </td>
+	  {% for prob_obj in rows %}
+	  <td style="text-align:center">
+	    <a href="#problem_{{prob_obj.problem.pk}}">{% if rows.start_index %}{{ forloop.counter|add:rows.start_index|add:-1 }}{% else %}{{forloop.counter}}{% endif %}</a>
+	  </td>
+	  {% endfor %}
+	</tr>
+	<tr>
+	  <td>
+	    # Solutions
+	  </td>
+	  {% for prob_obj in rows %}
+	  <td style="text-align:center">
+	    <span id="num_solutions-{{prob_obj.problem.pk}}">
+	      {{prob_obj.problem.solutions.count}}
+	    </span>
+	  </td>
+	  {% endfor%}
+	</tr>
+	<tr>
+	  <td>
+	    Tagged
+	  </td>
+	  {% for prob_obj in rows %}
+	  <td style="text-align:center">
+	    <span id="tagged-{{prob_obj.problem.pk}}">
+	      {% if prob_obj.problem.newtags.count > 0 %}
+	      <span class="fa fa-check" style="color:green"></span>
+	      {% else %}
+	      -
+	      {% endif %}
+	    </span>
+	  </td>
+	  {% endfor%}
+	</tr>
+	{% if show_mc_answer %}
+	<tr style="display:none" id="mc_answers">
+	  <td>
+	    Answer
+	  </td>
+	  {% for prob_obj in rows %}
+	  <td>
+	    {{prob_obj.problem.mc_answer}}
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endif %}
+      </table>
+    </div>
+  </div>
+{% if show_mc_answer %}
+<div class="row">
+<div class="col">
+<button class="btn btn-secondary mb-3" id="toggle_answers">Show/Hide Answers</button>
+</div>
+</div>
+{% endif %}
+    
+    {% include 'groups/paginatedproblemlist.html' %}
+
+</div>
+{% include 'problemeditor/problem-snippets/scripts/problemscripts.html' %}
+<script>
+$(document).on('click','#toggle_answers', function(e) {
+$("#mc_answers").toggle();
+});
+</script>
+{% endblock %}
+
+

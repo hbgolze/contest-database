@@ -22,6 +22,8 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse,ProblemGroupObject
 from randomtest.utils import newtexcode
 from .forms import GroupModelForm,AddProblemsForm
@@ -131,6 +133,42 @@ def viewtaggroup(request,pk):
     context['pk'] = pk
     context['userprofile'] = userprofile
     template = loader.get_template('groups/taggroupview.html')
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def edit_pg_view(request,pk):
+    userprofile = get_or_create_up(request.user)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all():
+        return HttpResponse('Unauthorized', status=401)
+
+    problems = prob_group.problem_objects.all()
+
+    paginator = Paginator(problems,50)
+    page = request.GET.get('page')
+    try:
+        prows = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        prows = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        prows = paginator.page(paginator.num_pages)
+
+    userprofile = request.user.userprofile
+    owned_groups = userprofile.problem_groups.all()
+    editable_groups = userprofile.editable_problem_groups.all()
+    probgroups = list(chain(owned_groups,editable_groups))
+
+    template = loader.get_template('groups/typetagview.html')
+    context = {
+        'rows' : prows,
+        'nbar' : 'groups',
+        'typelabel' : 'Problem Groups',
+        'tag' : 'Problem Group: '+str(prob_group.name),
+        'tags' : NewTag.objects.exclude(tag='root'),
+        'probgroups':probgroups,
+        }
     return HttpResponse(template.render(context,request))
 
 @login_required
