@@ -23,7 +23,9 @@ class AddProblemsForm(forms.Form):
         super(AddProblemsForm, self).__init__(*args, **kwargs)
         user_choices = []
         for type in userprofile.user_type_new.allowed_types.all():
-            user_choices.append((type.type,type.label))
+            user_choices.append(('T_'+str(type.pk),type.label+' Problems'))
+            for round in type.rounds.all():
+                user_choices.append(('R_'+str(round.pk),"----"+round.name+' Problems'))
         self.fields['contest_type'].choices = user_choices
         tags = [('Unspecified','Unspecified')]
         for tag in NewTag.objects.exclude(tag='root'):

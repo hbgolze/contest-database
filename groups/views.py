@@ -504,12 +504,9 @@ def add_to_group(request):
     return JsonResponse({'status':1})#no problems checked
 
 def fetch_problems(request):
-    print('hi')
     pk = request.GET.get('pk')
     userprofile = request.user.userprofile
-    print(pk)
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    print('bie')
 
     if prob_group not in userprofile.problem_groups.all():########FIX Permissions!
         return HttpResponse('Unauthorized', status=401)
@@ -534,16 +531,39 @@ def fetch_problems(request):
         num_problems = int(form.get('num_problems',''))
     except ValueError:
         num_problems = 10
-    desired_tag = form.get('desired_tag','')
-    if desired_tag == 'Unspecified':
-        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high)
+    tag = form.get('desired_tag','')
+    if tag == "Unspecified":#desired_tag
+        tag = ''
+
+    testtype = form.get('contest_type','')
+    type_args = testtype.split('_')
+    round_or_type = type_args[0]
+    rt_pk = type_args[1]
+
+#    if desired_tag == 'Unspecified':
+#        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high)
+#    else:
+#        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).distinct()
+    P = Problem.objects.all()
+    if len(tag)>0:
+        if round_or_type == "T":
+            P = P.filter(problem_number__gte=prob_num_low,problem_number__lte=prob_num_high).filter(year__gte=year_low,year__lte=year_high).filter(type_new__pk=rt_pk)
+        else:
+            P = P.filter(problem_number__gte=prob_num_low,problem_number__lte=prob_num_high).filter(year__gte=year_low,year__lte=year_high).filter(round__pk=rt_pk)
+        P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
     else:
-        problems = Problem.objects.filter(type_new__type=form.get('contest_type','')).filter(year__gte=year_low).filter(year__lte=year_high).filter(problem_number__gte=prob_num_low).filter(problem_number__lte=prob_num_high).filter(newtags__in=NewTag.objects.filter(tag__startswith=desired_tag)).distinct()
+        if round_or_type == "T":
+            P = P.filter(problem_number__gte = prob_num_low,problem_number__lte = prob_num_high).filter(year__gte = year_low,year__lte = year_high).filter(type_new__pk = rt_pk).distinct()
+        else:
+            P = P.filter(problem_number__gte = prob_num_low,problem_number__lte = prob_num_high).filter(year__gte = year_low,year__lte = year_high).filter(round__pk = rt_pk).distinct()
+
+
+
     pks = []
 
     for i in prob_group.problem_objects.all():
         pks.append(i.problem.pk)
-    problems = problems.exclude(pk__in=pks)
+    problems = P.exclude(pk__in=pks)
     prob_list = list(problems)
     shuffle(prob_list)
     prob_list = prob_list[0:num_problems]
