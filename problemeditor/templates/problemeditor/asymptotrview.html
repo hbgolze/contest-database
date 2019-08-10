@@ -69,9 +69,17 @@ $(document).on('submit', '#asymptote-form', function(e) {
 if ('error' in result) {
       $("#error-message").html(result['error']);
       $("#error-message").show();
-$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
+if ('three' in result) {
+$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1+0_0.png'>");
 } else {
 $("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
+}
+} else {
+if ('three' in result) {
+$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1+0_0.png'>");
+} else {
+$("#img-area").html("<img class='displayed' src='/media/temp/"+result['filename']+"-1.png'>");
+}
 }
         }
       });

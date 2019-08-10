@@ -412,12 +412,12 @@ def newtexcode(texcode,label,answer_choices,temp = False):
         newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
             three=''
-            if 'import three' in texcode[repl[i][0]:repl[i][1]]:
+            if 'import three' in texcode[repl[i][0]:repl[i][1]] or 'import graph3' in texcode[repl[i][0]:repl[i][1]]:
                 three='+0_0'
             newtexcode+='<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+str(i+1)+three+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
         three=''
-        if 'import three' in texcode[repl[-1][0]:repl[-1][1]]:
+        if 'import three' in texcode[repl[-1][0]:repl[-1][1]] or 'import graph3' in texcode[repl[-1][0]:repl[-1][1]]:
             three='+0_0'
         newtexcode+='<img class=\"displayed\" src=\"/media/'+tempdir+label+'-'+str(len(repl))+three+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
@@ -458,15 +458,16 @@ def newsoltexcode(texcode,label):
         newtexcode+=texcode[0:repl[0][0]]
         for i in range(0,len(repl)-1):
             three=''
-            if 'import three' in texcode[repl[i][0]:repl[i][1]]:
+            if 'import three' in texcode[repl[i][0]:repl[i][1]] or 'import graph3' in texcode[repl[i][0]:repl[i][1]]:
                 three='+0_0'
-            newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+'.png\"/>'
+            newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(i+1)+three+'.png\"/>'
             newtexcode+=texcode[repl[i][1]:repl[i+1][0]]
         three=''
-        if 'import three' in texcode[repl[-1][0]:repl[-1][1]]:
+        if 'import three' in texcode[repl[-1][0]:repl[-1][1]] or 'import graph3' in texcode[repl[-1][0]:repl[-1][1]]:
             three='+0_0'
-        newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+'.png\"/>'
+        newtexcode+='<img class=\"displayed\" src=\"/media/'+label+'-'+str(len(repl))+three+'.png\"/>'
         newtexcode+=texcode[repl[-1][1]:]
+
 #    newtexcode=replaceitemize(newtexcode)
 #    newtexcode=replaceenumerate(newtexcode,'(a)')
 #    newtexcode=replaceenumerate(newtexcode,'(i)')

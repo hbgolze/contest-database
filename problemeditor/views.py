@@ -2511,9 +2511,13 @@ def asymptotr(request,**kwargs):
         asy_code = asy_code.rstrip().lstrip()
         filename = 'asyimg'+str(time()).replace('.','')
         error = compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)
+        context ={}
+        context['filename'] = filename
         if error != "":
-            return JsonResponse({'filename':filename,'error': error})
-        return JsonResponse({'filename':filename})
+            context['error'] = error
+        if 'import three' in asy_code or 'import graph3' in asy_code:
+            context['three'] = 1
+        return JsonResponse(context)
     context = {}
     context['nbar'] = 'asy'
     return render(request, 'problemeditor/asymptotrview.html',context)
