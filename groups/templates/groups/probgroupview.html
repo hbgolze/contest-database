@@ -575,32 +575,38 @@ $(document).on("click",".push-up-link", function(event) {
     var pk = $(this).attr('id').split('_')[1];
     console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq(0)"));
-
-
     $("#unsaved-message").show();
-
 });
+
 $(document).on("click",".push-up-5-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
     console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-5, 0)).toString()+")"));
-
-
 var url = location.href;
 location.href = "#problem-object_"+pk;
 history.replaceState(null,null,url);
     $("#unsaved-message").show();
-
 });
+
+$(document).on("click",".push-up-1-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-1, 0)).toString()+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
+
+
 $(document).on("click",".push-down-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
     console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq(-1)"));
-
     $("#unsaved-message").show();
-
 });
 
 $(document).on("click",".push-down-5-link", function(event) {
@@ -608,33 +614,23 @@ $(document).on("click",".push-down-5-link", function(event) {
     var pk = $(this).attr('id').split('_')[1];
     console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+5, $("#problem_object_list .problem-object").length-1)+")"));
-
-
-
-
 var url = location.href;
 location.href = "#problem-object_"+pk;
 history.replaceState(null,null,url);
     $("#unsaved-message").show();
-
 });
 
+$(document).on("click",".push-down-1-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+1, $("#problem_object_list .problem-object").length-1)+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
 
-
-
-
-
-
-/*
-ss="btn btn-sm btn-secondary push-up-link ml-1" id="push-\
-up_{{prob.pk}}" title="Push problem to top"><span class="fa fa-long-arrow-up"></span></button>
-                  <button type="button" class="btn btn-sm btn-secondary push-up-5-link" id="push-up-\
-5_{{prob.pk}}" title="Push problem five spots up"><span class="fa fa-arrow-up"></span></button>
-                  <button type="button" class="btn btn-sm btn-secondary push-down-5-link" id="push-d\
-own-5_{{prob.pk}}" title="Push problem five spots down"><span class="fa fa-arrow-down"></span></butt\
-on>
-                  <button type="button" class="btn btn-sm btn-secondary push-down-link mr-
-*/
 </script>
 {% endblock %}
   
