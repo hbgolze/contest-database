@@ -2,10 +2,21 @@
           <div class="list-group-item problem-object" id="problem-object_{{po.pk}}">
             <div class="row mb-1">
               <div class="col-12 float-right">
+
                 <div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem options">
                   <button type="button" class="btn btn-sm btn-secondary view-sol-link mr-1" id="view-sol_{{prob.pk}}" title="View Solutions">Solutions ({{prob.solutions.count}})</button>
                   <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}"><span class="fa fa-copy"></span></button>
                   <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}"><span class="fa fa-desktop"></span></button>
+
+
+		<div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem sorting options">
+		  <button type="button" class="btn btn-sm btn-secondary push-up-link ml-1" id="push-up_{{po.pk}}" title="Push problem to top"><span class="fa fa-long-arrow-up"></span></button>
+		  <button type="button" class="btn btn-sm btn-secondary push-up-5-link" id="push-up-5_{{po.pk}}" title="Push problem five spots up"><span class="fa fa-arrow-up"></span></button>
+		  <button type="button" class="btn btn-sm btn-secondary push-down-5-link" id="push-down-5_{{po.pk}}" title="Push problem five spots down"><span class="fa fa-arrow-down"></span></button>
+		  <button type="button" class="btn btn-sm btn-secondary push-down-link mr-1" id="push-down_{{po.pk}}" title="Push problem to bottom"><span class="fa fa-long-arrow-down"></span></button>
+		</div>
+
+
 {% if can_delete %}
                   <button type="button" class="btn btn-sm btn-danger delete-problem-link"><span class="fa fa-remove"></span></button>
 {% endif %}

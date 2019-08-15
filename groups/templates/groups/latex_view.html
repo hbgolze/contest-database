@@ -56,38 +56,13 @@
 {% with prob=p_object.problem %}
 
 
-\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
+\item {% if prob.question_type_new.question_type == "multiple choice" %}{{prob.mc_problem_text|linebreaks}}{% else %}{{prob.problem_text|linebreaks}}{% endif %} {% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}{% if prob.question_type_new.question_type == "multiple choice" %}{% if include_answer_choices or prob.needs_answers %}
 
-{% if prob.question_type_new.question_type == "multiple choice" %}
-{% if include_answer_choices or prob.needs_answers %}                                                
 \vspace{6pt}
+{{prob.answers|linebreaks}}{% endif %}{% endif %}{% if include_ans %}{% if prob.question_type_new.question_type == "multiple choice" %}\textbf{Answer:} $\textbf{({{prob.mc_answer}})\,}${% elif prob.question_type_new.question_type == "short answer" %}\textbf{Answer:} ${{prob.sa_answer}}\,${% elif prob.question_type_new.question_type == "multiple choice short answer" %}\textbf{Answer:} $\textbf{\,({{prob.mc_answer}})}$, or ${{prob.correct_answer}}\,${% endif %}{% endif %}
 
-{{prob.answers|linebreaks}}
-{% endif %}   
-{% endif %}
-
-{% if include_ans %}
-{% if prob.question_type_new.question_type == "multiple choice" %}
-\textbf{Answer:} $\textbf{({{prob.mc_answer}})\,}$
-{% elif prob.question_type_new.question_type == "short answer" %}
-\textbf{Answer:} ${{prob.sa_answer}}\,$
-
-{% elif prob.question_type_new.question_type == "multiple choice short answer" %}
-\textbf{Answer:} $\textbf{\,({{prob.mc_answer}})}$, or ${{prob.sa_answer}}\,$
-{% endif %}
-{% endif %}
-
-{% if include_sols %}
-{% for solution in prob.solutions.all %}
-\textbf{Solution{% if solutions|length > 1 %} {{forloop.counter}}{% endif %}:}
-{{solution.solution_text|linebreaks}}
-
-{% endfor %}
-\rule{\textwidth}{.5pt}
-{% endif %}
-{% endwith %}
-
-{% endfor %}
+{% if include_sols %}{% for solution in prob.solutions.all %}\textbf{Solution{% if solutions|length > 1 %} {{forloop.counter}}{% endif %}:}{{solution.solution_text|linebreaks}}
+{% endfor %}\rule{\textwidth}{.5pt}{% endif %}{% endwith %}{% endfor %}
 \end{enumerate}
 \end{document}
 </code>
