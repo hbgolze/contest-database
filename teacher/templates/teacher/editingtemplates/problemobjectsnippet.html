@@ -1,37 +1,56 @@
 
-<div class="list-group-item">
+<div class="list-group-item problem-object" id="problem-object_{{probobj.pk}}">
   <input type="hidden" name="problemobjectinput" value="problemobject_{{probobj.pk}}">
-<div class="container">
-  <div class="row">
-    <div class="col-1">
-      {{forcount}}.
-    </div>
-    <div class="col-9" id="problemtext_{{probobj.pk}}">
-      {% if probobj.problem %}
-      {% with prob=probobj.problem %}
-      {% if probobj.question_type.question_type == "multiple choice" %}
-      <p>
-        {% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %} <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
-      </p>
-      {% else %}
-      <p>
-        {% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %} <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
-      </p>
-      {% endif %}
-      {% endwith %}
-      {% else %}
-      <p>
-        {% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}
-      </p>
-      {% endif %}
-    </div>
-    <div class="col-2">
-      <p class="float-right">
+  <div class="container">
+    <div class="row mb-1">
+
+      <div class="col-12 float-right">
+
 	{% if sharing_type != "read" %}
-	<button class="btn btn-sm btn-danger js-remove"><span class="fa fa-remove"></span></button>
+	<button class="btn btn-sm btn-danger js-remove float-right"><span class="fa fa-remove"></span></button>
 	{% endif %}
-      </p>
-      <p class="float-right">
+
+	<div class="btn-group btn-group-sm float-right mr-1" role="group" aria-label="Problem options">
+          <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{{probobj.pk}}"><span class="fa fa-desktop"></span></button>
+	</div>
+
+	<div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem sorting options">
+          <button type="button" class="btn btn-sm btn-secondary push-up-link ml-1" id="push-up_{{probobj.pk}}" title="Push problem to top"><span class="fa fa-long-arrow-up"></span></button>
+          <button type="button" class="btn btn-sm btn-secondary push-up-5-link" id="push-up-5_{{probobj.pk}}" title="Push problem five spots up"><span class="fa fa-arrow-up"></span></button>
+          <button type="button" class="btn btn-sm btn-secondary push-up-1-link" id="push-up-1_{{probobj.pk}}" title="Push problem one spot up"><span class="fa fa-angle-up"></span></button>
+          <button type="button" class="btn btn-sm btn-secondary push-down-1-link" id="push-down-1_{{probobj.pk}}" title="Push problem one spot down"><span class="fa fa-angle-down"></span></button>
+          <button type="button" class="btn btn-sm btn-secondary push-down-5-link" id="push-down-5_{{probobj.pk}}" title="Push problem five spots down"><span class="fa fa-arrow-down"></span></button>
+          <button type="button" class="btn btn-sm btn-secondary push-down-link mr-1" id="push-down_{{probobj.pk}}" title="Push problem to bottom"><span class="fa fa-long-arrow-down"></span></button>
+        </div>
+
+	
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-1">
+	{{forcount}}.
+      </div>
+      <div class="col-9" id="problemtext_{{probobj.pk}}">
+	{% if probobj.problem %}
+	{% with prob=probobj.problem %}
+	{% if probobj.question_type.question_type == "multiple choice" %}
+	<p>
+          <div id="ptext_{{probobj.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}}{% endautoescape %}</div> <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
+	</p>
+	{% else %}
+	<p>
+          <div id="ptext_{{probobj.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}}{% endautoescape %}</div> <a href="/problemeditor/redirectproblem/{{prob.pk}}/">[{{prob.readable_label}}]</a>
+	</p>
+	{% endif %}
+	{% endwith %}
+	{% else %}
+	<p>
+          <div id="ptext_{{probobj.pk}}">{% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}</div>
+	</p>
+	{% endif %}
+      </div>
+      <div class="col-2">
+	<p class="float-right">
           <label for="pointvalue_{{probobj.pk}}">Point Value:</label>
           <span id="pointvalue_{{probobj.pk}}">
             {{probobj.point_value}}

@@ -295,6 +295,12 @@
   </div>
 </div>
 
+
+<div class="modal fade" id="fullscreen-problem-modal" role="dialog">
+{% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
+  </div>
+
+
 <div class="modal fade" id="problemgroups" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     
@@ -937,6 +943,78 @@ $(document).on('click',".exampleproblem-primitive-preview-link",function(e) {
     $("#original-question-preview").html(po_text);
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"original-question-preview"]);
 });
+
+
+$(document).on("click",".push-up-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+console.log(pk);
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problemobjectList .problem-object:eq(0)"));
+    $("#unsaved-message").show();
+});
+
+$(document).on("click",".push-up-5-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problemobjectList .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-5, 0)).toString()+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
+
+$(document).on("click",".push-up-1-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problemobjectList .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-1, 0)).toString()+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
+
+
+$(document).on("click",".push-down-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problemobjectList .problem-object:eq(-1)"));
+    $("#unsaved-message").show();
+});
+
+$(document).on("click",".push-down-5-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problemobjectList .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+5, $("#problemobjectList .problem-object").length-1)+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
+
+$(document).on("click",".push-down-1-link", function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    console.log( $('#problem-object_'+pk).index());
+    $("#problemobjectList .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problemobjectList .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+1, $("#problemobjectList .problem-object").length-1)+")"));
+var url = location.href;
+location.href = "#problem-object_"+pk;
+history.replaceState(null,null,url);
+    $("#unsaved-message").show();
+});
+
+$(document).on('click',".fullscreen-disp-link",function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    $("#fullscreen-modal-problem-text").html($("#ptext_"+pk).html());
+    $("#fullscreen-problem-modal").modal("show");
+//Can probably show readable label and give options.
+});
+
 
 </script>
 {% endif %}

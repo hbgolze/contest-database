@@ -43,7 +43,7 @@
 {% for p_object in group.problem_objects.all %}
 {% with prob=p_object.problem %}
 \item \begin{minipage}[t]{\linewidth}
-{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}{{prob.mc_problem_text}}{% else %}{{prob.problem_text}} {% endif %}{% if include_problem_labels %}[{{prob.readable_label|poundsafe}}]{% endif %}
+{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}{{prob.mc_problem_text}}{% else %}{{prob.problem_text}} {% endif %}{% if include_problem_labels %} [{{prob.readable_label|poundsafe}}]{% endif %}
 
 {% if include_answer_choices or prob.needs_answers %}
 {% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
