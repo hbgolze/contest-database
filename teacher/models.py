@@ -784,6 +784,21 @@ class ProblemSet(models.Model):#like NewTest
         self.unit_object.increment_version()
         self.save()
 
+    def add_to_end(self,prob):
+        if self.problem_objects.filter(problem = prob).exists() == False:
+            po = ProblemObject(order = self.problem_objects.count()+1,point_value = self.default_point_value,isProblem = 1,problem = prob,question_type = prob.question_type_new)
+            po.problemset = self
+            po.save()
+            self.increment_version()
+            return 1
+        return 0
+    def problem_list(self):
+        P = []
+        for i in self.problem_objects.all():
+            if i.isProblem:
+                P.append(i.problem)
+        return P
+
 ####sync_to_parent needs work beyond here.
 
 class PublishedProblemSet(models.Model):#like NewTest

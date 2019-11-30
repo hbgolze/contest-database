@@ -238,19 +238,19 @@ class Problem(models.Model):
             s += '}\\qquad\\textbf{(B) }{'+self.answer_B
         k = len(self.answer_B)
         if len(self.answer_B) > 0 and self.answer_B[k-2:k] == '\\\\':
-            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_C
+            s = s[0:-2]+ '}\\\\\n\\textbf{(C) }{'+self.answer_C
 #            s += '}\\\n\\textbf{(C) }{'+self.answer_C
         else:
             s += '}\\qquad\\textbf{(C) }{'+self.answer_C
         k = len(self.answer_C)
         if len(self.answer_C) > 0 and self.answer_C[k-2:k] == '\\\\':
-            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_D
+            s = s[0:-2]+ '}\\\\\n\\textbf{(D) }{'+self.answer_D
 #            s += '}\\\n\\textbf{(D) }{'+self.answer_D
         else:
             s += '}\\qquad\\textbf{(D) }{'+self.answer_D
         k = len(self.answer_D)
         if len(self.answer_D) > 0 and self.answer_D[k-2:k] == '\\\\':
-            s = s[0:-2]+ '}\\\\\n\\textbf{(B) }{'+self.answer_E
+            s = s[0:-2]+ '}\\\\\n\\textbf{(E) }{'+self.answer_E
  #           s += '}\\\n\\textbf{(E) }{'+self.answer_E
         else:
             s += '}\\qquad\\textbf{(E) }{'+self.answer_E

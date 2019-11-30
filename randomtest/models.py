@@ -332,6 +332,17 @@ class ProblemGroup(models.Model):
     is_shared = models.BooleanField(default = 0)
     def __str__(self):
         return self.name
+    def add_to_end(self,prob):
+        if self.problem_objects.filter(problem = prob).exists() == False:
+            pg_object = ProblemGroupObject(problemgroup = self,problem=prob,order=self.problem_objects.count()+1)
+            pg_object.save()
+            return 1
+        return 0
+    def problem_list(self):
+        P = []
+        for i in self.problem_objects.all():
+            P.append(i.problem)
+        return P
 
 class ProblemGroupObject(models.Model):
     problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects")
