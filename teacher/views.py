@@ -1421,6 +1421,150 @@ def reviewproblemgroup(request,pk,upk,ppk):
     context['prob_group'] = prob_group
     return render(request,'teacher/editingtemplates/review-problem-group.html',context)
 
+@login_required
+def pset_as_pdf(request,**kwargs):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = kwargs['pk'])
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = kwargs['upk'])
+    if my_class.unit_set.filter(pk = kwargs['upk']).exists == False:
+        raise Http404("No such unit in this class.")
+    problemset = get_object_or_404(ProblemSet,pk = kwargs['ppk'])
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = True
+    else:
+        include_problem_labels = False
+    if 'include-tags' in form:
+        include_tags = True
+    else:
+        include_tags = False
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    if 'include-ans' in form:
+        include_ans = True
+    else:
+        include_ans = False
+#    prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
+
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('teacher/editingtemplates/my_latex_template.tex')########NEEDS TO BE CUSTOMIZED?
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = Context({
+                'problemset' : problemset,
+                'include_problem_labels' : include_problem_labels,
+                'include_answer_choices':include_answer_choices,
+                'include_tags' : include_tags,
+                'include_sols' : include_sols,
+                'include_ans' : include_ans,
+                'tempdirect' : tempdir,
+                })
+        template = get_template('teacher/editingtemplates/my_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+problemset.name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'teacher','name':problemset.name,'error_text':error_text})#####Perhaps the error page needs to be customized... 
+
+@login_required
+def pset_as_latex(request,**kwargs):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = kwargs['pk'])
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none' or sharing_type == 'read':
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = kwargs['upk'])
+    if my_class.unit_set.filter(pk = kwargs['upk']).exists == False:
+        raise Http404("No such unit in this class.")
+    problemset = get_object_or_404(ProblemSet,pk = kwargs['ppk'])
+    if unit.unit_objects.filter(problemset__isnull = False).filter(problemset__pk = problemset.pk).exists() == False:
+        raise Http404("No such problem set in this unit.")
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = True
+    else:
+        include_problem_labels = False
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    if 'include-ans' in form:
+        include_ans = True
+    else:
+        include_ans = False
+    context = Context({
+            'problemset' : problemset,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            })
+
+    filename = problemset.name+".tex"
+    response = HttpResponse(render_to_string('teacher/editingtemplates/my_latex_template.tex',context), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
+
 
 @login_required
 def testeditview(request,pk,upk,tpk):
