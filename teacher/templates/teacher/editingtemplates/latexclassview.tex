@@ -93,7 +93,7 @@
 {% if pset.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in pset.problem_objects.all %}
-\item {% if prob.isProblem %}{% autoescape off %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text}}{% else %}{{prob.problem.problem_text}}{% endif %}{% endautoescape %} [{{prob.problem.readable_label|poundsafe}}]
+\item {% if prob.isProblem %}{% autoescape off %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text}}{% else %}{{prob.problem.problem_text}}{% endif %}{% endautoescape %} {% if include_problem_labels %}[{{prob.problem.readable_label|poundsafe}}]{% endif %}
 
 {% if prob.question_type.question_type == "multiple choice" %}
 {% autoescape off %}
@@ -147,7 +147,7 @@
 {% if test.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in test.problem_objects.all %}
-\item {% if prob.isProblem %}{% autoescape off %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text}}{% else %}{{prob.problem.problem_text}}{% endif %}{% endautoescape %} [{{prob.problem.readable_label|poundsafe}}]
+\item {% if prob.isProblem %}{% autoescape off %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text}}{% else %}{{prob.problem.problem_text}}{% endif %}{% endautoescape %} {% if include_problem_labels %} [{{prob.problem.readable_label|poundsafe}}]{% endif %}
 
 {% if prob.question_type.question_type == "multiple choice" %}
 {% autoescape off %}

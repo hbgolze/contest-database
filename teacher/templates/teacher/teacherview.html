@@ -165,6 +165,7 @@ document.write("</div>");
         <button type="button" class="close" data-dismiss="modal">&times;</button>
       </div>
       <div class="modal-body">
+	<div class="container">
         {% csrf_token %}
         <input type="hidden" id="download-latex-url" value="">
         <div class="row">
@@ -176,7 +177,15 @@ document.write("</div>");
                 <option value="book">Book</option>
               </select>
             </div>
+
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" value="" id="include-pls" name="include-pls" checked>
+              <label class="form-check-label" for="include-pls">
+                Include Problem Labels
+              </label>
+            </div>
           </div>
+	</div>
         </div>
         <div class="modal-footer">
           <button type="submit" name="download-latex"  class="btn btn-primary">Download LaTeX</button>

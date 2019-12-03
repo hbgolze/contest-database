@@ -718,13 +718,17 @@ def latexclassview(request,pk):
         raise Http404("Unauthorized.")
     form = request.GET
     include_sols = False
+    include_problem_labels = False
     if 'include-sols' in form:
         include_sols = True
+    if 'include-pls' in form:
+        include_problem_labels = True
 
     context = {}
     context['my_class'] = my_class
     context['dc'] = dc
     context['include_sols'] = include_sols
+    context['include_problem_labels'] = include_problem_labels
     filename = my_class.name+".tex"
     response = HttpResponse(render_to_string('teacher/editingtemplates/latexclassview.tex',context), content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
