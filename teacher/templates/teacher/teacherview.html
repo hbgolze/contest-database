@@ -441,7 +441,9 @@ $(document).on('click',".latex-download-link",function(e) {
 
 $(document).on('submit',"#latex-download-form",function(e) {
   e.preventDefault();
-  window.location = $("#download-latex-url").val()+"?dc="+$("#document-class").val();
+  var inc_pls="";
+  if ($('#include-pls').is(':checked')) {inc_pls = "&include-pls=";}
+  window.location = $("#download-latex-url").val()+"?dc="+$("#document-class").val()+inc_pls;
   $("#modal-latex-download").hide();
   $("[data-dismiss=modal]").trigger({ type: "click" });
   return false;
