@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/change-qt-original-problem/$', views.loadcqtoriginalproblemform, name='loadcqtoriginalproblemform'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/pdf/$', views.pset_as_pdf, name='pset_as_pdf'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/latex/$', views.pset_as_latex, name='pset_as_latex'),
+    url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/problemset/(?P<ppk>\d+)/sol-pdf/$', views.pset_sols_as_pdf, name='pset_sols_as_pdf'),
 #slides
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slideslatex/(?P<ppk>\d+)/$', views.latexslidesview, name='latexslidesview'),
     url(r'^editclass/(?P<pk>\d+)/units/(?P<upk>\d+)/slides/(?P<spk>\d+)/$', views.slideseditview, name='slideseditview'),

@@ -1,0 +1,158 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
+\title{ {{problemset.name}} }
+\author{}
+\date{}
+{% if tempdirect %}
+\graphicspath{ { {{tempdirect}}/} }
+{% endif %}
+\begin{document}
+\maketitle
+\begin{enumerate}
+{% for p_object in problemset.problem_objects.all %}
+{% if p_object.isProblem %}
+{% with prob=p_object.problem %}
+\item {% if include_problems %}
+\begin{minipage}[t]{\linewidth}
+{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}{{prob.mc_problem_text}}{% else %}{{prob.problem_text}} {% endif %}{% if include_problem_labels %} [{{prob.readable_label|poundsafe}}]{% endif %}
+
+{% if include_answer_choices or prob.needs_answers %}
+{% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}
+\vspace{6pt}
+
+{{prob.answers}}
+{% endif %}
+{% endif %}
+
+{% if include_ans %}
+{% if prob.question_type_new.question_type != 'proof' %}
+\vspace{3mm}
+$\textbf{Answer:}$ {% if prob.question_type_new.question_type == 'short answer' %}${{prob.sa_answer}}\,${% elif prob.question_type_new.question_type != 'multiple choice' %}$\textbf{({{prob.mc_answer}})}${% elif prob.question_type_new.question_type != 'multiple choice short answer' %}$\textbf{({{prob.mc_answer}})}$, or ${{prob.correct_answer}}\,${% endif %}
+{% endif %}
+{% endif %}
+
+\end{minipage}
+
+\vspace{3mm}
+
+{% if prob.solutions.count > 0 %}{% for sol in prob.solutions.all %}\textbf{Solution{% if prob.solutions.count > 1 %} {{forloop.counter}}{% endif %}:} {{sol.solution_text}} 
+
+{% endfor %}
+{% else %}
+No solution in the database.
+{% endif %}
+\rule{\textwidth}{.5pt}
+
+{% else %}
+{% if include_problem_labels %}
+({{prob.readable_label|poundsafe}}) {% endif %}{% if include_ans %}                                                                                 
+{% if prob.question_type_new.question_type != 'proof' %}
+\vspace{3mm}
+
+$\textbf{Answer:}$ {% if prob.question_type_new.question_type == 'short answer' %}${{prob.sa_answer}}\,$
+
+{% elif prob.question_type_new.question_type != 'multiple choice' %}$\textbf{({{prob.mc_answer}})}$
+
+{% elif prob.question_type_new.question_type != 'multiple choice short answer' %}$\textbf{({{prob.mc_answer}})}$, or ${{prob.correct_answer}}\,$
+
+{% endif %}{% endif %}{% endif %}{% if prob.solutions.count > 0 %}{% for sol in prob.solutions.all %} {% if prob.solutions.count > 1 %} \textbf{Solution {{forloop.counter}}:}{% endif %}{{sol.solution_text}}
+
+%\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
+{% endfor %}
+{% else %}
+No solution in the database.
+{% endif %}
+\rule{\textwidth}{.5pt}
+
+
+{% endif %}
+
+{% endwith %}
+{% else %}
+
+
+
+
+{% if include_problems %}
+\item \begin{minipage}[t]{\linewidth}
+{{p_object.problem_code}}
+
+{% if p_object.question_type.question_type == 'multiple choice' %}
+\vspace{6pt}
+
+{{p_object.answers}}
+{% endif %}
+
+
+{% if include_ans %}
+{% if p_object.question_type.question_type != 'proof' %}
+\vspace{3mm}
+$\textbf{Answer:}$ {% if p_object.question_type.question_type == 'short answer' %}${{p_object.sa_answer}}\,${% elif p_object.question_type.question_type != 'multiple choice' %}$\textbf{({{p_object.mc_answer}})}${% endif %}
+{% endif %}
+{% endif %}
+
+\end{minipage}
+
+\vspace{3mm}
+{% endif %}
+
+
+
+{% if p_object.solution_objects.count > 0 %}
+
+{% for sol in p_object.solution_objects.all %}
+
+
+{% if p_object.solution_objects.count > 1 %}\textbf{Solution {{forloop.counter}}:}{% endif %}
+{{sol.solution_code}}
+
+%\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
+{% endfor %}
+{% else %}
+No solution in the database.
+{% endif %}
+\rule{\textwidth}{.5pt}
+
+
+
+
+{% endif %}
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}
