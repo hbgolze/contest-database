@@ -1657,7 +1657,7 @@ def pset_sols_as_pdf(request,**kwargs):
                 pdf = f.read()
                 r = HttpResponse(content_type='application/pdf')
                 r.write(pdf)
-                r['Content-Disposition'] = 'attachment;filename="'+problemset.name.replace(' ','')+'.pdf"'
+                r['Content-Disposition'] = 'attachment;filename="'+problemset.name.replace(' ','')+'-sols.pdf"'
                 return r
         else:
             with open(os.path.join(tempdir, 'texput.log')) as f:

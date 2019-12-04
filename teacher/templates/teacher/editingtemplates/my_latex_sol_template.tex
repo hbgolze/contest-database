@@ -88,7 +88,7 @@ $\textbf{Answer:}$ {% if prob.question_type_new.question_type == 'short answer' 
 
 {% elif prob.question_type_new.question_type != 'multiple choice short answer' %}$\textbf{({{prob.mc_answer}})}$, or ${{prob.correct_answer}}\,$
 
-{% endif %}{% endif %}{% endif %}{% if prob.solutions.count > 0 %}{% for sol in prob.solutions.all %} {% if prob.solutions.count > 1 %} \textbf{Solution {{forloop.counter}}:}{% endif %}{{sol.solution_text}}
+{% endif %}{% endif %}{% endif %}{% if prob.solutions.count > 0 %}{% for sol in prob.solutions.all %} {% if prob.solutions.count > 1 %} \textbf{Solution {{forloop.counter}}:}{% endif %} {{sol.solution_text}}
 
 %\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
 {% endfor %}
@@ -136,7 +136,7 @@ $\textbf{Answer:}$ {% if p_object.question_type.question_type == 'short answer' 
 {% for sol in p_object.solution_objects.all %}
 
 
-{% if p_object.solution_objects.count > 1 %}\textbf{Solution {{forloop.counter}}:}{% endif %}
+{% if p_object.solution_objects.count > 1 %}\textbf{Solution {{forloop.counter}}:} {% endif %}
 {{sol.solution_code}}
 
 %\noindent\makebox[\linewidth]{\rule{\paperwidth}{0.4pt}}
