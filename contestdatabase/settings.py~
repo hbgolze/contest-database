@@ -25,7 +25,7 @@ SECRET_KEY = '5l#(wje3qx6$wu-*twui%1p9neoek(bqb0e#qz9h=e$h3f%eu6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['hbgolze.pythonanywhere.com']
 
 
 # Application definition
@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'handouts.apps.HandoutsConfig',
     'teacher.apps.TeacherConfig',
     'student.apps.StudentConfig',
+    'results.apps.ResultsConfig',
 ]
 
 MIDDLEWARE = [
@@ -152,3 +153,6 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 
 
 #SECURE_SSL_REDIRECT = True
+
+if os.environ.get('DJANGO_DEVELOPMENT') is not None:
+    from settings_dev.py import * 
