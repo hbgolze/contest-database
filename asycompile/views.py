@@ -1,6 +1,6 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404
-from django.template import loader,RequestContext,Context
+from django.template import loader
 
 from django.template.loader import get_template
 
@@ -31,10 +31,10 @@ def asytestview(request):
             asy_code=asylist[0]
             fnamelist=request.POST.getlist('filename')
             filename=fnamelist[0]
-            context = Context({
-                    'asy_code':asy_code,
-                    'filename':filename,
-                    })
+            context = {
+                'asy_code':asy_code,
+                'filename':filename,
+                }
             template = get_template('asycompile/my_asy_template.asy')
             rendered_tpl = template.render(context).encode('utf-8')
 #            print(settings.MEDIA_ROOT)

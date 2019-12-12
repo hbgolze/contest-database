@@ -1,7 +1,7 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.template.loader import render_to_string
 from django.http import HttpResponse,HttpResponseRedirect
-from django.template import loader,RequestContext,Context
+from django.template import loader
 
 from django.template.loader import get_template
 
@@ -127,13 +127,13 @@ def test_as_pdf(request,**kwargs):
 #    if request.method == "GET":
 #        if request.GET.get('problemlabels')=='no':
 #            include_problem_labels = False
-    context = Context({
-            'name':test.name,
-            'rows':rows,
-            'pk':kwargs['pk'],
-            'include_problem_labels':include_problem_labels,
-            'include_title': include_title,
-            })
+    context = {
+        'name':test.name,
+        'rows':rows,
+        'pk':kwargs['pk'],
+        'include_problem_labels':include_problem_labels,
+        'include_title': include_title,
+        }
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -146,17 +146,17 @@ def test_as_pdf(request,**kwargs):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'randomize': randomize,
-                'seed': seed,
-                'tempdirect':tempdir,
-                'include_title': include_title,
-                })
+        context = {
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'randomize': randomize,
+            'seed': seed,
+            'tempdirect':tempdir,
+            'include_title': include_title,
+            }
         if outline == True:
             template = get_template('contestcollections/my_latex_outline_template.tex')
         else:
@@ -240,13 +240,13 @@ def test_sol_as_pdf(request,**kwargs):
     if request.method == "GET":
         if request.GET.get('problemlabels') == 'no':
             include_problem_labels = False
-    context = Context({
-            'name':test.name,
-            'rows':rows,
-            'pk':kwargs['pk'],
-            'include_problem_labels':include_problem_labels,
-            'include_title': include_title,
-            })
+    context = {
+        'name':test.name,
+        'rows':rows,
+        'pk':kwargs['pk'],
+        'include_problem_labels':include_problem_labels,
+        'include_title': include_title,
+        }
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -260,18 +260,18 @@ def test_sol_as_pdf(request,**kwargs):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'include_problem_notes':include_problem_notes,
-                'include_answer_choices':include_answer_choices,
-                'randomize': randomize,
-                'seed': seed,
-                'tempdirect':tempdir,
-                'include_title': include_title,
-                })
+        context = {
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_problem_notes':include_problem_notes,
+            'include_answer_choices':include_answer_choices,
+            'randomize': randomize,
+            'seed': seed,
+            'tempdirect':tempdir,
+            'include_title': include_title,
+            }
         template = get_template('randomtest/my_latex_sol_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -345,16 +345,16 @@ def test_answer_key_as_pdf(request, **kwargs):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
-        context = Context({
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'randomize': randomize,
-                'seed':seed,
-                'tempdirect':tempdir,
-                'include_title': include_title,
-                })
+        context = {
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'randomize': randomize,
+            'seed':seed,
+            'tempdirect':tempdir,
+            'include_title': include_title,
+            }
         template = get_template('randomtest/my_latex_answerkey_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')

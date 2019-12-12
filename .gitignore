@@ -1,6 +1,8 @@
 *.pyc
 __pycache__
 myvenv
+envcdb
+cdbenv2
 db.sqlite3
 /static
 .DS_Store

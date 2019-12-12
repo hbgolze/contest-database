@@ -1,4 +1,3 @@
-from django.template import Context
 from django.template.loader import get_template
 from django.db.models import Q
 from django.conf import settings
@@ -528,10 +527,10 @@ def compileasy(texcode, label, sol = '', temp = False):
         asy_code = asy_code.replace('\\end{center}','</center>')
         asy_code = asy_code.rstrip().lstrip()
         filename = label+sol+'-'+str(i+1)
-        context = Context({
-                'asy_code':asy_code,
-                'filename':filename,
-                })
+        context = {
+            'asy_code':asy_code,
+            'filename':filename,
+            }
         template = get_template('asycompile/my_asy_template.asy')
         rendered_tpl = template.render(context).encode('utf-8')
         with tempfile.TemporaryDirectory() as tempdir:
@@ -567,10 +566,10 @@ def compiletikz(texcode,label,sol='',temp = False):
         tikz_code = tikz_code.rstrip().lstrip()
         filename = 'tikz'+label+sol+'-'+str(i+1)
         filename = filename.replace(' ','')
-        context = Context({
-                'tikz_code':tikz_code,
-                'filename':filename,
-                })
+        context = {
+            'tikz_code':tikz_code,
+            'filename':filename,
+            }
         template = get_template('randomtest/my_tikz_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
 

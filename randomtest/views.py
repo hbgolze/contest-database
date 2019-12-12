@@ -1,12 +1,13 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
-from django.template import loader,RequestContext,Context
+from django.template import loader
 
 from django.template.loader import get_template,render_to_string
 
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate
 from django.contrib.auth.admin import User
 from django.contrib.auth.decorators import login_required,user_passes_test
+
 from django.views.generic import DeleteView
 from django.urls import reverse_lazy
 from django.db.models import Q
@@ -40,32 +41,32 @@ from django.views import generic
 from .forms import LoginForm
 
 #Not in use (need to figure out how to redirect...) Also, login2.html has been deleted.
-class LoginView(generic.FormView):
-    form_class = LoginForm
-    success_url = reverse_lazy('tableview')
-    template_name = 'registration/login2.html'
+#class LoginView(generic.FormView):
+#    form_class = LoginForm
+#    success_url = reverse_lazy('tableview')
+#    template_name = 'registration/login2.html'
 
-    def form_valid(self, form):
-        username = form.cleaned_data['username']
-        password = form.cleaned_data['password']
-        user = authenticate(username=username, password=password)
+#    def form_valid(self, form):
+#        username = form.cleaned_data['username']
+#        password = form.cleaned_data['password']
+#        user = authenticate(username=username, password=password)
 
-        if user is not None and user.is_active:
-            login(self.request, user)
-            return super(LoginView, self).form_valid(form)
-        else:
-            return self.form_invalid(form)
-    def get_initial(self):
-        initial = super(LoginView, self).get_initial()
-        redirect_field_name = 'name'#self.get_redirect_field_name()
-        if (redirect_field_name in self.request.GET and
-            redirect_field_value in self.request.GET):
-            initial.update({
-                    "redirect_field_name": redirect_field_name,
-                    "redirect_field_value": self.request.REQUEST.get(
-                        'next'),
-                    })
-        return initial
+#        if user is not None and user.is_active:
+#            login(self.request, user)
+#            return super(LoginView, self).form_valid(form)
+#        else:
+#            return self.form_invalid(form)
+#    def get_initial(self):
+#        initial = super(LoginView, self).get_initial()
+#        redirect_field_name = 'name'#self.get_redirect_field_name()
+#        if (redirect_field_name in self.request.GET and
+#            redirect_field_value in self.request.GET):
+#            initial.update({
+#                    "redirect_field_name": redirect_field_name,
+#                    "redirect_field_value": self.request.REQUEST.get(
+#                        'next'),
+#                    })
+#        return initial
 
 
 class TestDelete(DeleteView):
@@ -783,19 +784,19 @@ def newtestview(request,**kwargs):#Get this ready for use...
     context['show_marks'] = usertest.show_answer_marks
     return render(request, 'randomtest/testview.html',context)
 
-@login_required
-def UpdatePassword(request):
-    form = PasswordChangeForm(user=request.user)
+#@login_required
+#def UpdatePassword(request):
+#    form = PasswordChangeForm(user=request.user)
 
-    if request.method == 'POST':
-        form = PasswordChangeForm(user=request.user, data=request.POST)
-        if form.is_valid():
-            form.save()
-            update_session_auth_hash(request, form.user)
-            return redirect('/randomtest/')
-    return render(request, 'registration/change-password.html', {
-        'form': form,
-    })
+#    if request.method == 'POST':
+#        form = PasswordChangeForm(user=request.user, data=request.POST)
+#        if form.is_valid():
+#            form.save()
+#            update_session_auth_hash(request, form.user)
+#            return redirect('/randomtest/')
+#    return render(request, 'registration/change-password.html', {
+#        'form': form,
+#    })
 
 @login_required
 def latexview(request,**kwargs):
@@ -889,12 +890,12 @@ def test_as_pdf(request, **kwargs):
 #    if request.method == "GET":
 #        if request.GET.get('problemlabels') == 'no':
 #            include_problem_labels = False
-    context = Context({  
-            'name':test.name,
-            'rows':rows,
-            'pk':kwargs['pk'],
-            'include_problem_labels':include_problem_labels,
-            })
+    context = {  
+        'name':test.name,
+        'rows':rows,
+        'pk':kwargs['pk'],
+        'include_problem_labels':include_problem_labels,
+        }
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -908,16 +909,16 @@ def test_as_pdf(request, **kwargs):
         fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({  
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'randomize': randomize,
-                'seed':seed,
-                'tempdirect':tempdir,
-                })
+        context = {  
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'randomize': randomize,
+            'seed':seed,
+            'tempdirect':tempdir,
+            }
         template = get_template('randomtest/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')  
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -993,12 +994,12 @@ def test_sol_as_pdf(request,**kwargs):
     if request.method == "GET":
         if request.GET.get('problemlabels')=='no':
             include_problem_labels = False
-    context = Context({  
-            'name':test.name,
-            'rows':rows,
-            'pk':kwargs['pk'],
-            'include_problem_labels':include_problem_labels,
-            })
+    context = {  
+        'name':test.name,
+        'rows':rows,
+        'pk':kwargs['pk'],
+        'include_problem_labels':include_problem_labels,
+        }
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -1012,16 +1013,16 @@ def test_sol_as_pdf(request,**kwargs):
         fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({  
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'randomize': randomize,
-                'seed':seed,
-                'tempdirect':tempdir,
-                })
+        context = {  
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'randomize': randomize,
+            'seed':seed,
+            'tempdirect':tempdir,
+            }
         template = get_template('randomtest/my_latex_sol_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')  
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -1091,16 +1092,16 @@ def test_answer_key_as_pdf(request, **kwargs):
         # Create subprocess, supress output with PIPE and
         # run latex twice to generate the TOC properly.
         # Finally read the generated pdf.
-        context = Context({  
-                'name':test.name,
-                'rows':rows,
-                'pk':kwargs['pk'],
-                'include_problem_labels':include_problem_labels,
-                'include_problem_notes':include_problem_notes,
-                'randomize': randomize,
-                'seed':seed,
-                'tempdirect':tempdir,
-                })
+        context = {  
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_problem_notes':include_problem_notes,
+            'randomize': randomize,
+            'seed':seed,
+            'tempdirect':tempdir,
+            }
         template = get_template('randomtest/my_latex_answerkey_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')  
         ftex=open(os.path.join(tempdir,'texput.tex'),'wb')

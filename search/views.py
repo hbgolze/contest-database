@@ -1,6 +1,6 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
-from django.template import loader,RequestContext,Context
+from django.template import loader
 
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth import authenticate,login,logout

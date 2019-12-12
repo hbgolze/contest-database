@@ -9,8 +9,8 @@ from django.contrib.contenttypes.models import ContentType
 from randomtest.models import UserProfile,QuestionType,UserProfile
 # Create your models here.
 class UserClass(models.Model):
-    published_class = models.ForeignKey('teacher.PublishedClass')
-    userprofile = models.ForeignKey(UserProfile,related_name = 'userclasses')
+    published_class = models.ForeignKey('teacher.PublishedClass',null=True,on_delete=models.SET_NULL)
+    userprofile = models.ForeignKey(UserProfile,related_name = 'userclasses',null=True,on_delete=models.SET_NULL)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
     date_created = models.DateTimeField(default = timezone.now)
@@ -39,9 +39,9 @@ class UserClass(models.Model):
             uu.response_initialize()
 
 class UserUnit(models.Model):
-    unit = models.ForeignKey('teacher.Unit',null=True)
-    published_unit = models.ForeignKey('teacher.PublishedUnit',null=True)
-    user_class = models.ForeignKey(UserClass)
+    unit = models.ForeignKey('teacher.Unit',null=True,on_delete=models.SET_NULL)
+    published_unit = models.ForeignKey('teacher.PublishedUnit',null=True,on_delete=models.SET_NULL)
+    user_class = models.ForeignKey(UserClass,null=True,on_delete=models.CASCADE)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
     order = models.IntegerField(default = 0)
@@ -83,8 +83,8 @@ class UserUnit(models.Model):
                 a=0
 
 class UserUnitObject(models.Model):
-    unit_object = models.ForeignKey('teacher.PublishedUnitObject',null = True)
-    user_unit = models.ForeignKey(UserUnit)
+    unit_object = models.ForeignKey('teacher.PublishedUnitObject',null = True,on_delete=models.SET_NULL)
+    user_unit = models.ForeignKey(UserUnit,null=True,on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -96,8 +96,8 @@ class UserProblemSet(models.Model):
 #        primary_key=True,
         null = True,
     )
-    problemset = models.ForeignKey('teacher.ProblemSet',null = True)
-    published_problemset = models.ForeignKey('teacher.PublishedProblemSet',null = True)
+    problemset = models.ForeignKey('teacher.ProblemSet',null = True,on_delete=models.SET_NULL)
+    published_problemset = models.ForeignKey('teacher.PublishedProblemSet',null = True,on_delete=models.SET_NULL)
     total_points = models.IntegerField()
     points_earned = models.IntegerField()
     num_problems = models.IntegerField(default = 0)
@@ -157,8 +157,8 @@ class UserSlides(models.Model):
 #        primary_key=True,
         null = True,
     )
-    slides = models.ForeignKey('teacher.SlideGroup',null=True)
-    published_slides = models.ForeignKey('teacher.PublishedSlideGroup',null=True)
+    slides = models.ForeignKey('teacher.SlideGroup',null=True,on_delete=models.SET_NULL)
+    published_slides = models.ForeignKey('teacher.PublishedSlideGroup',null=True,on_delete=models.SET_NULL)
     num_slides = models.IntegerField(default = 0)
 
 class UserTest(models.Model):
@@ -168,8 +168,8 @@ class UserTest(models.Model):
 #        primary_key=True,
         null = True,
     )
-    test = models.ForeignKey('teacher.Test',null=True)
-    published_test = models.ForeignKey('teacher.PublishedTest',null=True)
+    test = models.ForeignKey('teacher.Test',null=True,on_delete=models.SET_NULL)
+    published_test = models.ForeignKey('teacher.PublishedTest',null=True,on_delete=models.SET_NULL)
     total_points = models.IntegerField()
     points_earned = models.FloatField()
     num_problems = models.IntegerField(default = 0)
@@ -231,10 +231,10 @@ class UserTest(models.Model):
 
 #? Is order changed?
 class Response(models.Model):
-    problem_object = models.ForeignKey('teacher.ProblemObject',null=True)
-    publishedproblem_object = models.ForeignKey('teacher.PublishedProblemObject',null=True)
-    user_problemset = models.ForeignKey(UserProblemSet,null=True)
-    user_test = models.ForeignKey(UserTest,null=True)
+    problem_object = models.ForeignKey('teacher.ProblemObject',null=True,on_delete=models.SET_NULL)
+    publishedproblem_object = models.ForeignKey('teacher.PublishedProblemObject',null=True,on_delete=models.SET_NULL)
+    user_problemset = models.ForeignKey(UserProblemSet,null=True,on_delete=models.CASCADE)
+    user_test = models.ForeignKey(UserTest,null=True,on_delete=models.CASCADE)
     response = models.CharField(max_length=50,blank=True)
     response_code = models.TextField(blank=True)
     display_response = models.TextField(blank=True)
@@ -251,19 +251,19 @@ class Response(models.Model):
         ordering = ['order']
 
 class Sticky(models.Model):
-    response = models.ForeignKey(Response)
+    response = models.ForeignKey(Response,null=True,on_delete=models.CASCADE)
     sticky_date = models.DateTimeField(default = timezone.now)
-    problemset = models.ForeignKey(UserProblemSet,null=True)
-    test = models.ForeignKey(UserTest,null=True)
-    userprofile = models.ForeignKey(UserProfile,related_name = "student_stickies",null=True)
+    problemset = models.ForeignKey(UserProblemSet,null=True,on_delete=models.CASCADE)
+    test = models.ForeignKey(UserTest,null=True,on_delete=models.CASCADE)
+    userprofile = models.ForeignKey(UserProfile,related_name = "student_stickies",null=True,on_delete=models.CASCADE)
     readable_label = models.CharField(max_length=30,blank=True)
     def __str__(self):
         return self.problemset.published_problemset.name+' #'+str(self.response.order)#changed to published_problemset
 
 class UserResponse(models.Model):
-    userprofile = models.ForeignKey(UserProfile,related_name = "student_responselog")
-    user_problemset = models.ForeignKey(UserProblemSet)
-    response = models.ForeignKey(Response)
+    userprofile = models.ForeignKey(UserProfile,null=True,related_name = "student_responselog",on_delete=models.CASCADE)
+    user_problemset = models.ForeignKey(UserProblemSet,null=True,on_delete=models.CASCADE)
+    response = models.ForeignKey(Response,null=True,on_delete=models.CASCADE)#check this on_delete....
     static_response = models.CharField(max_length=10,blank=True)
     readable_label = models.CharField(max_length=30)
     modified_date = models.DateTimeField(default = timezone.now)

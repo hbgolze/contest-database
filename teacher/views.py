@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse,Http404,HttpResponse
 
 from django.contrib.auth.models import User
-from django.template import loader,Context
+from django.template import loader
 
 from django.contrib.contenttypes.models import ContentType
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -769,15 +769,15 @@ def class_as_pdf(request,pk):
         include_ans = True
     else:
         include_ans = False
-    context = Context({
-            'my_class' : my_class,
-            'dc' : dc,
-            'include_problem_labels' : include_problem_labels,
-            'include_answer_choices' : include_answer_choices,
-            'include_tags' : include_tags,
-            'include_sols' : include_sols,
-            'include_ans' : include_ans,
-            })
+    context = {
+        'my_class' : my_class,
+        'dc' : dc,
+        'include_problem_labels' : include_problem_labels,
+        'include_answer_choices' : include_answer_choices,
+        'include_tags' : include_tags,
+        'include_sols' : include_sols,
+        'include_ans' : include_ans,
+        }
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -787,16 +787,16 @@ def class_as_pdf(request,pk):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'my_class' : my_class,
-                'dc' : dc,
-                'include_problem_labels' : include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'include_tags' : include_tags,
-                'include_sols' : include_sols,
-                'include_ans' : include_ans,
-                'tempdirect' : tempdir,
-                })
+        context = {
+            'my_class' : my_class,
+            'dc' : dc,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'include_tags' : include_tags,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            'tempdirect' : tempdir,
+            }
         template = get_template('teacher/editingtemplates/latexclassview.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -1471,15 +1471,15 @@ def pset_as_pdf(request,**kwargs):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'problemset' : problemset,
-                'include_problem_labels' : include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'include_tags' : include_tags,
-                'include_sols' : include_sols,
-                'include_ans' : include_ans,
-                'tempdirect' : tempdir,
-                })
+        context = {
+            'problemset' : problemset,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'include_tags' : include_tags,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            'tempdirect' : tempdir,
+            }
         template = get_template('teacher/editingtemplates/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -1556,13 +1556,13 @@ def pset_as_latex(request,**kwargs):
         include_ans = True
     else:
         include_ans = False
-    context = Context({
-            'problemset' : problemset,
-            'include_problem_labels' : include_problem_labels,
-            'include_answer_choices':include_answer_choices,
-            'include_sols' : include_sols,
-            'include_ans' : include_ans,
-            })
+    context = {
+        'problemset' : problemset,
+        'include_problem_labels' : include_problem_labels,
+        'include_answer_choices':include_answer_choices,
+        'include_sols' : include_sols,
+        'include_ans' : include_ans,
+        }
 
     filename = problemset.name+".tex"
     response = HttpResponse(render_to_string('teacher/editingtemplates/my_latex_template.tex',context), content_type='text/plain')
@@ -1611,14 +1611,14 @@ def pset_sols_as_pdf(request,**kwargs):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'problemset' : problemset,
-                'include_problem_labels' : include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'include_problems' : include_problems,
-                'include_ans' : include_ans,
-                'tempdirect' : tempdir,
-                })
+        context = {
+            'problemset' : problemset,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'include_problems' : include_problems,
+            'include_ans' : include_ans,
+            'tempdirect' : tempdir,
+            }
         template = get_template('teacher/editingtemplates/my_latex_sol_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')

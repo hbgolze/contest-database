@@ -90,7 +90,7 @@ class Unit(models.Model):#with order
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     num_problemsets = models.IntegerField(default=0)
-    the_class = models.ForeignKey(Class,null = True,blank = True)
+    the_class = models.ForeignKey(Class,null = True,blank = True,on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -136,7 +136,7 @@ class PublishedUnit(models.Model):
     total_points = models.IntegerField(default=0)
     num_problems = models.IntegerField(default=0)
     num_problemsets = models.IntegerField(default=0)
-    the_class = models.ForeignKey(PublishedClass,null = True,blank = True)
+    the_class = models.ForeignKey(PublishedClass,null = True,blank = True,on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -219,7 +219,7 @@ class PublishedUnit(models.Model):
 
 class UnitObject(models.Model):
     order = models.IntegerField(default = 0)
-    unit = models.ForeignKey(Unit,related_name='unit_objects')
+    unit = models.ForeignKey(Unit,null=True,related_name='unit_objects',on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -252,7 +252,7 @@ class UnitObject(models.Model):
 class PublishedUnitObject(models.Model):
     parent_unitobject = models.ForeignKey(UnitObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
-    unit = models.ForeignKey(PublishedUnit,related_name='unit_objects')
+    unit = models.ForeignKey(PublishedUnit,null=True,related_name='unit_objects',on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -343,7 +343,7 @@ class PublishedSlideGroup(models.Model):#like Handout, but more punctuated; prob
 class Slide(models.Model):#(i.e., slide 1...etc)
     title = models.CharField(max_length = 100)
     order = models.IntegerField(default = 0)
-    slidegroup = models.ForeignKey(SlideGroup,related_name='slides')
+    slidegroup = models.ForeignKey(SlideGroup,null=True,related_name='slides',on_delete=models.CASCADE)
     top_order_number = models.IntegerField(default = 0)
     version_number = models.IntegerField(default = 0)
     class Meta:
@@ -364,7 +364,7 @@ class PublishedSlide(models.Model):#(i.e., slide 1...etc)
     title = models.CharField(max_length = 100)
     order = models.IntegerField(default = 0)
     parent_slide = models.ForeignKey(Slide,null=True,on_delete=models.SET_NULL)
-    slidegroup = models.ForeignKey(PublishedSlideGroup,related_name='slides')
+    slidegroup = models.ForeignKey(PublishedSlideGroup,null=True,related_name='slides',on_delete=models.CASCADE)
     top_order_number = models.IntegerField(default = 0)
     version_number = models.IntegerField(default = 0)
     class Meta:
@@ -391,7 +391,7 @@ class PublishedSlide(models.Model):#(i.e., slide 1...etc)
 
 class SlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
-    slide = models.ForeignKey(Slide,related_name='slide_objects')
+    slide = models.ForeignKey(Slide,null=True,related_name='slide_objects',on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -421,7 +421,7 @@ class SlideObject(models.Model):#placeholder for components
 class PublishedSlideObject(models.Model):#placeholder for components
     order = models.IntegerField(default = 0)
     parent_slideobject = models.ForeignKey(SlideObject,null=True,on_delete=models.SET_NULL)
-    slide = models.ForeignKey(PublishedSlide,related_name='slide_objects')
+    slide = models.ForeignKey(PublishedSlide,null=True,related_name='slide_objects',on_delete=models.CASCADE)
     version_number = models.IntegerField(default = 0)
     class Meta:
         ordering = ['order']
@@ -500,7 +500,7 @@ class Proof(models.Model):
     proof_code = models.TextField(blank=True)
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True)
+    solution = models.ForeignKey(Solution,blank=True,null=True,on_delete=models.CASCADE)
     slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
@@ -526,7 +526,7 @@ class PublishedProof(models.Model):
     proof_code = models.TextField(blank=True)
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True)
+    solution = models.ForeignKey(Solution,blank=True,null=True,on_delete=models.CASCADE)
     slide_object = models.OneToOneField(
         PublishedSlideObject,
         on_delete=models.CASCADE,
@@ -599,8 +599,8 @@ class ExampleProblem(models.Model):
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
-    question_type = models.ForeignKey(QuestionType,blank=True,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
+    question_type = models.ForeignKey(QuestionType,blank=True,null=True,on_delete=models.CASCADE)
     mc_answer = models.CharField(max_length=1,default = "")
     sa_answer = models.CharField(max_length = 20, default = "")
     answer_A = models.CharField(max_length=500,blank=True)
@@ -608,7 +608,7 @@ class ExampleProblem(models.Model):
     answer_C = models.CharField(max_length=500,blank=True)
     answer_D = models.CharField(max_length=500,blank=True)
     answer_E = models.CharField(max_length=500,blank=True)
-    author = models.ForeignKey(User,related_name='example_problem',blank=True,null=True)
+    author = models.ForeignKey(User,related_name='example_problem',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     slide_object = models.OneToOneField(
         SlideObject,
@@ -657,8 +657,8 @@ class PublishedExampleProblem(models.Model):
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
-    question_type = models.ForeignKey(QuestionType,blank=True,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
+    question_type = models.ForeignKey(QuestionType,blank=True,null=True,on_delete=models.CASCADE)
     mc_answer = models.CharField(max_length=1,default = "")
     sa_answer = models.CharField(max_length = 20, default = "")
     answer_A = models.CharField(max_length=500,blank=True)
@@ -666,7 +666,7 @@ class PublishedExampleProblem(models.Model):
     answer_C = models.CharField(max_length=500,blank=True)
     answer_D = models.CharField(max_length=500,blank=True)
     answer_E = models.CharField(max_length=500,blank=True)
-    author = models.ForeignKey(User,related_name='published_example_problem',blank=True,null=True)
+    author = models.ForeignKey(User,related_name='published_example_problem',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     slide_object = models.OneToOneField(
         PublishedSlideObject,
@@ -961,16 +961,16 @@ class PublishedTest(models.Model):#like NewTest
 
 
 class ProblemObject(models.Model):
-    problemset = models.ForeignKey(ProblemSet,null = True, related_name = "problem_objects")
-    test = models.ForeignKey(Test,null = True,related_name = "problem_objects")
+    problemset = models.ForeignKey(ProblemSet,null = True, related_name = "problem_objects",on_delete=models.CASCADE)
+    test = models.ForeignKey(Test,null = True,related_name = "problem_objects",on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
     blank_point_value = models.FloatField(default = 0)
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
-    question_type = models.ForeignKey(QuestionType,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
+    question_type = models.ForeignKey(QuestionType,null=True,on_delete=models.CASCADE)
     mc_answer = models.CharField(max_length=1,blank=True)
     sa_answer = models.CharField(max_length = 20,blank=True)
     answer_A = models.CharField(max_length=500,blank=True)
@@ -978,7 +978,7 @@ class ProblemObject(models.Model):
     answer_C = models.CharField(max_length=500,blank=True)
     answer_D = models.CharField(max_length=500,blank=True)
     answer_E = models.CharField(max_length=500,blank=True)
-    author = models.ForeignKey(User,related_name='problem_object',blank=True,null=True)
+    author = models.ForeignKey(User,related_name='problem_object',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     version_number = models.IntegerField(default = 0)
     class Meta:
@@ -1027,8 +1027,8 @@ class ProblemObject(models.Model):
 
 
 class PublishedProblemObject(models.Model):
-    problemset = models.ForeignKey(PublishedProblemSet,null=True,related_name="problem_objects")
-    test = models.ForeignKey(PublishedTest,null=True,related_name = "problem_objects")
+    problemset = models.ForeignKey(PublishedProblemSet,null=True,related_name="problem_objects",on_delete=models.CASCADE)
+    test = models.ForeignKey(PublishedTest,null=True,related_name = "problem_objects",on_delete=models.CASCADE)
     parent_problemobject = models.ForeignKey(ProblemObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
@@ -1036,8 +1036,8 @@ class PublishedProblemObject(models.Model):
     problem_code = models.TextField(blank=True)
     problem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
-    question_type = models.ForeignKey(QuestionType,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
+    question_type = models.ForeignKey(QuestionType,null=True,on_delete=models.CASCADE)
     mc_answer = models.CharField(max_length=1,blank=True)
     sa_answer = models.CharField(max_length = 20,blank=True)
     answer_A = models.CharField(max_length=500,blank=True)
@@ -1045,7 +1045,7 @@ class PublishedProblemObject(models.Model):
     answer_C = models.CharField(max_length=500,blank=True)
     answer_D = models.CharField(max_length=500,blank=True)
     answer_E = models.CharField(max_length=500,blank=True)
-    author = models.ForeignKey(User,related_name='published_problem_object',blank=True,null=True)
+    author = models.ForeignKey(User,related_name='published_problem_object',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     version_number = models.IntegerField(default = 0)
     class Meta:
@@ -1112,13 +1112,13 @@ class PublishedProblemObject(models.Model):
 
 
 class SolutionObject(models.Model):
-    problem_object = models.ForeignKey(ProblemObject,null = True, related_name = "solution_objects")
+    problem_object = models.ForeignKey(ProblemObject,null = True, related_name = "solution_objects",on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
     solution_code = models.TextField(blank=True)
     solution_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True)
-    author = models.ForeignKey(User,related_name='solution_object',blank=True,null=True)
+    solution = models.ForeignKey(Solution,blank=True,null=True,on_delete=models.CASCADE)
+    author = models.ForeignKey(User,related_name='solution_object',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     version_number = models.IntegerField(default = 0)
     class Meta:
@@ -1138,14 +1138,14 @@ class SolutionObject(models.Model):
 
 
 class PublishedSolutionObject(models.Model):
-    problem_object = models.ForeignKey(PublishedProblemObject,null=True,related_name="solution_objects")
+    problem_object = models.ForeignKey(PublishedProblemObject,null=True,related_name="solution_objects",on_delete=models.CASCADE)
     parent_solutionobject = models.ForeignKey(SolutionObject,null=True,on_delete=models.SET_NULL)
     order = models.IntegerField(default = 0)
     solution_code = models.TextField(blank=True)
     solution_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True)
-    author = models.ForeignKey(User,related_name='published_solution_object',blank=True,null=True)
+    solution = models.ForeignKey(Solution,blank=True,null=True,on_delete=models.CASCADE)
+    author = models.ForeignKey(User,related_name='published_solution_object',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
     version_number = models.IntegerField(default = 0)
     class Meta:

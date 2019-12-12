@@ -18,7 +18,7 @@ class Proof(models.Model):
     proof_code = models.TextField(blank=True)
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
-    solution = models.ForeignKey(Solution,blank=True,null=True, related_name="handout_proof")
+    solution = models.ForeignKey(Solution,blank=True,null=True, related_name="handout_proof",on_delete=models.CASCADE)
 
 class Theorem(models.Model):
     name=models.CharField(max_length=150, default="")
@@ -27,7 +27,7 @@ class Theorem(models.Model):
     theorem_code = models.TextField(blank=True)
     theorem_display = models.TextField(blank=True)
     isProblem = models.BooleanField(default=0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name
@@ -46,7 +46,7 @@ class Section(models.Model):#possibly have an asterisk here...
 #    image = models.ImageField(upload_to='images')
 
 class DocumentElement(models.Model):
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    content_type = models.ForeignKey(ContentType,null=True, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
     content_object = GenericForeignKey('content_type', 'object_id')
     chapter_number = models.IntegerField(default=0)

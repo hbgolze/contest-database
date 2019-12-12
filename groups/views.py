@@ -1,6 +1,6 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,JsonResponse
-from django.template import loader,RequestContext,Context
+from django.template import loader
 
 from django.template.loader import get_template,render_to_string
 
@@ -389,15 +389,15 @@ def test_as_pdf(request,**kwargs):
         fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
         fa.write(asyr)
         fa.close()
-        context = Context({
-                'group' : prob_group,
-                'include_problem_labels' : include_problem_labels,
-                'include_answer_choices':include_answer_choices,
-                'include_tags' : include_tags,
-                'include_sols' : include_sols,
-                'include_ans' : include_ans,
-                'tempdirect' : tempdir,
-                })
+        context = {
+            'group' : prob_group,
+            'include_problem_labels' : include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'include_tags' : include_tags,
+            'include_sols' : include_sols,
+            'include_ans' : include_ans,
+            'tempdirect' : tempdir,
+            }
         template = get_template('groups/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
         ftex = open(os.path.join(tempdir,'texput.tex'),'wb')

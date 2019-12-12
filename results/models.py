@@ -10,7 +10,7 @@ class Contest(models.Model):
 
 class ContestYear(models.Model):
     year = models.CharField(max_length = 4)
-    contest = models.ForeignKey(Contest,related_name="years")
+    contest = models.ForeignKey(Contest,null=True,related_name="years",on_delete=models.CASCADE)
     num_teams = models.IntegerField(default=0)
     max_team_score = models.IntegerField(default = 50)
     max_power_score = models.IntegerField(default = 50)
@@ -76,7 +76,7 @@ class Site(models.Model):
 
 class Organization(models.Model):
     name = models.CharField(max_length = 100)
-    contest = models.ForeignKey(Contest,related_name = "organizations",null=True)
+    contest = models.ForeignKey(Contest,related_name = "organizations",null=True,on_delete=models.CASCADE)
     num_years = models.IntegerField(default = 0)
     last_year = models.CharField(max_length = 4,default = "")
     def __str__(self):
@@ -92,7 +92,7 @@ class Organization(models.Model):
         self.save()
 
 class Team_format1(models.Model):
-    year = models.ForeignKey(ContestYear,related_name="teams")
+    year = models.ForeignKey(ContestYear,null=True,related_name="teams",on_delete=models.CASCADE)
     name = models.CharField(max_length = 100)
     total_team_score = models.IntegerField(default = 0)
     team_score = models.IntegerField(default = 0)
@@ -101,9 +101,9 @@ class Team_format1(models.Model):
     total_relay_score = models.IntegerField(default = 0)
     total_score = models.IntegerField(default = 0)
     site = models.CharField(max_length = 1)
-    new_site = models.ForeignKey(Site,related_name="teams",null=True)
+    new_site = models.ForeignKey(Site,related_name="teams",null=True,on_delete=models.SET_NULL)
     division = models.CharField(max_length = 1)
-    organization = models.ForeignKey(Organization,related_name="teams",null=True)
+    organization = models.ForeignKey(Organization,related_name="teams",null=True,on_delete=models.SET_NULL)
     overall_rank = models.IntegerField(default = 0)
     divisional_rank = models.IntegerField(default = 0)
     award = models.CharField(max_length = 5,default = '')
@@ -132,7 +132,7 @@ class Team_format1(models.Model):
 
 class IndivProb_format1(models.Model):
     prefix = models.CharField(max_length = 16,default ="I")
-    year = models.ForeignKey(ContestYear,related_name="indiv_problems")
+    year = models.ForeignKey(ContestYear,null=True,related_name="indiv_problems",on_delete=models.CASCADE)
     problem_number = models.IntegerField(default=0)
     total_num_correct = models.IntegerField(default = 0)
     perc_correct = models.FloatField(default = 0)
@@ -145,8 +145,8 @@ class IndivProb_format1(models.Model):
         return str(self.year) + '-'+self.prefix+str(self.problem_number)
     
 class IndivProb_forteam_format1(models.Model):
-    problem = models.ForeignKey(IndivProb_format1,related_name="team_results")
-    team = models.ForeignKey(Team_format1,related_name="indiv_problems")
+    problem = models.ForeignKey(IndivProb_format1,null=True,related_name="team_results",on_delete=models.CASCADE)
+    team = models.ForeignKey(Team_format1,null=True,related_name="indiv_problems",on_delete=models.CASCADE)
     num_correct = models.IntegerField(default = 0)
     problem_number = models.IntegerField(default=0)
     class Meta:
@@ -155,7 +155,7 @@ class IndivProb_forteam_format1(models.Model):
         return str(self.problem) + ' (' + self.team.name + ')'
 
 class RelayProb_format1(models.Model):
-    year = models.ForeignKey(ContestYear,related_name="relay_problems")
+    year = models.ForeignKey(ContestYear,null=True,related_name="relay_problems",on_delete=models.CASCADE)
     total_num_points = models.IntegerField(default = 0)
     problem_number = models.IntegerField(default=0)
     avg_points = models.FloatField(default = 0)
@@ -167,8 +167,8 @@ class RelayProb_format1(models.Model):
         return str(self.year)+'-R'+str(self.problem_number)
 
 class RelayProb_forteam_format1(models.Model):
-    problem = models.ForeignKey(RelayProb_format1,related_name="team_results",null = True)
-    team = models.ForeignKey(Team_format1,related_name="relay_problems")
+    problem = models.ForeignKey(RelayProb_format1,related_name="team_results",null = True,on_delete=models.CASCADE)
+    team = models.ForeignKey(Team_format1,null=True,related_name="relay_problems",on_delete=models.CASCADE)
     num_points = models.IntegerField(default = 0)
     problem_number = models.IntegerField(default=0)
     class Meta:

@@ -35,7 +35,7 @@ class NewTag(models.Model):
     tag = models.CharField(max_length = 50)
     label = models.CharField(max_length = 50)
     level = models.IntegerField(default = 0)
-    parent = models.ForeignKey("self",null = True,related_name = "children")
+    parent = models.ForeignKey("self",null = True,related_name = "children",on_delete=models.CASCADE)
     description = models.TextField(blank = True)
     def __str__(self):
         if self.level > 1:
@@ -72,7 +72,7 @@ class Type(models.Model):
 
 class Round(models.Model):
     name = models.CharField(max_length = 50)
-    type = models.ForeignKey(Type,blank = True,null = True, related_name = "rounds")
+    type = models.ForeignKey(Type,blank = True,null = True, related_name = "rounds",on_delete=models.CASCADE)
     default_question_type = models.CharField(max_length = 4,default = 'pf')
     readable_label_pre_form = models.CharField(max_length = 50,default = '')
     readable_label_post_form = models.CharField(max_length = 50,default = '')
@@ -83,8 +83,8 @@ class Round(models.Model):
 
 class ContestTest(models.Model):
     contest_label = models.CharField(max_length = 100,blank = True)
-    contest_type = models.ForeignKey(Type,related_name='contests',blank = True,null = True)
-    round =  models.ForeignKey(Round,related_name = 'contests',blank = True,null = True)
+    contest_type = models.ForeignKey(Type,related_name='contests',blank = True,null = True, on_delete=models.CASCADE)
+    round =  models.ForeignKey(Round,related_name = 'contests',blank = True,null = True,on_delete=models.CASCADE)
     year = models.IntegerField(default = 2019)
     form_letter = models.CharField(max_length = 2,blank=True)
     short_label = models.CharField(max_length = 100,blank = True)
@@ -100,7 +100,7 @@ class SourceType(models.Model):
         return self.name
 
 class Source(models.Model):
-    source_type = models.ForeignKey(SourceType,null = True)#book; contest; person
+    source_type = models.ForeignKey(SourceType,null = True,on_delete=models.CASCADE)#book; contest; person
     title = models.CharField(max_length = 200,default = '')#book
     author = models.CharField(max_length = 200,default = '')#for book; person...
     year = models.CharField(max_length = 4,default = '',blank = True)#all? optional though (except contest)
@@ -115,7 +115,7 @@ class Source(models.Model):
             return self.author
 
 class BookChapter(models.Model):
-    source = models.ForeignKey(Source,null = True)
+    source = models.ForeignKey(Source,null = True,on_delete=models.CASCADE)
     name = models.CharField(max_length = 200,default = '')
     chapter_number = models.IntegerField()
     class Meta:
@@ -124,7 +124,7 @@ class BookChapter(models.Model):
         return self.name
 
 class ProblemApproval(models.Model):
-    approval_user = models.ForeignKey(User,blank = True,null = True)
+    approval_user = models.ForeignKey(User,blank = True,null = True,on_delete=models.SET_NULL)
     APPROVAL_CHOICES = (
         ('AP', 'Approved'),
         ('MN', 'Approved Subject to Minor Revision'),
@@ -148,7 +148,7 @@ class Solution(models.Model):
     authors = models.ManyToManyField(User,blank = True)
     created_date = models.DateTimeField(default = timezone.now)
     modified_date = models.DateTimeField(default = timezone.now)
-    parent_problem = models.ForeignKey('Problem',null = True)
+    parent_problem = models.ForeignKey('Problem',null = True,on_delete=models.CASCADE)
     def __str__(self):
         return self.problem_label+' sol '+str(self.solution_number)+str(self.authors.all())
 
@@ -156,7 +156,7 @@ class Solution(models.Model):
 class Sticky(models.Model):
     problem_label = models.CharField(max_length = 20)
     sticky_date = models.DateTimeField(default = timezone.now)
-    usertest = models.ForeignKey('UserTest',null = True,blank = True)
+    usertest = models.ForeignKey('UserTest',null = True,blank = True,on_delete=models.CASCADE)
     test_label = models.CharField(max_length = 50,blank = True)
     def __str__(self):
         return self.problem_label
@@ -165,7 +165,7 @@ class Comment(models.Model):
     comment_text = models.TextField()
     problem_label = models.CharField(max_length = 20,blank = True)
     comment_number = models.IntegerField(default = 1)
-    author = models.ForeignKey(User,blank = True)
+    author = models.ForeignKey(User,null = True,on_delete = models.SET_NULL)
     author_name = models.CharField(max_length = 50,blank = True)
     created_date = models.DateTimeField(default = timezone.now)
     def __str__(self):
@@ -176,9 +176,9 @@ class Problem(models.Model):
     tags = models.ManyToManyField(Tag,related_name = 'problems',blank = True)#related name is used correctly here...
     newtags = models.ManyToManyField(NewTag,related_name = 'problems',blank = True)
 #    tags = models.ManyToManyField(Tag,blank=True)
-    type_new = models.ForeignKey(Type,related_name='problems',blank = True,null = True)#new(should replace)
-    round = models.ForeignKey(Round,related_name = 'problems',blank = True,null = True)
-    question_type_new = models.ForeignKey(QuestionType,related_name = 'question_type_new',blank = True,null = True)#new(should replace), then replace again.
+    type_new = models.ForeignKey(Type,related_name='problems',blank = True,null = True,on_delete=models.CASCADE)#new(should replace)
+    round = models.ForeignKey(Round,related_name = 'problems',blank = True,null = True,on_delete=models.SET_NULL)
+    question_type_new = models.ForeignKey(QuestionType,related_name = 'question_type_new',blank = True,null = True,on_delete=models.SET_NULL)#new(should replace), then replace again.
     year = models.IntegerField(default = 2018)
     difficulty = models.IntegerField(blank = True,null = True)
     types = models.ManyToManyField(Type)#allows for  multiple types, should be replaced
@@ -206,18 +206,18 @@ class Problem(models.Model):
     question_type = models.ManyToManyField(QuestionType)#deprecated?
     solutions = models.ManyToManyField(Solution,blank = True)
     top_solution_number = models.IntegerField(blank = True,null = True)
-    author = models.ForeignKey(User,related_name = 'author',blank = True,null = True)
+    author = models.ForeignKey(User,related_name = 'author',blank = True,null = True,on_delete=models.SET_NULL)
     author_name = models.CharField(max_length = 50,blank = True)
     created_date = models.DateTimeField(default = timezone.now)
     approval_status = models.BooleanField(default = 0)#deprecated
-    approval_user = models.ForeignKey(User,related_name = 'approval_user',blank = True,null = True)#deprecated
+    approval_user = models.ForeignKey(User,related_name = 'approval_user',blank = True,null = True,on_delete=models.SET_NULL)#deprecated
     comments = models.ManyToManyField(Comment,blank = True)
     approvals = models.ManyToManyField(ProblemApproval,blank = True)
     duplicate_problems = models.ManyToManyField("self",blank = True)
     problem_number_prefix = models.CharField(max_length = 5,default = "")
     notes = models.TextField(blank = True)
-    source = models.ForeignKey(Source,blank = True,null = True)
-    book_chapter = models.ForeignKey(BookChapter,blank = True,null = True)
+    source = models.ForeignKey(Source,blank = True,null = True,on_delete=models.CASCADE)
+    book_chapter = models.ForeignKey(BookChapter,blank = True,null = True,on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
     def __str__(self):
         return self.label
@@ -269,7 +269,7 @@ class Problem(models.Model):
         return ''
 
 class ProofResponse(models.Model):
-    problem = models.ForeignKey(Problem)
+    problem = models.ForeignKey(Problem,null=True,on_delete=models.CASCADE)
     proof = models.TextField(blank = True)
     problem_label = models.CharField(max_length = 20)
     modified_date = models.DateTimeField(default = timezone.now)
@@ -280,7 +280,7 @@ class ProofResponse(models.Model):
         return self.problem_label
     
 class Response(models.Model):
-    problem = models.ForeignKey(Problem,blank = True, null = True)
+    problem = models.ForeignKey(Problem,blank = True, null = True,on_delete=models.CASCADE)
     response = models.CharField(max_length = 10,blank = True)
     problem_label = models.CharField(max_length = 20)
     modified_date = models.DateTimeField(default = timezone.now)
@@ -345,9 +345,9 @@ class ProblemGroup(models.Model):
         return P
 
 class ProblemGroupObject(models.Model):
-    problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects")
+    problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects",on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
-    problem = models.ForeignKey(Problem,blank=True,null=True)
+    problem = models.ForeignKey(Problem,blank=True,null=True,on_delete=models.CASCADE)
     created_date = models.DateTimeField(default = timezone.now)
     class Meta:
         ordering = ['order']
@@ -360,7 +360,7 @@ class Folder(models.Model):
 
 
 class Responses(models.Model):
-    test = models.ForeignKey(Test,on_delete = models.CASCADE)
+    test = models.ForeignKey(Test,null=True,on_delete = models.CASCADE)
     responses = models.ManyToManyField(Response,blank = True)
     num_problems_correct = models.IntegerField(blank = True,null = True)
     show_answer_marks = models.BooleanField(default = 0)
@@ -381,9 +381,9 @@ class UserResponse(models.Model):
 
 class SortableProblem(models.Model):
     newtest_pk = models.CharField(max_length = 15)#unnecessary
-    newtest = models.ForeignKey('NewTest', null = True)
+    newtest = models.ForeignKey('NewTest', null = True,on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
-    problem = models.ForeignKey(Problem, blank = True,null = True)
+    problem = models.ForeignKey(Problem, blank = True,null = True, on_delete=models.CASCADE)
     point_value =models.IntegerField(default = 1)#add ability to use this
 #    def __str__(self):
 #        return 
@@ -407,7 +407,7 @@ class UserType(models.Model):
 
 class UserProfile(models.Model):
     # This line is required. Links UserProfile to a User model instance.
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User,on_delete=models.CASCADE)
     tests = models.ManyToManyField(Test, blank = True)
     usertests = models.ManyToManyField('UserTest', blank = True)
     archived_tests = models.ManyToManyField(Test,blank = True,related_name='userprofiles')
@@ -431,16 +431,16 @@ class UserProfile(models.Model):
     readonly_my_classes = models.ManyToManyField('teacher.Class',related_name = 'readeruserprofiles')
     my_published_classes = models.ManyToManyField('teacher.PublishedClass',related_name='userprofiles')
     my_TA_classes = models.ManyToManyField('teacher.PublishedClass',related_name = 'TA_userprofiles')
-    time_zone = models.CharField(max_length = 100, blank = True, null = True, choices = TIMEZONES)
+    time_zone = models.CharField(max_length = 100, blank = True, null=True, choices = TIMEZONES)
     def __str__(self):
         return self.user.username
 
 
 class UserTest(models.Model):
-    userprof = models.ForeignKey(UserProfile,related_name = 'user_tests',null = True)
-    test = models.ForeignKey(Test, null = True)
-    newtest = models.ForeignKey(NewTest,null = True)
-    responses = models.ForeignKey(Responses,related_name = 'usertest',null = True)
+    userprof = models.ForeignKey(UserProfile,related_name = 'user_tests',null = True,on_delete=models.CASCADE)
+    test = models.ForeignKey(Test, null = True, on_delete=models.CASCADE)
+    newtest = models.ForeignKey(NewTest,null = True,on_delete=models.CASCADE)
+    responses = models.ForeignKey(Responses,related_name = 'usertest',null = True, on_delete=models.SET_NULL)
     num_probs = models.IntegerField()
     num_correct = models.IntegerField(default = 0)
     show_answer_marks = models.BooleanField(default = 0)
@@ -448,8 +448,8 @@ class UserTest(models.Model):
         return self.test.name
 
 class NewResponse(models.Model):
-    problem = models.ForeignKey(Problem,blank = True, null = True)
-    usertest = models.ForeignKey(UserTest,related_name = "newresponses")
+    problem = models.ForeignKey(Problem,blank = True, null = True, on_delete=models.CASCADE)
+    usertest = models.ForeignKey(UserTest,null=True,related_name = "newresponses", on_delete=models.CASCADE)
     response = models.CharField(max_length = 10,blank = True)
     problem_label = models.CharField(max_length = 20)
     modified_date = models.DateTimeField(default = timezone.now)
@@ -464,8 +464,8 @@ class NewResponse(models.Model):
 
 
 class CollaboratorRequest(models.Model): 
-    from_user = models.ForeignKey(UserProfile, related_name = "collab_invitations_from") 
-    to_user = models.ForeignKey(UserProfile, related_name = "collab_invitations_to")
+    from_user = models.ForeignKey(UserProfile, null=True,related_name = "collab_invitations_from", on_delete=models.CASCADE)
+    to_user = models.ForeignKey(UserProfile, null=True,related_name = "collab_invitations_to", on_delete=models.CASCADE)
 #    message = models.CharField(max_length=200, blank=True) 
     created = models.DateTimeField(default = timezone.now, editable = False) 
     accepted = models.BooleanField(default = False) 
