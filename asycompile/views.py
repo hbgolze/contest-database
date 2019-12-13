@@ -22,6 +22,7 @@ import tempfile
 import os,os.path
 
 
+#THIS IS NOT FUNCTIONAL!!!!
 # Create your views here.
 @login_required
 def asytestview(request):
@@ -51,7 +52,8 @@ def asytestview(request):
                 for i in L:
                     if 'pdf' in i:
                         print(i)
-                        command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, i, settings.MEDIA_ROOT, i.replace('.pdf','.jpg'))
+                        command = "pdftoppm -png %s/%s > %s%s" % (tempdir, i, settings.MEDIA_ROOT, i.replace('.pdf','.png'))
+#                        command = "convert -density 150 -quality 95 %s/%s %s%s" % (tempdir, i, settings.MEDIA_ROOT, i.replace('.pdf','.jpg'))
                         print(command)
                         proc = subprocess.Popen(command,
                                                 shell=True,
