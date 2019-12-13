@@ -8,7 +8,6 @@ settings.outformat="";
 settings.inlineimage=true;
 settings.embed=true;
 settings.toolbar=false;
-settings.render=0;
 viewportmargin=(2,2);
 
 {{asy_code}}
