@@ -477,6 +477,49 @@ def latex_view(request,**kwargs):
         }
     return render(request, 'groups/latex_view.html',context)
 
+
+@login_required
+def group_answer_key_as_pdf(request, **kwargs):
+    prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
+    P = list(prob_group.problem_objects.all())
+    rows = []
+
+    for i in range(0,len(P)):
+        rows.append(P[i].problem)
+    with tempfile.TemporaryDirectory() as tempdir:
+        context = {
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'tempdirect':tempdir,
+            }
+        template = get_template('groups/my_latex_answerkey_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(2):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type='application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+prob_group.name.replace(' ','')+'answerkey.pdf"'
+
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'groups','name':prob_group.name,'error_text':error_text})
+
+
 @login_required
 def add_to_group(request):
     form = request.POST

@@ -71,10 +71,12 @@ function fixchecks() {
       <p>If you remove problems, you must click "Save" for your changes to be saved.</p>
       {% endif %}
     </div>
-    <div class="col-md-5">
+    <div class="col-md-5"> 
       <button class="btn btn-primary m-1 float-right" id="view-PDF">View as PDF</button>
       <button class="btn btn-primary m-1 float-right" id="view-latex">View LaTeX</button>
       <button class="btn btn-secondary m-1 float-right" id="show-answers">Show/Hide Answers</button>
+      <button class="btn btn-secondary m-1 float-right" id="view-answer-key">PDF Answer Key</button>
+
     </div>
     
   </div>
@@ -426,6 +428,11 @@ $("#loading").hide();
 $(document).on('click','#view-PDF',function(e) {
   e.preventDefault();
   $("#PDF-options").modal("show");
+});
+
+$(document).on('click','#view-answer-key',function(e) {
+  e.preventDefault();
+  window.location.href = window.location.href+"answerkey/"
 });
 
 $(document).on('submit','#PDF-form',function(e) {

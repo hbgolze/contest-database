@@ -21,4 +21,5 @@ urlpatterns = [
     url(r'^ajax/new-problemgroup/$', views.newproblemgroup, name='groups_new_pg'),
     url(r'^(?P<pk>\d+)/pdf/$', views.test_as_pdf, name='pgpdfview'),
     url(r'^(?P<pk>\d+)/latex/$', views.latex_view, name='pglatexview'),
+    url(r'^(?P<pk>\d+)/answerkey/$', views.group_answer_key_as_pdf, name='pganswerkeyview'),
 ]
