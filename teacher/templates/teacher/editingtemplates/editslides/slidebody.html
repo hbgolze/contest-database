@@ -1,15 +1,30 @@
-<div class="list-group-item">
+<div class="list-group-item slide-card" id="slideobject_list_{{slide.pk}}">
+
+
+
+
   <div class="row">
-    <div class="col-11">
+    <div class="col-6">
       <h3>{{forcount}}. <a href="edit-slide/{{slide.pk}}/">{{slide.title}}</a></h3>
     </div>
-    <div class="col-1 float-right">
+    <div class="col-6">
 {% if sharing_type != "read" %}
-<button class="btn btn-sm btn-danger js-remove mb-1"><span class="fa fa-remove"></span></button>
+<button class="btn btn-sm btn-danger js-remove mb-1 float-right"><span class="fa fa-remove"></span></button>
+
+  <div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem sorting options">
+    <button type="button" class="btn btn-sm btn-secondary push-up-link ml-1" id="push-up_{{slide.pk}}" title="Push problem to top"><span class="fa fa-long-arrow-up"></span></button>
+    <button type="button" class="btn btn-sm btn-secondary push-up-5-link" id="push-up-5_{{slide.pk}}" title="Push problem five spots up"><span class="fa fa-arrow-up"></span></button>
+    <button type="button" class="btn btn-sm btn-secondary push-up-1-link" id="push-up-1_{{slide.pk}}" title="Push problem one spot up"><span class="fa fa-angle-up"></span></button>
+    <button type="button" class="btn btn-sm btn-secondary push-down-1-link" id="push-down-1_{{slide.pk}}" title="Push problem one spot down"><span class="fa fa-angle-down"></span></button>
+    <button type="button" class="btn btn-sm btn-secondary push-down-5-link" id="push-down-5_{{slide.pk}}" title="Push problem five spots down"><span class="fa fa-arrow-down"></span></button>
+    <button type="button" class="btn btn-sm btn-secondary push-down-link mr-1" id="push-down_{{slide.pk}}" title="Push problem to bottom"><span class="fa fa-long-arrow-down"></span></button>
+  </div>
 {% endif %}
     </div>
   </div>
   <input type="hidden" name="slideinput" value="slide_{{slide.pk}}">
+
+
   <div class="row">
     <div class="col-12">
       <div id="slide_object_List" class="list-group">

@@ -1,40 +1,48 @@
             <input type="hidden" name="slideobjectinput" value="slideobject_{{s.pk}}">
-<div class="row">
 
+	    <div class="row">
               <div class="col">
 		<div class="float-right">
-{% if sharing_type != "read" %}
-          <div class="p-2">
-            <div class="btn-group btn-group-sm" role="group" aria-label="options to edit slide object">
-                {% if s.textblock %}
-              <button type="button" class="btn btn-secondary edit-textblock-link" id="edit-tb_{{s.textblock.pk}}"><span class="fa fa-pencil"></span></button>
-
-                {% endif %}
-                {% if s.proof %}
-              <button type="button" class="btn btn-secondary edit-proof-link" id="edit-pf_{{s.proof.pk}}"><span class="fa fa-pencil"></span></button>
-                {% endif %}
-                {% if s.theorem %}
-              <button type="button" class="btn btn-secondary edit-theorem-link" id="edit-th_{{s.theorem.pk}}"><span class="fa fa-pencil"></span></button>
-                {% endif %}
-                {% if s.exampleproblem %}
-{% if s.exampleproblem.isProblem == False %}
-              <button type="button" class="btn btn-secondary edit-exampleproblem-link" id="edit-ex_{{s.exampleproblem.pk}}"><span class="fa fa-pencil"></span></button>
-{% else %}
-{% if s.exampleproblem.problem.question_type_new.question_type == "multiple choice" and not s.exampleproblem.problem.needs_answers %}
-              <button type="button" class="btn btn-secondary edit-exampleproblem-link" id="edit-ex_{{s.exampleproblem.pk}}"><span class="fa fa-pencil"></span></button>
-{% endif %}
-{% endif %}
-                {% endif %}
-                {% if s.imagemodel %}
-<!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
-                {% endif %}
-              <button type="button" class="btn btn-danger js-remove"><span class="fa fa-remove"></span></button>
-            </div>
-          </div>
-{% endif %}
-</div>
+		  {% if sharing_type != "read" %}
+		  <div class="p-2">
+		    <div class="btn-group btn-group-sm float-right" role="group" aria-label="options to edit slide object">
+                      {% if s.textblock %}
+		      <button type="button" class="btn btn-secondary edit-textblock-link" id="edit-tb_{{s.textblock.pk}}"><span class="fa fa-pencil"></span></button>
+		      
+                      {% endif %}
+                      {% if s.proof %}
+		      <button type="button" class="btn btn-secondary edit-proof-link" id="edit-pf_{{s.proof.pk}}"><span class="fa fa-pencil"></span></button>
+                      {% endif %}
+                      {% if s.theorem %}
+		      <button type="button" class="btn btn-secondary edit-theorem-link" id="edit-th_{{s.theorem.pk}}"><span class="fa fa-pencil"></span></button>
+                      {% endif %}
+                      {% if s.exampleproblem %}
+		      {% if s.exampleproblem.isProblem == False %}
+		      <button type="button" class="btn btn-secondary edit-exampleproblem-link" id="edit-ex_{{s.exampleproblem.pk}}"><span class="fa fa-pencil"></span></button>
+		      {% else %}
+		      {% if s.exampleproblem.problem.question_type_new.question_type == "multiple choice" and not s.exampleproblem.problem.needs_answers %}
+		      <button type="button" class="btn btn-secondary edit-exampleproblem-link" id="edit-ex_{{s.exampleproblem.pk}}"><span class="fa fa-pencil"></span></button>
+		      {% endif %}
+		      {% endif %}
+                      {% endif %}
+                      {% if s.imagemodel %}
+		      <!--                <a href="edit-imagemodel/{{s.imagemodel.pk}}" class="edit-imagemodel-link"><span class="fa fa-pencil"></span></a>-->
+                      {% endif %}
+		      <button type="button" class="btn btn-danger js-remove"><span class="fa fa-remove"></span></button>
+		    </div>
+		    <div class="btn-group btn-group-sm float-right" role="group" aria-label="Problem sorting options">
+		      <button type="button" class="btn btn-sm btn-secondary push-up-link ml-1" id="push-up_{{s.pk}}" title="Push problem to top"><span class="fa fa-long-arrow-up"></span></button>
+		      <button type="button" class="btn btn-sm btn-secondary push-up-5-link" id="push-up-5_{{s.pk}}" title="Push problem five spots up"><span class="fa fa-arrow-up"></span></button>
+		      <button type="button" class="btn btn-sm btn-secondary push-up-1-link" id="push-up-1_{{s.pk}}" title="Push problem one spot up"><span class="fa fa-angle-up"></span></button>
+		      <button type="button" class="btn btn-sm btn-secondary push-down-1-link" id="push-down-1_{{s.pk}}" title="Push problem one spot down"><span class="fa fa-angle-down"></span></button>
+		      <button type="button" class="btn btn-sm btn-secondary push-down-5-link" id="push-down-5_{{s.pk}}" title="Push problem five spots down"><span class="fa fa-arrow-down"></span></button>
+		      <button type="button" class="btn btn-sm btn-secondary push-down-link mr-1" id="push-down_{{s.pk}}" title="Push problem to bottom"><span class="fa fa-long-arrow-down"></span></button>
+		    </div>
+		  </div>
+		  {% endif %}
+		</div>
               </div>
-</div>
+	    </div>
             <div class="row">
               <div class="col-11">
                 {% if s.textblock %}
