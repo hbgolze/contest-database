@@ -1,7 +1,7 @@
 from django.shortcuts import render,render_to_response, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404,JsonResponse
 from django.utils.http import urlquote,urlunquote
-from django.template import loader,RequestContext,Context
+from django.template import loader
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.db.models import Q
@@ -2511,9 +2511,13 @@ def asymptotr(request,**kwargs):
         asy_code = asy_code.rstrip().lstrip()
         filename = 'asyimg'+str(time()).replace('.','')
         error = compileasy('\\begin{asy}\n'+asy_code+'\n\\end{asy}',filename,temp = True)
+        context ={}
+        context['filename'] = filename
         if error != "":
-            return JsonResponse({'filename':filename,'error': error})
-        return JsonResponse({'filename':filename})
+            context['error'] = error
+        if 'import three' in asy_code or 'import graph3' in asy_code:
+            context['three'] = 1
+        return JsonResponse(context)
     context = {}
     context['nbar'] = 'asy'
     return render(request, 'problemeditor/asymptotrview.html',context)
@@ -2524,10 +2528,10 @@ def asymptotr_pdf(request,**kwargs):
         asy_code = request.POST.get('asy_code','')
         asy_code = asy_code.rstrip().lstrip()
         filename = 'asyimg'+str(time()).replace('.','')
-        context = Context({
-                'asy_code':asy_code,
-                'filename':filename,
-                })
+        context = {
+            'asy_code':asy_code,
+            'filename':filename,
+            }
         template = get_template('asycompile/my_asy_template.asy')
         rendered_tpl = template.render(context).encode('utf-8')
         with tempfile.TemporaryDirectory() as tempdir:
