@@ -93,28 +93,28 @@
 	  
 	  <div class="card-footer">
 	    {% if question_type == 'short answer' or question_type == 'multiple choice' %}
-	    <div class="row">
+	    <div class="row"><!--row-->
 	      <div class="col-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
 		{% if question_type == 'short answer' %}
 		{% if resp.attempted %}
 		{% if resp.problem.sa_answer == response %}
-
-                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
-                      <span class="fa fa-check" style="color:green" id="icon{{prob_label}}"></span>
-                      <input type="text" class="form-control answer-input is-valid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
-                    </div>
-                        {% else %}
-                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
-                      <span class="fa fa-remove" style="color:red" id="icon{{prob_label}}"></span>
-                      <input type="text" class="form-control answer-input is-invalid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value={% if username %}"{{response}} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% else %}"{{response}}"{% endif %}>
-                    </div>
-
-
+		
+                <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+                  <span class="fa fa-check" style="color:green" id="icon{{prob_label}}"></span>
+                  <input type="text" class="form-control answer-input is-valid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+                </div>
+                {% else %}
+                <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+                  <span class="fa fa-remove" style="color:red" id="icon{{prob_label}}"></span>
+                  <input type="text" class="form-control answer-input is-invalid" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" value={% if username %}"{{response}} (Correct Answer: {{resp.problem.sa_answer}})" disabled{% else %}"{{response}}"{% endif %}>
+                </div>
+		
+		
 		{% endif %}
 		{% else %}
-                    <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
-		      <input type="text" class="form-control" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
-		    </div>
+                <div class="inner-addon right-addon" id="sa-input-{{prob_label}}">
+		  <input type="text" class="form-control" name="answer{{prob_label}}" id="answer{{prob_label}}" name="id{{prob_label}}" {% if username %}value="(Correct Answer: {{resp.problem.sa_answer}})" disabled{% endif %}>
+		</div>
 		{% endif %}
 		
 		{% elif question_type == 'multiple choice' %}
@@ -151,15 +151,15 @@
 		{% if username %}
 		{% else %}
 		
-		{% if question_type == 'multiple choice' %}
-		{% if resp.attempted == 0 or resp.problem.mc_answer != response %}
-		<button type="submit" class="btn btn-primary js-check-mc-answer" id="check-answer-{{prob_label}}">Check Answer</button>
-		{% endif %}
-		{% elif question_type == 'short answer' %}
-		{% if resp.attempted == 0 or resp.problem.sa_answer != response %}
-		<button type="submit" class="btn btn-primary js-check-answer" id="check-answer-{{prob_label}}">Check Answer</button>
-		{% endif %}
-		{% endif %}
+		 {% if question_type == 'multiple choice' %}
+		  {% if resp.attempted == 0 or resp.problem.mc_answer != response %}
+		   <button type="submit" class="btn btn-primary js-check-mc-answer" id="check-answer-{{prob_label}}">Check Answer</button>
+		  {% endif %}
+		 {% elif question_type == 'short answer' %}
+		  {% if resp.attempted == 0 or resp.problem.sa_answer != response %}
+		   <button type="submit" class="btn btn-primary js-check-answer" id="check-answer-{{prob_label}}">Check Answer</button>
+		  {% endif %}
+		 {% endif %}
 		{% endif %}
 		
 		{% if question_type == "multiple choice" %}
@@ -169,7 +169,7 @@
 		  {% else %}
 		   <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		  {% endif %}
-
+		
 		 {% endif %}
 		{% elif question_type == "short answer" %}
 		 {% if resp.problem.sa_answer == response or username %}
@@ -178,10 +178,10 @@
 		  {% else %}
 		   <button class="btn btn-secondary" disabled data-toggle="tooltip" title="We haven't written a solution to this problem yet"><span style="color:red">Solution</span></button>
 		  {% endif %}
-
+		
 		 {% endif %}
 		{% endif %}
-
+		
 	      </div><!--button div-->
 	      <div class="col-12 pull-right attemped-date-{{prob_label}}"><!--tracker-->
 		{% if resp.attempted %}
@@ -189,17 +189,18 @@
 		  <small>Last Attempted: {{resp.modified_date}}</small>
 		</div>
 		{% endif %}
-		{% endif %}
+		
 	      </div><!--tracker-->
-	    </div>    
-	  </div>
-	</div>
-
+	    </div><!--row-->
+{% endif %}
+	  </div><!--footer-->
+	</div><!--card-->
+	
   
 
-    {% endwith %}
-    {% endfor %}
-  {% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
+	{% endwith %}
+	{% endfor %}
+	{% if username %}{% else %}<button type="submit" class="btn btn-primary" value="Submit Answers" />Submit Answers</button>
 </form>
 {% endif %}
 </div>
@@ -247,7 +248,8 @@ $(document).on('click',".solution-link",function(event) {
 
 
     $("#solution-placeholder").load(target, function() {
-         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+//         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+MathJax.typeset();
          $("#solution-placeholder").modal("show");
     });
 });

@@ -238,6 +238,7 @@ $(document).on('click',".edit-mc-latex",function(event) {
         success: function(result) {
             $("#edit-latex-modal").html(result['modal-html']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+
             $("#edit-latex-modal").modal("show");
         }
     });
@@ -507,6 +508,7 @@ $(document).on("click","#preview-latex-button", function(e) {
     $("#preview-latex").html(sol_text);
     $("#preview-latex").show();
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
+
 });
 
 $("select.js-problem-group-select").change(function(event) {
@@ -615,6 +617,7 @@ $(document).on('submit',"#form-add-sourced-problem",function(event) {
                 $("[data-dismiss=modal]").trigger({ type: "click" });
                 $("#problemList").append(result['list-item']);
                  MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#problem_"+result['pk']]);
+
 //            $("#msg-no-problems").hide();
             }
         }
