@@ -194,6 +194,12 @@ $(document).on('submit',"#edit-grade-form",function(event) {
 
 });
 
+$(document).on('click',".toggle-answer",function(event) {
+  event.preventDefault();
+  pk = $(this).attr('id').split('-')[2];
+  $("#correct-ans-"+pk).toggle();
+});
+
 </script>
 
 {% endblock %}

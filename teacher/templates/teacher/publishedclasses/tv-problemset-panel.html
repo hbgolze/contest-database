@@ -13,7 +13,7 @@
 	      <div class="card-footer"><!--footer-->
 		<div class="row">
 
-		  <div class="col-6" id="answer-input-{{prob_label}}"><!--Answer Input-->
+		  <div class="col-6 answer-input" id="answer-input-{{prob_label}}" style="display:none"><!--Answer Input-->
 		    {% if question_type == 'short answer' %}
 		    <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="(Correct Answer: {{answer}})" disabled>
 		    {% elif question_type == 'multiple choice' %}

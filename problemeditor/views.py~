@@ -2535,8 +2535,11 @@ def asymptotr_pdf(request,**kwargs):
         template = get_template('asycompile/my_asy_template.asy')
         rendered_tpl = template.render(context).encode('utf-8')
         with tempfile.TemporaryDirectory() as tempdir:
+            asy_file = open(os.path.join(tempdir,'asyput.asy'),'wb')
+            asy_file.write(rendered_tpl)
+            asy_file.close()
             process = Popen(
-                ['asy', '-o', os.path.join(tempdir,filename+'.pdf')],
+                ['asy', '-o', os.path.join(tempdir,filename+'.pdf'), tempdir+'/asyput.asy'],
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=PIPE,

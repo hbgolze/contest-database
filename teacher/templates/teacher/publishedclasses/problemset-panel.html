@@ -26,11 +26,13 @@
                         {% else %}
                     <div class="inner-addon right-addon">
                       <span class="fa fa-remove" style="color:red"></span>
-                      <input type="text" class="form-control is-invalid" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}} (Correct Answer: {{answer}})" disabled>
+                      <input type="text" class="form-control is-invalid" name="answer{{prob_label}}" name="id{{prob_label}}" value="{{response}}" disabled>
+<div class="mt-1" id="correct-ans-{{prob_label}}" style="display:none">Correct Answer: {{answer}}</div>
                     </div>
 		    {% endif %}
 		    {% else %}
-		    <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="(Correct Answer: {{answer}})" disabled>
+		    <input type="text" class="form-control" name="answer{{prob_label}}" name="id{{prob_label}}" value="" disabled>
+<div class="mt-1" id="correct-ans-{{prob_label}}" style="display:none">Correct Answer: {{answer}}</div>
 		    {% endif %}
 		    
 		    {% elif question_type == 'multiple choice' %}
@@ -63,7 +65,17 @@
 		    </div><!--end mc_answer_choices-->
 		    {% endif %}
 		  </div><!--Answer input-->
-		  <div class="col-6" id="check-button-{{prob_label}}" align="right"><!--button div-->
+<div class="col-3" id="correct-answer-{{prob_label}}">
+{% if resp.attempted %}
+{% if response != answer %}
+<button class="btn btn-secondary toggle-answer" id="toggle-answer-{{prob_label}}">Show/Hide Answer</button>
+{% endif %}
+{% else %}
+<button class="btn btn-secondary toggle-answer" id="toggle-answer-{{prob_label}}">Show/Hide Answer</button>
+{% endif %}
+</div>
+
+		  <div class="col-3" id="check-button-{{prob_label}}" align="right"><!--button div-->
 		    
 		    {% if resp.publishedproblem_object.solution_objects.count > 0 %}
 		    <button data-target="#solution-placeholder" class="btn btn-secondary solution-link" id="solution-link" href="load_sol/{{resp.publishedproblem_object.pk}}/">Solution</button>
