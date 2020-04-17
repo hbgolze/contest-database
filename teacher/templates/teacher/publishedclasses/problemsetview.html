@@ -15,7 +15,7 @@
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="../../../">My Students</a></li>
-    <li class="breadcrumb-item"><a href="../../">{{username}}'s Classes</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{username}}&apos;s Classes</a></li>
     <li class="active breadcrumb-item">{{problemset.userunitobject.user_unit.user_class.published_class.name}} > {{problemset.userunitobject.user_unit.published_unit.name}} > {{problemset.published_problemset.name}}</li>
   </ol>
 </nav>
@@ -144,6 +144,10 @@
   </div>
 </div>
 
+<div class="modal fade" id="fullscreen-problem-modal" role="dialog">
+{% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
+</div>
+
 <script>
 
 
@@ -200,6 +204,14 @@ $(document).on('click',".toggle-answer",function(event) {
   $("#correct-ans-"+pk).toggle();
 });
 
+
+$(document).on('click',".fullscreen-disp-link",function(event) {
+    event.preventDefault();
+    var pk = $(this).attr('id').split('_')[1];
+    $("#fullscreen-modal-problem-text").html($("#ptext_"+pk).html());
+    $("#fullscreen-problem-modal").modal("show");
+//Can probably show readable label and give options.                                                                                                                                                                                                          
+});
 </script>
 
 {% endblock %}

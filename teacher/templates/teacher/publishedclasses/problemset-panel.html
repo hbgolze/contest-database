@@ -3,11 +3,16 @@
             <a name="{{prob_label}}"></a>
 	    <div class="card mb-3">
 	      <div class="card-header"><!--heading-->
-		<h3>Problem {{forloop.counter}} ({{resp.point_value}} Points)<span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="fa fa-star"></span>{% else %}<span class="fa fa-star-o"></span>{% endif %}</span></h3>
+		<h3>Problem {{forloop.counter}} ({{resp.point_value}} Points)<span class="js-star-toggle pull-right" style="color:#FFD700" id="star_{{resp.pk}}">{% if resp.stickied == 1 %}<span class="fa fa-star"></span>{% else %}<span class="fa fa-star-o"></span>{% endif %}</span>
+
+<span class="btn-group btn-group-sm float-right mr-2" role="group" aria-label="Problem options">
+          <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{{prob_label}}"><span class="fa fa-desktop"></span></button>
+        </span>
+		</h3>
 	      </div><!--end heading-->
 
 	      <div class="card-body"><!--body-->
-                {% autoescape off %}{{problem_display|linebreaks}} {% endautoescape %}{% if readable_label %} <span class="pull-right"> [{{readable_label}}]</span>{% endif %}<br>		
+                <div id="ptext_{{prob_label}}">{% autoescape off %}{{problem_display|linebreaks}} {% endautoescape %}</div>{% if readable_label %} <span class="pull-right"> [{{readable_label}}]</span>{% endif %}<br>		
 	      </div><!--endbody-->
 
 	      <div class="card-footer"><!--footer-->
