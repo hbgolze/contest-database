@@ -546,6 +546,7 @@ def add_to_group(request):
 
     return JsonResponse({'status':1})#no problems checked
 
+@login_required
 def fetch_problems(request):
     pk = request.GET.get('pk')
     userprofile = request.user.userprofile
@@ -612,10 +613,13 @@ def fetch_problems(request):
     prob_list = prob_list[0:num_problems]
     prob_code = []
     base_num = prob_group.problem_objects.count()
+    can_delete = 0
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all():
+        can_delete = 1
     for i in range(0,len(prob_list)):
         pg_object = ProblemGroupObject(problemgroup = prob_group,problem = prob_list[i],order = base_num + i + 1)
         pg_object.save()
-        prob_code.append(render_to_string('groups/probgroup_problem_object.html',{'po':pg_object,'forcount':base_num+i+1}))
+        prob_code.append(render_to_string('groups/probgroup_problem_object.html',{'po':pg_object,'forcount':base_num+i+1,'can_delete':can_delete}))
 #    prob_group.save()
     data = {
         'prob_list': prob_code,
