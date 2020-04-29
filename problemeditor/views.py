@@ -194,7 +194,7 @@ class AddProblemWizard(SessionWizardView):
         sol.solution_number = 1
         sol.authors.add(self.request.user)
         sol.problem_label = prob.label
-        sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+        sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.pk))
         sol.save()
         prob.solutions.add(sol)
         prob.save()
@@ -1483,9 +1483,9 @@ def uploadcontestview(request,type):
                             sol.save()
                             sol.authors.add(request.user)
                             sol.save()
-                            compileasy(sol.solution_text,p.label,sol='sol'+str(sol_num))
-                            compiletikz(sol.solution_text,p.label,sol='sol'+str(sol_num))
-                            sol.display_solution_text = newsoltexcode(sol.solution_text,p.label+'sol'+str(sol.solution_number))
+                            compileasy(sol.solution_text,p.label,sol='sol'+str(sol.pk))
+                            compiletikz(sol.solution_text,p.label,sol='sol'+str(sol.pk))
+                            sol.display_solution_text = newsoltexcode(sol.solution_text,p.label+'sol'+str(sol.pk))
                             sol.save()
                             p.solutions.add(sol)
                             p.save()
@@ -1938,9 +1938,9 @@ def save_new_solution(request,**kwargs):
     sol.save()
     sol.authors.add(request.user)
     sol.save()
-    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol_num))
-    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.pk))#
+    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol.pk))#
+    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.pk))
     sol.save()
     prob.solutions.add(sol)
     prob.save()
@@ -2032,9 +2032,9 @@ def save_sol(request,**kwargs):
     sol.modified_date = timezone.now()
     sol.authors.add(request.user)
     sol.save()
-    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
-    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol.solution_number))
-    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.solution_number))
+    compileasy(sol.solution_text,prob.label,sol='sol'+str(sol.pk))
+    compiletikz(sol.solution_text,prob.label,sol='sol'+str(sol.pk))
+    sol.display_solution_text = newsoltexcode(sol.solution_text,prob.label+'sol'+str(sol.pk))
     sol.save()
     LogEntry.objects.log_action(
         user_id = request.user.id,
