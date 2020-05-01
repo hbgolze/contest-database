@@ -1340,40 +1340,70 @@ def uploadcontestview(request,type):
                     num = 1
                     prefix_pn = ''
                     for i in range(1,len(problemtexts)):
-                        ptext = problemtexts[i]
-                        if '===' in ptext:
-                            prefix_pn = ptext[ptext.index('===') + 3]
-                            num = 1
-                        else:
-                            p = Problem(problem_text = ptext,
-                                        answer = '',
-                                        sa_answer = '',
-                                        label = label + prefix_pn + str(num),
-                                        readable_label = readablelabel + post_label + prefix_pn + str(num),
-                                        type_new = typ,
-                                        question_type_new = sa,
-                                        problem_number = num,
-                                        year = year,
-                                        form_letter = formletter,
-                                        test_label = label,
-                                        top_solution_number = 0,
-                                        problem_number_prefix = prefix_pn,
-                                        contest_test = contest_test,
-                                        )
+
+                        problem_comps = problemtexts[i].split('=====')
+                        problem_text = ''
+                        solutions = []
+                        sa_answer = ''
+                        for j in range(1,len(problem_comps)):
+                            pc = problem_comps[j]
+                            if pc[0:2] == 'PT':
+                                problem_text = pc[2:].lstrip().rstrip()
+                            if pc[0:2] == 'SO':
+                                solutions.append(pc[2:].lstrip().rstrip())
+                            if pc[0:2] == 'SA':
+                                sa_answer = pc[2:].lstrip().rstrip()
+                        p = Problem(problem_text = problem_text,
+                                    mc_problem_text = problem_text,
+                                    label = label + str(num),
+                                    readable_label = readablelabel + post_label + str(num),
+                                    type_new = typ,
+                                    question_type_new = sa,
+                                    problem_number = num,
+                                    sa_answer = sa_answer,
+                                    year = year,
+                                    form_letter = formletter,
+                                    test_label = label,
+                                    top_solution_number = 0,
+                                    contest_test = contest_test,
+                                    )
+                        p.save()
+                        if 'round' in form.cleaned_data:
+                            p.round = round
+                        p.types.add(typ)
+                        p.question_type.add(sa)
+                        p.save()
+                        compileasy(p.mc_problem_text,p.label)
+                        compileasy(p.problem_text,p.label)
+                        compiletikz(p.mc_problem_text,p.label)
+                        compiletikz(p.problem_text,p.label)
+                        p.display_problem_text = newtexcode(p.problem_text,p.label,'')
+                        p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
+                        p.save()
+                        for s in solutions:
+                            sol_num = p.top_solution_number+1
+                            p.top_solution_number = sol_num
                             p.save()
-                            if 'round' in form.cleaned_data:
-                                p.round = round
-                            p.types.add(typ)
-                            p.question_type.add(sa)
+                            sol = Solution(solution_text = s,solution_number = sol_num,problem_label = p.label,parent_problem = p)
+                            sol.save()
+                            sol.authors.add(request.user)
+                            sol.save()
+                            compileasy(sol.solution_text,p.label,sol='sol'+str(sol.pk))
+                            compiletikz(sol.solution_text,p.label,sol='sol'+str(sol.pk))
+                            sol.display_solution_text = newsoltexcode(sol.solution_text,p.label+'sol'+str(sol.pk))
+                            sol.save()
+                            p.solutions.add(sol)
                             p.save()
-                            compileasy(p.mc_problem_text,p.label)
-                            compileasy(p.problem_text,p.label)
-                            compiletikz(p.mc_problem_text,p.label)
-                            compiletikz(p.problem_text,p.label)
-                            p.display_problem_text = newtexcode(p.problem_text,p.label,'')
-                            p.display_mc_problem_text = newtexcode(p.mc_problem_text,p.label,p.answers())
-                            p.save()
-                            num+=1
+                            LogEntry.objects.log_action(
+                                user_id = request.user.id,
+                                content_type_id = ContentType.objects.get_for_model(sol).pk,
+                                object_id = sol.id,
+                                object_repr = p.label+' sol '+str(sol.solution_number),
+                                action_flag = ADDITION,
+                                change_message = "problemeditor/redirectproblem/"+str(p.pk)+'/',
+                                )
+                        
+                        num += 1
                 if default_question_type == 'pf':
                     pf = QuestionType.objects.get(question_type = 'proof')
                     num = 1
@@ -1504,14 +1534,14 @@ def uploadcontestview(request,type):
                 if len(P) > 0:
                     t = Test(name = readablelabel)
                     t.save()
-                for i in P:
-                    t.problems.add(i)
-                    t.types.add(typ)
-                t.save()
-                tc,boolcreated = TestCollection.objects.get_or_create(name = typ.label)
-                tc.tests.add(t)
-                tc.save()
-                return JsonResponse({'url':'/problemeditor/'})
+                    for i in P:
+                        t.problems.add(i)
+                        t.types.add(typ)
+                    t.save()
+                    tc,boolcreated = TestCollection.objects.get_or_create(name = typ.label)
+                    tc.tests.add(t)
+                    tc.save()
+                    return JsonResponse({'url':'/problemeditor/'})
     form = UploadContestForm(type = type)
     return render(request, 'problemeditor/addcontestfileform.html', context = {'form':form,'nbar':'problemeditor','typ':typ})
 
@@ -1548,13 +1578,16 @@ def uploadpreview(request,type):
             else:
                 f = contestfile.read().decode('utf-8')
                 problemtexts = str(f).split('=========')
-#Currently no support for 'mc'
+                #Currently no support for 'mc'
+                print(len(problemtexts))
                 if default_question_type == 'sa' or default_question_type == 'pf':
+                    print('hi')
                     rows = []
                     num = 1
                     prefix_pn = ''
                     for i in range(1,len(problemtexts)):
                         ptext = problemtexts[i]
+                        print(ptext)
                         if '===' in ptext:
                             prefix_pn = ptext[ptext.index('===') + 3]
                             num = 1
@@ -1568,7 +1601,7 @@ def uploadpreview(request,type):
                             compiletikz(ptext,plabel,temp = True)
 #can I make the above stuff temp?
                             num += 1
-
+                    print(rows)
 
 
                 if default_question_type == 'mc':#prefix_pn not supported
