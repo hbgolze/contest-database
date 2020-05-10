@@ -343,6 +343,11 @@ class ProblemGroup(models.Model):
         for i in self.problem_objects.all():
             P.append(i.problem)
         return P
+    def order_by_num(self):
+        L=list(self.problem_objects.order_by('problem__problem_number'))
+        for i in range(0,len(L)):
+            L[i].order = i+1
+            L[i].save()
 
 class ProblemGroupObject(models.Model):
     problemgroup = models.ForeignKey(ProblemGroup,null = True, related_name = "problem_objects",on_delete=models.CASCADE)
