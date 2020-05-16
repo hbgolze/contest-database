@@ -497,6 +497,22 @@ class CollaboratorRequest(models.Model):
 #        signals.friendship_declined.send(sender=self, cancelled=True) 
 #        self.delete() 
 
+class AdvancedSearchPreset(models.Model):
+    label = models.CharField(max_length=100,blank=True)
+    types = models.ManyToManyField(Type,blank=True)
+    rounds = models.ManyToManyField(Round,blank=True)
+    def __str__(self):
+        return self.label
+    def actions(self):
+        s = ''
+        for t in self.types.all():
+            s += 'T_'+str(t.pk)+'|'
+        for r in self.rounds.all():
+            s += 'R_'+str(r.pk)+'|'
+        if len(s) > 0:
+            return s[0:-1]
+        return ''
+
 
 def get_or_create_up(user):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user = user)

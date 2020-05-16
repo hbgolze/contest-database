@@ -36,8 +36,17 @@
 	</div>
 	<div class="row">
 	  <div class="form-group col-lg-5">
+	    {% if advanced %}
+	    <label for "presets" class="control-label">Preset Type Options:</label>
+	    <select id="presets" class="form-control">
+	      <option value="">Select a preset</option>
+	      {% for preset in presets %}
+	      <option value="{{preset.actions}}">{{preset.label}}</option>
+	      {% endfor %}
+	      </select>
+	    {% endif %}
 	    <label for="tp" class="control-label">Problem Type:</label>
-	    <select{% if advanced %} multiple{% endif %} name="tp" class="form-control"{% if advanced %} size="10"{% endif %}>
+	    <select{% if advanced %} multiple{% endif %} name="tp" id="tp" class="form-control"{% if advanced %} size="10"{% endif %}>
 	      {% for typ in types %}
 	      <option value="T_{{typ.pk}}" title="{{typ.label}}">{{typ.label}} Problems</option>
 {% for round in typ.rounds.all %}
@@ -101,4 +110,12 @@
     </div>
   </div>
 </div>
+
+<script>
+  $(document).on('change','#presets', function(e) {
+      var s=$(this).val().split('|');
+      $("#tp").val(s);
+  });
+</script>
+
 {% endblock %}

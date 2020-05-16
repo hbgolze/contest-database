@@ -26,6 +26,7 @@ SECRET_KEY = '5l#(wje3qx6$wu-*twui%1p9neoek(bqb0e#qz9h=e$h3f%eu6'
 DEBUG = True
 
 ALLOWED_HOSTS = ['hbgolze.pythonanywhere.com']
+#ALLOWED_HOSTS = ['hbgolze.pythonanywhere.com','127.0.0.1']
 
 
 # Application definition

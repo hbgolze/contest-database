@@ -176,10 +176,10 @@ def toggle_star(request,**kwargs):
         response.stickied = False
         response.save()
         try:
-            s=Sticky.objects.get(response = response)
+            s = Sticky.objects.get(response = response)
             s.delete()
         except Sticky.DoesNotExist:
-            s=None
+            s = None
         return JsonResponse({
                 'response_pk' : response_pk,
                 'is_stickied' : 'false',
@@ -192,10 +192,10 @@ def toggle_star(request,**kwargs):
         else:
             readable_label = 'Problem #'+str(response.publishedproblem_object.order)
         if data_type == 'ups':
-            s=Sticky(response = response, problemset = user_problemset, userprofile = userprofile, readable_label=readable_label)
+            s = Sticky(response = response, problemset = user_problemset, userprofile = userprofile, readable_label = readable_label)
             s.save()
         elif data_type == 'ut':
-            s=Sticky(response = response, test = user_test, userprofile = userprofile, readable_label=readable_label)
+            s = Sticky(response = response, test = user_test, userprofile = userprofile, readable_label = readable_label)
             s.save()
         response.stickied = True
         response.save()

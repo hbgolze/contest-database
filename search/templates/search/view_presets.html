@@ -1,0 +1,165 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/search/?advanced">Search</a></li>
+    <li class="breadcrumb-item active" aria-current="page">View Presets</li>
+  </ol>
+</nav>
+
+
+<div class="container">
+  <h1>View Search Presets</h1>
+  <div class="row">
+    <div class="col-lg-9">
+      <div class="list-group" id="preset-list">
+	{% for i in presets %}
+{% include 'search/preset-list-item.html' %}
+	{% endfor %}
+      </div>
+<button class="btn btn-primary mt-2" id="add-preset-button">Add New Preset</button>
+      
+    </div>
+  </div>
+</div>
+
+<div class="modal fade modal" id="add-preset-modal" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form method="get" action="add-preset/" id="add-preset-form">
+        <div class="modal-header">
+          <h5 class="modal-title">Add New Preset</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col">
+		{% csrf_token %}
+		<div class="form-group col-lg-8">
+		  <label for="preset-label">Preset Name</label>
+                  <input class="form-control" type="text" name="preset-label" id="preset-label" placeholder="Enter Preset Name">
+		</div>
+		<div class="form-group col-lg-8">
+		  <label for="tp" class="control-label">Problem Type:</label>
+		  <select multiple name="tp" class="form-control" size="10">
+		    {% for typ in types %}
+		    <option value="T_{{typ.pk}}" title="{{typ.label}}">{{typ.label}} Problems</option>
+		    {% for round in typ.rounds.all %}
+		    <option value="R_{{round.pk}}" title="{{round.name}}">&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
+		    {% endfor %}
+		    {% endfor %}
+		  </select>
+		</div>
+	  
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit"  name="add-preset" class="btn btn-primary" value="add-preset">Add Preset</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+<div class="modal fade" id="edit-preset-placeholder" role="dialog">
+
+</div>
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+	var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?                                                            
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+	}
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+  
+
+$(document).on('click',"#add-preset-button",function(event) {
+    event.preventDefault();
+$("#add-preset-modal").modal("show");
+});
+
+$(document).on('click',".edit-preset-link",function(event) {
+    event.preventDefault();
+    pk = $(this).attr("id").split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/search/ajax/load-edit-preset/',
+        data: "pspk="+pk,
+        dataType: 'json',
+        success: function(data) {
+            $("#edit-preset-placeholder").html(data['modal_html']);
+	    $("#edit-preset-placeholder").modal();
+
+	}
+    });
+    return false;      
+});
+
+$(document).on('submit','#add-preset-form',function(e) {
+    e.preventDefault();
+
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '/search/ajax/add-preset/',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            $("#preset-list").append(data['new_preset_html']);
+            $("#add-preset-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;      
+});
+
+  $(document).on('submit','#edit-preset-form',function(e) {
+    e.preventDefault();
+      var pk = $("#edit_pk").val();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '/search/ajax/save-preset/',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            $("#preset_"+pk).html(data['preset_html']);
+            $("#edit-preset-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;      
+  });
+  
+</script>
+{% endblock %}

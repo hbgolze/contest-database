@@ -1,0 +1,19 @@
+          <p>{{i.label}} (<a href="#" class="edit-preset-link" id="edit_{{i.pk}}">Edit</a>)</p>
+          <div class="row">
+            <div class="col-6">
+              <p>Types</p>
+              <ul>
+                {% for t in i.types.all %}
+                <li>{{t}}</li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="col-6">
+              <p>Rounds</p>
+              <ul>
+                {% for r in i.rounds.all %}
+                <li>{{r}}</li>
+                {% endfor %}
+              </ul>
+            </div>
+          </div>

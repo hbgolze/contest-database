@@ -1,0 +1,40 @@
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <form method="get" id="edit-preset-form">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Preset: {{preset}}</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                <div class="form-group col-lg-8">
+                  <label for="preset-label">Preset Name</label>
+                  <input class="form-control" type="text" name="preset-label" id="preset-label" value="{{preset.label}}">
+                </div>
+		<input type="hidden" name="pk" id="edit_pk" value="{{preset.pk}}">
+		<p>To select new problem types, press command or Ctrl before selecting.</p>
+                <div class="form-group col-lg-8">
+                  <label for="tp" class="control-label">Problem Type:</label>
+                  <select multiple name="tp" class="form-control" size="10">
+                    {% for typ in types %}
+                    <option value="T_{{typ.pk}}" title="{{typ.label}}"{% if typ in preset.types.all %} selected{% endif %}>{{typ.label}} Problems</option>
+                    {% for round in typ.rounds.all %}
+                    <option value="R_{{round.pk}}" title="{{round.name}}"{% if round in preset.rounds.all %} selected{% endif %}>&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
+                    {% endfor %}
+                    {% endfor %}
+                  </select>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit"  name="save-preset" class="btn btn-primary" value="save-preset">Save Preset</button>
+        </div>
+      </form>
+    </div>
+  </div>

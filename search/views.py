@@ -21,7 +21,7 @@ from django.views.generic import DetailView
 import logging
 logger = logging.getLogger(__name__)
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution,Round,ProblemGroupObject
+from randomtest.models import Problem, Tag, Type, Test, UserProfile,  QuestionType,get_or_create_up,UserResponse,ProblemGroup,NewTag,Solution,Round,ProblemGroupObject,AdvancedSearchPreset
 
 from randomtest.utils import parsebool,newtexcode,newsoltexcode
 
@@ -37,7 +37,10 @@ def searchform(request):
     types = userprofile.user_type_new.allowed_types.all()
     tags = sorted(list(NewTag.objects.exclude(label='root')),key=lambda x:x.tag)
     template = loader.get_template('search/searchform.html')
-    context = {'nbar' : 'search', 'types' : types,'tags' : tags, 'advanced': advanced,'userprofile':userprofile,}
+    context = {'nbar' : 'search', 'types' : types,'tags' : tags, 'advanced': advanced,
+               'userprofile':userprofile,
+               'presets':AdvancedSearchPreset.objects.all(),
+    }
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -221,13 +224,13 @@ def advanced_searchresults(request):
             else:
                 yearend = int(yearend)
 
+            P = Problem.objects.filter(type_new__pk__in=userprofile.user_type_new.allowed_types.all())
             sol_opts = form.get('sol_opts','')
             if sol_opts == "sols":
-                P = Problem.objects.exclude(solutions = None)
+                P = P.exclude(solutions = None)
             elif sol_opts == "nosols":
-                P = Problem.objects.filter(solutions = None)
-            else:
-                P = Problem.objects.all()
+                P = P.filter(solutions = None)
+
             P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend)
             if len(type_pks) + len(round_pks) > 0:
                 P = P.filter(Q(type_new__pk__in = type_pks)|Q(round__pk__in = round_pks))
@@ -278,6 +281,69 @@ def advanced_searchresults(request):
             type_names.sort()
             context['testtypes'] = type_names
             return HttpResponse(template.render(context,request))
+
+
+@login_required
+def view_presets(request):
+    context = {}
+    context['presets'] = AdvancedSearchPreset.objects.all()
+    context['types'] = request.user.userprofile.user_type_new.allowed_types.all()
+    return render(request,'search/view_presets.html',context)
+
+@login_required
+def add_preset(request):
+    form = request.POST
+    testtypes = form.getlist('tp')
+    type_pks = []
+    round_pks = []
+    for i in testtypes:
+        type_args = i.split('_')
+        if type_args[0] == 'T':
+            type_pks.append(type_args[1])
+        else:
+            round_pks.append(type_args[1])
+    label = form.get("preset-label","")
+    preset = AdvancedSearchPreset(label=label)
+    preset.save()
+    preset.types.add(*Type.objects.filter(pk__in=type_pks))
+    preset.rounds.add(*Round.objects.filter(pk__in=round_pks))
+    preset.save()
+    return JsonResponse({'new_preset_html':render_to_string('search/preset-list-item.html',{'i': preset})})
+
+@login_required
+def load_edit_preset(request):
+    pk = request.POST.get('pspk','')
+    preset = get_object_or_404(AdvancedSearchPreset,pk=pk)
+    return JsonResponse({'modal_html':render_to_string('search/edit-preset-modal.html',{'preset':preset,'types':request.user.userprofile.user_type_new.allowed_types.all()})})
+
+@login_required
+def save_preset(request):
+    form = request.POST
+    pk = form.get('pk','')
+    testtypes = form.getlist('tp')
+    type_pks = []
+    round_pks = []
+    for i in testtypes:
+        type_args = i.split('_')
+        if type_args[0] == 'T':
+            type_pks.append(type_args[1])
+        else:
+            round_pks.append(type_args[1])
+    preset = get_object_or_404(AdvancedSearchPreset,pk = pk)
+    label = form.get("preset-label","")
+    preset.label = label
+    preset.save()
+    for i in preset.types.all():
+        if i.pk not in type_pks:
+            preset.types.remove(i)
+    for i in preset.rounds.all():
+        if i.pk not in round_pks:
+            preset.rounds.remove(i)
+    preset.save()
+    preset.types.add(*Type.objects.filter(pk__in=type_pks))
+    preset.rounds.add(*Round.objects.filter(pk__in=round_pks))
+    preset.save()
+    return JsonResponse({'preset_html':render_to_string('search/preset-list-item-content.html',{'i': preset})})
 
 @login_required
 def add_to_group(request):
