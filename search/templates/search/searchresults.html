@@ -133,13 +133,32 @@ Tag:<br>
 		  {% csrf_token %}
 		  <input type="hidden" name="next" value="{{ request}}">
 		  <label for="addtag_{{prob.pk}}">Add Tag:</label>
-		  <select name="addtag_{{prob.pk}}" class="js-add-tag-select form-control">
+		  <select name="addtag_{{prob.pk}}" id="addtag_{{prob.pk}}" class="js-add-tag-select">
 		    <option value="" disabled selected>Select a Tag</option>
-		    {% for tag in tags %}
-		    <option value="{{tag.pk}}">{{tag}}
-		    </option>
-		    {% endfor %}
-		  </select>
+                    {% for tagg in tags %}
+                    <option value="{{tagg.pk}}" title="{{tagg.description}}">{{tagg}}==={{tagg.description}}</option>
+                    {% endfor %}
+                  </select>
+                  <script>
+                    $('#addtag_{{prob.pk}}').selectize({
+			create: false,
+			sortField: 'text',
+			render: {
+                            option: function (item, escape) {
+				var label = item.text.split('===')
+				return '<div class="option" title="' + label[1] + '">' +
+                                    '<span class="">' + escape(label[0]) + '</span>' +
+                                    '</div>';
+                            },
+			    item: function (item, escape) {
+				var label = item.text.split('===')
+				return '<div class="option" title="' + label[1] + '">' +
+                                    '<span class="">' + escape(label[0]) + '</span>' +
+                                    '</div>';
+                            }
+			}
+                    });
+                    </script>
 		  <div id="tagging-status-{{prob.pk}}" class="js-tagging-status">
 		    
 		  </div>
