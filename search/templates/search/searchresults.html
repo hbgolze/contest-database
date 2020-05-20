@@ -145,13 +145,13 @@ Tag:<br>
 			sortField: 'text',
 			render: {
                             option: function (item, escape) {
-				var label = item.text.split('===')
+				var label = item.text.split('===');
 				return '<div class="option" title="' + label[1] + '">' +
                                     '<span class="">' + escape(label[0]) + '</span>' +
                                     '</div>';
                             },
 			    item: function (item, escape) {
-				var label = item.text.split('===')
+				var label = item.text.split('===');
 				return '<div class="option" title="' + label[1] + '">' +
                                     '<span class="">' + escape(label[0]) + '</span>' +
                                     '</div>';

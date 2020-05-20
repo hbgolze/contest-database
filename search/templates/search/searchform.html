@@ -46,7 +46,7 @@
 	      </select>
 	    {% endif %}
 	    <label for="tp" class="control-label">Problem Type:</label>
-	    <select{% if advanced %} multiple{% endif %} name="tp" id="tp" class="form-control"{% if advanced %} size="10"{% endif %}>
+	    <select{% if advanced %} multiple{% endif %} name="tp" id="tp"{% if advanced %} size="10"{% endif %}>
 	      {% for typ in types %}
 	      <option value="T_{{typ.pk}}" title="{{typ.label}}">{{typ.label}} Problems</option>
 {% for round in typ.rounds.all %}
@@ -54,18 +54,67 @@
 {% endfor %}
 	  {% endfor %}
 	    </select>
+	    <script>
+              var $tp_sel = $('#tp').selectize({
+                  create: false,
+              });
+              </script>
 	  </div>
 	</div>
+
 	<div class="row">
 	  <div class="form-group col-lg-8">
 	    <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
 	    
-	    <select{% if advanced %} multiple{% endif %} name="tag" class="form-control"{% if advanced %} size="10"{% endif %}>
+	    <select{% if advanced %} multiple{% endif %} name="tag" id="select_tag" {% if advanced %} size="10"{% endif %}>
 {% if not advanced %}	      <option value="">Unspecified</option>{% endif %}
-	      {% for t in tags %}
-	      <option value="{{t.tag}}" title="{{t.tag}}">{{t.tag}}</option>
+{% for t in tags %}
+	      <option value="{{t.tag}}" title="{{t.description}}">{{t.tag}}==={{t.description}}</option>
 	      {% endfor %}
 	    </select>
+	    {% if advanced %}
+	    <script>
+              $('#select_tag').selectize({
+                  create: false,
+                  sortField: 'text',
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+              </script>
+	    {% else %}
+	    <script>
+              $('#select_tag').selectize({
+                  create: false,
+                  sortField: 'text',
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                              return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+              </script>
+	    {% endif %}
 	  </div>
 	</div>
 	<div class="row">
@@ -114,7 +163,9 @@
 <script>
   $(document).on('change','#presets', function(e) {
       var s=$(this).val().split('|');
+      var selectize = $tp_sel[0].selectize;
       $("#tp").val(s);
+      selectize.setValue(s);
   });
 </script>
 
