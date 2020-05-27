@@ -666,7 +666,7 @@ def testview(request,**kwargs):#switching to UserTest
                             pv=3
                         else:
                             pv=5
-                    ur=UserResponse(test_label=test.name,test_pk=usertest.pk,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv,usertest = usertest)
+                    ur=UserResponse(test_label=test.name,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv,usertest = usertest)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
@@ -677,7 +677,7 @@ def testview(request,**kwargs):#switching to UserTest
             tempsticky = form.get('sticky'+P[i].label)
             if tempsticky=='on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_pk=usertest.pk,test_label=test.name,usertest = usertest)
+                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_label=test.name,usertest = usertest)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
@@ -746,7 +746,7 @@ def newtestview(request,**kwargs):#Get this ready for use...
                             pv=3
                         else:
                             pv=5
-                    ur=UserResponse(test_label=newtest.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
+                    ur=UserResponse(test_label=newtest.name,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
                     ur.save()
                     r.modified_date = t
                     r.response = tempanswer
@@ -1359,7 +1359,7 @@ def checkanswer(request,pk):
                 pv=3
             else:
                 pv=5
-        ur=UserResponse(test_label=usertest.test.name,test_pk=usertest.pk,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
+        ur=UserResponse(test_label=usertest.test.name,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
         ur.save()
         r.modified_date = t
         r.response = tempanswer
