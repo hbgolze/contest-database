@@ -102,6 +102,9 @@ Tag:<br>
 	<div class="row mb-1">
 	  <div class="col" style="text-align:right">
             <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
+	      {% if prob.question_type_new.question_type != 'proof' %}
+              <button type="button" class="btn btn-sm btn-secondary view-answer-link mr-1" id="view-ans_{{prob.pk}}" title="View Answer"><span class="fa fa-check-circle"></span></button>
+              {% endif %}
 	      <button type="button" class="btn btn-sm btn-secondary view-sol-link mr-1" id="view-sol_{{prob.pk}}" title="View Solutions">Solutions ({{prob.solutions.count}})</button>
               <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{prob.pk}}" title="Copy"><span class="fa fa-copy"></span></button>
               <button type="button" class="btn btn-sm btn-secondary fullscreen-disp-link" id="fs_{% if prob.question_type_new.question_type == "multiple choice" %}mc{% else %}sa{% endif %}_{{prob.pk}}" title="Fullscreen Display"><span class="fa fa-desktop"></span></button>
@@ -114,10 +117,15 @@ Tag:<br>
 	  </div>
 	  <div class="col-11">
 	    {% if prob.question_type_new.question_type == 'multiple choice' %}
-	    <div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    	    <div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    <div class="answer" style="display:none" id="answer_{{prob.pk}}">Answer: {{prob.mc_answer}}</div>
 	    <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
 	    {% else %}
+	    
 	    <div id="sa_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+	    {% if prob.question_type_new.question_type != "proof" %}
+            <div class="answer" style="display:none" id="answer_{{prob.pk}}">Answer: ${{prob.sa_answer}}$</div>
+            {% endif %}
 	    <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.problem_text}}</textarea>
 	    {% endif %}
 	    
@@ -352,7 +360,11 @@ $(document).on('click',".view-sol-link",function(e) {
         }
     });
 });
-
+$(document).on('click',".view-answer-link",function(e) {
+  var prob_id = $(this).attr('id').split('_')[1];
+    $("#answer_"+prob_id).toggle();
+});
+  
 </script>
 
 {% endblock %}
