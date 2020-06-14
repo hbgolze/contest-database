@@ -124,7 +124,7 @@ def test_as_pdf(request,**kwargs):
         ptext=''
         if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
             ptext = P[i].mc_problem_text
-            rows.append((P[i],ptext,P[i].readable_label,P[i].answers()))
+            rows.append((P[i],ptext,P[i].readable_label,P[i].answers().replace('\\\\','\\\\[3pt]')))
         else:
             ptext = P[i].problem_text
             rows.append((P[i],ptext,P[i].readable_label,''))
