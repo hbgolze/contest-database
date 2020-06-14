@@ -213,7 +213,101 @@ def test_as_pdf(request,**kwargs):
                 error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})#####Perhaps the error page needs to be customized...
 
+@login_required
+def halfpage_test_as_pdf(request,**kwargs):
+    test = get_object_or_404(Test, pk=kwargs['pk'])
+    P = list(test.problems.all())
+    rows = []
+    include_problem_labels = False
+    include_answer_choices = True
+    randomize = False
+    include_title = True
+    fmt='halfpage'
+    seed = 0
+    for i in range(0,len(P)):
+        ptext=''
+        if P[i].question_type_new.question_type == 'multiple choice' or P[i].question_type_new.question_type == 'multiple choice short answer':
+            ptext = P[i].mc_problem_text
+            rows.append((P[i],ptext,P[i].readable_label,P[i].answers().replace('\\\\','\\\\[3pt]')))
+        else:
+            ptext = P[i].problem_text
+            rows.append((P[i],ptext,P[i].readable_label,''))
+#    if request.method == "GET":
+#        if request.GET.get('problemlabels')=='no':
+#            include_problem_labels = False
+    context = {
+        'name':test.name,
+        'rows':rows,
+        'pk':kwargs['pk'],
+        'include_problem_labels':include_problem_labels,
+        'include_title': include_title,
+        }
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('contestcollections/my_latex_halfpage_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'name':test.name,
+            'rows':rows,
+            'pk':kwargs['pk'],
+            'include_problem_labels':include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'randomize': randomize,
+            'seed': seed,
+            'tempdirect':tempdir,
+            'include_title': include_title,
+            }
+        template = get_template('contestcollections/my_latex_halfpage_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
 
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+test.name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':test.name,'error_text':error_text})#####Perhaps the error page needs to be customized...
+
+            
 @login_required
 def test_sol_as_pdf(request,**kwargs):
     test = get_object_or_404(Test, pk=kwargs['pk'])
