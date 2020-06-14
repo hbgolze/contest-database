@@ -1,0 +1,64 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass[10pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+
+\usepackage{geometry}
+\geometry{
+  paperheight=8.5in,
+  paperwidth=5.5in,
+  voffset=-.5in,
+  hoffset=0in,
+  textheight=7in,
+  textwidth=4.5in,
+  headsep=12pt
+}
+\setlength{\topmargin}{0pt}
+
+
+\pagestyle{myheadings}
+\markright{ {{name}} {% if randomize %}(Seed Number: {{seed}}){% endif %}\hfill}
+\title{ {{name}} }
+
+
+\usepackage{xparse}
+\usepackage{framed}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+\begin{enumerate}
+  \setlength{\itemsep}{1em}
+{% for prob,problemcode,problemlabel,answerchoices in rows %}
+\item \begin{minipage}[t]{4.15in}
+{{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
+{% if include_answer_choices or prob.needs_answers %}
+\vspace{2mm}
+
+{{answerchoices}}
+{% endif %}
+\end{minipage}
+
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}

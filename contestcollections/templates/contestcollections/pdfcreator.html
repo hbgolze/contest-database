@@ -22,6 +22,13 @@ Contest Collections: {{test.name}} - PDF Options
 	<fieldset class="form-group">
 	  <div class="row">
 	    <div class="col-sm-10">
+	      <label for="f">Document Format</label>
+	      <select class="form-control" id="fmt" name="fmt">
+		<option selected value="default">Default</option>
+		<option value="outline">Page Border</option>
+		<option value="halfpage">Half Page</option>
+	      </select>
+	      
 	      <div class="form-check">
 		<input class="form-check-input" type="checkbox" value="" id="include-acs" name="include-acs" checked>
 		<label class="form-check-label" for="include-acs">
@@ -39,13 +46,6 @@ Contest Collections: {{test.name}} - PDF Options
 		<input class="form-check-input" type="checkbox" value="" id="include-ti" name="include-ti" checked>
 		<label class="form-check-label" for="include-ti">
 		  Include Title
-		</label>
-	      </div>
-
-	      <div class="form-check">
-		<input class="form-check-input" type="checkbox" value="" id="outline-mode" name="ol">
-		<label class="form-check-label" for="outline-mode">
-		  Include Border
 		</label>
 	      </div>
 

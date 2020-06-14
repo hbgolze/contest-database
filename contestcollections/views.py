@@ -97,15 +97,19 @@ def test_as_pdf(request,**kwargs):
     test = get_object_or_404(Test, pk=kwargs['pk'])
     P = list(test.problems.all())
     rows = []
-    outline = False
+#    outline = False
+#    halfpage = False
     if 'opts' in kwargs:
         options = kwargs['opts']
         include_problem_labels = options['pl'] 
         include_answer_choices = options['ac']
         randomize = options['r']
         include_title = options['ti']
-        if 'ol' in options:
-            outline = True
+        fmt = options['f']
+ #       if 'ol' in options:
+ #           outline = True
+ #       if 'hp' in options:
+ #           halfpage = True
     else:
         include_problem_labels = False
         include_answer_choices = True
@@ -137,8 +141,10 @@ def test_as_pdf(request,**kwargs):
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
-    if outline == True:
+    if fmt == 'outline':
         template = get_template('contestcollections/my_latex_outline_template.tex')
+    elif fmt == 'halfpage':
+        template = get_template('contestcollections/my_latex_halfpage_template.tex')
     else:
         template = get_template('randomtest/my_latex_template.tex')
     rendered_tpl = template.render(context).encode('utf-8')
@@ -157,8 +163,10 @@ def test_as_pdf(request,**kwargs):
             'tempdirect':tempdir,
             'include_title': include_title,
             }
-        if outline == True:
+        if fmt == 'outline':
             template = get_template('contestcollections/my_latex_outline_template.tex')
+        elif fmt == 'halfpage':
+            template = get_template('contestcollections/my_latex_halfpage_template.tex')
         else:
             template = get_template('randomtest/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
@@ -411,8 +419,10 @@ def problempdf(request,pk):
             context['seed'] = 0
     else:
         context['r'] = 0
-    if 'ol' in form:
-        context['ol'] = 1
+    if 'fmt' in form:
+        context['f'] = form.get('fmt')
+#    if 'ol' in form:
+#        context['ol'] = 1
     return test_as_pdf(request,pk=pk,opts = context)
 
 @login_required

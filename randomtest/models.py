@@ -439,7 +439,11 @@ class UserProfile(models.Model):
     time_zone = models.CharField(max_length = 100, blank = True, null=True, choices = TIMEZONES)
     def __str__(self):
         return self.user.username
-
+    def add_problem_group(self,name=""):
+        pg = ProblemGroup(name=name)
+        pg.save()
+        self.problem_groups.add(pg)
+        self.save()
 
 class UserTest(models.Model):
     userprof = models.ForeignKey(UserProfile,related_name = 'user_tests',null = True,on_delete=models.CASCADE)
