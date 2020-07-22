@@ -106,6 +106,7 @@ class ContestTest(models.Model):
             self.short_label = short_label
         if contest_label != '':
             self.contest_label = contest_label
+        self.save()
         for p in self.problems.all():
             p.modify_info(year = year,test_label = short_label,readable_prefix = contest_label)
             
