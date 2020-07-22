@@ -16,7 +16,7 @@ from django.conf import settings
 import pytz
 
 from randomtest.utils import newtexcode,compileasy,pointsum,newsoltexcode
-from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse,Solution
+from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse,Solution,UserProfile
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
 from teacher.models import PublishedUnit,PublishedProblemSet,PublishedSlideGroup,PublishedUnitObject,PublishedProblemObject,PublishedSlide,PublishedSlideObject,PublishedTest,SolutionObject

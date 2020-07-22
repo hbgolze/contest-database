@@ -68,7 +68,14 @@ class Type(models.Model):
         self.min_year = min_year['year__min']
         self.max_year = max_year['year__max']
         self.save()
-
+    def accumulate_sa_answers(self):
+        D={}
+        for p in self.problems.all():
+            if p.sa_answer in D:
+                D[sa_answer] += 1
+            else:
+                D[sa_answer] = 1
+        return {k: v for k,v in sorted(D.items(),key = lambda item: -item[1])}
 
 class Round(models.Model):
     name = models.CharField(max_length = 50)
@@ -92,8 +99,17 @@ class ContestTest(models.Model):
         return self.contest_label
     class Meta:
         ordering = ['year','form_letter','contest_label']
-
-
+    def modify_info(self,year= 0,short_label='',contest_label = ''):
+        if year != 0:
+            self.year = year
+        if short_label != '':
+            self.short_label = short_label
+        if contest_label != '':
+            self.contest_label = contest_label
+        for p in self.problems.all():
+            p.modify_info(year = year,test_label = short_label,readable_prefix = contest_label)
+            
+                
 class SourceType(models.Model):
     name = models.CharField(max_length = 15)
     def __str__(self):
@@ -267,7 +283,17 @@ class Problem(models.Model):
         if self.mc_answer == 'E':
             return self.answer_E
         return ''
+    def modify_info(self,year=0,test_label='',readable_prefix=''):
+        if year != 0:
+            self.year = year
+        if test_label != '':
+            self.test_label = test_label
+            self.label = test_label + str(self.problem_number)
+        if readable_prefix != '':
+            self.readable_label = readable_prefix+' #' + str(self.problem_number)
+        self.save()
 
+    
 class ProofResponse(models.Model):
     problem = models.ForeignKey(Problem,null=True,on_delete=models.CASCADE)
     proof = models.TextField(blank = True)
