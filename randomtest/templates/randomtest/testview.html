@@ -277,32 +277,38 @@ $(document).on('click',".js-star-toggle",function(event) {
 $(document).on('click',".js-check-mc-answer",function(event) {
     event.preventDefault();
     var problem_label=$(this).attr('id').split('-')[2];
-    $.ajax({
-        type: 'POST',
-        url: '{% url 'checkanswer' pk %}',
-        data: "&response_id="+$(this).attr('id')+"&answer="+$('input[name=answer'+problem_label+']:checked').val()+"&question_type=mc",
-        dataType: 'json',
-        success: function(data) {
-            if (data['blank'] == 'false') {
-                if (data['correct'] == 'true') {
-                    $("#answerstatus_"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
-	            $('input[name=answer'+problem_label+']').attr('disabled', true);
-	            $('.answer_'+problem_label).each(function(i,obj) {
-                        $(this).addClass('disabled');
-                    });
-                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
-                     if (data['has_solution'] == 'true') {
-	                 $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
-                     } else {
-	                 $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
-                     }
-                } else {
-                     $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
-                    $("#answerstatus_"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
-                }
+    if ($('input[name=answer'+problem_label+']:checked').val()) {
+	$("#check-answer-"+problem_label).prop('disabled','true');
+	$("#check-answer-"+problem_label).append(' <span class="fa fa-spinner fa-spin"></span>');
+	$.ajax({
+            type: 'POST',
+            url: '{% url 'checkanswer' pk %}',
+            data: "&response_id="+$(this).attr('id')+"&answer="+$('input[name=answer'+problem_label+']:checked').val()+"&question_type=mc",
+            dataType: 'json',
+            success: function(data) {
+		if (data['blank'] == 'false') {
+                    if (data['correct'] == 'true') {
+			$("#answerstatus_"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
+			$('input[name=answer'+problem_label+']').attr('disabled', true);
+			$('.answer_'+problem_label).each(function(i,obj) {
+                            $(this).addClass('disabled');
+			});
+			$("#table-problem-status-"+problem_label).html("<span class='fa fa-check' style='color:green'></span>");
+			if (data['has_solution'] == 'true') {
+	                    $("#check-button-"+problem_label).html("<button data-target='#solution-placeholder' class='btn btn-secondary solution-link' id='solution-link' href='load_sol/"+data['prob_pk']+"/'>Solution</a>");
+			} else {
+	                    $("#check-button-"+problem_label).html("<button class='btn btn-secondary' disabled data-toggle='tooltip' title='We haven&#8217;t written a solution to this problem yet'><span style='color:red'>Solution</span></button>");
+			}
+                    } else {
+			$("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+			$("#answerstatus_"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
+		        $("#check-answer-"+problem_label).prop('disabled',false);
+		        $("#check-answer-"+problem_label).html('Check Answer');
+                    }
+		}
             }
-        }
-    });
+	});
+    }
     return false;
 });
 
@@ -310,6 +316,9 @@ $(document).on('click',".js-check-answer",function(event) {
     event.preventDefault();
     var problem_label=$(this).attr('id').split('-')[2];
     var answer = $('input[name=answer'+problem_label+']').val();
+    if (answer != '') {
+	$("#check-answer-"+problem_label).prop('disabled','true');
+	$("#check-answer-"+problem_label).append(' <span class="fa fa-spinner fa-spin"></span>');
     $.ajax({
         type: 'POST',
         url: '{% url 'checkanswer' pk %}',
@@ -335,11 +344,15 @@ $("#answer"+problem_label).addClass("is-invalid");
 $("#icon"+problem_label).remove();
 $("#sa-input-"+problem_label).prepend("<span class='fa fa-remove' style='color:red' id='icon"+problem_label+"'></span>");
                      $("#table-problem-status-"+problem_label).html("<span class='fa fa-remove' style='color:red'></span>");
-//	             $("#answer-input-"+problem_label).html("<div class='inner-addon right-addon'><span class='fa fa-remove' style='color:red'></span><input type='text' class='form-control is-invalid' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'></div>");
+		    //	             $("#answer-input-"+problem_label).html("<div class='inner-addon right-addon'><span class='fa fa-remove' style='color:red'></span><input type='text' class='form-control is-invalid' name='answer"+problem_label+"' name='id"+problem_label+"' value='"+answer+"'></div>");
+		    $("#check-answer-"+problem_label).prop('disabled',false);
+		    $("#check-answer-"+problem_label).html('Check Answer')
+
                 }
             }
         }
     });
+    }
     return false;
 });
 

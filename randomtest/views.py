@@ -627,13 +627,13 @@ def highscore(request,**kwargs):
 
 @login_required
 def testview(request,**kwargs):#switching to UserTest
-    context={}
-    pk=kwargs['pk']
-    curruserprof=get_or_create_up(request.user)
+    context = {}
+    pk = kwargs['pk']
+    curruserprof = get_or_create_up(request.user)
     if 'username' in kwargs:
         username = kwargs['username']
         context['username'] = username
-        user=get_object_or_404(User,username=username)
+        user = get_object_or_404(User,username=username)
         if user not in curruserprof.students.all():
             return HttpResponse('Unauthorized', status=401)
         userprofile = get_or_create_up(user)
@@ -644,60 +644,66 @@ def testview(request,**kwargs):#switching to UserTest
         return HttpResponse('Unauthorized', status=401)
     test = get_object_or_404(Test, pk=usertest.test.pk)
     if request.method == "POST" and 'username' not in kwargs:
-        form=request.POST
-        P=list(test.problems.all())
-        P=sorted(P,key=lambda x:(x.problem_number,x.year))
-        num_correct=0
-        rows=[]
+        form = request.POST
+        P = list(test.problems.all())
+        P = sorted(P,key=lambda x:(x.problem_number,x.year))
+        num_correct = 0
+        rows = []
+        ut_responses = usertest.newresponses.all()
         for i in range(0,len(P)):
-            r = usertest.newresponses.get(problem = P[i])
+            r = ut_responses.get(problem = P[i])
             tempanswer = form.get('answer'+P[i].label)
+            if P[i].question_type_new.question_type == 'multiple choice':
+                correct_answer = P[i].mc_answer
+            else:
+                correct_answer = P[i].sa_answer
             if tempanswer != None and tempanswer !='':
-                t=timezone.now()
+                t = timezone.now()
                 r.attempted = 1
                 if r.response != tempanswer:
-                    pv=0
-                    if P[i].type_new.type=='AIME':
-                        if P[i].problem_number<=1:
-                            pv=-3
-                        elif P[i].problem_number<=5:
-                            pv=1
-                        elif P[i].problem_number<=10:
-                            pv=3
-                        else:
-                            pv=5
-                    ur=UserResponse(test_label=test.name,response=tempanswer,problem_label=P[i].label,modified_date=t,point_value=pv,usertest = usertest)
-                    ur.save()
-                    r.modified_date = t
-                    r.response = tempanswer
-                    if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
-                        ur.correct=1
+                    if r.response != correct_answer:
+                        pv = 0
+                        if P[i].type_new.type == 'AIME':
+                            if P[i].problem_number <= 1:
+                                pv = 1#-3
+                            elif P[i].problem_number <= 5:
+                                pv = 1
+                            elif P[i].problem_number <= 10:
+                                pv = 3
+                            else:
+                                pv = 5
+                        ur = UserResponse(test_label = test.name,response = tempanswer,problem_label = P[i].label,modified_date = t,point_value=pv,usertest = usertest)
                         ur.save()
-                    userprofile.responselog.add(ur)
+                        r.modified_date = t
+                        r.response = tempanswer
+                        if r.response == P[i].answer and P[i].question_type_new.question_type !='proof':
+                            ur.correct = 1
+                            ur.save()
+                        userprofile.responselog.add(ur)
             tempsticky = form.get('sticky'+P[i].label)
-            if tempsticky=='on':
+            if tempsticky == 'on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=P[i].label,sticky_date=timezone.now(),test_label=test.name,usertest = usertest)
+                    s = Sticky(problem_label = P[i].label,sticky_date = timezone.now(),test_label = test.name,usertest = usertest)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
             else:
                 if r.stickied == True:
                     try:
-                        s=Sticky.objects.get(problem_label=P[i].label,usertest = usertest)
+                        s = Sticky.objects.get(problem_label=P[i].label,usertest = usertest)
                         s.delete()
                     except Sticky.DoesNotExist:
-                        s=None
+                        s = None
                 r.stickied = False
             r.save()
-            if r.response==P[i].answer and P[i].question_type_new.question_type !='proof':
-                num_correct+=1
+            if r.response == correct_answer and P[i].question_type_new.question_type !='proof':
+                num_correct += 1
             rows.append(r)
         usertest.num_correct = num_correct
         usertest.save()
     else:
-        R=list(usertest.newresponses.all())
-        rows=sorted(R,key=lambda x:(x.problem.problem_number,x.problem.year))
+        R = list(usertest.newresponses.all())
+        rows = sorted(R,key=lambda x:(x.problem.problem_number,x.problem.year))
     context['rows'] = rows
     context['pk'] = pk
     context['nbar'] = 'viewmytests'
@@ -755,28 +761,28 @@ def newtestview(request,**kwargs):#Get this ready for use...
                         ur.save()
                     userprofile.responselog.add(ur)
             tempsticky = form.get('sticky'+prob.label)
-            if tempsticky=='on':
+            if tempsticky == 'on':
                 if r.stickied == False:
-                    s=Sticky(problem_label=prob.label,sticky_date=timezone.now(),usertest = usertest,test_label=newtest.name)
+                    s = Sticky(problem_label=prob.label,sticky_date=timezone.now(),usertest = usertest,test_label=newtest.name)
                     s.save()
                     userprofile.stickies.add(s)
                 r.stickied = True
             else:
                 if r.stickied == True:
                     try:
-                        s=Sticky.objects.get(problem_label=prob.label,usertest = usertest)
+                        s = Sticky.objects.get(problem_label=prob.label,usertest = usertest)
                         s.delete()
                     except Sticky.DoesNotExist:
-                        s=None
+                        s = None
                 r.stickied = False
             r.save()
-            if r.response==prob.answer and prob.question_type_new.question_type !='proof':
-                num_correct+=1
+            if r.response == prob.answer and prob.question_type_new.question_type !='proof':
+                num_correct += 1
             rows.append(r)
         usertest.num_correct = num_correct
         usertest.save()
     else:
-        rows=usertest.newresponses.order_by('order')#Add order to response model.
+        rows = usertest.newresponses.order_by('order')#Add order to response model.
     context['rows'] = rows
     context['pk'] = pk
     context['nbar'] = 'viewmytests'
@@ -1338,50 +1344,56 @@ def new_toggle_star(request,pk):
 
 @login_required
 def checkanswer(request,pk):
-    usertest=get_object_or_404(UserTest,pk=pk)
-    userprofile=request.user.userprofile
-    response_label=request.POST.get('response_id','')
+    usertest = get_object_or_404(UserTest,pk=pk)
+    userprofile = request.user.userprofile
+    response_label = request.POST.get('response_id','')
     problem_label = response_label.split('-')[2]
     prob = get_object_or_404(Problem,label=problem_label)
-    tempanswer=request.POST.get('answer','')
-    r=usertest.newresponses.get(problem_label=problem_label)
+    tempanswer = request.POST.get('answer','')
+    r = usertest.newresponses.get(problem_label=problem_label)
     qt = request.POST.get('question_type','')
-    t=timezone.now()
+    t = timezone.now()
     r.attempted = 1
     if r.response != tempanswer:# i.e., new answer
-        pv=0
-        if prob.type_new.type=='AIME':
-            if prob.problem_number<=1:
-                pv=-3
-            elif prob.problem_number<=5:
-                pv=1
-            elif prob.problem_number<=10:
-                pv=3
-            else:
-                pv=5
-        ur=UserResponse(test_label=usertest.test.name,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
-        ur.save()
-        r.modified_date = t
-        r.response = tempanswer
-        r.save()
-        if prob.question_type_new.question_type == "multiple choice":
-            if r.response==prob.mc_answer and prob.question_type_new.question_type !='proof':
-                ur.correct=1
-                ur.save()
-                usertest.num_correct = usertest.num_correct+1
-            userprofile.responselog.add(ur)
-            userprofile.save()
-            usertest.show_answer_marks=1
-            usertest.save()
-        elif prob.question_type_new.question_type == "short answer":
-            if r.response==prob.sa_answer and prob.question_type_new.question_type !='proof':
-                ur.correct=1
-                ur.save() 
-                usertest.num_correct = usertest.num_correct+1
-            userprofile.responselog.add(ur)
-            userprofile.save()
-            usertest.show_answer_marks=1
-            usertest.save()
+        if prob.question_type_new.question_type == 'multiple choice':
+            correct_answer = prob.mc_answer
+        else:
+            correct_answer = prob.sa_answer
+        if r.response != correct_answer:
+            r.modified_date = t
+            r.response = tempanswer
+            r.save()
+            pv = 0
+            if prob.type_new.type == 'AIME':
+                if prob.problem_number <= 1:
+                    pv = 1#-3
+                elif prob.problem_number <= 5:
+                    pv = 1
+                elif prob.problem_number <= 10:
+                    pv = 3
+                else:
+                    pv = 5
+            ur = UserResponse(test_label=usertest.test.name,response=tempanswer,problem_label=prob.label,modified_date=t,point_value=pv,usertest = usertest)
+            ur.save()
+        
+            if prob.question_type_new.question_type == "multiple choice":
+                if r.response == prob.mc_answer:
+                    ur.correct = 1
+                    ur.save()
+                    usertest.num_correct = usertest.num_correct+1
+                userprofile.responselog.add(ur)
+                userprofile.save()
+                usertest.show_answer_marks = 1
+                usertest.save()
+            elif prob.question_type_new.question_type == "short answer":
+                if r.response == prob.sa_answer and prob.question_type_new.question_type !='proof':
+                    ur.correct = 1
+                    ur.save() 
+                    usertest.num_correct = usertest.num_correct+1
+                userprofile.responselog.add(ur)
+                userprofile.save()
+                usertest.show_answer_marks=1
+                usertest.save()
     if tempanswer != None and tempanswer !='' and tempanswer != 'undefined':
         if qt == 'mc':
             if tempanswer == prob.mc_answer:

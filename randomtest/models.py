@@ -471,7 +471,22 @@ class UserProfile(models.Model):
         pg.save()
         self.problem_groups.add(pg)
         self.save()
+    def add_test(self,name,problems):
+        t = Test(name=name)
+        t.save()
+        for p in problems:
+            t.problems.add(p)
+            t.types.add(p.type_new)
+        t.save()
+        self.tests.add(t)
+        ut = UserTest(test =t,num_probs = t.problems.count(),num_correct = 0,userprof = self)
+        ut.save()
+        self.save()
+        for p in t.problems.all(): 
+            r = NewResponse(response = '', problem_label = p.label, problem = p, usertest =ut) 
+            r.save() 
 
+        
 class UserTest(models.Model):
     userprof = models.ForeignKey(UserProfile,related_name = 'user_tests',null = True,on_delete=models.CASCADE)
     test = models.ForeignKey(Test, null = True, on_delete=models.CASCADE)
@@ -495,6 +510,7 @@ class NewResponse(models.Model):
     points = models.IntegerField(default = 0)
     point_value = models.IntegerField(default = 1)
     is_migrated = models.BooleanField(default = 0)
+    correct = models.BooleanField(default = 0)
     def __str__(self):
         return self.problem_label+': '+self.response
 
