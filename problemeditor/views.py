@@ -34,6 +34,7 @@ from datetime import datetime,timedelta
 from bs4 import BeautifulSoup
 import bs4
 from itertools import chain
+import re
 
 def show_mc_form_condition(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
@@ -1338,7 +1339,6 @@ def uploadcontestview(request,type):
                     sa = QuestionType.objects.get(question_type = 'short answer')
 
                     num = 1
-                    prefix_pn = ''
                     for i in range(1,len(problemtexts)):
 
                         problem_comps = problemtexts[i].split('=====')
@@ -1659,7 +1659,7 @@ def htmltolatex(request,type2):
     if request.method == "POST":
         form = HTMLLatexForm(request.POST)
         if form.is_valid():
-            soup = BeautifulSoup(form.cleaned_data['html_code'],'html')
+            soup = BeautifulSoup(form.cleaned_data['html_code'],'html.parser')
             X= soup.find_all('div', class_="cmty-view-post-item-text")
             M=[]
             for i in X:
@@ -1688,8 +1688,44 @@ def htmltolatex(request,type2):
                             s+=str(j).replace("<b>","$\\textbf{").replace("</b>","}$")
 #                else:
 #                    print type(j)
-                s=s.replace('[asy]','\n\\begin{center}\n\\begin{asy}\n')
-                s=s.replace('[/asy]','\\end{asy}\n\\end{center}\n')
+                s = s.replace('[asy]','\n\\begin{center}\n\\begin{asy}\n')
+                s = s.replace('[/asy]','\\end{asy}\n\\end{center}\n')
+                if 'mc' in request.POST or 'sa' in request.POST:
+                    s = '=====PT\n\n'+s
+                if 'mc' in request.POST:
+                    h = re.split('textbf|text',s)
+                    if len(h) > 5:
+                        if '}' in h[-5]:
+                            aa = h[-5][h[-5].index('}')+1:]
+                        else:
+                            aa = h[-5]
+                        if '}' in h[-4]:
+                            ab = h[-4][h[-4].index('}')+1:]
+                        else:
+                            ab = h[-4]
+                        if '}' in h[-3]:
+                            ac = h[-3][h[-3].index('}')+1:]
+                        else:
+                            ac = h[-3]
+                        if '}' in h[-2]:
+                            ad = h[-2][h[-2].index('}')+1:]
+                        else:
+                            ad = h[-2]
+                        if '}' in h[-1]:
+                            ae = h[-1][h[-1].index('}')+1:]
+                        else:
+                            ae = h[-1]
+                        aa = aa.replace('\\ ','').replace('\\qquad','')
+                        ab = ab.replace('\\ ','').replace('\\qquad','')
+                        ac = ac.replace('\\ ','').replace('\\qquad','')
+                        ad = ad.replace('\\ ','').replace('\\qquad','')
+                        ae = ae.replace('\\ ','').replace('\\qquad','')
+                        s += '\n=====AA'+aa+'\n'
+                        s += '=====AB'+ab+'\n'
+                        s += '=====AC'+ac+'\n'
+                        s += '=====AD'+ad+'\n'
+                        s += '=====AE'+ae+'\n'
+                        s += '=====MA\n\n'
                 M.append(s)
             return_string = ''
             for i in M:

@@ -18,7 +18,9 @@
       <form method="post">
 	{% csrf_token %}
 	{{form.as_p}}
-	<button type="submit" class="btn btn-primary">Download Parsed Text File</button>
+	<button type="submit" class="btn btn-primary" name="pf">Download Parsed Text File</button>
+	<button type="submit" class="btn btn-primary" name="mc">Download Parsed Text File (MC)</button>
+	<button type="submit" class="btn btn-primary" name="sa">Download Parsed Text File (SA)</button>
       </form>
     </div>
   </div>
