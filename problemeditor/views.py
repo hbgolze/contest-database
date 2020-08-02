@@ -1720,6 +1720,16 @@ def htmltolatex(request,type2):
                         ac = ac.replace('\\ ','').replace('\\qquad','')
                         ad = ad.replace('\\ ','').replace('\\qquad','')
                         ae = ae.replace('\\ ','').replace('\\qquad','')
+                        if aa[-1] == '\\':
+                            aa=aa[0:-1]
+                        if ab[-1] == '\\':
+                            ab=ab[0:-1]
+                        if ac[-1] == '\\':
+                            ac=ac[0:-1]
+                        if ad[-1] == '\\':
+                            ad=ad[0:-1]
+                        if ae[-1] == '\\' or ae[-1] == '$':
+                            ae=ae[0:-1]
                         s += '\n=====AA'+aa+'\n'
                         s += '=====AB'+ab+'\n'
                         s += '=====AC'+ac+'\n'
