@@ -15,7 +15,11 @@
 	You don't have any problem groups yet.
 	{% endif  %}
       </div>
-      
+      {% if archived %}
+      <button class="btn btn-primary" id="view-unarchived">Non-Archived Problem Groups</button>
+      {% else %}
+      <button class="btn btn-primary" id="view-archived">Archived Problem Groups</button>
+      {% endif %}
       <table class="table table-striped">
 	<thead>
 	  <tr>
@@ -64,6 +68,7 @@
       </div>
     </div>
   </div>
+  {% if not archived %}
   <div class="row">
     <div class="col-12">
 <h2>Start a New Problem Group</h2>
@@ -75,6 +80,7 @@
       <p><a href="tags" class="btn btn-primary">View Tags as Problem Groups</a></p>
     </div>
   </div>
+  {% endif %}
 </div>
 
 <div class="modal fade" id="edit-sharing-placeholder" role="dialog">
@@ -113,6 +119,7 @@ $.ajaxSetup({
     },
 });
 
+  {% if not archived %}  
 $(document).on('submit',"#new-group-form",function(event) {
   event.preventDefault();
   $.ajax({
@@ -128,6 +135,7 @@ $(document).on('submit',"#new-group-form",function(event) {
   });
   return false;
 });
+  {% endif %}
 
 $(document).on('click',".edit-sharing",function(e) {
   e.preventDefault();
@@ -240,5 +248,42 @@ $(document).on("click", ".remove-group-link", function(e) {
   });
   return false;
 });
+
+$(document).on("click", ".archive-group-link", function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('id').split('_')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/archive-group/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#pg-row_"+pk).remove();
+    }
+  });
+  return false;
+});
+
+$(document).on("click", ".unarchive-group-link", function(e) {
+  e.preventDefault();
+  var pk = $(this).attr('id').split('_')[1];
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/unarchive-group/',
+    data: "&pk="+pk,
+    dataType: 'json',
+    success: function(result) {
+      $("#pg-row_"+pk).remove();
+    }
+  });
+  return false;
+});
+
+  $(document).on("click","#view-archived", function(e) {
+      window.location.href='archived/';
+  });
+  $(document).on("click","#view-unarchived", function(e) {
+      window.location.href='../';
+  });
 </script>
 {% endblock %}

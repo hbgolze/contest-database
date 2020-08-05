@@ -5,6 +5,7 @@ from . import views
 
 urlpatterns = [
     url(r'^$', views.tableview, name='g_tableview'),
+    url(r'^archived/$', views.archivedtableview, name='g_archived_tableview'),
     url(r'^tags/$', views.tagtableview, name='tagtableview'),
     url(r'^tags/(?P<pk>\d+)/$', views.viewtaggroup, name='viewtaggroup'),
     url(r'^(?P<pk>\d+)/$', views.viewproblemgroup, name='viewproblemgroup'),
@@ -16,6 +17,8 @@ urlpatterns = [
     url(r'^ajax/change-permission/$', views.change_permission, name='change_permission'),
     url(r'^ajax/delete-group/$', views.delete_group, name='delete_group'),
     url(r'^ajax/remove-group/$', views.remove_group, name='remove_group'),
+    url(r'^ajax/archive-group/$', views.archive_group, name='archive_group'),
+    url(r'^ajax/unarchive-group/$', views.unarchive_group, name='unarchive_group'),
     url(r'^ajax/add-to-group/$', views.add_to_group, name='groups_add_to_group'),
     url(r'^ajax/fetch-problems/$', views.fetch_problems, name='groups_fetch_problems'),
     url(r'^ajax/new-problemgroup/$', views.newproblemgroup, name='groups_new_pg'),

@@ -1,36 +1,36 @@
 {% if sharing_type == 'own' %}
           <tr id="pg-row_{{pg.pk}}">
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a> <small>(<a href="{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
+            <td><a href="{% if archived %}../{% endif %}{{pg.pk}}/">{{pg.name}}</a> <small>(<a href="{% if archived %}../{% endif %}{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
             <td>{{pg.problem_objects.count}}</td>
             <td>{{pg.created_date}}</td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm {% if pg.is_shared %}btn-info{% else %}btn-secondary{% endif %}" id="sharing-{{pg.pk}}"><span class="fa fa-user{% if pg.is_shared%}s{% endif %}"></span> Owner</button></td>
-            <td style="text-align:right"><button title="Delete" class="btn btn-sm btn-danger delete-group-link" id="delete-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></td>
+            <td style="text-align:right"><div class="btn-group" role="group" aria-label="Removal Options"><button type="button" class="btn btn-sm btn-secondary {% if archived %}un{% endif %}archive-group-link" id="{% if archived %}unarchive-group{% else %}archive-group{% endif %}_{{pg.pk}}">{% if archived %}Unarchive{% else %}Archive{% endif %}</button><button type="button" title="Delete Problem Group" class="btn btn-sm btn-danger delete-group-link" id="delete-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></div></td>
           </tr>
 {% endif %}
 {% if sharing_type == 'coown' %}
           <tr id="pg-row_{{pg.pk}}">
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
+            <td><a href="{% if archived %}../{% endif %}{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{% if archived %}../{% endif %}{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
             <td>{{pg.problem_objects.count}}</td>
             <td>{{pg.created_date}}</td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{pg.pk}}"><span class="fa fa-users"></span> Owner</button></td>
-            <td style="text-align:right"><button class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></td>
+            <td style="text-align:right"><div class="btn-group" role="group" aria-label="Removal Options"><button type="button" class="btn btn-sm btn-secondary {% if archived %}un{% endif %}archive-group-link" id="{% if archived %}unarchive-group{% else %}archive-group{% endif %}_{{pg.pk}}">{% if archived %}Unarchive{% else %}Archive{% endif %}</button><button title="Remove Problem Group" class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></div></td>
           </tr>
 {% endif %}
 {% if sharing_type == 'edit' %}
           <tr id="pg-row_{{pg.pk}}">
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
+            <td><a href="{% if archived %}../{% endif %}{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{% if archived %}../{% endif %}{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
             <td>{{pg.problem_objects.count}}</td>
             <td>{{pg.created_date}}</td>
             <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{pg.pk}}"><span class="fa fa-users"></span> Editor</button></td>
-            <td style="text-align:right"><button class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></td>
+            <td style="text-align:right"><div class="btn-group" role="group" aria-label="Removal Options"><button type="button" class="btn btn-sm btn-secondary {% if archived %}un{% endif %}archive-group-link" id="{% if archived %}unarchive-group{% else %}archive-group{% endif %}_{{pg.pk}}">{% if archived %}Unarchive{% else %}Archive{% endif %}</button><button title="Remove Problem Group" class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></div></td>
           </tr>
 {% endif %}
 {% if sharing_type == 'read' %}
           <tr id="pg-row_{{pg.pk}}">
-            <td><a href="{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
+            <td><a href="{% if archived %}../{% endif %}{{pg.pk}}/">{{pg.name}}</a> ({% for up in pg.userprofiles.all %}{% if not forloop.first %}, {% endif %}{{up}}{% endfor %}) <small>(<a href="{% if archived %}../{% endif %}{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
             <td>{{pg.problem_objects.count}}</td>
             <td>{{pg.created_date}}</td>
             <td style="text-align:center">Viewer</td>
-            <td style="text-align:right"><button class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></td>
+            <td style="text-align:right"><div class="btn-group" role="group" aria-label="Removal Options"><button type="button" class="btn btn-sm btn-secondary {% if archived %}un{% endif %}archive-group-link" id="{% if archived %}unarchive-group{% else %}archive-group{% endif %}_{{pg.pk}}">{% if archived %}Unarchive{% else %}Archive{% endif %}</button><button title="Remove Problem Group" class="btn btn-sm btn-danger remove-group-link" id="remove-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></div></td>
           </tr>
 {% endif %}

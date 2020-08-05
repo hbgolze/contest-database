@@ -54,6 +54,26 @@ def tableview(request):
     context['co_owned_pgs'] = co_owned_pgs
     context['editor_pgs'] = editor_pgs
     context['readonly_pgs'] = readonly_pgs
+    context['archived'] = False
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def archivedtableview(request):
+    userprofile = get_or_create_up(request.user)
+
+    owned_pgs =  userprofile.archived_problem_groups.all()
+    co_owned_pgs =  userprofile.archived_owned_problem_groups.all()
+    editor_pgs =  userprofile.archived_editable_problem_groups.all()
+    readonly_pgs =  userprofile.archived_readonly_problem_groups.all()
+
+    template = loader.get_template('groups/tableview.html')
+    context = {}
+    context['nbar'] = 'groups'
+    context['owned_pgs'] = owned_pgs
+    context['co_owned_pgs'] = co_owned_pgs
+    context['editor_pgs'] = editor_pgs
+    context['readonly_pgs'] = readonly_pgs
+    context['archived'] = True
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -70,7 +90,7 @@ def tagtableview(request):
 def viewproblemgroup(request,pk):
     userprofile = get_or_create_up(request.user)
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all():
+    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all() and prob_group not in userprofile.archived_problem_groups.all() and prob_group not in userprofile.archived_owned_problem_groups.all() and prob_group not in userprofile.archived_editable_problem_groups.all() and prob_group not in userprofile.archived_readonly_problem_groups.all():
         return HttpResponse('Unauthorized', status=401)
     context = {}
     context['nbar'] = 'groups'
@@ -81,7 +101,7 @@ def viewproblemgroup(request,pk):
     probgroups = list(chain(owned_groups,editable_groups))
     context['prob_groups'] = probgroups
     context['form'] = AddProblemsForm(userprofile=userprofile)
-    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all():
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all() or prob_group in userprofile.archived_problem_groups.all() or prob_group in userprofile.archived_owned_problem_groups.all() or  prob_group in userprofile.archived_editable_problem_groups.all():
         context['can_delete'] = 1
     template = loader.get_template('groups/probgroupview.html')
     return HttpResponse(template.render(context,request))
@@ -139,7 +159,7 @@ def viewtaggroup(request,pk):
 def edit_pg_view(request,pk):
     userprofile = get_or_create_up(request.user)
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all():
+    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all() and prob_group not in userprofile.archived_problem_groups.all() and prob_group not in userprofile.archived_owned_problem_groups.all() and prob_group not in userprofile.archived_editable_problem_groups.all() and prob_group not in userprofile.archived_readonly_problem_groups.all():
         return HttpResponse('Unauthorized', status=401)
 
     problems = prob_group.problem_objects.all()
@@ -189,6 +209,8 @@ def delete_group(request):
     userprofile = request.user.userprofile
     if pg in userprofile.problem_groups.all():
         pg.delete()
+    if pg in userprofile.archived_problem_groups.all():
+        pg.delete()
     return JsonResponse({})
 
 
@@ -206,6 +228,61 @@ def remove_group(request):
     elif pg in userprofile.readonly_problem_groups.all():
         userprofile.readonly_problem_groups.remove(pg)
         userprofile.save()
+    if pg in userprofile.archived_owned_problem_groups.all():
+        userprofile.archived_owned_problem_groups.remove(pg)
+        userprofile.save()
+    elif pg in userprofile.archived_editable_problem_groups.all():
+        userprofile.archived_editable_problem_groups.remove(pg)
+        userprofile.save()
+    elif pg in userprofile.archived_readonly_problem_groups.all():
+        userprofile.archived_readonly_problem_groups.remove(pg)
+        userprofile.save()
+    return JsonResponse({})
+
+@login_required
+def archive_group(request):
+    pk = request.POST.get('pk','')
+    pg = get_object_or_404(ProblemGroup, pk=pk)
+    userprofile = request.user.userprofile
+    if pg in userprofile.problem_groups.all():
+        userprofile.problem_groups.remove(pg)
+        userprofile.archived_problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.owned_problem_groups.all():
+        userprofile.owned_problem_groups.remove(pg)
+        userprofile.archived_owned_problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.editable_problem_groups.all():
+        userprofile.editable_problem_groups.remove(pg)
+        userprofile.archived_editable_problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.readonly_problem_groups.all():
+        userprofile.readonly_problem_groups.remove(pg)
+        userprofile.archived_readonly_problem_groups.add(pg)
+        userprofile.save()
+    return JsonResponse({})
+
+@login_required
+def unarchive_group(request):
+    pk = request.POST.get('pk','')
+    pg = get_object_or_404(ProblemGroup, pk=pk)
+    userprofile = request.user.userprofile
+    if pg in userprofile.archived_problem_groups.all():
+        userprofile.archived_problem_groups.remove(pg)
+        userprofile.problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.archived_owned_problem_groups.all():
+        userprofile.archived_owned_problem_groups.remove(pg)
+        userprofile.owned_problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.archived_editable_problem_groups.all():
+        userprofile.archived_editable_problem_groups.remove(pg)
+        userprofile.editable_problem_groups.add(pg)
+        userprofile.save()
+    elif pg in userprofile.archived_readonly_problem_groups.all():
+        userprofile.archived_readonly_problem_groups.remove(pg)
+        userprofile.readonly_problem_groups.add(pg)
+        userprofile.save()
     return JsonResponse({})
 
 #use post to select problems for test...
@@ -221,7 +298,7 @@ def savegroup(request,**kwargs):
     form = request.POST
     prob_group = get_object_or_404(ProblemGroup,pk = form.get('startform'))
     userprofile = request.user.userprofile
-    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or prob_group in userprofile.editable_problem_groups.all():
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or prob_group in userprofile.editable_problem_groups.all() or prob_group in userprofile.archived_problem_groups.all() or prob_group in userprofile.archived_owned_problem_groups.all() or prob_group in userprofile.archived_editable_problem_groups.all():
         P = prob_group.problem_objects.all()
         checked = form.getlist("probs")
         for i in P:
@@ -241,7 +318,6 @@ def create_test(request,**kwargs):
     userprofile = request.user.userprofile
     if "chk" in form:
         checked = form.getlist("chk")
-        print(checked)
         if len(checked) > 0:
             testname = form.get('testname','')
             t = Test(name = testname)
@@ -293,7 +369,7 @@ def share_with_user(request, **kwargs):#check permission...
     share_target = get_object_or_404(User,pk = form.get('collaborator',''))
     share_target_up = share_target.userprofile
     sharing_type = form.get('sharing-type','')
-    if problemgroup in userprofile.problem_groups.all() or problemgroup in userprofile.owned_problem_groups.all():
+    if problemgroup in userprofile.problem_groups.all() or problemgroup in userprofile.owned_problem_groups.all() or problemgroup in userprofile.archived_problem_groups.all() or problemgroup in userprofile.archived_owned_problem_groups.all():
         if sharing_type == 'read':
             if problemgroup not in share_target_up.editable_problem_groups.all() and problemgroup not in share_target_up.owned_problem_groups.all() and problemgroup not in share_target_up.problem_groups.all():
                 share_target_up.readonly_problem_groups.add(problemgroup)
@@ -333,7 +409,7 @@ def change_permission(request):
     problemgroup = get_object_or_404(ProblemGroup,pk = pk)
     share_target_up = get_object_or_404(UserProfile,pk = form.get('pk',''))
     if share_target_up.problem_groups.filter(pk = problemgroup.pk).exists()==False:#if target not an original owner...
-        if problemgroup in userprofile.problem_groups.all() or problemgroup in userprofile.owned_problem_groups.all():#if owner....
+        if problemgroup in userprofile.problem_groups.all() or problemgroup in userprofile.owned_problem_groups.all() or problemgroup in userprofile.archived_problem_groups.all() or problemgroup in userprofile.archived_owned_problem_groups.all():#if owner....
             if sharing_type == 'read':
                 share_target_up.owned_problem_groups.remove(problemgroup)
                 share_target_up.editable_problem_groups.remove(problemgroup)
@@ -623,7 +699,7 @@ def fetch_problems(request):
     prob_code = []
     base_num = prob_group.problem_objects.count()
     can_delete = 0
-    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all():
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all() or prob_group in userprofile.archived_problem_groups.all() or prob_group in userprofile.archived_owned_problem_groups.all() or  prob_group in userprofile.archived_editable_problem_groups.all():
         can_delete = 1
     for i in range(0,len(prob_list)):
         pg_object = ProblemGroupObject(problemgroup = prob_group,problem = prob_list[i],order = base_num + i + 1)
