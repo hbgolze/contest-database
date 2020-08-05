@@ -168,6 +168,7 @@ $(document).on('submit',"#share-problem-group-form",function(e) {
         $("#collaborator option[value='"+result['col']+"']").remove();
         $("#owners").show();
       }
+	$("#pg-row_"+result['pk']).replaceWith(result['group-row']);
     }
   });
   return false;
@@ -205,6 +206,7 @@ $(document).on('change',".change-permission", function(e) {
       if ($('#editor-list li').length == 0) {
         $("#editors").hide();
       }
+	$("#pg-row_"+result['pk']).replaceWith(result['group-row']);
     }
   });
   return false;

@@ -298,25 +298,31 @@ def share_with_user(request, **kwargs):#check permission...
             if problemgroup not in share_target_up.editable_problem_groups.all() and problemgroup not in share_target_up.owned_problem_groups.all() and problemgroup not in share_target_up.problem_groups.all():
                 share_target_up.readonly_problem_groups.add(problemgroup)
                 share_target_up.save()
-            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'read'})
+                problemgroup.is_shared = True
+                problemgroup.save()
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'read', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
         elif sharing_type == 'edit':
             if problemgroup not in share_target_up.problem_groups.all() and problemgroup not in share_target_up.owned_problem_groups.all():
                 share_target_up.editable_problem_groups.add(problemgroup)
                 share_target_up.save()
+                problemgroup.is_shared = True
+                problemgroup.save()
             if problemgroup in share_target_up.readonly_problem_groups.all():
                 share_target_up.readonly_problem_groups.remove(problemgroup)
                 share_target_up.save()
-            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'edit'})
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'edit', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
         elif sharing_type == 'own':
             share_target_up.owned_problem_groups.add(problemgroup)
             share_target_up.save()
+            problemgroup.is_shared = True
+            problemgroup.save()
             if problemgroup in share_target_up.readonly_problem_groups.all():
                 share_target_up.readonly_problem_groups.remove(problemgroup)
                 share_target_up.save()
             if problemgroup in share_target_up.editable_problem_groups.all():
                 share_target_up.editable_problem_groups.remove(problemgroup)
                 share_target_up.save()
-            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'own'})
+            return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'col': share_target.pk,'sharing_type': 'own', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
 
 @login_required
 def change_permission(request):
@@ -333,25 +339,28 @@ def change_permission(request):
                 share_target_up.editable_problem_groups.remove(problemgroup)
                 share_target_up.readonly_problem_groups.add(problemgroup)
                 share_target_up.save()
-                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'read'})
+                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'reader','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'read', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
             elif sharing_type == 'edit':
                 share_target_up.owned_problem_groups.remove(problemgroup)
                 share_target_up.editable_problem_groups.add(problemgroup)
                 share_target_up.readonly_problem_groups.remove(problemgroup)
                 share_target_up.save()
-                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'edit'})
+                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'editor','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'edit', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
             elif sharing_type == 'own':
                 share_target_up.owned_problem_groups.add(problemgroup)
                 share_target_up.editable_problem_groups.remove(problemgroup)
                 share_target_up.readonly_problem_groups.remove(problemgroup)
                 share_target_up.save()
-                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'own'})
+                return JsonResponse({'user-row' : render_to_string('groups/modals/user-row.html',{'sharing_type': 'coowner','shared_user' : share_target_up, 'is_owner' : 1}),'sharing_type': 'own', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
             elif sharing_type == 'del':
                 share_target_up.owned_problem_groups.remove(problemgroup)
                 share_target_up.editable_problem_groups.remove(problemgroup)
                 share_target_up.readonly_problem_groups.remove(problemgroup)
                 share_target_up.save()
-                return JsonResponse({'sharing_type':'del'})
+                if problemgroup.userprofiles.count() + problemgroup.owneruserprofiles.count() + problemgroup.editoruserprofiles.count() + problemgroup.readeruserprofiles.count() <= 1:
+                    problemgroup.is_shared = False
+                    problemgroup.save()
+                return JsonResponse({'sharing_type':'del', 'group-row' : render_to_string('groups/grouptablerow.html',{'pg':problemgroup,'sharing_type':'own'}),'pk':problemgroup.pk})
             
 
 @login_required

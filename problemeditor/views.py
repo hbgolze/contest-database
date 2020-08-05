@@ -1265,7 +1265,7 @@ def redirectproblem(request,pk):
     if p.type_new not in request.user.userprofile.user_type_new.allowed_types.all():
         raise Http404("Unauthorized")
     if p.type_new.is_contest == True:
-        return redirect('/problemeditor/contest/bytest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
+        return redirect('/problemeditor/contest/bycontest/'+p.type_new.type+'/'+p.test_label+'/'+p.label+'/')
     else:
         if p.type_new.is_sourced == True:
             if p.source.source_type.name == 'book':

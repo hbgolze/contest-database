@@ -41,7 +41,7 @@
       {% for type,untagged,unsolution in rows %}
       
       <tr>
-        <td>{% if type.is_contest == 1 %}<a href="contest/bytest/{{type.type}}">{{type.label}}</a>{% if type.is_contest == 1 %} ({{type.min_year}}-{{type.max_year}}){% endif %}</td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">{{type.label}}</a>{% else %}<a href="sources/">Sourced Problems</a>{% endif %}
+        <td>{% if type.is_contest == 1 %}<a href="contest/bycontest/{{type.type}}">{{type.label}}</a>{% if type.is_contest == 1 %} ({{type.min_year}}-{{type.max_year}}){% endif %}</td>{% elif type.is_sourced == 0 %}<a href="CM/bytopic/{{type.type}}">{{type.label}}</a>{% else %}<a href="sources/">Sourced Problems</a>{% endif %}
 
         <td>{% if type.is_contest == 1 %}<a href="contest/bytag/{{type.type}}">View by Tag</a>{% elif type.is_sourced == 0 %}<a href="CM/bytag/{{type.type}}">View by Tag</a>{% endif %}</td>
         <td>{{untagged}}/{{type.problems.count}}</td>

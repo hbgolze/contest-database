@@ -3,7 +3,7 @@
             <td><a href="{{pg.pk}}/">{{pg.name}}</a> <small>(<a href="{{pg.pk}}/edit/">Edit Problems</a>)</small></td>
             <td>{{pg.problem_objects.count}}</td>
             <td>{{pg.created_date}}</td>
-            <td style="text-align:center"><button class="edit-sharing btn btn-sm btn-secondary" id="sharing-{{pg.pk}}"><span class="fa fa-users"></span> Owner</button></td>
+            <td style="text-align:center"><button class="edit-sharing btn btn-sm {% if pg.is_shared %}btn-info{% else %}btn-secondary{% endif %}" id="sharing-{{pg.pk}}"><span class="fa fa-user{% if pg.is_shared%}s{% endif %}"></span> Owner</button></td>
             <td style="text-align:right"><button title="Delete" class="btn btn-sm btn-danger delete-group-link" id="delete-group_{{pg.pk}}"><span class="fa fa-remove"></span></button></td>
           </tr>
 {% endif %}
