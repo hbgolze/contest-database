@@ -1162,14 +1162,28 @@ def loadeditquestiontype(request,**kwargs):
 def load_new_solution_form(request,**kwargs):
     userprofile = request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+    
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     so = SolutionObject()
     form = NewSolutionObjectForm(instance = so)
     if po.isProblem:
@@ -1182,14 +1196,28 @@ def load_new_solution_form(request,**kwargs):
 def save_new_solution(request,**kwargs):
     userprofile = request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
+
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     so = SolutionObject(problem_object = po, order = po.solution_objects.count()+1, solution_code = request.POST.get('solution_code'),author = request.user)#, version_number = 
     so.save()
     so.solution_display = newsoltexcode(so.solution_code, 'originalsolution_'+str(so.pk))
@@ -1203,13 +1231,27 @@ def load_manage_solutions(request,**kwargs):
     userprofile = request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+    
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     other_solutions = []
     if po.isProblem:
         S=[]
@@ -1225,13 +1267,26 @@ def display_solution(request,**kwargs):
     userprofile = request.user.userprofile
     po = get_object_or_404(ProblemObject,pk=request.POST.get('popk'))
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     sol = get_object_or_404(Solution,pk=request.POST.get('spk'))
     so = SolutionObject(problem_object = po, order = po.solution_objects.count()+1, solution = sol,author = request.user,isSolution = 1)
     so.save()
@@ -1244,13 +1299,25 @@ def undisplay_solution(request,**kwargs):
     so = get_object_or_404(SolutionObject,pk=request.POST.get('sopk'))
     po = so.problem_object
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+#   if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     s = so.solution
     po = so.problem_object
     so.delete()
@@ -1263,13 +1330,25 @@ def delete_solution(request,**kwargs):
     so = get_object_or_404(SolutionObject,pk=request.POST.get('sopk'))
     po = so.problem_object
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+#   if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
 
     so.delete()
     po.increment_version()
@@ -1284,13 +1363,26 @@ def load_edit_sol(request,**kwargs):
     so =  get_object_or_404(SolutionObject,pk=sopk)
     po = so.problem_object
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
 
     form = EditSolutionObjectForm(instance=so)
     return JsonResponse({'sol_form':render_to_string('teacher/editingtemplates/modals/edit_sol_form.html',{'form':form})})
@@ -1302,13 +1394,26 @@ def save_edited_solution(request,**kwargs):
     so =  get_object_or_404(SolutionObject,pk=sopk)
     po = so.problem_object
     if po.test != None:
-        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+        my_class = po.test.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
-    elif po.problemset != None:
-        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+    elif po.problemset!=None:
+        my_class = po.problemset.unit_object.unit.the_class
+        sharing_type = get_permission_level(request,my_class)
+        if sharing_type == 'none' or sharing_type == 'read':
             raise Http404("Unauthorized.")
     else:
-        raise Http404("Problem does not belong to a valid class.")
+        raise Http404("Error: Problem does not belong to a valid class.")
+
+#    if po.test != None:
+#        if po.test.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    elif po.problemset != None:
+#        if po.problemset.unit_object.unit.the_class not in userprofile.my_classes.all():
+#            raise Http404("Unauthorized.")
+#    else:
+#        raise Http404("Problem does not belong to a valid class.")
     so.solution_code = request.POST.get('solution_text')
     so.save()
     so.increment_version()

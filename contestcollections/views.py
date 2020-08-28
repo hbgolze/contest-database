@@ -138,6 +138,7 @@ def test_as_pdf(request,**kwargs):
         'include_problem_labels':include_problem_labels,
         'include_title': include_title,
         }
+    print(len(rows))
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -242,6 +243,7 @@ def halfpage_test_as_pdf(request,**kwargs):
         'include_problem_labels':include_problem_labels,
         'include_title': include_title,
         }
+    print(len(rows))
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
