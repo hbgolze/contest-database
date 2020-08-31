@@ -21,7 +21,8 @@
 <script src="{% static 'js/latexlib.js' %}"></script>
 
     <title>{% block title %}Random Contest{% endblock %}</title>
-
+<link rel="shortcut icon" type="image/png" href="{% static 'randomtest/favicon.ico' %}"/>
+    
 <script type="text/x-mathjax-config">
   MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
   MathJax.Hub.Config({TeX: {Macros: {cis: "\\text{cis}\\,", vb: ["{\\left\\langle#1\\right\\rangle}",1],pop: ["{\\text{pop}\\,(#1,#2)}",2,""], overarc : ["{\\stackrel{\\frown}{#1}}",1], textregistered : ["\\enclose{circle}{\\text{R}}"],  pounds: '{\\it\\unicode{xA3}}'},extensions: ["enclose.js","cancel.js"]}});
