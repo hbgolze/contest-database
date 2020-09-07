@@ -928,7 +928,8 @@ def move_problem(request):
             pset_target = get_object_or_404(ProblemSet,pk = pset_pk)
             if probobj.isProblem:
                 curr_problems = pset_target.problem_objects.filter(isProblem = 1)
-                if probobj.pk in curr_problems.values('problem_id'):
+                vals = curr_problems.values('problem_id')
+                if probobj.problem.pk in [i['problem_id'] for i in vals]:
                     return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
             pset.increment_version()
             probobj.problemset = pset_target
@@ -948,7 +949,8 @@ def move_problem(request):
             pset_target = get_object_or_404(Test,pk = pset_pk)
             if probobj.isProblem:
                 curr_problems = pset_target.problem_objects.filter(isProblem = 1)
-                if probobj.pk in curr_problems.values('problem_id'):
+                vals = curr_problems.values('problem_id')
+                if probobj.problem.pk in [i['problem_id'] for i in vals]:
                     return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
             pset.increment_version()
             probobj.test = pset_target
