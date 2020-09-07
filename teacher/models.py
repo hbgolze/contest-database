@@ -1024,6 +1024,20 @@ class ProblemObject(models.Model):
         except:
             self.test.increment_version()
         self.save()
+    def get_pset(self):
+        pset = self.problemset
+        if pset is not None:
+            return ('p',pset)
+        test = self.test
+        if test is not None:
+            return ('t',test)
+        return ('n',None)
+#        except ProblemSet.DoesNotExist:
+#try:
+#                pset = self.test
+#                return ('t',pset)
+#            except Test.DoesNotExist:
+#                return ('n',None)
 
 
 class PublishedProblemObject(models.Model):

@@ -893,6 +893,17 @@ def problemseteditview(request,pk,upk,ppk):
     owned_pgs = userprofile.problem_groups.all()
     probgroups = list(chain(owned_pgs,co_owned_pgs,editor_pgs,readonly_pgs))
 
+    problemset_list = []
+    for uo in unit.unit_objects.exclude(pk = problemset.unit_object.pk):
+        try:
+            ps = uo.problemset
+            problemset_list.append(('p','Problem Set: '+ps.name,ps.pk))
+        except ProblemSet.DoesNotExist:
+            try:
+                ts = uo.test
+                problemset_list.append(('t','Test: '+ts.name,ts.pk))
+            except Test.DoesNotExist:
+                pass
     context = {}
     context['probgroups'] = probgroups
     context['my_class'] = my_class
@@ -901,7 +912,64 @@ def problemseteditview(request,pk,upk,ppk):
     context['tags'] = NewTag.objects.exclude(tag='root')
     context['nbar'] = 'teacher'
     context['sharing_type'] = sharing_type
+    context['problemset_list'] = problemset_list
     return render(request, 'teacher/editingtemplates/editproblemsetview.html',context)
+
+@login_required
+def move_problem(request):
+    psets = [(d,p) for d, p in request.POST.items() if d.startswith('move-prob')]
+    for i in psets:
+        problem_pk = i[0].split('_')[1]
+        probobj = get_object_or_404(ProblemObject,pk=problem_pk)
+        marker,pset = probobj.get_pset()
+        pset_type = i[1].split('_')[0]
+        pset_pk = i[1].split('_')[1]
+        if pset_type =='p':
+            pset_target = get_object_or_404(ProblemSet,pk = pset_pk)
+            if probobj.isProblem:
+                curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+                if probobj.pk in curr_problems.values('problem_id'):
+                    return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+            pset.increment_version()
+            probobj.problemset = pset_target
+            probobj.order = pset_target.problem_objects.count()+1
+            probobj.problemset.increment_version()
+            if marker == 't':
+                probobj.test = None
+            probobj.save()
+            prob_objs = list(pset.problem_objects.all())
+            prob_objs = sorted(prob_objs,key = lambda x:x.order)
+            for i in range(0,len(prob_objs)):
+                p = prob_objs[i]
+                p.order = i+1
+                p.save()
+            probobj.problemset.increment_version()
+        elif pset_type == 't':
+            pset_target = get_object_or_404(Test,pk = pset_pk)
+            if probobj.isProblem:
+                curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+                if probobj.pk in curr_problems.values('problem_id'):
+                    return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+            pset.increment_version()
+            probobj.test = pset_target
+            print(probobj.order)
+            probobj.order = pset_target.problem_objects.count()+1
+            print(probobj.order)
+            if marker == 'p':
+                probobj.problemset = None
+            probobj.save()
+            prob_objs = list(pset.problem_objects.all())
+            prob_objs = sorted(prob_objs,key = lambda x:x.order)
+            for i in range(0,len(prob_objs)):
+                p = prob_objs[i]
+                p.order = i+1
+                p.save()
+            probobj.test.increment_version()
+        else:
+            return JsonResponse({'prob_pk':problem_pk,'status':2})#Rare...no problemset/test target exists
+#                return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
+    return JsonResponse({'prob_pk':problem_pk,'status':1})
+    
 
 @login_required
 def editproblemsetname(request):
@@ -1000,6 +1068,17 @@ def addoriginalproblem(request,pk,upk,ppk):
         form = request.POST
         qt = form.get('question-type','')
         po = ProblemObject()
+        problemset_list = []
+        for uo in unit.unit_objects.exclude(pk = problemset.unit_object.pk):
+            try:
+                ps = uo.problemset
+                problemset_list.append(('p','Problem Set: '+ps.name,ps.pk))
+            except ProblemSet.DoesNotExist:
+                try:
+                    ts = uo.test
+                    problemset_list.append(('t','Test: '+ts.name,ts.pk))
+                except Test.DoesNotExist:
+                    pass
         if qt == "multiple choice":
             pform = NewProblemObjectMCForm(request.POST, instance=po)
             if pform.is_valid():
@@ -1013,7 +1092,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.problemset = problemset
                 prob.save()
                 problemset.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
         elif qt == "short answer":
             pform = NewProblemObjectSAForm(request.POST, instance=po)
             if pform.is_valid():
@@ -1027,7 +1106,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.problemset = problemset
                 prob.save()
                 problemset.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
         elif qt == "proof":
             pform = NewProblemObjectPFForm(request.POST, instance=po)
             if pform.is_valid():
@@ -1041,7 +1120,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob.problemset = problemset
                 prob.save()
                 problemset.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':problemset.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
 @login_required
@@ -1809,6 +1888,17 @@ def testeditview(request,pk,upk,tpk):
     readonly_pgs =  userprofile.readonly_problem_groups.all()
     owned_pgs = userprofile.problem_groups.all()
     probgroups = list(chain(owned_pgs,co_owned_pgs,editor_pgs,readonly_pgs))
+    problemset_list = []
+    for uo in unit.unit_objects.exclude(pk = test.unit_object.pk):
+        try:
+            ps = uo.problemset
+            problemset_list.append(('p','Problem Set: '+ps.name,ps.pk))
+        except ProblemSet.DoesNotExist:
+            try:
+                ts = uo.test
+                problemset_list.append(('t','Test: '+ts.name,ts.pk))
+            except Test.DoesNotExist:
+                pass
     context = {}
     context['my_class'] = my_class
     context['unit'] = unit
@@ -1816,6 +1906,7 @@ def testeditview(request,pk,upk,tpk):
     context['tags'] = NewTag.objects.exclude(tag='root')
     context['nbar'] = 'teacher'
     context['sharing_type'] = sharing_type
+    context['problemset_list'] = problemset_list
     return render(request, 'teacher/editingtemplates/edittestview.html',context)
 
 @login_required
@@ -1892,6 +1983,17 @@ def testaddoriginalproblem(request,pk,upk,ppk):
         form = request.POST
         qt = form.get('question-type','')
         po = ProblemObject()
+        problemset_list = []
+        for uo in unit.unit_objects.exclude(pk = test.unit_object.pk):
+            try:
+                ps = uo.problemset
+                problemset_list.append(('p','Problem Set: '+ps.name,ps.pk))
+            except ProblemSet.DoesNotExist:
+                try:
+                    ts = uo.test
+                    problemset_list.append(('t','Test: '+ts.name,ts.pk))
+                except Test.DoesNotExist:
+                    pass
         if qt == "multiple choice":
             pform = NewProblemObjectMCForm(request.POST, instance = po)
             if pform.is_valid():
@@ -1906,7 +2008,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.test = test
                 prob.save()
                 test.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
         elif qt == "short answer":
             pform = NewProblemObjectSAForm(request.POST, instance = po)
             if pform.is_valid():
@@ -1921,7 +2023,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.test = test
                 prob.save()
                 test.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
         elif qt == "proof":
             pform = NewProblemObjectPFForm(request.POST, instance = po)
             if pform.is_valid():
@@ -1936,7 +2038,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob.test = test
                 prob.save()
                 test.increment_version()
-                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count()}),'pk':prob.pk})
+                return JsonResponse({'problem_text':render_to_string('teacher/editingtemplates/problemobjectsnippet.html',{'probobj':prob,'forcount':test.problem_objects.count(),'problemset_list':problemset_list}),'pk':prob.pk})
     return JsonResponse({'problem_text':'','pk':'0'})
 
 @login_required

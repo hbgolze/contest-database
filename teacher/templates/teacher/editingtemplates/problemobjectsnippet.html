@@ -48,6 +48,7 @@
           <div id="ptext_{{probobj.pk}}">{% autoescape off %}{{probobj.problem_display|linebreaks}}{% endautoescape %}</div>
 	</p>
 	{% endif %}
+	{% include 'teacher/editingtemplates/move_pset_form.html' %}
       </div>
       <div class="col-2">
 	<p class="float-right">
