@@ -1,15 +1,11 @@
             <div class="col-md-6">
-              <form action="." method="post" class="js-move-prob-form">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{{request}}">
-                <select name="move-prob_{{probobj.pk}}" id="move-prob_{{probobj.pk}}" class="form-control js-move-prob-select mb-1" placeholder="Move Problem To">
-                  <option value="" disabled selected>Move Problem To</option>
-                  {% for pset_type,name,pk in problemset_list %}
-                  <option value="{{pset_type}}_{{pk}}" title="{{name}}">{{name}}</option>
-                  {% endfor %}
-                </select>
-              </form>
-	      <div id="moving-status-{{probobj.pk}}" class="js-moving-status">
+              <select name="move-prob_{{probobj.pk}}" id="move-prob_{{probobj.pk}}" class="form-control js-move-prob-select mb-1" placeholder="Move Problem To">
+                <option value="" disabled selected>Move Problem To</option>
+                {% for pset_type,name,pk in problemset_list %}
+                <option value="{{pset_type}}_{{pk}}" title="{{name}}">{{name}}</option>
+                {% endfor %}
+              </select>
+ 	      <div id="moving-status-{{probobj.pk}}" class="js-moving-status">
 
               </div>
             </div>

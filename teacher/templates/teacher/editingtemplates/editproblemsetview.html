@@ -1218,11 +1218,12 @@ $(document).on('submit','#solution-PDF-form',function(e) {
 
 $(document).on("change","select.js-move-prob-select",function(event) {
     event.preventDefault();
-    var form = $(this).closest("form");
+    var po_pk = $(this).attr('id').split('_')[1];
+    var ps_pk = $(this).val();
     $.ajax({
         type: 'POST',
         url: '{% url 'move_prob' %}',
-        data: form.serialize(),
+        data: 'po_pk='+po_pk+'&ps_pk='+ps_pk,
         dataType: 'json',
         success: function(data) {
             if (data['status'] == 0) {//already in problem set

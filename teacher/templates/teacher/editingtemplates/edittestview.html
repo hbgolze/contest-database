@@ -906,31 +906,33 @@ $(document).on('click',".exampleproblem-primitive-preview-link",function(e) {
     MathJax.Hub.Queue(["Typeset",MathJax.Hub,"original-question-preview"]);
 });
 
+
 $(document).on("change","select.js-move-prob-select",function(event) {
     event.preventDefault();
-    var form = $(this).closest("form");
+    var po_pk = $(this).attr('id').split('_')[1];
+    var ps_pk = $(this).val();
     $.ajax({
         type: 'POST',
         url: '{% url 'move_prob' %}',
-        data: form.serialize(),
+        data: 'po_pk='+po_pk+'&ps_pk='+ps_pk,
         dataType: 'json',
         success: function(data) {
-            if (data['status'] == 0) {//already in problem set                                                                                                                                                                                                 
+            if (data['status'] == 0) {//already in problem set                                                                                                                                                                                           
                 $("#moving-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem Set already contains problem.</div>");
                 $("#moving-status-"+data['prob_pk']).show();
                 setTimeout(function() {
                     $("#moving-status-"+data['prob_pk']).fadeOut().empty();
                 },5000);
 
-            } else if (data['status'] ==1) {//Success!                                                                                                                                                                                                         
+            } else if (data['status'] ==1) {//Success!                                                                                                                                                                                                   
                 $("#problem-object_"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Problem moved.</div>");
                 setTimeout(function() {
                     $("#problem-object_"+data['prob_pk']).remove();
-		},5000);
+                },5000);
             } else if (data['status'] ==2) {
                 $("#moving-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Something went wrong. Try reloading the page (saving if necessary).</div>");
                 $("#moving-status-"+data['prob_pk']).show();
-		setTimeout(function() {
+                setTimeout(function() {
                     $("#moving-status-"+data['prob_pk']).fadeOut().empty();
                 },5000);
 
@@ -940,6 +942,7 @@ $(document).on("change","select.js-move-prob-select",function(event) {
     });
     return false;
 });
+
 
 </script>
 {% endif %}

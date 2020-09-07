@@ -917,58 +917,57 @@ def problemseteditview(request,pk,upk,ppk):
 
 @login_required
 def move_problem(request):
-    psets = [(d,p) for d, p in request.POST.items() if d.startswith('move-prob')]
-    for i in psets:
-        problem_pk = i[0].split('_')[1]
-        probobj = get_object_or_404(ProblemObject,pk=problem_pk)
-        marker,pset = probobj.get_pset()
-        pset_type = i[1].split('_')[0]
-        pset_pk = i[1].split('_')[1]
-        if pset_type =='p':
-            pset_target = get_object_or_404(ProblemSet,pk = pset_pk)
-            if probobj.isProblem:
-                curr_problems = pset_target.problem_objects.filter(isProblem = 1)
-                vals = curr_problems.values('problem_id')
-                if probobj.problem.pk in [i['problem_id'] for i in vals]:
-                    return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
-            pset.increment_version()
-            probobj.problemset = pset_target
-            probobj.order = pset_target.problem_objects.count()+1
-            probobj.problemset.increment_version()
-            if marker == 't':
-                probobj.test = None
-            probobj.save()
-            prob_objs = list(pset.problem_objects.all())
-            prob_objs = sorted(prob_objs,key = lambda x:x.order)
-            for i in range(0,len(prob_objs)):
-                p = prob_objs[i]
-                p.order = i+1
-                p.save()
-            probobj.problemset.increment_version()
-        elif pset_type == 't':
-            pset_target = get_object_or_404(Test,pk = pset_pk)
-            if probobj.isProblem:
-                curr_problems = pset_target.problem_objects.filter(isProblem = 1)
-                vals = curr_problems.values('problem_id')
-                if probobj.problem.pk in [i['problem_id'] for i in vals]:
-                    return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
-            pset.increment_version()
-            probobj.test = pset_target
-            print(probobj.order)
-            probobj.order = pset_target.problem_objects.count()+1
-            print(probobj.order)
-            if marker == 'p':
-                probobj.problemset = None
-            probobj.save()
-            prob_objs = list(pset.problem_objects.all())
-            prob_objs = sorted(prob_objs,key = lambda x:x.order)
-            for i in range(0,len(prob_objs)):
-                p = prob_objs[i]
-                p.order = i+1
-                p.save()
-            probobj.test.increment_version()
-        else:
-            return JsonResponse({'prob_pk':problem_pk,'status':2})#Rare...no problemset/test target exists
+    problem_pk = request.POST.get('po_pk')
+    ps_pk = request.POST.get('ps_pk')
+    #psets = [(d,p) for d, p in request.POST.items() if d.startswith('move-prob')]
+    #problem_pk = i[0].split('_')[1]
+    probobj = get_object_or_404(ProblemObject,pk=problem_pk)
+    marker,pset = probobj.get_pset()
+    pset_type = ps_pk.split('_')[0]
+    pset_pk = ps_pk.split('_')[1]
+    if pset_type =='p':
+        pset_target = get_object_or_404(ProblemSet,pk = pset_pk)
+        if probobj.isProblem:
+            curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+            vals = curr_problems.values('problem_id')
+            if probobj.problem.pk in [i['problem_id'] for i in vals]:
+                return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+        pset.increment_version()
+        probobj.problemset = pset_target
+        probobj.order = pset_target.problem_objects.count()+1
+        probobj.problemset.increment_version()
+        if marker == 't':
+            probobj.test = None
+        probobj.save()
+        prob_objs = list(pset.problem_objects.all())
+        prob_objs = sorted(prob_objs,key = lambda x:x.order)
+        for i in range(0,len(prob_objs)):
+            p = prob_objs[i]
+            p.order = i+1
+            p.save()
+        probobj.problemset.increment_version()
+    elif pset_type == 't':
+        pset_target = get_object_or_404(Test,pk = pset_pk)
+        if probobj.isProblem:
+            curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+            vals = curr_problems.values('problem_id')
+            if probobj.problem.pk in [i['problem_id'] for i in vals]:
+                return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+        pset.increment_version()
+        probobj.test = pset_target
+        probobj.order = pset_target.problem_objects.count()+1
+        if marker == 'p':
+            probobj.problemset = None
+        probobj.save()
+        prob_objs = list(pset.problem_objects.all())
+        prob_objs = sorted(prob_objs,key = lambda x:x.order)
+        for i in range(0,len(prob_objs)):
+            p = prob_objs[i]
+            p.order = i+1
+            p.save()
+        probobj.test.increment_version()
+    else:
+        return JsonResponse({'prob_pk':problem_pk,'status':2})#Rare...no problemset/test target exists
 #                return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
     return JsonResponse({'prob_pk':problem_pk,'status':1})
     
