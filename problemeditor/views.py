@@ -969,7 +969,7 @@ def problemview(request,**kwargs):#,type,tag,label):
             context['tag'] = 'Contest: '+str(contest)
             return render(request, 'problemeditor/view.html', context)
         if 'person_pk' in kwargs:
-            person = get_object_or_404(Source,pk = kwargs['contest_pk'])
+            person = get_object_or_404(Source,pk = kwargs['person_pk'])
             context['source'] = person
             prob = get_object_or_404(Problem,pk = kwargs['problem_pk'])
             context['prob'] = prob
