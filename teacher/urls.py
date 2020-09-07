@@ -114,6 +114,7 @@ urlpatterns = [
     url(r'^ajax/problemobject/edit-sol/$',views.load_edit_sol, name="class_load_edit_solution"),
     url(r'^ajax/problemobject/save-edited-sol/$',views.save_edited_solution, name="class_save_edited_solution"),
     url(r'^ajax/problemobject/move-problem/$',views.move_problem, name="move_prob"),
+    url(r'^ajax/problemobject/copy-problem/$',views.copy_problem, name="copy_prob"),
 
     url(r'^ajax/edit-class-name/$',views.editclassname, name="editclassname"),
     url(r'^ajax/save-class-name/$',views.saveclassname, name="saveclassname"),

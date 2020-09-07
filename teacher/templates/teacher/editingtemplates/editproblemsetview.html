@@ -1251,6 +1251,43 @@ $(document).on("change","select.js-move-prob-select",function(event) {
     });
     return false;
 });
+
+$(document).on("change","select.js-copy-prob-select",function(event) {
+    event.preventDefault();
+    var po_pk = $(this).attr('id').split('_')[1];
+    var ps_pk = $(this).val();
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'copy_prob' %}',
+        data: 'po_pk='+po_pk+'&ps_pk='+ps_pk,
+        dataType: 'json',
+        success: function(data) {
+            if (data['status'] == 0) {//already in problem set
+                $("#copying-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Problem Set already contains problem.</div>");
+                $("#copying-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#copying-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+
+            } else if (data['status'] ==1) {//Success!
+                $("#copying-status-"+data['prob_pk']).html("<div class='alert alert-success' role='alert'>Problem copied!</div>");
+                $("#copying-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#copying-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+	    } else if (data['status'] ==2) {
+                $("#copying-status-"+data['prob_pk']).html("<div class='alert alert-warning' role='alert'>Something went wrong. Try reloading the page (saving if necessary).</div>");
+                $("#copying-status-"+data['prob_pk']).show();
+                setTimeout(function() {
+                    $("#copying-status-"+data['prob_pk']).fadeOut().empty();
+                },5000);
+
+	    }
+
+        }
+    });
+    return false;
+});
   
 </script>
 {% endif %}

@@ -970,7 +970,82 @@ def move_problem(request):
         return JsonResponse({'prob_pk':problem_pk,'status':2})#Rare...no problemset/test target exists
 #                return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
     return JsonResponse({'prob_pk':problem_pk,'status':1})
-    
+
+
+
+@login_required
+def copy_problem(request):###fill out
+    problem_pk = request.POST.get('po_pk')
+    ps_pk = request.POST.get('ps_pk')
+    #psets = [(d,p) for d, p in request.POST.items() if d.startswith('move-prob')]
+    #problem_pk = i[0].split('_')[1]
+    probobj = get_object_or_404(ProblemObject,pk=problem_pk)
+    marker,pset = probobj.get_pset()
+    pset_type = ps_pk.split('_')[0]
+    pset_pk = ps_pk.split('_')[1]
+    if pset_type =='p':
+        pset_target = get_object_or_404(ProblemSet,pk = pset_pk)
+        if probobj.isProblem:
+            curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+            vals = curr_problems.values('problem_id')
+            if probobj.problem.pk in [i['problem_id'] for i in vals]:
+                return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+        pset.increment_version()
+        po = ProblemObject(problemset = pset_target,
+                           order = pset_target.problem_objects.count()+1,
+                           point_value = probobj.point_value,
+                           blank_point_value = probobj.blank_point_value,
+                           problem_code = probobj.problem_code,
+                           problem_display = probobj.problem_display,
+                           isProblem = probobj.isProblem,
+                           problem = probobj.problem,
+                           question_type = probobj.question_type,
+                           mc_answer = probobj.mc_answer,
+                           sa_answer = probobj.sa_answer,
+                           answer_A = probobj.answer_A,
+                           answer_B = probobj.answer_B,
+                           answer_C = probobj.answer_C,
+                           answer_D = probobj.answer_D,
+                           answer_E = probobj.answer_E,
+                           author = probobj.author,
+                           created_date = probobj.created_date,
+                           version_number = probobj.version_number)
+        po.save()
+        po.increment_version()
+    elif pset_type == 't':
+        pset_target = get_object_or_404(Test,pk = pset_pk)
+        if probobj.isProblem:
+            curr_problems = pset_target.problem_objects.filter(isProblem = 1)
+            vals = curr_problems.values('problem_id')
+            if probobj.problem.pk in [i['problem_id'] for i in vals]:
+                return JsonResponse({'prob_pk':problem_pk,'status':0})#problem is already in problem set.
+        pset.increment_version()
+        po = ProblemObject(problemset = pset_target,
+                           order = pset_target.problem_objects.count()+1,
+                           point_value = probobj.point_value,
+                           blank_point_value = probobj.blank_point_value,
+                           problem_code = probobj.problem_code,
+                           problem_display = probobj.problem_display,
+                           isProblem = probobj.isProblem,
+                           problem = probobj.problem,
+                           question_type = probobj.question_type,
+                           mc_answer = probobj.mc_answer,
+                           sa_answer = probobj.sa_answer,
+                           answer_A = probobj.answer_A,
+                           answer_B = probobj.answer_B,
+                           answer_C = probobj.answer_C,
+                           answer_D = probobj.answer_D,
+                           answer_E = probobj.answer_E,
+                           author = probobj.author,
+                           created_date = probobj.created_date,
+                           version_number = probobj.version_number)
+        po.save()
+        po.increment_version()        
+    else:
+        return JsonResponse({'prob_pk':problem_pk,'status':2})#Rare...no problemset/test target exists
+#                return JsonResponse({'prob_pk':problem_pk,'status':1,'tag_count':prob.newtags.count()})
+    return JsonResponse({'prob_pk':problem_pk,'status':1})
+
 
 @login_required
 def editproblemsetname(request):

@@ -1,4 +1,4 @@
-            <div class="col-md-6">
+<div class="row">            <div class="col-md-6">
               <select name="move-prob_{{probobj.pk}}" id="move-prob_{{probobj.pk}}" class="form-control js-move-prob-select mb-1" placeholder="Move Problem To">
                 <option value="" disabled selected>Move Problem To</option>
                 {% for pset_type,name,pk in problemset_list %}
@@ -9,3 +9,15 @@
 
               </div>
             </div>
+	    <div class="col-md-6">
+              <select name="copy-prob_{{probobj.pk}}" id="copy-prob_{{probobj.pk}}" class="form-control js-copy-prob-select mb-1" placeholder="Copy Problem To">
+                <option value="" disabled selected>Copy Problem To</option>
+                {% for pset_type,name,pk in problemset_list %}
+                <option value="{{pset_type}}_{{pk}}" title="{{name}}">{{name}}</option>
+                {% endfor %}
+              </select>
+ 	      <div id="copying-status-{{probobj.pk}}" class="js-copying-status">
+
+              </div>
+            </div>
+</div>
