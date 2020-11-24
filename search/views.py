@@ -132,12 +132,12 @@ def searchresults(request):
 #                for i in keywords:
 #                    S = S.filter(solution_text__contains = i)
 #                P2 = Problem.objects.filter(id__in = S.values('parent_problem_id'))
-
+            print(P.count())
             if 'solutionsearch' in form:
                 if round_or_type == "T":
-                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).distinct()
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
                 else:
-                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).distinct()
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
                 for i in keywords:
                     S = S.filter(solution_text__contains = i)
                 for i in keywords:
