@@ -1865,7 +1865,15 @@ class TagProblemList(ListView):
     paginate_by = 10
     def get_queryset(self):
         self.tag = get_object_or_404(NewTag,pk=self.args[0])
+        self.exact = 0
+        if 'exact' in self.request.GET:
+            if self.request.GET.get('exact') == 'true':
+                self.exact = 1
+        if self.exact == 0:
+            P = Problem.objects.filter(type_new__pk__in=self.request.user.userprofile.user_type_new.allowed_types.all()).order_by('type_new')
+            return P.filter(newtags__in=NewTag.objects.filter(tag__startswith=self.tag.tag)).distinct()
         return self.tag.problems.filter(type_new__in=self.request.user.userprofile.user_type_new.allowed_types.all()).order_by('type_new')
+
     def get_context_data(self, **kwargs):
         context = super(TagProblemList, self).get_context_data(**kwargs)
 
@@ -1877,6 +1885,7 @@ class TagProblemList(ListView):
         context['tag'] = self.tag
         context['tags'] = NewTag.objects.exclude(label = 'root')
         context['nbar'] = 'problemeditor'
+        context['exact'] = self.exact
         context['probgroups'] = probgroups
         return context
 

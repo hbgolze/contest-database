@@ -12,12 +12,25 @@
   </ol>
 </div>
 <div class="container">
-<h2>Problems with tag: {{tag.tag}}</h2>
-
-
-  {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' with rows=page_obj %}
+  <div class="row">
+    <div class="col">
+      <h2>Problems with tag: {{tag.tag}}</h2>
+      <button class="btn btn-primary mt-1 mb-1" id="toggle-exact">{% if exact == 0 %}View Exact Matches{% else %}View Matches of All Children{% endif %}</a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      {% include 'problemeditor/problem-snippets/paginatedproblemlist.html' with rows=page_obj %}
+    </div>
+  </div>
 </div>
 
 {% include 'problemeditor/problem-snippets/scripts/problemscripts.html' %}
 
+<script>
+  $(document).on("click","#toggle-exact", function(e) {
+      e.preventDefault();
+      window.location = window.location.href.split("?")[0]{% if exact == 0 %}+"?exact=true"{% endif %};
+  });
+</script>
 {% endblock %}
