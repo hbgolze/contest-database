@@ -63,6 +63,7 @@ urlpatterns = [
 #    url(r'^tameuploadcontest/preview/$',views.uploadpreview, name='uploadpreview'),
     url(r'^duplicateview/(?P<type_name>\w+)/$',views.duplicate_view, name='duplicate_view'),
     url(r'^redirectproblem/(?P<pk>\w+)/$',views.redirectproblem, name='redirect_problem_view'),################FIX THIS FOR SOURCES
+    url(r'^redirectcontest/(?P<pk>\w+)/$',views.redirectcontest, name='redirect_contest_view'),
     url(r'^tags/$',views.tageditview,name='tageditview'),
 
     url(r'^tags/edit_tag/(?P<pk>\d+)/$', login_required(views.TagUpdateView.as_view()),name="update_tag"),

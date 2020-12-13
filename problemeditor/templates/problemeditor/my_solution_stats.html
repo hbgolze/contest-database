@@ -26,9 +26,9 @@
       <div class="list-group mb-3">
         {% for entry,islinked in log %}
         {% if islinked == True %}
-        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</a>
+        <a href="/{{entry.change_message}}" class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{% if entry.content_type.name == 'solution' %}solution{% elif entry.content_type.name == 'contest test' %}contest{% endif %} ({{entry.object_repr}}) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</a>
         {% else %}
-        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{{entry.content_type.name}} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</li>
+        <li class="list-group-item">{% if entry.action_flag == 1 %}Added new {% elif entry.action_flag == 2 %}Edited {% elif entry.action_flag == 3 %}Deleted {% endif %}{% if entry.content_type.name == 'solution' %}solution{% elif entry.content_type.name == 'contest test' %}contest{% endif %} (<span style="color:red">{{entry.object_repr}}</span>) ({{entry.action_time|timezone:request.user.userprofile.time_zone}})</li>
         {% endif %}
         {% endfor %}
       </div>

@@ -1074,6 +1074,14 @@ def addcontestview(request,type,num):
                 contest_label =  F['year'] + ' ' + round.name
             contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = F['year'], form_letter = formletter,short_label = label)
             contest_test.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(contest_test).pk,
+                object_id = contest_test.id,
+                object_repr = contest_test.contest_label+' ('+str(num)+')',
+                action_flag = ADDITION,
+                change_message = "problemeditor/redirectcontest/"+str(contest_test.pk)+'/',
+            )
         else:
             readablelabel = F['year'] + ' ' + typ.readable_label_pre_form + formletter
             default_question_type = typ.default_question_type
@@ -1091,6 +1099,14 @@ def addcontestview(request,type,num):
                 contest_label =  F['year'] + ' ' + typ.label
             contest_test = ContestTest(contest_label = contest_label, contest_type = typ,year = F['year'], form_letter = formletter,short_label = label)
             contest_test.save()
+            LogEntry.objects.log_action(
+                user_id = request.user.id,
+                content_type_id = ContentType.objects.get_for_model(contest_test).pk,
+                object_id = contest_test.id,
+                object_repr = contest_test.contest_label+' ('+str(num)+')',
+                action_flag = ADDITION,
+                change_message = "problemeditor/redirectcontest/"+str(contest_test.pk)+'/',
+            )
         if default_question_type=='mc':
             for i in range(1,num+1):
                 problem_number_label = str(i)
@@ -1247,6 +1263,11 @@ def my_activity(request):
                 linkedlog.append((i,True))
             else:
                 linkedlog.append((i,False))
+        if i.content_type.name == 'contest test':
+            if ContestTest.objects.filter(pk = i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
     paginator = Paginator(linkedlog,50)
     page = request.GET.get('page')
     try:
@@ -1276,7 +1297,11 @@ def redirectproblem(request,pk):
                 return redirect('/problemeditor/sources/person/'+str(p.source.pk)+'/'+str(p.pk)+'/')
         else:
             return redirect('/problemeditor/CM/bytopic/'+p.type_new.type+'/'+str(p.pk)+'/')
-    
+
+@login_required
+def redirectcontest(request,pk):
+    contest_test = get_object_or_404(ContestTest,pk=pk)
+    return redirect('/problemeditor/contest/bycontest/'+contest_test.contest_type.type+'/'+contest_test.short_label+'/')
 
 #######THIS MUST BE UPDATED TO USE ROUNDS PROPERLY.
 @login_required
@@ -1334,6 +1359,15 @@ def uploadcontestview(request,type):
                 f = contestfile.read().decode('utf-8')
 #                print(f.decode("utf-8"))
                 problemtexts = str(f).split('=========')
+                LogEntry.objects.log_action(
+                    user_id = request.user.id,
+                    content_type_id = ContentType.objects.get_for_model(contest_test).pk,
+                    object_id = contest_test.id,
+                    object_repr = contest_test.contest_label+' ('+str(len(problemtexts)-1)+')',
+                    action_flag = ADDITION,
+                    change_message = "problemeditor/redirectcontest/"+str(contest_test.pk)+'/',
+                )
+
 #Currently no support for 'mc'
                 if default_question_type == 'sa':
                     sa = QuestionType.objects.get(question_type = 'short answer')
@@ -1444,7 +1478,6 @@ def uploadcontestview(request,type):
                 if default_question_type == 'mc':#prefix_pn not supported
                     mc = QuestionType.objects.get(question_type = 'multiple choice')
                     num = 1
-                    print(len(problemtexts))
                     for i in range(1,len(problemtexts)):
                         problem_comps = problemtexts[i].split('=====')
                         problem_text = ''
@@ -1579,15 +1612,12 @@ def uploadpreview(request,type):
                 f = contestfile.read().decode('utf-8')
                 problemtexts = str(f).split('=========')
                 #Currently no support for 'mc'
-                print(len(problemtexts))
                 if default_question_type == 'sa' or default_question_type == 'pf':
-                    print('hi')
                     rows = []
                     num = 1
                     prefix_pn = ''
                     for i in range(1,len(problemtexts)):
                         ptext = problemtexts[i]
-                        print(ptext)
                         if '===' in ptext:
                             prefix_pn = ptext[ptext.index('===') + 3]
                             num = 1
@@ -1601,7 +1631,6 @@ def uploadpreview(request,type):
                             compiletikz(ptext,plabel,temp = True)
 #can I make the above stuff temp?
                             num += 1
-                    print(rows)
 
 
                 if default_question_type == 'mc':#prefix_pn not supported
@@ -2652,14 +2681,19 @@ def solution_stats(request,**kwargs):
             raise Http404("Unauthorized")
     else:
         user = request.user#get_object_or_404(User, username=username)
-    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution')[0:50]
+    log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(Q(content_type__model='solution')|Q(content_type__model='contesttest'))[0:50]
     linkedlog=[]
     for i in log:
-        if Solution.objects.filter(pk=i.object_id).exists():
-            linkedlog.append((i,True))
-        else:
-            linkedlog.append((i,False))
-
+        if i.content_type.name=='solution':
+            if Solution.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
+        if i.content_type.name=='contest test':
+            if ContestTest.objects.filter(pk=i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
     week_log = LogEntry.objects.filter(user_id = user.id).filter(change_message__contains="problemeditor").filter(content_type__model='solution').filter(action_time__date__gte=datetime.today().date() - timedelta(days = 7)).filter(action_flag=1)
 
     week_sol_count=[((datetime.today().date() - timedelta(days = i)).strftime('%A, %B %d'),str(week_log.filter(action_time__date = datetime.today().date() - timedelta(days = i)).count())) for i in range(1,7)]

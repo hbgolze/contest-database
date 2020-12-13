@@ -25,7 +25,7 @@ import tempfile
 import os
 
 
-from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest,UserType
+from .models import Problem, Tag, Type, Test, UserProfile, Response, Responses, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,Solution,ProblemApproval,NewTest,SortableProblem,NewTag,NewResponse,CollaboratorRequest,UserType,ContestTest
 from .forms import TestForm,UserForm,UserProfileForm,TestModelForm,CollaboratorRequestForm
 
 from .utils import parsebool,pointsum
@@ -1266,7 +1266,11 @@ def profileview(request,username):
                 linkedlog.append((i,True))
             else:
                 linkedlog.append((i,False))
-
+        if i.content_type.name == 'contest test':
+            if ContestTest.objects.filter(pk = i.object_id).exists():
+                linkedlog.append((i,True))
+            else:
+                linkedlog.append((i,False))
 
     paginator=Paginator(linkedlog,50)
     page = request.GET.get('page')
