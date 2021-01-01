@@ -3259,3 +3259,25 @@ def change_permission(request):
                 share_target_up.readonly_my_classes.remove(my_class)
                 share_target_up.save()
                 return JsonResponse({'sharing_type':'del'})
+
+@login_required
+def export_pset_to_group(request):
+    userprofile = request.user.userprofile
+    form = request.POST
+    ppk = form.get('pset_pk','')
+    pg_name = form.get('pg_name','')
+    pset = get_object_or_404(ProblemSet,pk=ppk)
+    my_class = pset.unit_object.unit.the_class
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    problem_objects = pset.problem_objects.filter(isProblem=1).order_by('order')
+    if problem_objects.count() > 0:
+        pg = ProblemGroup(name = pg_name)
+        pg.save()
+        userprofile.problem_groups.add(pg)
+        userprofile.save()
+        for po in problem_objects:
+            pg.add_to_end(po.problem)
+        pg.save()
+    return JsonResponse({})

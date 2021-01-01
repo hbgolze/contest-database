@@ -145,9 +145,15 @@
           </div>
         </span>
         <button type="submit" class="save btn btn-primary" name="save">Save</button>
-{% endif %}
+	{% endif %}
       </form>
-      
+      {% if problemset %}
+      <form class="form-inline mt-2 mb-5" action="." method="POST" id="export_to_group">
+	<input type="hidden" id="pset_pk" name="pset_pk" value="{{problemset.pk}}">
+	<input class="form-control m-1" type="text" id="pg_name" name="pg_name" placeholder="Problem Group Name" required>
+	<button type="submit" class="m-1save btn btn-primary" name="Export">Export to New Problem Group</button>
+      </form>
+      {% endif %}
     </div>
   </div>
 </div>
@@ -572,7 +578,7 @@ function csrfSafeMethod(method) {
 }
 
 $.ajaxSetup({
-    beforeSend: function(xhr, settings) {
+        beforeSend: function(xhr, settings) {
         if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
             xhr.setRequestHeader("X-CSRFToken", csrftoken);
         }
@@ -1288,8 +1294,24 @@ $(document).on("change","select.js-copy-prob-select",function(event) {
     });
     return false;
 });
+{% if problemset %}
+$(document).on('submit',"#export_to_group",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/teacher/ajax/export-pset-to-group/',
+    data: $(this).serialize(),                                                                      
+    dataType: 'json',
+    success: function(result) {
+	$("#pg_name").val("");
+    }
+  });
+  return false;
+});
+{% endif %}
   
 </script>
+
 {% endif %}
 
 {% endblock %}

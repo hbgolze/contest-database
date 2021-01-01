@@ -106,6 +106,7 @@ urlpatterns = [
     url(r'^ajax/load-edit-timelimit/$',views.load_edit_timelimit, name="load_edit_timelimit"),
     url(r'^ajax/save-timelimit/$',views.save_timelimit, name="save_timelimit"),
     url(r'^ajax/delete-timelimit/$',views.delete_timelimit, name="delete_timelimit"),
+    url(r'^ajax/export-pset-to-group/$',views.export_pset_to_group, name="export_pset_to_group"),
     url(r'^ajax/problemobject/load-edit-questiontype/$',views.loadeditquestiontype, name="po_load_edit_qt"),
     url(r'^ajax/problemobject/load-new-sol/$',views.load_new_solution_form, name="class_load_new_solution_form"),
     url(r'^ajax/problemobject/save-new-sol/$',views.save_new_solution, name="class_save_new_solution"),
