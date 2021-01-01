@@ -1,82 +1,25 @@
-{% extends "randomtest/base.html" %}
-
 {% load randomtest_extras %}
-{% block content %}
-
-
-<nav aria-label="breadcrumb" role="navigation">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="../../../../../../">My Classes</a></li>
-    <li class="breadcrumb-item"><a href="../../../../">{{my_class.name}}</a></li>
-    <li class="breadcrumb-item"><a href="../../">{{unit.name}}</a></li>
-    <li class="breadcrumb-item active"><span id="bc-unit-name">{{pset.name}}</span></li>
-  </ol>
-</nav>
-
-<div class="container">
-  <div class="row">
-    <div class="col-sm-3 sidebar">
-      <ul class="nav nav-pills flex-column">
-        {% include 'teacher/sidebar.html' with activenav="myclasses" %}
-      </ul>
-    </div>
-    <div class="col-sm-9 main">
-      <h2>LaTeX Code for "{{pset.name}}"</h2>
-
-
-
-      <div class="row mb-3">
-	<div class="col">
-	  <input type="hidden" name="startform" value="{{pset.pk}}">
-	</div>
-      </div>
-      <div class="row">
-	<div class="col">
-	  <div class="card pl-2" style="background-color:#dddddd">
-	    <div class="card-body">
-	      <pre style="white-space: pre-wrap"><code>
+{% autoescape off %} 
 HEADERPLACEHOLDER
 \begin{document}
 {% if pset.problem_objects.count > 0 %}
 \begin{enumerate}
 {% for prob in pset.problem_objects.all %}
-\item {% if prob.isProblem %}{% if prob.problem.type_new.is_contest %}{% if problem_labels == 0 %}{% elif problem_labels == 1 %}({{prob.problem.type_new.label}}){% elif problem_labels == 2%}({{prob.problem.readable_label|poundsafe}}){% endif %}{% endif %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text|linebreaks}}{% else %}{{prob.problem.problem_text|linebreaks}}{% endif %}
-
-
-{% if include_answer_choices or prob.needs_answers %}
-{% if prob.problem.question_type_new.question_type == 'multiple choice' or prob.problem.question_type_new.question_type == 'multiple choice short answer' %}
-\vspace{6pt}
+\item {% if prob.isProblem %}{% if prob.problem.type_new.is_contest %}{% if problem_labels == 0 %}{% elif problem_labels == 1 %}({{prob.problem.type_new.label}}){% elif problem_labels == 2%}({{prob.problem.readable_label|poundsafe}}){% endif %}{% endif %}{% if prob.question_type.question_type == "multiple choice" %}{{prob.problem.mc_problem_text}}{% else %}{{prob.problem.problem_text}}{% endif %}
+{% if include_answer_choices or prob.needs_answers %}{% if prob.problem.question_type_new.question_type == 'multiple choice' or prob.problem.question_type_new.question_type == 'multiple choice short answer' %}\vspace{6pt}
 
 {{prob.problem.answers}}
-{% endif %} 
-{% endif %}
-
-{% if include_sols %}
-{% if prob.problem.solutions.count > 0 %}
-{% for sol in prob.problem.solutions.all %}
-\vspace{3mm}
+{% endif %}{% endif %}
+{% if include_sols %}{% if prob.problem.solutions.count > 0 %}{% for sol in prob.problem.solutions.all %}\vspace{3mm}
 
 \textbf{Solution{% if prob.problem.solutions.count > 1 %} {{forloop.counter}}{% endif %}:}
 {{sol.solution_text}}
-
-{% endfor %}
-{% endif %}
+{% endfor %}{% endif %}
 \rule{\textwidth}{.5pt}
-{% endif %}
-{% endif %}
+{% endif %}{% endif %}
 
 {% endfor %}
 \end{enumerate}
 {% endif %}
 \end{document}
-
-		</code>
-	      </pre>
-	    </div>
-	  </div>
-	</div>
-      </div>
-    </div>
-  </div>
-</div>
-{% endblock %}
+{% endautoescape %}

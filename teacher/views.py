@@ -720,7 +720,11 @@ def newlatexpsetview(request,pk,upk,ppk):
     context['unit'] = unit
     context['nbar'] = 'teacher'
     context['pset'] = pset
-    return render(request, 'teacher/editingtemplates/newlatexpsetview.html',context)
+    filename = pset.name.replace(' ','') + '.tex'
+    response = HttpResponse(render_to_string('teacher/editingtemplates/newlatexpsetview.html',context), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
+
 
 
 @login_required
