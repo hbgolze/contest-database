@@ -684,6 +684,44 @@ def latexpsetview(request,pk,upk,ppk):
     context['pset'] = pset
     return render(request, 'teacher/editingtemplates/latexpsetview.html',context)
 
+@login_required
+def newlatexpsetview(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    pset = get_object_or_404(ProblemSet,pk=ppk)
+    if pset.unit_object.unit != unit:
+        raise Http404("No such problem set in this unit")
+    form = request.GET
+    context = {}
+    include_problem_labels = 0
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = int(form['include-pls'])
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    context = {
+        'pset' : pset,
+        'problem_labels' : include_problem_labels,
+        'include_answer_choices':include_answer_choices,
+        'include_sols' : include_sols,
+        }
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['nbar'] = 'teacher'
+    context['pset'] = pset
+    return render(request, 'teacher/editingtemplates/newlatexpsetview.html',context)
+
 
 @login_required
 def latexslidesview(request,pk,upk,ppk):

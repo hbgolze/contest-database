@@ -169,6 +169,53 @@
 </div>
 
 
+<div class="modal fade" id="latex-options" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <form method="get" action="" id="latex-form">
+	<div class="modal-header">
+          <h5 class="modal-title">View Problem Set LaTeX</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="container">
+            <div class="row">
+              <div class="col">
+                Select Options
+		<input type="hidden" id="pset_pk" name="pset_pk">
+		<div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="l-include-acs" name="include-acs" checked>
+                  <label class="form-check-label" for="l-include-acs">
+                    Include Answer Choices
+                  </label>
+		</div>
+		<div class="form-group">
+		  <label for="l-include-pls">Problem Label Options</label>
+		  <select class="form-control" id="l-include-pls" name="include-pls">
+		    <option value="0" selected>Nothing</option>
+		    <option value="1">(Contest Name)</option>
+		    <option value="2">(Contest Name and Problem Number)</option>
+		  </select>
+		</div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" value="" id="l-include-sols" name="include-sols">
+                  <label class="form-check-label" for="l-include-sols">
+                    Include Solutions
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit"  name="view-latex" class="btn btn-primary" value="latex">View LaTeX</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
 
 	      
 <script type="text/javascript">
@@ -338,6 +385,15 @@ $(document).on('submit',"#edit-unit-name-form",function(e) {
   });
   return false;
 });
+
+$(document).on('click','.new_latex_link',function(e) {
+    e.preventDefault();
+    var pk=$(this).attr('id').split('-')[1];
+    $("#pset_pk").val(pk);
+    $("#latex-form").attr('action','newproblemsetlatex/'+pk+'/')
+    $("#latex-options").modal("show");
+});
+
 </script>
 {% endif %}
 {% endblock %}
