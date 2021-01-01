@@ -1,0 +1,18 @@
+{% load randomtest_extras %}
+{% autoescape off %} 
+HEADERPLACEHOLDER
+\begin{document}
+{% if pset.problem_objects.count > 0 %}
+\begin{enumerate}
+{% for prob in pset.problem_objects.all %}
+\item {% if prob.isProblem %}
+
+{% if prob.problem.question_type_new.question_type == 'short answer' %}${{prob.problem.sa_answer}}\,${% elif prob.problem.question_type_new.question_type != 'multiple choice' %}$\textbf{({{prob.problem.mc_answer}})}${% elif prob.problem.question_type_new.question_type != 'multiple choice short answer' %}$\textbf{({{prob.problem.mc_answer}})}$, or ${{prob.problem.correct_answer}}\,${% elif prob.problem.question_type_new.question_type == 'proof' %}{% endif %}      
+
+({{prob.problem.readable_label|poundsafe}})
+{% endif %}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+\end{document}
+{% endautoescape %}

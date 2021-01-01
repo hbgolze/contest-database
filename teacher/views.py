@@ -726,6 +726,29 @@ def newlatexpsetview(request,pk,upk,ppk):
     return response
 
 
+@login_required
+def latexpsetanswerkeyview(request,pk,upk,ppk):
+    userprofile = request.user.userprofile
+    my_class = get_object_or_404(Class,pk = pk)
+    sharing_type = get_permission_level(request,my_class)
+    if sharing_type == 'none':
+        raise Http404("Unauthorized.")
+    unit = get_object_or_404(Unit,pk = upk)
+    if my_class.unit_set.filter(pk = upk).exists == False:
+        raise Http404("No such unit in this class.")
+    pset = get_object_or_404(ProblemSet,pk=ppk)
+    if pset.unit_object.unit != unit:
+        raise Http404("No such problem set in this unit")
+    context = {}
+
+    context['my_class'] = my_class
+    context['unit'] = unit
+    context['nbar'] = 'teacher'
+    context['pset'] = pset
+    filename = pset.name.replace(' ','') + 'AnswerKey.tex'
+    response = HttpResponse(render_to_string('teacher/editingtemplates/newlatexpsetanswerkeyview.html',context), content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
 
 @login_required
 def latexslidesview(request,pk,upk,ppk):
