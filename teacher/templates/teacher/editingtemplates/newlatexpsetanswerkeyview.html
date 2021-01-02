@@ -9,7 +9,8 @@ HEADERPLACEHOLDER
 
 {% if prob.problem.question_type_new.question_type == 'short answer' %}${{prob.problem.sa_answer}}\,${% elif prob.problem.question_type_new.question_type != 'multiple choice' %}$\textbf{({{prob.problem.mc_answer}})}${% elif prob.problem.question_type_new.question_type != 'multiple choice short answer' %}$\textbf{({{prob.problem.mc_answer}})}$, or ${{prob.problem.correct_answer}}\,${% elif prob.problem.question_type_new.question_type == 'proof' %}{% endif %}      
 
-({{prob.problem.readable_label|poundsafe}})
+Source: {% if prob.problem.type_new.is_contest %}{{prob.problem.readable_label|poundsafe}}{% else %}N/A{% endif %}
+
 {% endif %}
 {% endfor %}
 \end{enumerate}
