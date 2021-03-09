@@ -119,6 +119,12 @@ urlpatterns = [
     url(r'^ajax/load-sourced-problem/$', views.load_qt_addproblemform, name='load_qt_sourced_problem'),
     url(r'^ajax/view_log/$', views.view_entry_log, name='view_log'),
     url(r'^ajax/refresh-matrix-row/$', views.refresh_matrix_row, name='refresh_matrix_row'),
+    url(r'^ajax/new-accepted-answer/$', views.load_new_accepted_answer, name='load_new_accepted_answer'),
+    url(r'^ajax/add-accepted-answer/$', views.add_accepted_answer, name='add_accepted_answer'),
+    url(r'^ajax/load-edit-accepted-answer/$', views.load_edit_accepted_answer, name='load_edit_accepted_answer'),
+    url(r'^ajax/save-accepted-answer/$', views.save_accepted_answer, name='save_accepted_answer'),
+    url(r'^ajax/delete-accepted-answer/$', views.delete_accepted_answer, name='delete_accepted_answer'),
+
 #    url(r'^tameuploadcontest/preview/$',views.ContestUploadPreview(UploadContestForm), name='uploadpreview'),
 #    url(r'^bytag/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),
 #    url(r'^bytest/(?P<type>\w+)/untagged/$', views.untaggedview, name='untaggedview'),

@@ -1,0 +1,75 @@
+{% extends "randomtest/base.html" %}
+
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/mocktests/">Mock Tests</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Review Test: {{umt.mock_test.name}}</li>
+  </ol>
+</nav>
+
+{% load tz %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h2>Mock Test: {{umt.mock_test.name}}</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div id="content-container">
+	{% for user_segment in umt.segments.all %}
+	{% if user_segment.mock_test_segment.segment_type == "PR" %}
+	{% include 'mocktests/mocktest_review_problems.html' %}
+	{% endif %}
+	{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+<div id="solution-placeholder" class="modal fade" role="dialog">
+</div>
+<script>
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+  $(document).on('click',".solution-link",function(event) {
+      event.preventDefault();
+      var target = $(this).attr("href");
+      
+      $("#solution-placeholder").load(target, function() {
+          MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
+          $("#solution-placeholder").modal("show");
+      });
+  });
+</script>
+{% endblock %}

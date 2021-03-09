@@ -1,0 +1,11 @@
+<div class="row">
+  <div class="col-12">
+    <label>Accepted Answer(s):</label>
+    <div id="accepted-answers_{{prob.pk}}">
+      {% include "problemeditor/problem-snippets/components/accepted-answer-list.html" %}
+    </div>
+    {% if request.user.userprofile.user_type_new.name == "super" %}
+    <button class="btn btn-primary add-accepted-answer-link" id="add-accepted-answer_{{prob.pk}}">Add Accepted Answer</button>
+    {% endif %}
+  </div>
+</div>

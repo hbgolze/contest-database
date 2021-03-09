@@ -638,4 +638,122 @@ $(document).on('click',".copy-latex-link",function(e) {
   document.execCommand("copy");
   document.body.removeChild(aux);
 });
+
+  $(document).on('change','#answer-type',function(e) {
+      var s='';
+      if ($(this).val() == 'INT') {
+	  s = '<input type="text" name="answer_a" maxlength="50" id="id_answer_a" required="" class="form-control">';
+      }
+      if ($(this).val() == 'CF') {
+	  s = '<math>  <mstyle displaystyle="true"><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b" class="form-control" required/></annotation-xml> </semantics></mrow></mfrac></mstyle></math>';
+      }
+      if ($(this).val() == 'DEC') {
+	  s = '<input type="text" name="answer_a" maxlength="50" id="id_answer_a" required="" class="form-control">';
+      }
+      if ($(this).val() == 'MIX') {
+	  s = '<math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><i\
+nput xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics><mo>&nbsp;</mo><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b" class="form-control" required/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_c" class="form-control" required/></annotation-xml> </semantics></mrow></mfrac></mstyle></math>';
+      }
+      if ($(this).val() == 'DOL') {
+	  s = '<math>  <mstyle displaystyle="true"><mo>&dollar;</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics></mstyle></math>';
+      }
+      if ($(this).val() == 'WKD') {
+	  s= '<div class="col-5 col-md-4 col-lg-3 col-xl-2"><select name="answer_a" class="form-control"><option value="Sunday">Sunday</option><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option><option value="Saturday">Saturday</option></select></div>';
+      }
+      if ($(this).val() == 'SQR') {
+	  s = '<math>  <mstyle displaystyle="true"><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics></msqrt></mstyle></math>';
+      }
+      if ($(this).val() == 'RAD') {
+	  s = '<math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input x\
+mlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b" class="form-control" required/></annotation-xml></semantics></msqrt></mstyle></math>';
+      }
+      if ($(this).val() == 'CFQ') {
+	  s = '<math>  <mstyle displaystyle="true"><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b" class="form-control" required/></annotation-xml></semantics></msqrt></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_c" class="form-control" required/></annotation-xml> </semantics></mrow></mfrac></mstyle></math>';
+      }
+      if ($(this).val() == 'OPR') {
+	  s = '<math>  <mstyle displaystyle="true"><mo>(</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics><mo>,</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b" class="form-control" required/></annotation-xml></semantics><mo>)</mo></mstyle></math>';
+      }
+      if ($(this).val() == 'TEX') {
+	  s = '<input type="text" name="answer_a" maxlength="50" id="id_answer_a" required="" class="form-control">';
+      }
+      if ($(this).val() == 'PCT') {
+	  s = '<math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a" class="form-control" required/></annotation-xml></semantics><mo>&percnt;</mo></mstyle></math>';
+      }
+      $("#answer-type-div").html(s);
+});
+
+  $(document).on('click','.add-accepted-answer-link',function(e) {
+      var prob_id = $(this).attr('id').split('_')[1];
+      $.ajax({
+          type: 'POST',
+          url: '/problemeditor/ajax/new-accepted-answer/',
+          data: "pk=" + prob_id,
+          dataType: 'json',
+          success: function(result) {
+	      $("#new-accepted-answer-placeholder").html(result['modal-html']);
+	      $("#new-accepted-answer-placeholder").modal("show");         
+          }
+      });
+  });
+  $(document).on('submit','#new-accepted-answer-form',function(e) {
+      e.preventDefault();
+      $.ajax({
+          type: 'POST',
+          url: '/problemeditor/ajax/add-accepted-answer/',
+          data: $(this).serialize(),
+          dataType: 'json',
+          success: function(result) {
+	      $("#accepted-answers_"+result['prob_pk']).html(result['accepted-answers']);
+              MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#accepted-answers_"+result['prob_pk']]);
+              $("#new-accepted-answer-placeholder").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+
+          }
+      });
+  });
+  $(document).on('click','.edit-accepted-answer-link',function(e) {
+      e.preventDefault();
+      var ans_id = $(this).attr('id').split('_')[1];
+      $.ajax({
+          type: 'POST',
+          url: '/problemeditor/ajax/load-edit-accepted-answer/',
+          data: "pk=" + ans_id,
+          dataType: 'json',
+          success: function(result) {
+	      $("#edit-accepted-answer-placeholder").html(result['modal-html']);
+	      $("#edit-accepted-answer-placeholder").modal("show");         
+          }
+      });
+  });
+  $(document).on('submit','#edit-accepted-answer-form',function(e) {
+      e.preventDefault();
+      $.ajax({
+          type: 'POST',
+          url: '/problemeditor/ajax/save-accepted-answer/',
+          data: $(this).serialize(),
+          dataType: 'json',
+          success: function(result) {
+	      $("#accepted-answers_"+result['prob_pk']).html(result['accepted-answers']);
+              MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#accepted-answers_"+result['prob_pk']]);
+              $("#new-accepted-answer-placeholder").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+          }
+      });
+  });
+    $(document).on('click','.delete-accepted-answer-link',function(e) {
+      e.preventDefault();
+      var ans_id = $(this).attr('id').split('_')[1];
+      $.ajax({
+          type: 'POST',
+          url: '/problemeditor/ajax/delete-accepted-answer/',
+          data: "pk=" + ans_id,
+          dataType: 'json',
+          success: function(result) {
+	      $("#accepted-answers_"+result['prob_pk']).html(result['accepted-answers']);
+              MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#accepted-answers_"+result['prob_pk']]);
+              $("#new-accepted-answer-placeholder").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+          }
+      });
+  });
 </script>

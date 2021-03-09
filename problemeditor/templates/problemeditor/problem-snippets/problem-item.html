@@ -60,7 +60,11 @@
 
 {% include "problemeditor/problem-snippets/components/problemgroups.html" %}
 </div>
-
+{% if prob.question_type_new.question_type == "short answer" %}
+<div>
+{% include "problemeditor/problem-snippets/components/sa_answers.html" %}
+</div>
+{% endif %}
 <div>
 {% if prob.notes != "" %}
 <label>Notes:</label>

@@ -1,0 +1,47 @@
+<h2>{{user_segment.mock_test_segment.name}}</h2>
+<div>
+  <form id="mocktest_segment_form">
+    <input type="hidden" name="seg-pk" value="{{user_segment.pk}}">
+    <table class="table">
+      <tbody>
+	{% for prob in user_segment.problems.all %}
+	<tr valign="top">
+	  <td style="width: 20px;">{{prob.mocktest_problem.problem.problem_number}}.</td>
+	  <td style="margin: 0 2px;max-width: 60px;">
+	    {% if prob.mocktest_problem.answer_type == "INT" %}
+	    <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" maxlength="50" id="id_answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"></annotation-xml> </semantics></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == "CF" %}
+            <math>  <mstyle displaystyle="true"><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}"  tabindex="{{prob.order}}"/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}" /></annotation-xml> </semantics></mrow></mfrac></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'DEC' %}
+	    <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" maxlength="50" id="id_answer_a__{{prob.pk}}" value="{{prob.answer_a}}" class="form-control mocktest-answer" tabindex="{{prob.order}}"></annotation-xml> </semantics></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'MIX' %}
+            <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><mo>&nbsp;</mo><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}" /></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_c__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_c}}" tabindex="{{prob.order}}" /></annotation-xml> </semantics></mrow></mfrac></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'DOL' %}
+            <math>  <mstyle displaystyle="true"><mo>&dollar;</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'WKD' %}
+            <div class="col-5 col-md-4 col-lg-3 col-xl-2"><select name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" tabindex="{{prob.order}}" ><option value="" {% if prob.answer_a == '' %}selected {% endif %}disabled>Choose a Day</option><option value="Sunday"{% if prob.answer_a == 'Sunday' %} selected{% endif %}>Sunday</option><option value="Monday"{% if prob.answer_a == 'Monday' %} selected{% endif %}>Monday</option><option value="Tuesday"{% if prob.answer_a == 'Tuesday' %} selected{% endif %}>Tuesday</option><option value="Wednesday"{% if prob.answer_a == 'Wednesday' %} selected{% endif %}>Wednesday</option><option value="Thursday"{% if prob.answer_a == 'Thursday' %} selected{% endif %}>Thursday</option><option value="Friday"{% if prob.answer_a == 'Friday' %} selected{% endif %}>Friday</option><option value="Saturday"{% if prob.answer_a == 'Saturday' %} selected{% endif %}>Saturday</option></select></div>
+	    {% elif prob.mocktest_problem.answer_type == 'SQR' %}
+            <math>  <mstyle displaystyle="true"><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics></msqrt></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'RAD' %}
+            <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}" /></annotation-xml></semantics></msqrt></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'CFQ' %}
+            <math>  <mstyle displaystyle="true"><mfrac><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><msqrt><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}" /></annotation-xml></semantics></msqrt></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_c__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_c}}" tabindex="{{prob.order}}" /></annotation-xml> </semantics></mrow></mfrac></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'OPR' %}
+            <math>  <mstyle displaystyle="true"><mo>(</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><mo>,</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_b__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><mo>)</mo></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'TEX' %}
+	    <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" maxlength="50" id="id_answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"></annotation-xml> </semantics></mstyle></math>
+	    {% elif prob.mocktest_problem.answer_type == 'PCT' %}
+            <math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="2" name="answer_a__{{prob.pk}}" class="form-control mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><mo>&percnt;</mo></mstyle></math>
+	    {% endif %}
+	    {{prob.mocktest_problem.units}}
+	  </td>
+	  <td style="width: 70%;">{% autoescape off %}{{prob.mocktest_problem.problem.display_problem_text|linebreaks}} {% endautoescape %}</td>
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+    <div class="col-12 text-right">
+      <input type="submit" class="btn btn-primary" value="Submit">
+    </div>
+  </form>
+</div>

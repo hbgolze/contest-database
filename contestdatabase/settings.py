@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'teacher.apps.TeacherConfig',
     'student.apps.StudentConfig',
     'results.apps.ResultsConfig',
+    'mocktests.apps.MocktestsConfig',
 ]
 
 MIDDLEWARE = [

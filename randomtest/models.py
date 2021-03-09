@@ -294,6 +294,63 @@ class Problem(models.Model):
             self.readable_label = readable_prefix+' #' + str(self.problem_number)
         self.save()
 
+class Answer(models.Model):
+    ANSWER_CHOICES = (
+        ('INT', 'Integer'),
+        ('CF', 'Common Fraction'),
+        ('DEC', 'Decimal'),
+        ('MIX', 'Mixed Number'),
+        ('DOL', 'Dollars'),
+        ('WKD', 'Day of the Week'),
+        ('SQR', 'Square Root'),
+        ('RAD', 'Radical (a*sqrt(b))'),
+        ('CFQ', 'Common Fraction in Simplest Radical Form (a*sqrt(b)/c)'),
+        ('OPR', 'Ordered Pair'),
+        ('TEX', 'Text'),
+        ('PCT', 'Percent'),
+        )
+    answer_type = models.CharField(max_length = 3,choices = ANSWER_CHOICES,blank = False,default = 'INT')
+    answer_a = models.CharField(max_length = 50,default="")
+    answer_b = models.CharField(max_length = 50,default="")
+    answer_c = models.CharField(max_length = 50,default="")
+    problem = models.ForeignKey(Problem,null=True,on_delete=models.CASCADE,related_name="accepted_answers")
+    units = models.CharField(max_length = 50,default="")
+    def check_answer(self,a="",b="",c=""):
+        a = a.strip()
+        b = b.strip()
+        c = c.strip()
+        if a == self.answer_a and b == self.answer_b and c == self.answer_c:
+            return 1
+        return 0
+    def display(self):
+        if self.answer_type == 'INT':
+            return "$" + self.answer_a + "$ " + self.units
+        if self.answer_type == 'CF':
+            return "$\\dfrac{" + self.answer_a + "}{" + self.answer_b + "}$ " + self.units
+        if self.answer_type == 'DEC':
+            return "$" + self.answer_a + "$ " + self.units
+        if self.answer_type == 'DEC':
+            return "$" + self.answer_a + "$ " + self.units
+        if self.answer_type == 'MIX':
+            return "$" + self.answer_a + "\\dfrac{" + self.answer_b + "}{" + self.answer_c + "}$ " + self.units
+        if self.answer_type == 'DOL':
+            return "$\\$" + self.answer_a + "$ " + self.units
+        if self.answer_type == 'WKD':
+            return self.answer_a + " " + self.units
+        if self.answer_type == 'SQR':
+            return "$\\sqrt{" + self.answer_a + "}$ " + self.units
+        if self.answer_type == 'RAD':
+            return "$" + self.answer_a + "\\sqrt{" + self.answer_b + "}$ " + self.units
+        if self.answer_type == 'CFQ':
+            return "$\\dfrac{" + self.answer_a + "\sqrt{" + self.answer_b + "}}{" + self.answer_c + " }$ " + self.units
+        if self.answer_type == 'OPR':
+            return "$(" + self.answer_a + "," + self.answer_b + ")$ " + self.units
+        if self.answer_type == 'TEX':
+            return self.answer_a + " " + self.units
+        if self.answer_type == 'PCT':
+            return "$" + self.answer_a + "\\%$ " + self.units
+        
+#left_units, right units
     
 class ProofResponse(models.Model):
     problem = models.ForeignKey(Problem,null=True,on_delete=models.CASCADE)

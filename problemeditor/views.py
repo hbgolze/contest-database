@@ -16,7 +16,7 @@ from django.db.models import Max,Min
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest,Answer
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
 from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm
@@ -2703,3 +2703,71 @@ def solution_stats(request,**kwargs):
     if 'username' in kwargs:
         context['username'] = user.username
     return render(request,'problemeditor/my_solution_stats.html',context)
+
+@login_required
+def load_new_accepted_answer(request):
+    pk = request.POST.get('pk','')
+    prob = get_object_or_404(Problem,pk=pk)
+    return JsonResponse({'modal-html': render_to_string('problemeditor/problem-snippets/modals/modal-new-acc-ans.html',{'prob':prob})})
+
+@login_required
+def add_accepted_answer(request):
+    pk = request.POST.get('aa-pk','')
+    prob = get_object_or_404(Problem,pk=pk)
+    answer_type = request.POST.get('answer-type','')
+    answer_a = ''
+    answer_b = ''
+    answer_c = ''
+    units = ''
+    for i in request.POST:
+        if i == 'answer_a':
+            answer_a = request.POST.get('answer_a','')
+        if i == 'answer_b':
+            answer_b = request.POST.get('answer_b','')
+        if i == 'answer_c':
+            answer_c = request.POST.get('answer_c','')
+        if i == 'units':
+            units = request.POST.get('units','')
+    a = Answer(problem = prob,answer_type = answer_type,answer_a = answer_a,answer_b = answer_b,answer_c = answer_c,units = units)
+    a.save()
+    return JsonResponse({'accepted-answers': render_to_string('problemeditor/problem-snippets/components/accepted-answer-list.html',{'prob':prob,'request':request}),'prob_pk': pk})
+
+@login_required
+def load_edit_accepted_answer(request):
+    pk = request.POST.get('pk','')
+    answer = get_object_or_404(Answer,pk=pk)
+    return JsonResponse({'modal-html': render_to_string('problemeditor/problem-snippets/modals/modal-edit-acc-ans.html',{'answer':answer})})
+
+@login_required
+def save_accepted_answer(request):
+    pk = request.POST.get('aa-pk','')
+    answer = get_object_or_404(Answer,pk=pk)
+    answer_a = ''
+    answer_b = ''
+    answer_c = ''
+    units = ''
+    for i in request.POST:
+        if i == 'answer_a':
+            answer_a = request.POST.get('answer_a','')
+        if i == 'answer_b':
+            answer_b = request.POST.get('answer_b','')
+        if i == 'answer_c':
+            answer_c = request.POST.get('answer_c','')
+        if i == 'units':
+            units = request.POST.get('units','')
+    answer.answer_a = answer_a
+    answer.answer_b = answer_b
+    answer.answer_c = answer_c
+    answer.units = units
+    answer.save()
+    return JsonResponse({'accepted-answers': render_to_string('problemeditor/problem-snippets/components/accepted-answer-list.html',{'prob':answer.problem,'request':request}),'prob_pk': answer.problem.pk})
+
+
+@login_required
+def delete_accepted_answer(request):
+    pk = request.POST.get('pk','')
+    answer = get_object_or_404(Answer,pk=pk)
+    prob = answer.problem
+    answer.delete()
+    return JsonResponse({'accepted-answers': render_to_string('problemeditor/problem-snippets/components/accepted-answer-list.html',{'prob':prob,'request':request}),'prob_pk': prob.pk})
+

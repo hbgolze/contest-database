@@ -1,0 +1,210 @@
+{% extends "randomtest/base.html" %}
+
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/mocktests/">Mock Tests</a></li>
+    <li class="breadcrumb-item active" aria-current="page">{{umt.mock_test.name}}</li>
+  </ol>
+</nav>
+
+{% load tz %}
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h2>Mock Test: {{umt.mock_test.name}}</h2>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <div id="content-container">
+	<p class="mb-3">You are about to begin the test. Click the "Start Test" button below to begin the test.</p>
+	<p><button class="btn btn-primary start-test-link" id="start-test_{{umt.pk}}">Start Test</button></p>
+      </div>
+    </div>
+  </div>
+  <div class="fixed-bottom text-center" id="timer-div">
+    Time Remaining: <span id="hrs"></span>:<span id="mins"></span>:<span id="secs"></span>
+  </div>
+</div>
+<div class="modal fade" id="confirm-modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Continue?</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Are you sure you want to move on?</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id="continue-button">Continue</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+  var in_test = 0;
+  var x;
+  var auto_submit = 0;
+  $(document).on('click','.start-test-link',function(e) {
+      $.ajax({
+          type: 'POST',
+          url: '/mocktests/ajax/start-mocktest/',
+          data: "pk=" + {{umt.pk}},
+          dataType: 'json',
+          success: function(result) {
+              $("#content-container").html(result['problems-html']);
+	      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+	      var start_time = new Date().getTime();
+	      var in_test = 1;
+	      var end_time = start_time + result['time_limit'];
+	      x = setInterval(function() {
+		  var now = new Date().getTime();
+		  var distance = end_time - now;
+		  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+		  if (seconds < 10) {seconds = '0'+seconds;}
+		  if (distance < 0) {
+		      clearInterval(x);
+//		      $("#mocktest_segment_form :input").prop("disabled",true);
+		      auto_submit = 1;
+		      $("#mocktest_segment_form").submit();
+		  }
+		  $("#hrs").html(hours);
+		  $("#mins").html(minutes);
+		  $("#secs").html(seconds);
+	      },1000);
+          }
+      });      
+  });
+  $(document).on('submit','#mocktest_segment_form',function(e) {
+      e.preventDefault();
+       if (auto_submit == 1) {
+	  $.ajax({
+              type: 'POST',
+              url: '/mocktests/ajax/submit-mocktest-segment/',
+              data: $(this).serialize(),
+              dataType: 'json',
+              success: function(result) {
+		  if (result['end'] == 0) {
+		      $("#content-container").html(result['problems-html']);
+		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+		      var start_time = new Date().getTime();
+		      //		  var in_test = 1;
+		      auto_submit = 0;
+		      var end_time = start_time + result['time_limit'];
+		      clearInterval(x);
+		      x = setInterval(function() {
+			  var now = new Date().getTime();
+			  var distance = end_time - now;
+			  var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+			  var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+			  var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+			  if (seconds < 10) {seconds = '0'+seconds;}
+			  if (distance < 0) {
+			      clearInterval(x);
+//			      $("#mocktest_segment_form :input").prop("disabled",true);
+			      auto_submit = 1;
+			      $("#mocktest_segment_form").submit();
+			      $("#confirm-modal").hide();
+			      $("[data-dismiss=modal]").trigger({ type: "click" });
+			  }
+			  $("#hrs").html(hours);
+			  $("#mins").html(minutes);
+			  $("#secs").html(seconds);
+		      },1000);
+		      
+		  } else {
+		      window.location = "/mocktests/";
+		  }
+	      }
+	  });
+      } else {
+	  $("#confirm-modal").modal("show");
+      }      
+  });
+  $(document).on('click','#continue-button',function(e) {
+      e.preventDefault();
+//      $("#mocktest_segment_form :input").prop("disabled",true);
+      $.ajax({
+          type: 'POST',
+          url: '/mocktests/ajax/submit-mocktest-segment/',
+          data: $("#mocktest_segment_form").serialize(),
+          dataType: 'json',
+          success: function(result) {
+	      $("#confirm-modal").hide();
+              $("[data-dismiss=modal]").trigger({ type: "click" });
+	      if (result['end'] == 0) {
+		  $("#content-container").html(result['problems-html']);
+		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+		  var start_time = new Date().getTime();
+		  //		  var in_test = 1;
+		  auto_submit = 0;
+		  var end_time = start_time + result['time_limit'];
+		  clearInterval(x);
+		  x = setInterval(function() {
+		      var now = new Date().getTime();
+		      var distance = end_time - now;
+		      var hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+		      var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+		      var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+		      if (seconds < 10) {seconds = '0'+seconds;}
+		      if (distance < 0) {
+			  clearInterval(x);
+//			  $("#mocktest_segment_form :input").prop("disabled",true);
+			  auto_submit = 1;
+			  $("#mocktest_segment_form").submit();
+			  $("#confirm-modal").hide();
+			  $("[data-dismiss=modal]").trigger({ type: "click" });
+		      }
+		      $("#hrs").html(hours);
+		      $("#mins").html(minutes);
+		      $("#secs").html(seconds);
+		  },1000);
+		  
+	      } else {
+		  window.location = "/mocktests/"
+	      }
+	  }
+      });
+  });
+</script>
+{% endblock %}

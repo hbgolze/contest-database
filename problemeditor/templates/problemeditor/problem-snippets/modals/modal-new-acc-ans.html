@@ -1,0 +1,44 @@
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="get" action="." id="new-accepted-answer-form">
+	
+        <div class="modal-header">
+          <h5 class="modal-title">New Accepted Answer</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	</div>
+        <div class="modal-body">
+	  <input type="hidden" name="aa-pk" id="aa-pk" value="{{prob.pk}}">
+	  <div class="form-group">
+	    <label for="answer-type" class="control-label">Answer Type</label>
+	    <select name="answer-type" id="answer-type" class="form-control" required>
+	      <option value="" selected disabled>Choose an Answer Type</option>
+	      <option value="INT">Integer</option>
+	      <option value="CF">Common Fraction</option>
+	      <option value="DEC">Decimal</option>
+	      <option value="MIX">Mixed Number</option>
+	      <option value="DOL">Dollars</option>
+	      <option value="WKD">Day of the Week</option>
+	      <option value="SQR">Square Root</option>
+	      <option value="RAD">Radical (a*sqrt(b))</option>
+	      <option value="CFQ">Common Fraction in Simplest Radical Form (a*sqrt(b)/c)</option>
+	      <option value="OPR">Ordered Pair</option>
+	      <option value="TEX">Text</option>
+	      <option value="PCT">Percent</option>
+	    </select>
+	  </div>
+          <div class="form-group" id="answer-type-div">
+          </div>
+          <div class="form-group" id="units-div">
+	    <label for="aa-units">Units (optional)</label>
+	    <input type="text" name="units" id="aa-units" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" name="addacceptedanswer" class="btn btn-primary">Add Accepted Answer</button>
+        </div>
+      </form>
+    </div>
+
+  </div>

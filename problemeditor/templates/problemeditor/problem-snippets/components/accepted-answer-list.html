@@ -1,0 +1,9 @@
+{% if prob.accepted_answers.count > 0 %}
+<ul>
+  {% for aa in prob.accepted_answers.all %}
+  <li>
+{{aa.display}} {% if request.user.userprofile.user_type_new.name == "super" %}(<a class="edit-accepted-answer-link" id="edit-accepted-answer_{{aa.pk}}" href="#">Edit</a>) (<a class="delete-accepted-answer-link" id="delete-accepted-answer_{{aa.pk}}" href="#">Delete</a>){% endif %}
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}

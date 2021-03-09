@@ -1,0 +1,127 @@
+{% extends "randomtest/base.html" %}
+
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item active" aria-current="page">Mock Tests</li>
+  </ol>
+</nav>
+
+{% load tz %}
+<div class="container">
+  <div class="row">
+    <div class="col-sm-9 main">
+      <div id="status_message">
+      </div>
+      <div id="my_mocktests">
+	<h2>My Mock Tests</h2>
+	<table class="table table-striped" >
+	  <thead>
+	    <tr>
+	      <th>Name</th>
+	      <th>Points</th>
+	      <th>Status</th>
+	      <th>Actions</th>
+	    </tr>
+	  </thead>
+	  <tbody id="my_mocktest_list">
+	    {% for umt in userprofile.mock_tests.all %}
+	    {% include 'mocktests/usermocktestrow.html' %}
+	    {% endfor %}
+	  </tbody>
+	</table>
+      </div>
+      <div class="mocktest_folders">
+	<h2>Mock Test Library</h2>
+	{% for folder in folders %}
+	<div class="card mb-3">
+	  <div class="card-header card-heading-custom">{{folder.name}}</div>
+	  <div class="card-body">
+	    <table class="table table-striped">
+	      <thead>
+		<tr>
+		  <th>Name</th>
+		  <th>Points</th>
+		  <th>Actions</th>
+		</tr>
+	      </thead>
+	      <tbody>
+		{% for mock_test in folder.mock_tests.all %}
+		<tr>
+		  <td>{{mock_test.name}}</td>
+		  <td>{{mock_test.points}}</td>
+		  <td><button class="btn btn-sm btn-secondary add-test-link" id="add-test-link_{{mock_test.pk}}">Add to My Mock Tests</button></td>
+		</tr>
+		{% endfor %}
+	      </tbody>
+	    </table>
+	  </div>
+	</div>
+	{% endfor %}
+      </div>
+    </div>
+
+
+
+    <div class="col-sm-3">
+    </div>
+  </div>
+</div>  
+
+<script>
+  function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+  
+  $(document).on('click','.add-test-link',function(e) {
+      var test_id = $(this).attr('id').split('_')[1];
+      $.ajax({
+          type: 'POST',
+          url: '/mocktests/ajax/add-mocktest/',
+          data: "pk=" + test_id,
+          dataType: 'json',
+          success: function(result) {
+              $("#my_mocktest_list").append(result['table-row-html']);
+          }
+      });
+
+  });
+
+  $(document).on('click','.start-test-link',function(e) {
+      var test_id = $(this).attr('id').split('_')[1];
+      window.location = '/mocktests/test?id='+test_id;
+  });
+  $(document).on('click','.review-test-link',function(e) {
+      var test_id = $(this).attr('id').split('_')[1];
+      window.location = '/mocktests/review_test?id='+test_id;
+  });
+</script>
+{% endblock %}
