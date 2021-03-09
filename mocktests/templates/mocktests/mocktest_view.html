@@ -24,6 +24,9 @@
       </div>
     </div>
   </div>
+  <div class="">
+    &nbsp;
+  </div>
   <div class="fixed-bottom text-center" id="timer-div">
     Time Remaining: <span id="hrs"></span>:<span id="mins"></span>:<span id="secs"></span>
   </div>
@@ -91,7 +94,12 @@ $.ajaxSetup({
           dataType: 'json',
           success: function(result) {
               $("#content-container").html(result['problems-html']);
-	      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+	      $('.ptext-cell').each(function(i,obj) {
+		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+	      });
+	      $('.units-cell').each(function(i,obj) {
+		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+	      });
 	      var start_time = new Date().getTime();
 	      var in_test = 1;
 	      var end_time = start_time + result['time_limit'];
@@ -126,7 +134,12 @@ $.ajaxSetup({
               success: function(result) {
 		  if (result['end'] == 0) {
 		      $("#content-container").html(result['problems-html']);
-		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+		      $('.ptext-cell').each(function(i,obj) {
+			  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+		      });
+		      $('.units-cell').each(function(i,obj) {
+			  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+		      });
 		      var start_time = new Date().getTime();
 		      //		  var in_test = 1;
 		      auto_submit = 0;
@@ -174,7 +187,12 @@ $.ajaxSetup({
               $("[data-dismiss=modal]").trigger({ type: "click" });
 	      if (result['end'] == 0) {
 		  $("#content-container").html(result['problems-html']);
-		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,"content-container"]);
+		  $('.ptext-cell').each(function(i,obj) {
+		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+		  });
+		  $('.units-cell').each(function(i,obj) {
+		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
+		  });
 		  var start_time = new Date().getTime();
 		  //		  var in_test = 1;
 		  auto_submit = 0;

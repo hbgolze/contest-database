@@ -608,3 +608,9 @@ table.table tr td.cell-super-success {
 .modal-full .modal-content {
     min-height: 100vh;
 }
+input.mocktest-answer {
+    border-radius: 5px;
+    border: solid 1px gray;
+    padding: 5px;
+    text-align: center;
+}
