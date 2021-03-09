@@ -722,6 +722,7 @@ mlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a" class="
           dataType: 'json',
           success: function(result) {
 	      $("#edit-accepted-answer-placeholder").html(result['modal-html']);
+              MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-accepted-answer-placeholder"]);
 	      $("#edit-accepted-answer-placeholder").modal("show");         
           }
       });
