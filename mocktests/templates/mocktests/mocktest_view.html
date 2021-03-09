@@ -94,12 +94,7 @@ $.ajaxSetup({
           dataType: 'json',
           success: function(result) {
               $("#content-container").html(result['problems-html']);
-	      $('.ptext-cell').each(function(i,obj) {
-		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-	      });
-	      $('.units-cell').each(function(i,obj) {
-		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-	      });
+	      MathJax.Hub.Queue(["Typeset",MathJax.Hub,'content-container']);
 	      var start_time = new Date().getTime();
 	      var in_test = 1;
 	      var end_time = start_time + result['time_limit'];
@@ -134,12 +129,7 @@ $.ajaxSetup({
               success: function(result) {
 		  if (result['end'] == 0) {
 		      $("#content-container").html(result['problems-html']);
-		      $('.ptext-cell').each(function(i,obj) {
-			  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-		      });
-		      $('.units-cell').each(function(i,obj) {
-			  MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-		      });
+		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,'content-container']);
 		      var start_time = new Date().getTime();
 		      //		  var in_test = 1;
 		      auto_submit = 0;
@@ -187,12 +177,7 @@ $.ajaxSetup({
               $("[data-dismiss=modal]").trigger({ type: "click" });
 	      if (result['end'] == 0) {
 		  $("#content-container").html(result['problems-html']);
-		  $('.ptext-cell').each(function(i,obj) {
-		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-		  });
-		  $('.units-cell').each(function(i,obj) {
-		      MathJax.Hub.Queue(["Typeset",MathJax.Hub,$(obj).attr("id")]);	  
-		  });
+		  MathJax.Hub.Queue(["Typeset",MathJax.Hub,'content-container']);
 		  var start_time = new Date().getTime();
 		  //		  var in_test = 1;
 		  auto_submit = 0;
