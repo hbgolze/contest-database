@@ -685,6 +685,9 @@ mlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a" class="
       if ($(this).val() == 'EXP') {
 	  s = '<math>  <mstyle displaystyle="true"><msup><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a" class="mocktest-answer" required/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b" class="mocktest-answer" required/></annotation-xml></semantics></mrow></msup></mstyle></math>';
       }
+      if ($(this).val() == 'TIM') {
+	  s = '<math>  <mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a" class="mocktest-answer" required/></annotation-xml></semantics><mo>:</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b" class="mocktest-answer" required/></annotation-xml></semantics></mstyle></math>';
+      }
       $("#answer-type-div").html(s);
       MathJax.Hub.Queue(['Typeset',MathJax.Hub,'answer-type-div']);
 });

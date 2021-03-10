@@ -310,6 +310,7 @@ class Answer(models.Model):
         ('TEX', 'Text'),
         ('PCT', 'Percent'),
         ('EXP', 'Exponent'),
+        ('TIM', 'Time'),
         )
     answer_type = models.CharField(max_length = 3,choices = ANSWER_CHOICES,blank = False,default = 'INT')
     answer_a = models.CharField(max_length = 50,default="")
@@ -355,6 +356,8 @@ class Answer(models.Model):
             return "$" + self.answer_a + "\\%$ " + self.units
         if self.answer_type == 'EXP':
             return "$" + self.answer_a + '^{' + self.answer_b + "}$ " + self.units
+        if self.answer_type == 'TIM':
+            return "" + self.answer_a + ':' + self.answer_b + " " + self.units
         
 #left_units, right units
     

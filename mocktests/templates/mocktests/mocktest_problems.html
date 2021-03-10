@@ -39,6 +39,8 @@
 		  <math><mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}" /></annotation-xml></semantics><mo>&percnt;</mo></mstyle></math>
 		  {% elif prob.mocktest_problem.answer_type == 'EXP' %}
                   <math><mstyle displaystyle="true"><msup><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mrow></msup></mstyle></math>
+		  {% elif prob.mocktest_problem.answer_type == 'TIM' %}
+                  <math><mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"/></annotation-xml></semantics><mo>:</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mstyle></math>
 		  {% endif %}
 		</td>
 		<td class="units-cell" id="units-cell_{{prob.id}}">
