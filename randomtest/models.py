@@ -305,6 +305,7 @@ class Answer(models.Model):
         ('SQR', 'Square Root'),
         ('RAD', 'Radical (a*sqrt(b))'),
         ('CFQ', 'Common Fraction in Simplest Radical Form (a*sqrt(b)/c)'),
+        ('SQS', 'Sum of Square Roots (a+b*sqrt(c))'),
         ('OPR', 'Ordered Pair'),
         ('TEX', 'Text'),
         ('PCT', 'Percent'),
@@ -342,7 +343,9 @@ class Answer(models.Model):
         if self.answer_type == 'RAD':
             return "$" + self.answer_a + "\\sqrt{" + self.answer_b + "}$ " + self.units
         if self.answer_type == 'CFQ':
-            return "$\\dfrac{" + self.answer_a + "\sqrt{" + self.answer_b + "}}{" + self.answer_c + " }$ " + self.units
+            return "$\\dfrac{" + self.answer_a + "\\sqrt{" + self.answer_b + "}}{" + self.answer_c + " }$ " + self.units
+        if self.answer_type == 'SQS':
+            return "$" + self.answer_a + "+\\left(" + self.answer_b + "\\sqrt{" + self.answer_c + "}\\right)$ " + self.units
         if self.answer_type == 'OPR':
             return "$(" + self.answer_a + "," + self.answer_b + ")$ " + self.units
         if self.answer_type == 'TEX':
