@@ -15,7 +15,11 @@
       <div id="status_message">
       </div>
       <div id="my_mocktests">
+	{% if teacher_up %}
+	<h2>{{userprofile.user.username}}'s Mock Tests</h2>
+	{% else %}
 	<h2>My Mock Tests</h2>
+	{% endif %}
 	<table class="table table-striped" >
 	  <thead>
 	    <tr>
@@ -25,13 +29,22 @@
 	      <th>Actions</th>
 	    </tr>
 	  </thead>
+	  {% if teacher_up %}
 	  <tbody id="my_mocktest_list">
 	    {% for umt in userprofile.mock_tests.all %}
 	    {% include 'mocktests/usermocktestrow.html' %}
 	    {% endfor %}
 	  </tbody>
+	  {% else %}
+	  <tbody id="my_mocktest_list">
+	    {% for umt in userprofile.mock_tests.all %}
+	    {% include 'mocktests/usermocktestrow.html' %}
+	    {% endfor %}
+	  </tbody>
+	  {% endif %}
 	</table>
       </div>
+      {% if not teacher_up %}
       <div class="mocktest_folders">
 	<h2>Mock Test Library</h2>
 	{% for folder in folders %}
@@ -60,13 +73,40 @@
 	</div>
 	{% endfor %}
       </div>
+      {% endif %}
     </div>
 
 
 
     <div class="col-sm-3">
     </div>
-  </div>
+    {% if userprofile.students.count > 0 %}
+    <div class="col">
+      <h2>Students</h2>
+      <div class="card mb-3">
+	<div class="card-header card-heading-custom">{{folder.name}}</div>
+	<div class="card-body">
+	  <table class="table table-striped">
+	    <thead>
+	      <tr>
+		<th>Username</th>
+	      </tr>
+	    </thead>
+	    <tbody>
+	      {% for student in userprofile.students.all %}
+	      <tr>
+		<td>
+		  <a href="student/?id={{student.username}}">{{student.username}}</a>
+		</td>
+
+	      </tr>
+	      {% endfor %}
+	    </tbody>
+	  </table>
+	</div>
+      </div>
+    </div>
+    {% endif %}  </div>
 </div>  
 
 <script>
@@ -100,7 +140,12 @@ $.ajaxSetup({
         }
     },
 });
-  
+  {% if teacher_up %}
+  $(document).on('click','.review-test-link',function(e) {
+      var test_id = $(this).attr('id').split('_')[1];
+      window.location = '/mocktests/student/review_test?id='+test_id+'&sid={{userprofile.user.username}}';
+  });
+  {% else %}
   $(document).on('click','.add-test-link',function(e) {
       var test_id = $(this).attr('id').split('_')[1];
       $.ajax({
@@ -123,5 +168,6 @@ $.ajaxSetup({
       var test_id = $(this).attr('id').split('_')[1];
       window.location = '/mocktests/review_test?id='+test_id;
   });
+  {% endif %}
 </script>
 {% endblock %}

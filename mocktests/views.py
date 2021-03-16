@@ -14,6 +14,17 @@ def index(request):
     userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
     folders = MockTestFolder.objects.all()
     return render(request,'mocktests/indexview.html',{'folders': folders,'userprofile': userprofile, 'nbar': 'mocktests'})
+
+@login_required
+def teacherindex(request):
+    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+    student_username = request.GET.get('id','')
+    student_up = get_object_or_404(UserProfile,user__username=student_username)
+    if student_up.user not in userprofile.students.all():
+        return HttpResponse("Unauthorized")
+#    folders = MockTestFolder.objects.all()
+    return render(request,'mocktests/indexview.html',{'userprofile': student_up, 'teacher_up': userprofile, 'nbar': 'mocktests'})
+
 @login_required
 def add_mocktest(request):
     pk = request.POST.get('pk','')
@@ -88,6 +99,19 @@ def review_mocktest(request):
     usermocktest = get_object_or_404(UserMockTest,pk=pk)
     userprofile = UserProfile.objects.get(user = request.user)
     if usermocktest.userprofile != userprofile:
+        return HttpResponse("Unauthorized")
+    if usermocktest.status < 2:
+        return HttpResponse("Test not completed")
+    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest})
+@login_required
+def teacher_review_mocktest(request):
+    pk = request.GET.get('id','')
+    student_up = get_object_or_404(UserProfile,user__username=request.GET.get('sid',''))
+    usermocktest = get_object_or_404(UserMockTest,pk=pk)
+    userprofile = UserProfile.objects.get(user = request.user)
+    if student_up.user not in userprofile.students.all():
+        return HttpResponse("Unauthorized")
+    if usermocktest.userprofile != student_up:
         return HttpResponse("Unauthorized")
     if usermocktest.status < 2:
         return HttpResponse("Test not completed")
