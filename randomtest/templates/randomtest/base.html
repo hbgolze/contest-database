@@ -114,6 +114,7 @@
     <li class="nav-item"><a class="nav-link {% if nbar == 'problemeditor' %}active{% endif %}" href="/problemeditor/">Problem Editor</a></li>
     <li class="nav-item"><a class="nav-link {% if nbar == 'search' %}active{% endif %}" href="/search/">Search</a></li>
     <li class="nav-item"><a class="nav-link {% if nbar == 'contestcollection' %}active{% endif %}" href="/contestcollections/">Contest Collection</a></li>
+{% if request.user.userprofile.mock_tests.count > 0%}    <li class="nav-item"><a class="nav-link {% if nbar == 'mocktests' %}active{% endif %}" href="/mocktests/">Mock Tests</a></li>{% endif %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'groups' %}active{% endif %}" href="/problemgroups/">Problem Groups</a></li>
     <li class="nav-item"><a class="nav-link {% if nbar == 'asy' %}active{% endif %}" href="/problemeditor/asy/">Asymptotr</a></li>
 </ul>

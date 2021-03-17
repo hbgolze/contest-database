@@ -41,7 +41,7 @@ def mocktestview(request):
         return HttpResponse("Unauthorized")
     if usermocktest.status > 0:
         return HttpResponse("Test already started")
-    return render(request,'mocktests/mocktest_view.html',{'umt': usermocktest})
+    return render(request,'mocktests/mocktest_view.html',{'umt': usermocktest, 'nbar': 'mocktests'})
 @login_required
 def start_mocktest(request):
     pk = request.POST.get('pk','')
@@ -102,7 +102,7 @@ def review_mocktest(request):
         return HttpResponse("Unauthorized")
     if usermocktest.status < 2:
         return HttpResponse("Test not completed")
-    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest})
+    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests'})
 @login_required
 def teacher_review_mocktest(request):
     pk = request.GET.get('id','')
@@ -115,7 +115,7 @@ def teacher_review_mocktest(request):
         return HttpResponse("Unauthorized")
     if usermocktest.status < 2:
         return HttpResponse("Test not completed")
-    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest})
+    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests'})
 
 class SolutionView(DetailView):
     model = Problem
