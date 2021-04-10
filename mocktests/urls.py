@@ -11,6 +11,7 @@ urlpatterns = [
     path('',views.index,name='mocktest_index'),
     path('student/',views.teacherindex,name='mocktest_teacher_index'),
     path('student/review_test/',views.teacher_review_mocktest,name='teacher_review_mocktest'),
+    path('student/review_test/allow_solutions/',views.review_allow_solutions,name='review_allow_solutions'),
     path('test/',views.mocktestview,name='mocktestview'),
     path('review_test/',views.review_mocktest,name='review_mocktest'),
     path('ajax/add-mocktest/',views.add_mocktest,name='add_mocktest'),

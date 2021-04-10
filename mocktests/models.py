@@ -62,6 +62,7 @@ class UserMockTest(models.Model):
     start_time = models.DateTimeField(null=True)
     end_time = models.DateTimeField(null=True)
     current_segment = models.IntegerField(default = 0)
+    allow_solutions = models.BooleanField(default = 0)
     class Meta:
         ordering = ['end_time']
     def __str__(self):

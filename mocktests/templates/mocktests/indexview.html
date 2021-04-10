@@ -49,8 +49,8 @@
 	<h2>Mock Test Library</h2>
 	{% for folder in folders %}
 	<div class="card mb-3">
-	  <div class="card-header card-heading-custom">{{folder.name}}</div>
-	  <div class="card-body">
+	  <div class="card-header card-heading-custom">{{folder.name}} <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapse-{{folder.pk}}">Expand/Collapse</button></div>
+	  <div class="card-body collapse" id="collapse-{{folder.pk}}">
 	    <table class="table table-striped">
 	      <thead>
 		<tr>
@@ -108,6 +108,11 @@
     </div>
     {% endif %}  </div>
 </div>  
+<div id="save-message" style="position:fixed;right:15px;bottom:15px;margin:0;padding:0;display:none;">
+  <div class="alert alert-success">
+Mock Test has been added!
+  </div>
+</div>
 
 <script>
   function getCookie(name) {
@@ -155,6 +160,10 @@ $.ajaxSetup({
           dataType: 'json',
           success: function(result) {
               $("#my_mocktest_list").append(result['table-row-html']);
+	      $("#save-message").show();
+	      setTimeout(function() {
+		  $("#save-message").fadeOut();
+	      },5000);
           }
       });
 

@@ -13,7 +13,16 @@
 <div class="container">
   <div class="row">
     <div class="col">
-      <h2>Mock Test: {{umt.mock_test.name}}</h2>
+      <h2>Mock Test: {{umt.mock_test.name}}{% if is_teacher %} ({{umt.userprofile}}){% endif %}</h2>
+      {% if is_teacher %}
+      {% if umt.allow_solutions == 0 %}
+      <form action="allow_solutions/" method="POST">
+	{% csrf_token %}
+	<input type="hidden" name="umt_pk" value="{{umt.pk}}">
+	<button class="btn btn-primary">Allow Solutions</button>
+      </form>
+      {% endif %}
+      {% endif %}
     </div>
   </div>
   <div class="row">

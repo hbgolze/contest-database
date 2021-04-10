@@ -1,4 +1,4 @@
-from django.shortcuts import render,get_object_or_404
+from django.shortcuts import render,get_object_or_404,redirect
 from django.http import JsonResponse,HttpResponse
 from django.template.loader import render_to_string
 from django.utils import timezone
@@ -102,7 +102,7 @@ def review_mocktest(request):
         return HttpResponse("Unauthorized")
     if usermocktest.status < 2:
         return HttpResponse("Test not completed")
-    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests'})
+    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests','allow_solutions':usermocktest.allow_solutions})
 @login_required
 def teacher_review_mocktest(request):
     pk = request.GET.get('id','')
@@ -115,7 +115,23 @@ def teacher_review_mocktest(request):
         return HttpResponse("Unauthorized")
     if usermocktest.status < 2:
         return HttpResponse("Test not completed")
-    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests'})
+    return render(request,'mocktests/review_mocktest.html',{'umt': usermocktest,'nbar': 'mocktests','allow_solutions':1,'is_teacher':1})
+
+@login_required
+def review_allow_solutions(request):
+    pk = request.POST.get('umt_pk','')
+    usermocktest = get_object_or_404(UserMockTest,pk=pk)
+    student_up = usermocktest.userprofile
+    userprofile = UserProfile.objects.get(user = request.user)
+    if student_up.user not in userprofile.students.all():
+        return HttpResponse("Unauthorized")
+    if usermocktest.userprofile != student_up:
+        return HttpResponse("Unauthorized")
+    if usermocktest.status < 2:
+        return HttpResponse("Test not completed")
+    usermocktest.allow_solutions = 1
+    usermocktest.save()
+    return redirect('/mocktests/')
 
 class SolutionView(DetailView):
     model = Problem
