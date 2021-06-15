@@ -150,7 +150,7 @@ class IndivProb_format1(models.Model):
             t+=p.num_correct
         self.total_num_correct = t
         self.save()
-        self.perc_correct = self.percent_correct()
+        self.perc_correct = 100*self.percent_correct()
         self.save()
 class IndivProb_forteam_format1(models.Model):
     problem = models.ForeignKey(IndivProb_format1,null=True,related_name="team_results",on_delete=models.CASCADE)
