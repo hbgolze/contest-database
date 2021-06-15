@@ -146,7 +146,7 @@ class IndivProb_format1(models.Model):
         return str(self.year) + '-'+self.prefix+str(self.problem_number)
     def update_num_correct(self):
         t=0
-        for p in self.indiv_problems.all():
+        for p in self.team_results.all():
             t+=p.num_correct
         self.total_num_correct = t
         self.save()
