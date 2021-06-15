@@ -64,6 +64,7 @@ class ContestYear(models.Model):
                     else:
                         r.divisional_rank = rank
                         r.save()
+        self.save()
 
 class Site(models.Model):
     letter = models.CharField(max_length = 1)
@@ -143,7 +144,14 @@ class IndivProb_format1(models.Model):
         return self.total_num_correct*1./self.year.num_teams/15
     def __str__(self):
         return str(self.year) + '-'+self.prefix+str(self.problem_number)
-    
+    def update_num_correct(self):
+        t=0
+        for p in self.indiv_problems.all():
+            t+=p.num_correct
+        self.total_num_correct = t
+        self.save()
+        self.perc_correct = self.percent_correct()
+        self.save()
 class IndivProb_forteam_format1(models.Model):
     problem = models.ForeignKey(IndivProb_format1,null=True,related_name="team_results",on_delete=models.CASCADE)
     team = models.ForeignKey(Team_format1,null=True,related_name="indiv_problems",on_delete=models.CASCADE)
