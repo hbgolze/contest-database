@@ -77,7 +77,8 @@ function fixchecks() {
       <button class="btn btn-secondary m-1 float-right" id="show-answers">Show/Hide Answers</button>
       <button class="btn btn-secondary m-1 float-right" id="view-answer-key">PDF Answer Key</button>
       <button class="btn btn-secondary m-1 float-right" id="view-problemeditor">View Group in Problem Editor</button>
-
+      <button class="btn btn-secondary m-1 float-right" id="sort-problemnumber">Sort by Problem Number</button>
+      <button class="btn btn-secondary m-1 float-right" id="randomize">Randomize</button>
     </div>
     
   </div>
@@ -591,7 +592,7 @@ $(".add-problems-form").on('submit',function(event) {
 $(document).on("click",".push-up-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq(0)"));
     $("#unsaved-message").show();
 });
@@ -599,7 +600,7 @@ $(document).on("click",".push-up-link", function(event) {
 $(document).on("click",".push-up-5-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-5, 0)).toString()+")"));
 var url = location.href;
 location.href = "#problem-object_"+pk;
@@ -610,7 +611,7 @@ history.replaceState(null,null,url);
 $(document).on("click",".push-up-1-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertBefore($("#problem_object_list .problem-object:eq("+(Math.max($('#problem-object_'+pk).index()-1, 0)).toString()+")"));
 var url = location.href;
 location.href = "#problem-object_"+pk;
@@ -622,7 +623,7 @@ history.replaceState(null,null,url);
 $(document).on("click",".push-down-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq(-1)"));
     $("#unsaved-message").show();
 });
@@ -630,7 +631,7 @@ $(document).on("click",".push-down-link", function(event) {
 $(document).on("click",".push-down-5-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+5, $("#problem_object_list .problem-object").length-1)+")"));
 var url = location.href;
 location.href = "#problem-object_"+pk;
@@ -641,7 +642,7 @@ history.replaceState(null,null,url);
 $(document).on("click",".push-down-1-link", function(event) {
     event.preventDefault();
     var pk = $(this).attr('id').split('_')[1];
-    console.log( $('#problem-object_'+pk).index());
+//    console.log( $('#problem-object_'+pk).index());
     $("#problem_object_list .problem-object:eq("+  ($('#problem-object_'+pk).index()).toString()+")").insertAfter($("#problem_object_list .problem-object:eq("+Math.min($('#problem-object_'+pk).index()+1, $("#problem_object_list .problem-object").length-1)+")"));
 var url = location.href;
 location.href = "#problem-object_"+pk;
@@ -649,6 +650,44 @@ history.replaceState(null,null,url);
     $("#unsaved-message").show();
 });
 
+  $.fn.prob_num_sort = function(selector){
+    var $elems = selector ? $(this).find(selector) : $(this).children(),
+        $parents = $elems.parent();
+
+    $parents.each(function(){
+        $(this).children(selector).sort(function(x,y){
+	    var x_num = parseInt(x.id.split('_')[2]);
+	    var y_num = parseInt(y.id.split('_')[2]);
+            return (x_num < y_num) ? -1 : (x_num > y_num ? 1 : 0); 
+        }).detach().appendTo(this);
+    });
+
+    return this;
+};
+
+$(document).on("click","#sort-problemnumber", function(e) {
+    e.preventDefault(); 
+    $("#problem_object_list").prob_num_sort('.problem-object');
+    $("#unsaved-message").show();
+});
+$.fn.randomize = function(selector){
+    var $elems = selector ? $(this).find(selector) : $(this).children(),
+        $parents = $elems.parent();
+
+    $parents.each(function(){
+        $(this).children(selector).sort(function(){
+            return Math.round(Math.random()) - 0.5;
+        }).detach().appendTo(this);
+    });
+
+    return this;
+};
+  
+$(document).on("click","#randomize", function(e) {
+    e.preventDefault();
+    $("#problem_object_list").randomize('.problem-object');
+    $("#unsaved-message").show();
+});
 </script>
 {% endblock %}
   
