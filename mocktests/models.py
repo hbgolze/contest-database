@@ -109,12 +109,18 @@ class UserMockProblem(models.Model):
         ordering = ['order']
     def grade(self):
         self.correct = 0
-        for acc_ans in self.mocktest_problem.problem.accepted_answers.all():
-            if self.answer_a == '' and self.answer_b == '' and self.answer_c == '':
-                self.correct = 1
-                self.points = self.mocktest_problem.blank_point_value
-            if self.answer_a == acc_ans.answer_a and self.answer_b == acc_ans.answer_b and self.answer_c == acc_ans.answer_c:
-                self.correct = 2
-                self.points = self.mocktest_problem.point_value
+        if self.answer_a == '' and self.answer_b == '' and self.answer_c == '':
+            self.correct = 1
+            self.points = self.mocktest_problem.blank_point_value
+        else:
+            if self.mocktest_problem.problem.question_type_new.question_type == 'multiple choice':
+                if self.answer_a == self.mocktest_problem.problem.mc_answer:
+                    self.correct = 2
+                    self.points = self.mocktest_problem.point_value
+            else:
+                for acc_ans in self.mocktest_problem.problem.accepted_answers.all():
+                    if self.answer_a == acc_ans.answer_a and self.answer_b == acc_ans.answer_b and self.answer_c == acc_ans.answer_c:
+                        self.correct = 2
+                        self.points = self.mocktest_problem.point_value
         self.save()
         return self.points

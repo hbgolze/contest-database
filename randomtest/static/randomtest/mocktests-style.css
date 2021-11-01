@@ -1,0 +1,52 @@
+.answer-wrapper {
+	display: -webkit-flex;
+	display: flex;
+	-webkit-flex-wrap: wrap;
+	flex-wrap: wrap
+}
+
+.mcq,
+.multiselect {
+	width: auto
+}
+
+.option {
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none
+}
+
+label.option {
+	margin: 2px 5px;
+	cursor: pointer;
+	border-color: #1b365d;
+	border-width: 3px;
+	border-style: solid;
+	border-radius: 20px;
+	padding: 5px 20px;
+	display: inline-block;
+	transition: .2s
+}
+
+input.mcq,
+input.multiselect {
+	display: none
+}
+
+input.mcq:checked+label,
+input.multiselect:checked+label {
+	border-color: #189fad;
+	background-color: #cafaff
+}
+
+.clear-button {
+	cursor: pointer;
+	text-decoration: underline;
+	color: #1b365d;
+	padding: 5px 15px
+}
+
+.contest-review-table .clear-button {
+	display: none
+}

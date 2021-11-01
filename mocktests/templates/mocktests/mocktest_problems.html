@@ -41,6 +41,18 @@
                   <math><mstyle displaystyle="true"><msup><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mrow><mrow><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mrow></msup></mstyle></math>
 		  {% elif prob.mocktest_problem.answer_type == 'TIM' %}
                   <math><mstyle displaystyle="true"><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_a}}" tabindex="{{prob.order}}"/></annotation-xml></semantics><mo>:</mo><semantics><annotation-xml encoding="application/xhtml+xml"><input xmlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_b__{{prob.pk}}" class="mocktest-answer" value="{{prob.answer_b}}" tabindex="{{prob.order}}"/></annotation-xml></semantics></mstyle></math>
+		  {% elif prob.mocktest_problem.answer_type == 'MCH' %}
+		<td class="contest-problem-answer mcq">
+		  <div class="answer-wrapper">
+		    <div class="answer-input-wrapper mcq-format">
+		      <input type="radio" name="mc_answer__{{prob.pk}}" id="mc_answer__{{prob.pk}}_a" class="mcq answer-input" value="A" autocomplete="new-password" format-valid-chars="ABCDE" max-input-length="1"><label for="mc_answer__{{prob.pk}}_a" data-value="A" tabindex="0" class="option">A</label>
+		      <input type="radio" name="mc_answer__{{prob.pk}}" id="mc_answer__{{prob.pk}}_b" class="mcq answer-input" value="B" autocomplete="new-password" format-valid-chars="ABCDE" max-input-length="1"><label for="mc_answer__{{prob.pk}}_b" data-value="B" tabindex="0" class="option">B</label>
+		      <input type="radio" name="mc_answer__{{prob.pk}}" id="mc_answer__{{prob.pk}}_c" class="mcq answer-input" value="C" autocomplete="new-password" format-valid-chars="ABCDE" max-input-length="1"><label for="mc_answer__{{prob.pk}}_c" data-value="C" tabindex="0" class="option">C</label>
+		      <input type="radio" name="mc_answer__{{prob.pk}}" id="mc_answer__{{prob.pk}}_d" class="mcq answer-input" value="D" autocomplete="new-password" format-valid-chars="ABCDE" max-input-length="1"><label for="mc_answer__{{prob.pk}}_d" data-value="D" tabindex="0" class="option">D</label>
+		      <input type="radio" name="mc_answer__{{prob.pk}}" id="mc_answer__{{prob.pk}}_e" class="mcq answer-input" value="E" autocomplete="new-password" format-valid-chars="ABCDE" max-input-length="1"><label for="mc_answer__{{prob.pk}}_e" data-value="E" tabindex="0" class="option">E</label>
+		      <span id="clear-mc_answer__{{prob.pk}}" tabindex="0" class="clear-button option">clear</span></div>
+		  </div>
+		  </td>
 		  {% endif %}
 		</td>
 		<td class="units-cell" id="units-cell_{{prob.id}}">
@@ -49,7 +61,7 @@
 	      </tr>
 	    </table>
 	  </td>
-	  <td style="width: 70%;" class="ptext-cell" id="ptext-cell_{{prob.id}}">{% autoescape off %}{{prob.mocktest_problem.problem.display_problem_text|linebreaks}} {% endautoescape %}</td>
+	  <td style="width: 70%;" class="ptext-cell" id="ptext-cell_{{prob.id}}">{% if prob.mocktest_problem.problem.question_type_new.question_type == 'multiple choice' %}{% autoescape off %}{{prob.mocktest_problem.problem.display_mc_problem_text|linebreaks}} {% endautoescape %}{% else %}{% autoescape off %}{{prob.mocktest_problem.problem.display_problem_text|linebreaks}} {% endautoescape %}{% endif %}</td>
 	</tr>
 	{% endfor %}
       </tbody>

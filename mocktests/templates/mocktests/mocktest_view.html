@@ -1,5 +1,8 @@
 {% extends "randomtest/base.html" %}
 
+{% block head %}
+<link rel="stylesheet" type="text/css" href="/static/randomtest/mocktests-style.css" />
+{% endblock %}
 
 {% block content %}
 <nav aria-label="breadcrumb" role="navigation">
@@ -208,6 +211,10 @@ $.ajaxSetup({
 	      }
 	  }
       });
+  });
+  $(document).on('click','.clear-button',function(e) {
+      e.preventDefault();
+      $('.answer-input[name='+$(this).attr('id').split('-')[1]+']').prop('checked', false);
   });
 </script>
 {% endblock %}

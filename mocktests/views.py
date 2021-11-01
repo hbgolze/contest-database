@@ -72,6 +72,9 @@ def submit_mocktest_segment(request):
                 prob.answer_b = value
             elif a[0] == 'answer_c':
                 prob.answer_c = value
+            elif a[0] == 'mc_answer':
+                prob.answer_a = value
+                print(value)
             prob.save()
     user_segment.status = 2
     user_segment.end_time = t
