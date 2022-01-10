@@ -58,12 +58,12 @@ function fixchecks() {
 <nav aria-label="breadcrumb" role="navigation">
   <ol class="breadcrumb">
     <li class="breadcrumb-item"><a href="/problemgroups/">My Problem Groups</a></li>
-    <li class="breadcrumb-item active" aria-current="page">{{prob_group.name}}</li>
+    <li class="breadcrumb-item active" aria-current="page"><span id="bc-prob_group-name">{{prob_group.name}}</span></li>
   </ol>
 </nav>
 
 <div class="container">
-  <h2>Problem Group: {{prob_group.name}}</h2>
+  <h2>Problem Group: <span id="prob_group-name">{{prob_group.name}}</span>{% if can_edit == 1 %} <a href="#" id="edit-prob_group-name"><span class="fa fa-pencil"></span></a>{% endif %}</h2>
   <div class="row">
     <div class="col-md-7">
       <p>There are <span id="pg_object_count">{{prob_group.problem_objects.count}}</span> problems in this group.</p>
@@ -81,6 +81,14 @@ function fixchecks() {
       <button class="btn btn-secondary m-1 float-right" id="randomize">Randomize</button>
     </div>
     
+  </div>
+  <div class="row">
+    <div class="col-10">
+      <h3>Description{% if can_edit %} <a href="#" id="edit-prob_group-description"><span class="fa fa-pencil"></span></a>{% endif %}</h3>
+      <div id="prob_group-description" class='mb-2'>
+	{% if prob_group.description == "" %}This problem group has no description yet.{% else %}{{prob_group.description}}{% endif %}
+      </div>
+    </div>
   </div>
   <div class="row">
     <div class="col">
@@ -323,7 +331,8 @@ function fixchecks() {
 {% include "problemeditor/problem-snippets/modals/modal-fullscreen-problem-display.html" %}
   </div>
 <div class="modal fade" id="sol-placeholder" role="dialog"></div>
-
+<div class="modal fade" id="edit-name-placeholder" role="dialog"></div>
+<div class="modal fade" id="edit-description-placeholder" role="dialog"></div>
 
 <script>
 function getCookie(name) {
@@ -693,6 +702,71 @@ $(document).on("click","#randomize", function(e) {
     e.preventDefault();
     $("#problem_object_list").randomize('.problem-object');
     $("#unsaved-message").show();
+});
+
+$(document).on('click',"#edit-prob_group-name",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/edit-prob_group-name/',
+    data: "&pk={{prob_group.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-name-placeholder").html(result['modal-html']);
+      $("#edit-name-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-prob_group-name-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/save-prob_group-name/',
+    data: $(this).serialize()+"&pk={{prob_group.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#prob_group-name").html(result['prob_group-name']);
+      $("#bc-prob_group-name").html(result['prob_group-name']);
+      $("#edit-name-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
+});
+
+$(document).on('click',"#edit-prob_group-description",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/edit-prob_group-description/',
+    data: "&pk={{prob_group.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#edit-description-placeholder").html(result['modal-html']);
+      $("#edit-description-placeholder").modal("show");
+    }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#edit-prob_group-description-form",function(e) {
+  e.preventDefault();
+  $.ajax({
+    type: 'POST',
+    url: '/problemgroups/ajax/save-prob_group-description/',
+    data: $(this).serialize()+"&pk={{prob_group.pk}}",
+    dataType: 'json',
+    success: function(result) {
+      $("#prob_group-description").html(result['prob_group-description']);
+      $("#edit-description-placeholder").hide();
+      $("[data-dismiss=modal]").trigger({ type: "click" });
+    }
+  });
+  return false;
 });
 </script>
 {% endblock %}

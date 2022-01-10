@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
@@ -423,6 +422,7 @@ class ProblemGroup(models.Model):
     problems = models.ManyToManyField(Problem)
     created_date = models.DateTimeField(default = timezone.now)
     is_shared = models.BooleanField(default = 0)
+    description = models.TextField(blank = True)
     def __str__(self):
         return self.name
     def add_to_end(self,prob):

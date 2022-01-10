@@ -31,3 +31,19 @@ class AddProblemsForm(forms.Form):
         for tag in NewTag.objects.exclude(tag='root'):
             tags.append((tag.tag,tag))
         self.fields['desired_tag'].choices = tags
+class EditProblemGroupNameForm(forms.ModelForm):
+    class Meta:
+        model = ProblemGroup
+        fields = ('name',)
+        widgets = {
+            'name': forms.TextInput(attrs={'class':'form-control'}),
+        }
+
+class EditProblemGroupDescriptionForm(forms.ModelForm):
+    class Meta:
+        model = ProblemGroup
+        fields = ('description',)
+        widgets = {
+            'description' : forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 4,'id' : 'codetext','class':'form-control'}),
+        }
+

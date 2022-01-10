@@ -26,7 +26,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse,ProblemGroupObject
 from randomtest.utils import newtexcode
-from .forms import GroupModelForm,AddProblemsForm
+from .forms import GroupModelForm,AddProblemsForm,EditProblemGroupNameForm,EditProblemGroupDescriptionForm
 
 from random import shuffle
 import time
@@ -103,6 +103,8 @@ def viewproblemgroup(request,pk):
     context['form'] = AddProblemsForm(userprofile=userprofile)
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all() or prob_group in userprofile.archived_problem_groups.all() or prob_group in userprofile.archived_owned_problem_groups.all() or  prob_group in userprofile.archived_editable_problem_groups.all():
         context['can_delete'] = 1
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        context['can_edit'] = 1
     template = loader.get_template('groups/probgroupview.html')
     return HttpResponse(template.render(context,request))
 
@@ -710,3 +712,48 @@ def fetch_problems(request):
         'prob_list': prob_code,
         }
     return JsonResponse(data)
+
+
+
+@login_required
+def editprobgroupname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        form = EditProblemGroupNameForm(instance = prob_group)
+        return JsonResponse({'modal-html':render_to_string('groups/modals/modal-edit-prob_group-name.html',{'form':form})})
+    return JsonResponse({})
+
+@login_required
+def saveprobgroupname(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        form = EditProblemGroupNameForm(request.POST,instance = prob_group)
+        form.save()
+        return JsonResponse({'prob_group-name':form.instance.name})
+    return JSonResponse({})
+
+@login_required
+def editprobgroupdescription(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        form = EditProblemGroupDescriptionForm(instance = prob_group)
+        return JsonResponse({'modal-html':render_to_string('groups/modals/modal-edit-prob_group-description.html',{'form':form})})
+    return JsonResponse({})
+
+@login_required
+def saveprobgroupdescription(request):
+    userprofile = request.user.userprofile
+    pk = request.POST.get('pk','')
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    print(prob_group)
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        form = EditProblemGroupDescriptionForm(request.POST,instance = prob_group)
+        form.save()
+        return JsonResponse({'prob_group-description':form.instance.description})
+    return JSonResponse({})
