@@ -121,6 +121,24 @@
 	    {% endif %}
 	  </div>
 	</div>
+	{% if advanced %}
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    <div class="form-check">
+	      <input class="form-check-input" type="radio" name="unionintersection" id="intersectionradio" value="int">
+	      <label class="form-check-label" for="intersectionradio">
+		Intersection
+	      </label>
+	    </div>
+	    <div class="form-check">
+	      <input class="form-check-input" type="radio" name="unionintersection" id="unionradio" value="union" checked>
+	      <label class="form-check-label" for="unionradio">
+		Union
+	      </label>
+	    </div>
+	  </div>
+	</div>
+	{% endif %}
 	<div class="row">
 	  <div class="form-group col-lg-5">
 	    <label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>

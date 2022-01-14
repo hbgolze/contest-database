@@ -233,13 +233,24 @@ def advanced_searchresults(request):
             P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend)
             if len(type_pks) + len(round_pks) > 0:
                 P = P.filter(Q(type_new__pk__in = type_pks)|Q(round__pk__in = round_pks))
-            if len(tag_list) > 0:
-                every_tag = []
-                for t in tag_list:
-                    every_tag += list(NewTag.objects.filter(tag__startswith = t))
-                tag_pks = [t.pk for t in every_tag]
-                P = P.filter(newtags__in = NewTag.objects.filter(pk__in = tag_pks)).distinct()
 
+            union = request.GET.get('unionintersection')
+            if union == None or union == 'union':
+                if len(tag_list) > 0:
+                    every_tag = []
+                    for t in tag_list:
+                        every_tag += list(NewTag.objects.filter(tag__startswith = t))
+                    tag_pks = [t.pk for t in every_tag]
+                    P = P.filter(newtags__in = NewTag.objects.filter(pk__in = tag_pks)).distinct()
+            else:
+                if len(tag_list) > 0:
+                    every_tag = []
+                    for t in tag_list:
+                        every_tag += list(NewTag.objects.filter(tag__startswith = t))
+                    tag_pks = [t.pk for t in every_tag]
+                    for i in tag_pks:
+                        P = P.filter(newtags__in = NewTag.objects.filter(pk__in = [i])).distinct()
+                
 
             for i in keywords:
                 P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
