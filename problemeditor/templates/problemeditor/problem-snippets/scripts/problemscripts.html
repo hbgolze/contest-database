@@ -339,7 +339,8 @@ $(document).on('click touchstart',".new-sol",function(event) {
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
 //            $("#new-solution-placeholder").modal("show")
             $("#new-solution-placeholder").modal({keyboard:false,backdrop:'static'})
-//            $("#new-solution-placeholder").data("bs.modal")._config.backdrop = "static";
+	    console.log('hi');
+            $("#new-solution-placeholder").data("bs.modal")._config.backdrop = "static";
 	    
         }
     });
@@ -359,7 +360,7 @@ $(document).on('submit',"#new-solution-form",function(event) {
             $("#new-solution-placeholder").html(result['modal-html']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
             window.location = "#editsolplaceholder_"+result['sol_id'];
-            $("#new-solution-placeholder").data('bs.modal')._config.backdrop = 'true';
+            $("#new-solution-placeholder").data('bs.modal')._config.backdrop = 'true';//Uncommented-Mar 2022
         }
     });
     return false;
