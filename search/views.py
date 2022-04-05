@@ -41,6 +41,13 @@ def searchform(request):
                'userprofile':userprofile,
                'presets':AdvancedSearchPreset.objects.all(),
     }
+    if 'advanced' in form:
+        owned_pgs =  userprofile.problem_groups.all()
+        co_owned_pgs =  userprofile.owned_problem_groups.all()
+        editor_pgs =  userprofile.editable_problem_groups.all()
+        readonly_pgs =  userprofile.readonly_problem_groups.all()
+        pgs = list(owned_pgs)+list(co_owned_pgs)+list(editor_pgs)+list(readonly_pgs)
+        context['probgroups'] = pgs
     return HttpResponse(template.render(context,request))
 
 @login_required
@@ -262,6 +269,14 @@ def advanced_searchresults(request):
                 for i in keywords:
                     S = S.filter(solution_text__contains = i)
                 P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
+            if 'prob_group' in form:
+                pgs = form.getlist('prob_group','')
+                exclude_pg_list = ProblemGroup.objects.filter(pk__in = pgs)
+                exclude_prob_pks = []
+                for pg in exclude_pg_list:
+                    for po in pg.problem_objects.all():
+                        exclude_prob_pks.append(po.problem.pk)
+                P = P.exclude(pk__in=exclude_prob_pks)
 
             P = list(P)
             P = sorted(P,key = lambda x:(x.problem_number,x.year))

@@ -176,6 +176,40 @@
             </select>
 	  </div>
 	</div>
+{% if advanced %}
+	<div class="row">
+	  <div class="form-group col-lg-8">
+	    <label for="tag" class="control-label">Exclude Problems from these Problem Groups:</label>
+	    <select multiple name="prob_group" id="select_prob_group" size="10">
+	      {% for pg in probgroups %}
+	      <option value="{{pg.pk}}">{{pg.pk}}==={{pg.name}}</option>
+	      {% endfor %}
+	    </select>
+	    <script>
+              $('#select_prob_group').selectize({
+                  create: false,
+                  sortField: 'text',
+		  plugins: ['remove_button'],
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '('+label[0]+')">' +
+                              '<span class="">' + escape(label[1]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '('+label[0]+'">' +
+                              '<span class="">' + escape(label[1]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+            </script>
+	  </div>
+	</div>
+{% endif %}
+		
 	<button type="submit" value="Search" class="btn btn-primary">Search</button>
       </form>
     </div>
