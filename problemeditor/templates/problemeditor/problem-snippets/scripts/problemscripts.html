@@ -373,7 +373,7 @@ $(document).on('click',".pre-delete-sol-link",function(e) {
 
 $(document).on('click',".copy-sol-link",function(e) {
   var sol_id = $(this).attr('id').split('_')[1];  
-  var sol_text = $("textarea#latex_"+sol_id).val();
+  var sol_text = $("textarea#latexsol_"+sol_id).val();
 
   var aux = document.createElement("textarea");
   aux.innerHTML = sol_text;

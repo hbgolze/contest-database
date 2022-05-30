@@ -22,7 +22,7 @@
 	  </div>
 	  
 	  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
-	  <textarea  id="latex_{{solution.pk}}" style="display:none">{{solution.solution_text}}</textarea>
+	  <textarea  id="latexsol_{{solution.pk}}" style="display:none">{{solution.solution_text}}</textarea>
 	  <div class="p-2">
 	    <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
 	      <button type="button" class="btn btn-secondary edit-sol-link" id="editsol_{{object.pk}}_{{solution.pk}}"><span class="fa fa-pencil"></span></button>
