@@ -29,7 +29,9 @@
   {% if po.question_type.question_type == "multiple choice" %}
   <b>Answer:</b> {{po.problem.mc_answer}}
   {% elif po.question_type.question_type == "short answer" %}
-  <b>Answer:</b> {{po.problem.sa_answer}}
+  <b>Answer:</b> ${{po.problem.sa_answer}}$
+  {% elif po.question_type.question_type == "multiple choice short answer" %}
+  <b>Answer:</b> {{po.problem.mc_answer}}, or ${{po.problem.sa_answer}}$
   {% endif %}
   {% endif %}
   </div>
