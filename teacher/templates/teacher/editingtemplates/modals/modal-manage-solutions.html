@@ -24,6 +24,15 @@
 	      {% autoescape off %}{{po.problem_display|linebreaks}} {% endautoescape %}
 	    {% endif %}
 </div>
+<div class="col-12 mb-2">
+  {% if po.isProblem %}
+  {% if po.question_type.question_type == "multiple choice" %}
+  <b>Answer:</b> {{po.problem.mc_answer}}
+  {% elif po.question_type.question_type == "short answer" %}
+  <b>Answer:</b> {{po.problem.sa_answer}}
+  {% endif %}
+  {% endif %}
+  </div>
           </div>
 
             <div class="row">
