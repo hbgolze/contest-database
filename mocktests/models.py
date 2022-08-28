@@ -54,6 +54,51 @@ class MockTestProblem(models.Model):
     def __str__(self):
         return self.problem.label
 
+#This should be used to publish mock tests.
+class MockTestTemplate(models.Model):
+    name = models.CharField(max_length = 100)
+    folder = models.ForeignKey(MockTestFolder,blank=True,null=True,related_name = "templates", on_delete = models.CASCADE)
+    points = models.FloatField(default = 0)
+    def __str__(self):
+        return self.name
+    def publish(self,year):
+        mt = MockTest(name = self.name.replace('YYYY',year),folder = self.folder, points = self.points)
+        mt.save()
+        for s in self.segments.all():
+            s.publish(year,mt)
+
+class MockTestSegmentTemplate(models.Model):
+    name = models.CharField(max_length = 100)
+    mock_test_template = models.ForeignKey(MockTestTemplate,blank=True,null=True,related_name = 'segments',on_delete = models.CASCADE)
+    segment_type = models.CharField(max_length = 2)#PR for problems or BR for break
+    instructions = models.CharField(max_length = 1000)
+    time_limit = models.DurationField(null=True)
+    order = models.IntegerField(default = 0)
+    problem_begin = models.IntegerField(default = 0)
+    problem_end = models.IntegerField(default = 0)
+    prefix = models.CharField(max_length = 100)
+    point_value = models.FloatField(default = 1)
+    blank_point_value = models.FloatField(default = 0)
+    def __str__(self):
+        return self.name
+    class Meta:
+        ordering = ['order']
+    def publish(self,year,mocktest):
+        mts = MockTestSegment(name = self.name.replace('YYYY',year),mock_test = mocktest,segment_type = self.segment_type,instructions = self.instructions,time_limit = self.time_limit, order = self.order)
+        mts.save()
+        for i in range(self.problem_begin,self.problem_end):
+            p = Problem.objects.get(label = year+self.prefix+str(i))
+            mp = MockTestProblem(problem = p,order = i-self.problem_begin+1,mocktest_segment = mts,point_value = self.point_value,blank_point_value = self.blank_point_value)
+            mp.save()
+            if p.question_type_new.question_type == 'multiple choice':
+                mp.answer_type = 'MCH'
+                mp.save()
+            else:
+                a = p.accepted_answers.all()
+                mp.answer_type = a[0].answer_type
+                mp.units = a[0].units
+                mp.save()
+
 class UserMockTest(models.Model):
     userprofile = models.ForeignKey(UserProfile,blank=True,null=True,related_name='mock_tests',on_delete=models.CASCADE)
     mock_test = models.ForeignKey(MockTest,blank = True, null = True, on_delete = models.CASCADE)
