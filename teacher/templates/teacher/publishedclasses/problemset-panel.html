@@ -58,6 +58,7 @@
 			<input type="radio" name="answer{{prob_label}}" value="E" {% if response == "E" %}checked="checked"{% endif %} disabled> E
 			
 		      </label>
+		      <div class="mt-1" id="correct-ans-{{prob_label}}" style="display:none">Correct Answer: {{answer}}</div>
 		      <span id="answerstatus_{{prob_label}}">
 			{% if resp.attempted %}
 			{% if response == answer %}
