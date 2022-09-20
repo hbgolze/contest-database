@@ -115,6 +115,7 @@ def test_as_pdf(request,**kwargs):
         include_answer_choices = True
         randomize = False
         include_title = True
+        fmt = ''
     if randomize:
         seed = options['seed']
         random.Random(seed).shuffle(P)
