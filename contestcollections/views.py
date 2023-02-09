@@ -145,6 +145,10 @@ def test_as_pdf(request,**kwargs):
     asyf.close()
     if fmt == 'outline':
         template = get_template('contestcollections/my_latex_outline_template.tex')
+    elif fmt == 'outline_odd':
+        template = get_template('contestcollections/my_latex_outline_odd_template.tex')
+    elif fmt == 'outline_even':
+        template = get_template('contestcollections/my_latex_outline_even_template.tex')
     elif fmt == 'halfpage':
         template = get_template('contestcollections/my_latex_halfpage_template.tex')
     elif fmt == 'twoatatime':
@@ -169,6 +173,10 @@ def test_as_pdf(request,**kwargs):
             }
         if fmt == 'outline':
             template = get_template('contestcollections/my_latex_outline_template.tex')
+        elif fmt == 'outline_odd':
+            template = get_template('contestcollections/my_latex_outline_odd_template.tex')
+        elif fmt == 'outline_even':
+            template = get_template('contestcollections/my_latex_outline_even_template.tex')
         elif fmt == 'halfpage':
             template = get_template('contestcollections/my_latex_halfpage_template.tex')
         elif fmt == 'twoatatime':
