@@ -75,6 +75,10 @@ $\textbf{Answer:}$ {% if prob.question_type_new.question_type == 'short answer' 
 {% endif %}
 {% endif %}
 
+{% if include_nts %}
+{{prob.notes}}
+{% endif %}
+  
 {% if include_sols %}
 
 {% if prob.solutions.count > 0 %}

@@ -541,6 +541,7 @@ class UserProfile(models.Model):
         pg.save()
         self.problem_groups.add(pg)
         self.save()
+        return pg
     def add_test(self,name,problems):
         t = Test(name=name)
         t.save()
