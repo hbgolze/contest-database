@@ -465,10 +465,11 @@ def test_as_pdf(request,**kwargs):
         include_ans = True
     else:
         include_ans = False
-    if 'include_nts' in form:
+    if 'include-nts' in form:
         include_nts = True
     else:
         include_nts = False
+    print(include_nts)
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
 
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
