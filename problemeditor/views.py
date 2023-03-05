@@ -1211,7 +1211,7 @@ def addcontestview(request,type,num):
         typ.update_years()
         P = Problem.objects.filter(test_label = label)
         if len(P) > 0:
-            t = Test(name = readablelabel)
+            t = Test(name = contest_label)
 #            if 'round' in F:
 #                t = Test(name = F['year']+round.name)
 #            readablelabel = F['year'] + ' ' + round.readable_label_pre_form + formletter
