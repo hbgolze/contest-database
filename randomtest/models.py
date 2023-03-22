@@ -235,6 +235,7 @@ class Problem(models.Model):
     source = models.ForeignKey(Source,blank = True,null = True,on_delete=models.CASCADE)
     book_chapter = models.ForeignKey(BookChapter,blank = True,null = True,on_delete=models.CASCADE)
     order = models.IntegerField(default = 0)
+    calculator = models.BooleanField(default = 0)
     def __str__(self):
         return self.label
     def print_tags(self):
