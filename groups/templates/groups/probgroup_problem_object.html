@@ -32,8 +32,8 @@
             <div class="row">
               <div class="col-1">
                 {{forcount}}.<br>
-                <input type="checkbox" name="chk" value="{{prob.label}}" onclick="fixchecks()" checked>
-                <input type="hidden" name="probs" value="{{prob.label}}">
+                <input type="checkbox" name="chk" value="{{po.pk}}" onclick="fixchecks()" checked>
+                <input type="hidden" name="probs" value="{{po.pk}}">
               </div>
               <div class="col-11">
                 {% if prob.question_type_new.question_type == 'multiple choice' %}

@@ -126,8 +126,8 @@ def viewtaggroup(request,pk):
                     t = Test(name = testname)
                     t.save()
                     for i in checked:
-                        p = Problem.objects.get(label = i)
-                        t.problems.add(p)###
+                        po = ProblemGroupObject.objects.get(pk = i)
+                        t.problems.add(po.problem)###
                     t.save()
                     userprofile.tests.add(t)
                     ut = UserTest(test = t,num_probs = t.problems.count(),num_correct = 0,userprof = userprofile)
@@ -304,10 +304,10 @@ def savegroup(request,**kwargs):
         P = prob_group.problem_objects.all()
         checked = form.getlist("probs")
         for i in P:
-            if i.problem.label not in checked:
+            if str(i.pk) not in checked:
                 i.delete()###careful
             else:
-                i.order = checked.index(i.problem.label)+1
+                i.order = checked.index(str(i.pk))+1
                 i.save()
 #                prob_group.problem_objects.remove(i)
     return JsonResponse({})
@@ -324,15 +324,19 @@ def create_test(request,**kwargs):
             testname = form.get('testname','')
             t = Test(name = testname)
             t.save()
-            P = Problem.objects.filter(label__in=checked)
-            types = Type.objects.filter(pk__in=P.values('type_new'))
+            prob_objs = ProblemGroupObject.objects.filter(pk__in=checked)
+            tpks = []
+            for i in prob_objs:
+                tpks.append(i.problem.type_new.pk)
+            types = Type.objects.filter(pk__in=tpks)
             for i in types:
                 t.types.add(i)
             userprofile.tests.add(t)
-            ut = UserTest(test = t,num_probs = P.count(),num_correct = 0,userprof = userprofile)
+            ut = UserTest(test = t,num_probs = prob_objs.count(),num_correct = 0,userprof = userprofile)
             ut.save()
             for i in checked:
-                p = Problem.objects.get(label=i)
+                po = ProblemGroupObject.objects.get(pk=i)
+                p = po.problem
                 t.problems.add(p)
                 r = NewResponse(response = '',problem_label = p.label,problem = p,usertest = ut)
                 r.save()
@@ -716,24 +720,23 @@ def add_to_group(request):
     if "chk" in form:
         checked = form.getlist("chk")
         if len(checked) > 0:
-            P = Problem.objects.filter(label__in=checked)
+            first = ProblemGroupObject.objects.get(pk = checked[0])
+            pg = first.problemgroup
+            prob_objs = pg.problem_objects.filter(pk__in = checked)
             problem_groups = [(d,p) for d, p in request.POST.items() if d.startswith('add_to_problemgroup')]
             for i in problem_groups:
                 p_group = get_object_or_404(ProblemGroup,pk = i[1])
                 problems_all_in_group = 1
-                for prob in P:
+                for po in prob_objs:
+                    prob = po.problem
                     if p_group.problem_objects.filter(problem = prob).exists() == False:
                         problems_all_in_group = 0
-                        pg_object = ProblemGroupObject(problemgroup = p_group,problem=prob,order=p_group.problem_objects.count()+1)
-                        pg_object.save()
-#                        p_group.problem_objects.add(pg_object)
+                        p_group.add_to_end(prob)
                 if problems_all_in_group == 1:
                     return JsonResponse({'status':0,'name':p_group.name})
-#                p_group.save()
-
             return JsonResponse({'status':2,'name':p_group.name})
-
     return JsonResponse({'status':1})#no problems checked
+
 
 @login_required
 def fetch_problems(request):
