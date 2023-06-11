@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType,Source,BookChapter
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType,Source,BookChapter,NewComment
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from randomtest.utils import newsoltexcode,compileasy
 
@@ -50,6 +50,16 @@ class CommentForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(CommentForm, self).__init__(*args, **kwargs)   
         self.fields['author_name'].required = True
+
+class NewCommentForm(forms.ModelForm):
+    class Meta:
+        model = NewComment
+        fields = ('comment_text',)
+        widgets = {
+            'comment_text': forms.Textarea(attrs={"class":"form-control","min-width":"100%", 'rows': 15,'id' : 'codetext'}),
+        }
+    def __init__(self, *args, **kwargs):
+        super(NewCommentForm, self).__init__(*args, **kwargs)   
 
 class ApprovalForm(forms.ModelForm):
     class Meta:

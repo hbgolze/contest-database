@@ -16,11 +16,11 @@ from django.db.models import Max,Min
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest,Answer
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest,Answer,NewComment
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
-from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm
-from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely
+from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm,NewCommentForm
+from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely,newcomtexcode
 
 from django.db.models import Count
 
@@ -2326,6 +2326,7 @@ def save_comment(request,**kwargs):
             return JsonResponse({'new_comment':1,'comments-div':render_to_string('problemeditor/problem-snippets/CMcomponents/comments-div.html',{'prob':prob,'request':request})})
     return JsonResponse({})
 
+@login_required
 def delete_comment(request, **kwargs):
     prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
     comment = get_object_or_404(Comment,pk = request.POST.get('com_pk',''))
@@ -2334,6 +2335,41 @@ def delete_comment(request, **kwargs):
 
 
 
+@login_required
+def new_new_comment(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    form = NewCommentForm()
+    print(JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-new-comment.html',{'form':form,'prob':prob})}))
+    return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-new-comment.html',{'form':form,'prob':prob})})
+
+@login_required
+def save_new_comment(request,**kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('nc-pk',''))
+    com_form = NewCommentForm(request.POST)
+    com_num=prob.comments.count()+1
+    if com_form.is_valid():
+        com = com_form.save(commit=False)
+        com.comment_number=com_num
+        com.author = request.user
+        com.problem_label=prob.label
+        com.problem = prob
+        com.display_comment_text = newcomtexcode(com.comment_text)
+        com.save()
+        if prob.comments.count() > 1:
+            return JsonResponse({'new_comment':0,'comment':render_to_string('problemeditor/problem-snippets/components/comment.html',{'com':com_form.instance,'request':request,'prob':prob})})
+        else:
+            return JsonResponse({'new_comment':1,'comments-div':render_to_string('problemeditor/problem-snippets/components/comments-div.html',{'prob':prob,'request':request})})
+    return JsonResponse({})
+
+@login_required
+def delete_new_comment(request, **kwargs):
+    prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
+    comment = get_object_or_404(NewComment,pk = request.POST.get('com_pk',''))
+    comment.delete()
+    return JsonResponse({'comments-div':render_to_string('problemeditor/problem-snippets/components/comments-div.html',{'prob':prob,'request':request})})
+
+
+@login_required
 def matrixview(request,type):    
     typ = get_object_or_404(Type, type = type)
     probsoftype = Problem.objects.filter(type_new = typ)
@@ -2385,6 +2421,7 @@ def matrixview(request,type):
     context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': len(pot)}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
+@login_required
 def contest_matrixview(request,type):    
     typ = get_object_or_404(Type, type = type)
     probsoftype = typ.problems.all()
@@ -2437,6 +2474,7 @@ def contest_matrixview(request,type):
     context = { 'type' : typ, 'typelabel':typ.label, 'nbar': 'problemeditor','rows2':rows2,'prefix':'bytest','numbers' : numbers,'total_sol_count': total_sol_count, 'num_probs': probsoftype.count()}# changed typ.type to typ
     return HttpResponse(template.render(context,request))
 
+@login_required
 def refresh_matrix_row(request):
     tl = request.POST.get('tl')
     P = Problem.objects.filter(test_label=tl)
@@ -2456,6 +2494,7 @@ def refresh_matrix_row(request):
 #            rows2.append((testlabels[i],P,sol_complete))
     return JsonResponse({'matrix-row':render_to_string('problemeditor/matrixview-row.html',{'testlabel':tl,'problems':P,'sol_complete':sol_complete})})
 
+@login_required
 def contest_refresh_matrix_row(request):
     tl = request.POST.get('tl')
     contest = get_object_or_404(ContestTest,short_label = tl)

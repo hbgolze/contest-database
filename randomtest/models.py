@@ -187,6 +187,19 @@ class Comment(models.Model):
     def __str__(self):
         return self.problem_label+' comment '+str(self.created_date)+', '+str(self.author)
 
+class NewComment(models.Model):
+    comment_text = models.TextField()
+    display_comment_text = models.TextField(blank = True)
+    comment_number = models.IntegerField(default = 1)
+    problem_label = models.CharField(max_length = 30,blank = True)
+    author = models.ForeignKey(User,null = True,on_delete = models.SET_NULL)
+    created_date = models.DateTimeField(default = timezone.now)
+    modified_date = models.DateTimeField(default = timezone.now)
+    problem = models.ForeignKey('Problem',related_name="new_comments",null = True,on_delete=models.CASCADE)
+    def __str__(self):
+        return self.problem_label+' sol '+str(self.comment_number)+str(self.author.all())
+
+    
 class Problem(models.Model):
     problem_number = models.IntegerField(default = 0)
     tags = models.ManyToManyField(Tag,related_name = 'problems',blank = True)#related name is used correctly here...

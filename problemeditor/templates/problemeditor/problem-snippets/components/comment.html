@@ -1,0 +1,11 @@
+  <div class="list-group-item">
+    <div class="list-group-item-heading">
+    <small class="text-muted pull-right">{{com.created_date}}</small>
+
+<b>{{com.author.username}}</b>
+</div>
+
+    <p class="list-group-item-text">{{com.display_comment_text|linebreaks}}</p>
+    <textarea id="comment-latex_{{com.pk}}" style="display:none">{{com.comment_text}}</textarea>
+    {% if request.user.is_superuser %}<p><small>(<a class="delete-comment-link" href="{{prob.pk}}_{{com.pk}}">Delete</a>)</small></p>{% endif %}<p><small>(<a class="copy-comment-latex-link" href="{{prob.pk}}_{{com.pk}}">Copy LaTeX</a>)</small></p>
+  </div>

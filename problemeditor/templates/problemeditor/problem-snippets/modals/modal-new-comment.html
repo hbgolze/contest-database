@@ -1,0 +1,21 @@
+  <div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="get" action="." class="new-comment-form" id="new-comment-form_{{prob.pk}}">
+
+        <div class="modal-header">
+          <h5 class="modal-title">New Comment</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+	  </div>
+        <div class="modal-body">
+	  <input type="hidden" name="nc-pk" id="nc-pk" value="{{prob.pk}}">
+	  {{form.as_p}}
+        </div>
+        <div class="modal-footer">
+          <button type="submit" name="addcomment" class="btn btn-primary">Add Comment</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        </div>
+      </form>
+    </div>
+
+  </div>

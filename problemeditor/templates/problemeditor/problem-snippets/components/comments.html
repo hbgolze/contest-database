@@ -1,0 +1,11 @@
+<label>Comments:</label>
+<a data-toggle="collapse" href="#comment-container_{{prob.pk}}" role="button">
+    Show/Hide
+  </a>
+<div class="collapse" id="comment-container_{{prob.pk}}">
+<div id="comments-list_{{prob.pk}}">
+  {% include 'problemeditor/problem-snippets/components/comments-div.html' %}
+</div>
+
+<button type="button" class="btn btn-secondary btn-sm new-comment-link" id="new-comment_{{prob.pk}}"">New Comment</button>
+</div>

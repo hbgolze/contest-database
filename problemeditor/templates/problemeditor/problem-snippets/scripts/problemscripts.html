@@ -767,5 +767,69 @@ mlns="http://www.w3.org/1999/xhtml" type="text" size="5" name="answer_a" class="
               $("[data-dismiss=modal]").trigger({ type: "click" });
           }
       });
-  });
+    });
+
+  $(document).on('click',".new-comment-link",function(event) {
+    event.preventDefault();
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/new-new-comment/',
+        data: "pk="+prob_id,
+        dataType: 'json',
+        success: function(result) {
+            $("#comment-modal").html(result['modal-html']);
+            $("#comment-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',".new-comment-form",function(event) {
+    event.preventDefault();
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-new-comment/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            if (result['new_comment']== 0 ) {
+                $("#comment-list-group_"+prob_id).append(result['comment']);
+            } else {
+                $("#comments-list_"+prob_id).html(result['comments-div']);
+            }
+            $("#comment-modal").hide();
+	    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"comments-list_"+prob_id]);
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+$(document).on('click',".delete-comment-link",function(event) {
+    event.preventDefault();
+    var com_id = $(this).attr('href').split('_')[1];
+    var prob_id = $(this).attr('href').split('_')[0];
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/delete-new-comment/',
+        data: "com_pk="+com_id+"&pk="+prob_id,
+        dataType: 'json',
+        success: function(result) {
+            $("#comments-list_"+prob_id).html(result['comments-div']);
+        }
+    });
+    return false;
+});
+$(document).on('click',".copy-comment-latex-link",function(e) {
+    event.preventDefault();
+    var com_id = $(this).attr('href').split('_')[1];
+    var com_text = $("textarea#comment-latex_"+com_id).val().replace('<br>','\n\r').replace('<br>','\n\r');
+    var aux = document.createElement("textarea");
+    aux.innerHTML =  com_text;
+    document.body.appendChild(aux);
+    aux.select();
+    document.execCommand("copy");
+    document.body.removeChild(aux);
+});
 </script>

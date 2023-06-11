@@ -491,7 +491,15 @@ def newsoltexcode(texcode,label):
     newtexcode = newtexcode.replace('\\end{center}','</p>\n')
     return newtexcode
 
-                
+def newcomtexcode(texcode):
+    texcode = texcode.replace('<',' < ')
+    newtexcode = texcode.replace('\\ ',' ')
+    newtexcode = replace_enumitem(newtexcode)
+    newtexcode = newtexcode.replace('\\begin{center}','<p style="text-align:center;\">')####dangerous....
+    newtexcode = newtexcode.replace('\\end{center}','</p>\n')
+    return newtexcode
+
+
 def ansscrape(s):
     if 'begin{ans}' not in s:
         return s
