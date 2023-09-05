@@ -2892,8 +2892,16 @@ def singleproblem_png(request,**kwargs):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
+        command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+        proc = subprocess.Popen(command,
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+        )
+        stdout_value = proc.communicate()[0]
 
-        command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'texput.pdf', tempdir, prob.label+'.png')
+        command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
         proc = subprocess.Popen(command,
                                 shell=True,
                                 stdin=subprocess.PIPE,
