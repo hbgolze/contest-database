@@ -13,6 +13,7 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib import messages
 from django.views.generic import UpdateView,CreateView,DeleteView,ListView,DetailView
 from django.db.models import Max,Min
+from django.conf import settings
 
 from formtools.wizard.views import SessionWizardView
 
@@ -28,13 +29,14 @@ from django import forms
 from time import time
 import tempfile
 from subprocess import Popen,PIPE
-import os
+import os,os.path
 from datetime import datetime,timedelta
 
 from bs4 import BeautifulSoup
 import bs4
 from itertools import chain
 import re
+import subprocess
 
 def show_mc_form_condition(wizard):
     cleaned_data = wizard.get_cleaned_data_for_step('0') or {}
@@ -2809,4 +2811,105 @@ def delete_accepted_answer(request):
     prob = answer.problem
     answer.delete()
     return JsonResponse({'accepted-answers': render_to_string('problemeditor/problem-snippets/components/accepted-answer-list.html',{'prob':prob,'request':request}),'prob_pk': prob.pk})
+
+@login_required
+def singleproblem_png(request,**kwargs):
+    prob = Problem.objects.get(label = kwargs['label'])
+    if 'opts' in kwargs:
+        options = kwargs['opts']
+        include_problem_labels = options['pl']
+        include_answer_choices = options['ac']
+    else:
+        include_problem_labels = False
+        include_answer_choices = True
+    ptext = ''
+    if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer':
+        ptext = prob.mc_problem_text
+        answers = prob.answers()
+    else:
+        ptext = prob.problem_text
+        answers = ''
+    context = {
+        'prob':prob,
+        'problemcode':ptext,
+        'problemlabel':prob.readable_label,
+        'answerchoices': answers,
+        'pk':prob.pk,
+        'include_problem_labels':include_problem_labels,
+        }
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('problemeditor/my_singleproblem_latex_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    # Python3 only. For python2 check out the docs!                                                                                                                                                                                                           
+    with tempfile.TemporaryDirectory() as tempdir:
+        # Create subprocess, supress output with PIPE and                                                                                                                                                                                                     
+        # run latex twice to generate the TOC properly.                                                                                                                                                                                                       
+        # Finally read the generated pdf.                                                                                                                                                                                                                     
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'prob' : prob,
+            'problemcode' : ptext,
+            'problemlabel' : prob.readable_label,
+            'pk':prob.pk,
+            'include_problem_labels':include_problem_labels,
+            'include_answer_choices':include_answer_choices,
+            'answerchoices':answers,
+            'tempdirect':tempdir,
+            }
+        template = get_template('problemeditor/my_singleproblem_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:]=='.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin=PIPE,
+                stdout=PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'texput.pdf', tempdir, prob.label+'.png')
+        proc = subprocess.Popen(command,
+                                shell=True,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+        )
+        stdout_value = proc.communicate()[0]
+
+        if prob.label+'.png' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, prob.label+'.png'), 'rb') as f:
+                png = f.read()
+                r = HttpResponse(content_type='image/png')
+                r.write(png)
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':prob.label,'error_text':error_text})
 
