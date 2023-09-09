@@ -7,6 +7,7 @@ import subprocess
 import tempfile
 import os,os.path
 import re
+from zipfile import ZipFile
 
 #center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
 #class ItemizeEnv:
@@ -628,3 +629,111 @@ def sorted_nicely(l):
     convert = lambda text: int(text) if text.isdigit() else text 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
     return sorted(l, key = alphanum_key)
+
+
+
+
+
+
+
+def make_all_pngs(L,include_problem_labels = False,include_answer_choices = True):
+    temps = []
+    for prob in L:
+        ptext = ''
+        if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer':
+            ptext = prob.mc_problem_text
+            answers = prob.answers()
+        else:
+            ptext = prob.problem_text
+            answers = ''
+        context = {
+            'prob':prob,
+            'problemcode':ptext,
+            'problemlabel':prob.readable_label,
+            'answerchoices': answers,
+            'pk':prob.pk,
+            'include_problem_labels':include_problem_labels,
+        }
+        asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+        asyr = asyf.read()
+        asyf.close()
+        template = get_template('problemeditor/my_singleproblem_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        temps.append(rendered_tpl)
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        for prob in L:
+            ptext = ''
+            if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer':
+                ptext = prob.mc_problem_text
+                answers = prob.answers()
+            else:
+                ptext = prob.problem_text
+                answers = ''
+            context = {
+                'prob' : prob,
+                'problemcode' : ptext,
+                'problemlabel' : prob.readable_label,
+                'pk':prob.pk,
+                'include_problem_labels':include_problem_labels,
+                'include_answer_choices':include_answer_choices,
+                'answerchoices':answers,
+                'tempdirect':tempdir,
+            }
+            template = get_template('problemeditor/my_singleproblem_latex_template.tex')
+            rendered_tpl = template.render(context).encode('utf-8')
+            ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+            ftex.write(rendered_tpl)
+            ftex.close()
+            for i in range(1):
+                process = Popen(
+                    ['pdflatex', 'texput.tex'],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    cwd = tempdir,
+                )
+                stdout_value = process.communicate()[0]
+            LL=os.listdir(tempdir)
+
+            for i in range(0,len(LL)):
+                if LL[i][-4:]=='.asy':
+                    process1 = Popen(
+                        ['asy', LL[i]],
+                        stdin = PIPE,
+                        stdout = PIPE,
+                        cwd = tempdir,
+                    )
+                    stdout_value = process1.communicate()[0]
+            for i in range(2):
+                process2 = Popen(
+                    ['pdflatex', 'texput.tex'],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    cwd = tempdir,
+                )
+                stdout_value = process2.communicate()[0]
+            command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+            )
+            stdout_value = proc.communicate()[0]
+
+            command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+            )
+            stdout_value = proc.communicate()[0]
+        with ZipFile("output.zip",'w') as myzip:
+            for prob in L:
+                myzip.write(tempdir+'/'+prob.label+'.png')
+#    for p in L:
+#        os.system("convert -density 150 "+p.label+'.pdf -quality 100 -trim -bordercolor White -border 10x10 +repage '+p.label+'.jpg')
