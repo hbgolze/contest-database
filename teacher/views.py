@@ -1,4 +1,4 @@
-from django.shortcuts import render,render_to_response, get_object_or_404,redirect
+from django.shortcuts import render, get_object_or_404,redirect
 from django.views.generic import UpdateView,DetailView,ListView,CreateView
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required

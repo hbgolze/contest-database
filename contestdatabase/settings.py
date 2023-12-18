@@ -153,6 +153,7 @@ CRISPY_TEMPLATE_PACK = 'bootstrap3'
 #log = logging.getLogger(__name__)
 # in views.py
 
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #SECURE_SSL_REDIRECT = True
 
