@@ -459,7 +459,7 @@ class PublishedSlideObject(models.Model):#placeholder for components
 class TextBlock(models.Model):
     text_code = models.TextField(blank=True)
     text_display = models.TextField(blank=True)
-    slide_object = models.OneToOneField(
+    up_slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
         null = True,
@@ -474,7 +474,7 @@ class TextBlock(models.Model):
         return new_textblock
     def increment_version(self):
         self.version_number = self.version_number + 1
-        self.slide_object.increment_version()
+        self.up_slide_object.increment_version()
         self.save()
 
 class PublishedTextBlock(models.Model):
@@ -501,7 +501,7 @@ class Proof(models.Model):
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
     solution = models.ForeignKey(Solution,blank=True,null=True,on_delete=models.CASCADE)
-    slide_object = models.OneToOneField(
+    up_slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
         null = True,
@@ -516,7 +516,7 @@ class Proof(models.Model):
         return new_proof
     def increment_version(self):
         self.version_number = self.version_number + 1
-        self.slide_object.increment_version()
+        self.up_slide_object.increment_version()
         self.save()
 
 
@@ -547,7 +547,7 @@ class Theorem(models.Model):
     prefix = models.CharField(max_length=20)#Theorem, Proposition, Lemma, Corollary
     theorem_code = models.TextField(blank=True)
     theorem_display = models.TextField(blank=True)
-    slide_object = models.OneToOneField(
+    up_slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
         null = True,
@@ -564,7 +564,7 @@ class Theorem(models.Model):
         return new_theorem
     def increment_version(self):
         self.version_number = self.version_number + 1
-        self.slide_object.increment_version()
+        self.up_slide_object.increment_version()
         self.save()
 
 
@@ -610,7 +610,7 @@ class ExampleProblem(models.Model):
     answer_E = models.CharField(max_length=500,blank=True)
     author = models.ForeignKey(User,related_name='example_problem',blank=True,null=True,on_delete=models.SET_NULL)
     created_date = models.DateTimeField(default = timezone.now)
-    slide_object = models.OneToOneField(
+    up_slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
         null = True,
@@ -646,7 +646,7 @@ class ExampleProblem(models.Model):
         return new_example
     def increment_version(self):
         self.version_number = self.version_number + 1
-        self.slide_object.increment_version()
+        self.up_slide_object.increment_version()
         self.save()
 
 
@@ -718,7 +718,7 @@ class PublishedExampleProblem(models.Model):
 
 class ImageModel(models.Model):
     image = models.ImageField(upload_to='images')
-    slide_object = models.OneToOneField(
+    up_slide_object = models.OneToOneField(
         SlideObject,
         on_delete=models.CASCADE,
         null = True,
@@ -730,7 +730,7 @@ class ImageModel(models.Model):
         return new_image
     def increment_version(self):
         self.version_number = self.version_number + 1
-        self.slide_object.increment_version()
+        self.up_slide_object.increment_version()
         self.save()
 
 class PublishedImageModel(models.Model):

@@ -15,7 +15,7 @@ from django.utils import timezone
 from django.conf import settings
 import pytz
 
-from randomtest.utils import newtexcode,compileasy,pointsum,newsoltexcode
+from randomtest.utils import newtexcode,compileasy,compiletikz,pointsum,newsoltexcode
 from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse,Solution,UserProfile
 
 from teacher.models import Class,PublishedClass,Unit,ProblemSet,SlideGroup,UnitObject,ProblemObject,Slide,SlideObject,TextBlock,Proof,Theorem,ImageModel,ExampleProblem,Test
@@ -1226,6 +1226,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),prob.answers())
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
@@ -1240,6 +1241,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
@@ -1254,6 +1256,7 @@ def addoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_'+str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type=qt)
                 prob.author = request.user
                 prob.point_value = problemset.default_point_value
@@ -1323,6 +1326,7 @@ def loadeditquestiontype(request,**kwargs):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
                     compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                    compiletikz(prob.problem_code,'originalproblem_' + str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.author = request.user
                     prob.save()
@@ -1334,6 +1338,7 @@ def loadeditquestiontype(request,**kwargs):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                    compiletikz(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     po.increment_version()
@@ -1344,6 +1349,7 @@ def loadeditquestiontype(request,**kwargs):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'originalproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'originalproblem_'+str(prob.pk))
+                    compiletikz(prob.problem_code,'originalproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     po.increment_version()
@@ -1444,6 +1450,7 @@ def save_new_solution(request,**kwargs):
     so.save()
     po.increment_version()
     compileasy(so.solution_code,'originalsolution_'+str(so.pk))
+    compiletikz(so.solution_code,'originalsolution_'+str(so.pk))
     return JsonResponse({});
 
 @login_required
@@ -1640,6 +1647,7 @@ def save_edited_solution(request,**kwargs):
     so.solution_display = newsoltexcode(so.solution_code, 'originalsolution_'+str(so.pk))
     so.save()
     compileasy(so.solution_code,'originalsolution_'+str(so.pk))
+    compiletikz(so.solution_code,'originalsolution_'+str(so.pk))
     return JsonResponse({'sol_code':render_to_string('teacher/editingtemplates/modals/so-sol-text.html',{'sol':so})})
 
 @login_required
@@ -2141,6 +2149,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),prob.answers())
                 compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -2156,6 +2165,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -2171,6 +2181,7 @@ def testaddoriginalproblem(request,pk,upk,ppk):
                 prob = pform.save()
                 prob.problem_display = newtexcode(prob.problem_code,'originalproblem_' + str(prob.pk),'')
                 compileasy(prob.problem_code,'originalproblem_' + str(prob.pk))
+                compiletikz(prob.problem_code,'originalproblem_' + str(prob.pk))
                 prob.question_type = QuestionType.objects.get(question_type = qt)
                 prob.author = request.user
                 prob.point_value = test.default_point_value
@@ -2457,11 +2468,12 @@ def editslideview(request,pk,upk,spk,sspk):
             s = SlideObject(slide = slide,order = slide.top_order_number + 1)
             s.save()
             textbl = form.get("codetextblock","")
-            tb = TextBlock(slide_object = s, text_code = textbl, text_display = "")
+            tb = TextBlock(up_slide_object = s, text_code = textbl, text_display = "")
             tb.save()
             tb.text_display = newtexcode(textbl, 'textblock_' + str(tb.pk), "")
             tb.save()
             compileasy(tb.text_code,'textblock_' + str(tb.pk))
+            compiletikz(tb.text_code,'textblock_' + str(tb.pk))
             slide.top_order_number = slide.top_order_number + 1
             slide.save()
             slide.increment_version()
@@ -2472,10 +2484,12 @@ def editslideview(request,pk,upk,spk,sspk):
             thmbl = form.get("codetheoremblock","")
             prefix = form.get("theorem-prefix","")
             thmname = form.get("theorem-name","")
-            th = Theorem(slide_object = s,theorem_code = thmbl, theorem_display = "",prefix = prefix,name = thmname)
+            th = Theorem(up_slide_object = s,theorem_code = thmbl, theorem_display = "",prefix = prefix,name = thmname)
             th.save()
             th.theorem_display = newtexcode(thmbl, 'theoremblock_'+str(th.pk), "")
             th.save()
+            compileasy(th.text_code,'theoremblock_' + str(th.pk))
+            compiletikz(th.text_code,'theoremblock_' + str(th.pk))
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             slide.increment_version()
@@ -2485,11 +2499,12 @@ def editslideview(request,pk,upk,spk,sspk):
             s.save()
             proofbl = form.get("codeproofblock","")
             prefix = form.get("proof-prefix","")
-            pf = Proof(slide_object = s, proof_code = proofbl, proof_display = "",prefix = prefix)
+            pf = Proof(up_slide_object = s, proof_code = proofbl, proof_display = "",prefix = prefix)
             pf.save()
             pf.proof_display = newtexcode(proofbl, 'proofblock_'+str(pf.pk), "")
             pf.save()
             compileasy(pf.proof_code,'proofblock_'+str(pf.pk))#######Check
+            compiletikz(pf.proof_code,'proofblock_'+str(pf.pk))#######Check
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             slide.increment_version()
@@ -2499,7 +2514,7 @@ def editslideview(request,pk,upk,spk,sspk):
             if form.is_valid():
                 s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                 s.save()
-                m = ImageModel(slide_object = s,image = form.cleaned_data['image'])
+                m = ImageModel(up_slide_object = s,image = form.cleaned_data['image'])
                 m.save()
                 slide.top_order_number = slide.top_order_number +1
                 slide.save()
@@ -2515,7 +2530,7 @@ def editslideview(request,pk,upk,spk,sspk):
                     if p.type_new in userprofile.user_type_new.allowed_types.all():
                         s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                         s.save()
-                        ep = ExampleProblem(slide_object = s,isProblem = 1,problem = p,question_type = p.question_type_new,prefix=prefix)
+                        ep = ExampleProblem(up_slide_object = s,isProblem = 1,problem = p,question_type = p.question_type_new,prefix=prefix)
                         ep.save()
                         slide.top_order_number = slide.top_order_number + 1
                         slide.save()
@@ -2531,7 +2546,7 @@ def editslideview(request,pk,upk,spk,sspk):
                 qt = form.get('question-type','')
                 s = SlideObject(slide = slide,order = slide.top_order_number + 1)
                 s.save()
-                ep = ExampleProblem(slide_object = s)
+                ep = ExampleProblem(up_slide_object = s)
                 if qt == "multiple choice":
                     pform = NewExampleProblemMCForm(request.POST, instance = ep)
                     if pform.is_valid():
@@ -2539,6 +2554,7 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),prob.answers())
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                        compiletikz(prob.problem_code,'exampleproblem_'+str(prob.pk))
                         prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
@@ -2552,6 +2568,7 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                        compiletikz(prob.problem_code,'exampleproblem_'+str(prob.pk))
                         prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
@@ -2565,6 +2582,7 @@ def editslideview(request,pk,upk,spk,sspk):
                         prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                         prob.prefix = prefix
                         compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                        compiletikz(prob.problem_code,'exampleproblem_'+str(prob.pk))
                         prob.question_type = QuestionType.objects.get(question_type = qt)
                         prob.author = request.user
                         prob.save()
@@ -2664,7 +2682,7 @@ def exampleaddproblem(request,**kwargs):
     p = Problem.objects.get(pk = form.get('pk',''))
     s = SlideObject(slide = slide,order = slide.top_order_number + 1)
     s.save()
-    ep = ExampleProblem(slide_object = s, isProblem = 1,problem = p,question_type = p.question_type_new,prefix = prefix)
+    ep = ExampleProblem(up_slide_object = s, isProblem = 1,problem = p,question_type = p.question_type_new,prefix = prefix)
     ep.save()
     slide.top_order_number = slide.top_order_number + 1
     slide.save()
@@ -2722,6 +2740,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_' + str(prob.pk),prob.answers())
                     compileasy(prob.problem_code,'exampleproblem_' + str(prob.pk))
+                    compiletikz(prob.problem_code,'exampleproblem_' + str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.author = request.user
                     prob.save()
@@ -2733,6 +2752,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                    compiletikz(prob.problem_code,'exampleproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     ep.increment_version()
@@ -2743,6 +2763,7 @@ def editexampleproblem(request,pk,upk,spk,sspk,sopk):
                     prob = pform.save()
                     prob.problem_display = newtexcode(prob.problem_code,'exampleproblem_'+str(prob.pk),'')
                     compileasy(prob.problem_code,'exampleproblem_'+str(prob.pk))
+                    compiletikz(prob.problem_code,'exampleproblem_'+str(prob.pk))
                     prob.question_type = QuestionType.objects.get(question_type = qt_dict[qt])
                     prob.save()
                     ep.increment_version()
@@ -2794,8 +2815,9 @@ class TextBlockUpdateView(UpdateView):
         textblock = TextBlock.objects.get(id=self.textblock_id)
         textblock.text_display = newtexcode(textblock.text_code, 'textblock_'+str(textblock.pk), "")
         compileasy(textblock.text_code,'textblock_'+str(textblock.pk))
+        compiletikz(textblock.text_code,'textblock_'+str(textblock.pk))
         textblock.increment_version()
-        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':textblock.slide_object}),'sopk':textblock.slide_object.pk})
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':textblock.up_slide_object}),'sopk':textblock.up_slide_object.pk})
 
     def get_object(self, queryset=None):
         return get_object_or_404(TextBlock, pk=self.textblock_id)
@@ -2825,8 +2847,9 @@ class TheoremUpdateView(UpdateView):
         theorem = Theorem.objects.get(id=self.theorem_id)
         theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
         compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
+        compiletikz(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
         theorem.increment_version()
-        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':theorem.slide_object}),'sopk':theorem.slide_object.pk})
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':theorem.up_slide_object}),'sopk':theorem.up_slide_object.pk})
 
     def get_object(self, queryset=None):
         return get_object_or_404(Theorem, pk=self.theorem_id)
@@ -2856,8 +2879,9 @@ class ProofUpdateView(UpdateView):
         proof = Proof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
         compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
+        compiletikz(proof.proof_code,'proofblock_'+str(proof.pk))
         proof.increment_version()
-        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':proof.slide_object}),'sopk':proof.slide_object.pk})
+        return JsonResponse({'slide-code':render_to_string('teacher/editingtemplates/edit-slide/slideobjectbody.html',{'s':proof.up_slide_object}),'sopk':proof.up_slide_object.pk})
 
 
     def get_object(self, queryset=None):

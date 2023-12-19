@@ -767,6 +767,11 @@ $(document).on('submit',"#form-change-question-type",function(event) {
             $("[data-dismiss=modal]").trigger({ type: "click" });
             $("#slideobject_list_"+result['sopk']).html(result['prob']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+	    d = new Date();
+	    $("#slideobject_list_"+result['sopk']+" img").each(function(e) {
+                url = $(this).attr("src");
+                $(this).attr("src",url+"?"+d.getTime());
+            });
         }
     });
     return false;
@@ -815,6 +820,11 @@ $(document).on('submit',"#theorem_update_form",function(e) {
     success: function(result) {
       $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
       MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+	d = new Date();
+	$("#slideobject_list_"+result['sopk']+" img").each(function(e) {
+                  url = $(this).attr("src");
+                  $(this).attr("src",url+"?"+d.getTime());
+                });
       $("#edit-theorem-placeholder").hide();
       $("[data-dismiss=modal]").trigger({ type: "click" });
     }
@@ -832,6 +842,11 @@ $(document).on('submit',"#proof_update_form",function(e) {
     success: function(result) {
       $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
       MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+	d = new Date();
+	$("#slideobject_list_"+result['sopk']+" img").each(function(e) {
+                  url = $(this).attr("src");
+                  $(this).attr("src",url+"?"+d.getTime());
+                });
       $("#edit-proof-placeholder").hide();
       $("[data-dismiss=modal]").trigger({ type: "click" });
     }
@@ -848,7 +863,12 @@ $(document).on('submit',"#textblock_update_form",function(e) {
     dataType: 'json',
     success: function(result) {
       $("#slideobject_list_"+result['sopk']).html(result['slide-code']);
-      MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+	MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideobject_list_"+result['sopk']]);
+	d = new Date();
+	$("#slideobject_list_"+result['sopk']+" img").each(function(e) {
+                  url = $(this).attr("src");
+                  $(this).attr("src",url+"?"+d.getTime());
+                });
       $("#edit-textblock-placeholder").hide();
       $("[data-dismiss=modal]").trigger({ type: "click" });
     }
