@@ -433,7 +433,7 @@ def newtexcode(texcode,label,answer_choices,temp = False):
             new2texcode += '<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+str(i+1)+'.png\"/>'
             new2texcode += newtexcode[repl2[i][1]:repl2[i+1][0]]
         new2texcode+='<img class=\"inline-displayed\" src=\"/media/'+tempdir+'tikz'+label+'-'+str(len(repl2))+'.png\"/>'
-        new2texcode+=texcode[repl2[-1][1]:]
+        new2texcode+=newtexcode[repl2[-1][1]:]
     newtexcode = new2texcode
     newtexcode += '<br><br>'+ansscrape(answer_choices)
     newtexcode = newtexcode.replace('\\ ',' ')
@@ -483,7 +483,7 @@ def newsoltexcode(texcode,label):
             new2texcode += '<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(i+1)+'.png\"/>'
             new2texcode += newtexcode[repl2[i][1]:repl2[i+1][0]]
         new2texcode+='<img class=\"inline-displayed\" src=\"/media/tikz'+label+'-'+str(len(repl2))+'.png\"/>'
-        new2texcode+=texcode[repl2[-1][1]:]
+        new2texcode+=newtexcode[repl2[-1][1]:]
     newtexcode = new2texcode
 
     newtexcode = replace_enumitem(newtexcode)
