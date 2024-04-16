@@ -2941,13 +2941,15 @@ def add_relay_form(request):
         if 'formletter' in F:
             formletter = F['formletter']
         year = F['year']
-        readablelabel = F['year'] + ' R' +formletter 
-        label = F['year'] + 'R'+formletter
+        contest = F['contest']
+        readablelabel = F['year'] + ' '+ contest + ' R' +formletter 
+        label = F['year'] + contest + 'R'+formletter
         if RelayProblem.objects.filter(label=label).exists() == True:
             return JsonResponse({'error':1})
 
         p = RelayProblem(year = year,
                          form_letter = formletter,
+                         contest = contest,
                          readable_label = readablelabel,
                          label = label,
                          problem_text_1 = F['problem_text1'],

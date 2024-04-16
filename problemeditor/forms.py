@@ -274,6 +274,7 @@ class AddContestForm(forms.Form):
 
 class AddRelayForm(forms.Form):
     year = forms.CharField(max_length=4,label='Year',required=True,widget=forms.TextInput(attrs={'class':'form-control','max-width':'50px'}))
+    contest = forms.CharField(max_length=20,label='Contest',required=True,widget=forms.TextInput(attrs={'class':'form-control','max-width':'50px'}))
     formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
     def __init__(self, *args, **kwargs):
         super(AddRelayForm,self).__init__(*args,**kwargs)

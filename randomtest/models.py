@@ -377,6 +377,7 @@ class Answer(models.Model):
 
 class RelayProblem(models.Model):
     year = models.IntegerField(default = 2024)#label: YYYY(TITLE)R(FORM)
+    contest = models.CharField(max_length = 20,blank = True)
     form_letter = models.CharField(max_length = 2,blank = True)
     is_backwards = models.BooleanField(default = 0)
     label = models.CharField(max_length = 20,blank = True)
