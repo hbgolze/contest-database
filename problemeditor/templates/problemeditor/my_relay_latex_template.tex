@@ -1,0 +1,70 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote,tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+
+
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+\begin{itemize}
+\item[{{relay.readable_label}}-1] \begin{minipage}[t]{\linewidth}
+{{relay.problem_text_1}} 
+
+\end{minipage}
+  \vspace{\stretch{1}}
+
+  \rule{\textwidth}{.5pt}
+  
+  \vspace{\stretch{1}}
+
+\item[{{relay.readable_label}}-2] \begin{minipage}[t]{\linewidth}
+{{relay.problem_text_2}} 
+
+\end{minipage}
+  \vspace{\stretch{1}}
+
+  \rule{\textwidth}{.5pt}
+  
+  \vspace{\stretch{1}}
+
+
+\item[{{relay.readable_label}}-3] \begin{minipage}[t]{\linewidth}
+{{relay.problem_text_3}} 
+
+\end{minipage}
+  \vspace{\stretch{1}}
+
+  \rule{\textwidth}{.5pt}
+  
+  \vspace{\stretch{1}}
+
+  
+\end{itemize}
+\end{document}
+
+{% endautoescape %}

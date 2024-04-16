@@ -17,10 +17,10 @@ from django.conf import settings
 
 from formtools.wizard.views import SessionWizardView
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest,Answer,NewComment
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, Solution,Comment,QuestionType,ProblemApproval,TestCollection,NewTag,Round,UserType,Source,SourceType,BookChapter,ContestTest,Answer,NewComment,RelayProblem
 from .forms import SolutionForm,CommentForm,ApprovalForm,AddContestForm,DuplicateProblemForm
 from .forms import UploadContestForm,HTMLLatexForm
-from .forms import NewTagForm,AddNewTagForm,EditMCAnswer,EditSAAnswer,MCProblemTextForm,SAProblemTextForm,ChangeQuestionTypeForm1,ChangeQuestionTypeForm2MC,ChangeQuestionTypeForm2MCSA,ChangeQuestionTypeForm2SA,ChangeQuestionTypeForm2PF,DifficultyForm,NewTypeForm,NewRoundForm,NewBookSourceForm,NewContestSourceForm,NewPersonSourceForm,NewChapterForm,NewProblemPFForm,NewProblemMCForm,NewProblemSAForm,EditTypeForm,NewCommentForm
+from .forms import NewTagForm, AddNewTagForm, EditMCAnswer, EditSAAnswer, MCProblemTextForm, SAProblemTextForm, ChangeQuestionTypeForm1, ChangeQuestionTypeForm2MC, ChangeQuestionTypeForm2MCSA, ChangeQuestionTypeForm2SA, ChangeQuestionTypeForm2PF, DifficultyForm, NewTypeForm, NewRoundForm, NewBookSourceForm, NewContestSourceForm, NewPersonSourceForm, NewChapterForm, NewProblemPFForm, NewProblemMCForm, NewProblemSAForm, EditTypeForm, NewCommentForm, AddRelayForm, EditRelayAnswer, RelayProblemTextForm, EditBackwardRelayAnswer
 from randomtest.utils import goodtag,goodurl,newtexcode,newsoltexcode,compileasy,compiletikz,sorted_nicely,newcomtexcode
 
 from django.db.models import Count
@@ -31,6 +31,7 @@ import tempfile
 from subprocess import Popen,PIPE
 import os,os.path
 from datetime import datetime,timedelta
+import io,zipfile
 
 from bs4 import BeautifulSoup
 import bs4
@@ -2921,3 +2922,279 @@ def singleproblem_png(request,**kwargs):
                 error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':prob.label,'error_text':error_text})
 
+
+@login_required
+def relay_index(request):
+#    userprofile,boolcreated = UserProfile.objects.get_or_create(user=request.user)
+
+    template = loader.get_template('problemeditor/relayindex.html')
+    context = {'relay_problems': RelayProblem.objects.all(), 'nbar': 'problemeditor'}
+    return HttpResponse(template.render(context,request))
+
+@login_required
+def add_relay_form(request):
+
+    if request.method == "POST":
+        form = request.POST
+        F = form#.cleaned_data                                                                                                 
+        formletter = ''
+        if 'formletter' in F:
+            formletter = F['formletter']
+        year = F['year']
+        readablelabel = F['year'] + ' R' +formletter 
+        label = F['year'] + 'R'+formletter
+        if RelayProblem.objects.filter(label=label).exists() == True:
+            return JsonResponse({'error':1})
+
+        p = RelayProblem(year = year,
+                         form_letter = formletter,
+                         readable_label = readablelabel,
+                         label = label,
+                         problem_text_1 = F['problem_text1'],
+                         problem_text_2 = F['problem_text2'],
+                         problem_text_3 = F['problem_text3'],
+                         answer_1 = F['answer1'],
+                         answer_2 = F['answer2'],
+                         answer_3 = F['answer3'],
+        )
+        p.save()
+        p.compile_save()
+
+        LogEntry.objects.log_action(
+            user_id = request.user.id,
+            content_type_id = ContentType.objects.get_for_model(p).pk,
+            object_id = p.id,
+            object_repr = p.label,
+            action_flag = ADDITION,
+            change_message = "problemeditor/relays/"+str(p.label)+'/',
+        )
+        return JsonResponse({'url':'/problemeditor/relays/'})
+    form = AddRelayForm(request.POST or None)
+    context = {'nbar': 'problemeditor','nums':[i for i in range(1,4)]}
+    context['form'] = form
+    return render(request, 'problemeditor/addrelayform.html', context = context)
+
+@login_required
+def relay_view(request,label):
+    context = {}
+    context['nbar'] = 'problemeditor'
+    relay = get_object_or_404(RelayProblem, label = label)
+    context['prob'] = relay
+    context['label'] = label
+    return render(request, 'problemeditor/relayview.html', context)
+
+@login_required
+def load_edit_relay_answer(request,**kwargs):
+    pk = request.GET.get('pk','')
+    prob = get_object_or_404(RelayProblem,pk=pk)
+    form = EditRelayAnswer(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/relay-problem-snippets/modal-edit-answer.html',{'form': form})})
+
+@login_required
+def save_relay_answer(request,**kwargs):
+    pk = request.POST.get('ea_prob_pk','')
+    prob =  get_object_or_404(RelayProblem,pk=pk)
+    form = EditRelayAnswer(request.POST,instance = prob)
+    form.save()
+    return JsonResponse({'pk':pk,'answer_1':form.instance.answer_1,'answer_2':form.instance.answer_2,'answer_3':form.instance.answer_3})
+
+@login_required
+def load_edit_relay_backward_answer(request,**kwargs):
+    pk = request.GET.get('pk','')
+    prob = get_object_or_404(RelayProblem,pk=pk)
+    form = EditBackwardRelayAnswer(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/relay-problem-snippets/modal-edit-backward-answer.html',{'form': form})})
+
+@login_required
+def save_backward_relay_answer(request,**kwargs):
+    pk = request.POST.get('ba_prob_pk','')
+    prob =  get_object_or_404(RelayProblem,pk=pk)
+    form = EditBackwardRelayAnswer(request.POST,instance = prob)
+    form.save()
+    if form.instance.backwards_answer_2 != '' and  form.instance.backwards_answer_3 != '':
+        prob.is_backwards = 1
+        prob.save()
+    else:
+        prob.is_backwards = 0
+        prob.save()
+    return JsonResponse({'pk':pk,'answer_2':form.instance.backwards_answer_2,'answer_3':form.instance.backwards_answer_3})
+
+@login_required
+def load_edit_relay_latex(request,**kwargs):
+    pk = request.GET.get('pk','')
+    prob = get_object_or_404(RelayProblem,pk=pk)
+    form = RelayProblemTextForm(instance = prob)
+    return JsonResponse({'modal-html':render_to_string('problemeditor/relay-problem-snippets/modal-edit-latex.html',{'form': form})})
+
+@login_required
+def save_relay_latex(request,**kwargs):
+    pk = request.POST.get('pt_prob_pk','')
+    prob =  get_object_or_404(RelayProblem,pk=pk)
+    form = RelayProblemTextForm(request.POST,instance = prob)
+    form.save()
+    prob = form.instance
+    prob.save()
+    prob.compile_save()
+    return JsonResponse({'pk':pk,
+                         'prob-text-1':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_problem_text_1}),
+                         'prob-text-2':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_problem_text_2}),
+                         'prob-text-3':render_to_string('problemeditor/problem-snippets/components/autoescapelinebreaks.html',{'string_text':form.instance.display_problem_text_3}),
+    })
+
+@login_required
+def relay_pdf_view(request,label):
+    relay = get_object_or_404(RelayProblem, label = label)
+    context = {
+        'relay':relay,
+        }
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('problemeditor/my_relay_latex_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'relay':relay,
+            }
+        template = get_template('problemeditor/my_relay_latex_template.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+relay.label.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'randomtest','name':relay.label,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+@login_required
+def relay_problem_zip(request,label):
+    relay = RelayProblem.objects.get(label = label)
+    P_text = [relay.problem_text_1,relay.problem_text_2,relay.problem_text_3]
+    with tempfile.TemporaryDirectory() as tempdir:
+        for ii in range(0,3):
+            context = {
+                'relay':relay,
+                'problemcode':P_text[ii],
+                'problemlabel':relay.readable_label+'-'+str(ii+1),
+            }
+            asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+            asyr = asyf.read()
+            asyf.close()
+            template = get_template('problemeditor/my_singleproblem_relay_latex_template.tex')
+            rendered_tpl = template.render(context).encode('utf-8')
+
+        
+            # Create subprocess, supress output with PIPE and
+            # run latex twice to generate the TOC properly.
+            # Finally read the generated pdf.                                                                                                                        
+            fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+            fa.write(asyr)
+            fa.close()
+            context = {
+                'relay':relay,
+                'problemcode':P_text[ii],
+                'problemlabel':relay.readable_label+'-'+str(ii+1),
+                'tempdirect':tempdir,
+            }
+            template = get_template('problemeditor/my_singleproblem_relay_latex_template.tex')
+            rendered_tpl = template.render(context).encode('utf-8')
+            ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+            ftex.write(rendered_tpl)
+            ftex.close()
+            for i in range(1):
+                process = Popen(
+                    ['pdflatex', 'texput.tex'],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    cwd = tempdir,
+                )
+                stdout_value = process.communicate()[0]
+            L=os.listdir(tempdir)
+
+            for i in range(0,len(L)):
+                if L[i][-4:]=='.asy':
+                    process1 = Popen(
+                        ['asy', L[i]],
+                        stdin = PIPE,
+                        stdout = PIPE,
+                        cwd = tempdir,
+                    )
+                    stdout_value = process1.communicate()[0]
+            for i in range(2):
+                process2 = Popen(
+                    ['pdflatex', 'texput.tex'],
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    cwd = tempdir,
+                )
+                stdout_value = process2.communicate()[0]
+            command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+            )
+            stdout_value = proc.communicate()[0]
+
+            command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, relay.label+'-'+str(ii+1)+'.png')
+            proc = subprocess.Popen(command,
+                                    shell=True,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.PIPE,
+            )
+            stdout_value = proc.communicate()[0]
+        buffer = io.BytesIO()
+        zip_file = zipfile.ZipFile(buffer, 'w')
+        for ii in range(0,3):
+            with open(os.path.join(tempdir, relay.label+'-'+str(ii+1)+'.png'), 'rb') as f:
+                png = f.read()
+                zip_file.writestr(relay.label+'-'+str(ii+1)+'.png', png)
+        zip_file.close()
+        # Return zip
+        response = HttpResponse(buffer.getvalue())
+        response['Content-Type'] = 'application/x-zip-compressed'
+        response['Content-Disposition'] = 'attachment; filename='+relay.label+'.zip'
+
+        return response
+            

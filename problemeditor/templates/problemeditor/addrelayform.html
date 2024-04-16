@@ -1,0 +1,89 @@
+{% extends "randomtest/base.html" %}
+
+{% block title %}New Relay{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/relays/">Relays</a></li>
+    <li class="breadcrumb-item active">New Relay</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h2>New Relay</h2>
+      <form action="." method="post" id="new-relay-form">
+	{% csrf_token %}
+	{{form.as_p}}
+      <div id="error-message2" style="display:none">
+	<div class="alert alert-danger">
+	  A relay with the given parameters already exists!
+	</div>
+      </div>
+	<button type="submit" class="btn btn-primary" value="Save Relay">Save Relay</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+
+$(document).on('submit',"#new-relay-form",function(e) {
+    e.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: ".",
+        data: $(this).serialize(),
+        dataType: 'json',
+	success: function(result) {
+           if (result['error']==1) {
+              $("#error-message2").show();
+              setTimeout(function() {
+                $("#error-message2").fadeOut();
+              },5000);
+           } else {
+               window.location = result['url'];
+           }
+
+        }
+    });
+    return false;
+});
+
+
+
+</script>
+{% endblock %}

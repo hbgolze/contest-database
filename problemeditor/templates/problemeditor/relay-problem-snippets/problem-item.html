@@ -1,0 +1,60 @@
+<p>{{prob.readable_label}}-1</p>
+<p>
+  <div id="prob_text_1">
+    {% autoescape off %}{{prob.display_problem_text_1|linebreaks}} {% endautoescape %}
+  </div>
+</p>
+<p>
+  Answer: <span id="answer_1">${{prob.answer_1}}$</span>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} (<a class="edit-answer" href="{{prob.pk}}-1">Edit Answer</a>){% endif %}
+</p>
+
+
+
+<div id="toolbar_{{prob.pk}}_1" class="mt-1 mb-1">
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+      <button class="btn btn-secondary btn-sm edit-latex mr-2 mb-1 mt-1" href="{{prob.pk}}-1" title="Edit LaTeX Code">Edit LaTeX Code</button>
+  {% endif %}
+</div>
+
+<p>{{prob.readable_label}}-2</p>
+<p>
+  <div id="prob_text_2">
+    {% autoescape off %}{{prob.display_problem_text_2|linebreaks}} {% endautoescape %}
+  </div>
+</p>
+<p>
+  Answer: <span id="answer_2">${{prob.answer_2}}$</span>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} (<a class="edit-answer" href="{{prob.pk}}-2">Edit Answer</a>){% endif %}
+</p>
+<p>
+Backward Answer: <span id="backward_answer_2">{% if prob.backwards_answer_2 == '' %}N/A{% else %}${{prob.backwards_answer_2}}${% endif %}</span>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} (<a class="edit-backward-answer" href="{{prob.pk}}-2">Edit Backward Answer</a>){% endif %}
+</p>
+
+
+
+<div id="toolbar_{{prob.pk}}_2" class="mt-1 mb-1">
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+      <button class="btn btn-secondary btn-sm edit-latex mr-2 mb-1 mt-1" href="{{prob.pk}}-2" title="Edit LaTeX Code">Edit LaTeX Code</button>
+  {% endif %}
+</div>
+
+<p>{{prob.readable_label}}-3</p>
+<p>
+  <div id="prob_text_3">
+    {% autoescape off %}{{prob.display_problem_text_3|linebreaks}} {% endautoescape %}
+  </div>
+</p>
+<p>
+  Answer: <span id="answer_3">${{prob.answer_3}}$</span>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} (<a class="edit-answer" href="{{prob.pk}}-3">Edit Answer</a>){% endif %}
+</p>
+<p>
+Backward Answer: <span id="backward_answer_3">{% if prob.backwards_answer_3 == '' %}N/A{% else %}${{prob.backwards_answer_3}}${% endif %}</span>{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %} (<a class="edit-backward-answer" href="{{prob.pk}}-3">Edit Backward Answer</a>){% endif %}
+</p>
+
+
+<div id="toolbar_{{prob.pk}}_3" class="mt-1 mb-1">
+  {% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+      <button class="btn btn-secondary btn-sm edit-latex mr-2 mb-1 mt-1" href="{{prob.pk}}-3" title="Edit LaTeX Code">Edit LaTeX Code</button>
+  {% endif %}
+</div>
+
+

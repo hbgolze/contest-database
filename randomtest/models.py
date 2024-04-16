@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.admin.models import LogEntry
 from django.db.models import Max,Min
 
+from randomtest.utils import compileasy,compiletikz,newtexcode
 # Create your models here.
 TIMEZONES=(
     ("US/Alaska","US/Alaska"),
@@ -373,7 +374,43 @@ class Answer(models.Model):
             return "" + self.answer_a + ':' + self.answer_b + " " + self.units
         
 #left_units, right units
-    
+
+class RelayProblem(models.Model):
+    year = models.IntegerField(default = 2024)#label: YYYY(TITLE)R(FORM)
+    form_letter = models.CharField(max_length = 2,blank = True)
+    is_backwards = models.BooleanField(default = 0)
+    label = models.CharField(max_length = 20,blank = True)
+    readable_label = models.CharField(max_length = 20,blank = True)
+    problem_text_1 = models.TextField(blank = True)
+    display_problem_text_1 = models.TextField(blank = True)
+    problem_text_2 = models.TextField(blank = True)
+    display_problem_text_2 = models.TextField(blank = True)
+    problem_text_3 = models.TextField(blank = True)
+    display_problem_text_3 = models.TextField(blank = True)
+    answer_1 = models.CharField(max_length = 150,blank = True)
+    answer_2 = models.CharField(max_length = 150,blank = True)
+    backwards_answer_2 = models.CharField(max_length = 150,blank = True)
+    answer_3 = models.CharField(max_length = 150,blank = True)
+    backwards_answer_3 = models.CharField(max_length = 150,blank = True)
+    created_date = models.DateTimeField(default = timezone.now)
+    def __str__(self):
+        return self.label
+    def compile_save(self):
+        compileasy(self.problem_text_1,self.label+'1')
+        compiletikz(self.problem_text_1,self.label+'1')
+        self.display_problem_text_1 = newtexcode(self.problem_text_1,self.label+'1','')
+        compileasy(self.problem_text_2,self.label+'2')
+        compiletikz(self.problem_text_2,self.label+'2')
+        self.display_problem_text_2 = newtexcode(self.problem_text_2,self.label+'2','')
+        compileasy(self.problem_text_3,self.label+'3')
+        compiletikz(self.problem_text_3,self.label+'3')
+        self.display_problem_text_3 = newtexcode(self.problem_text_3,self.label+'3','')
+        self.save()
+    class Meta:
+        ordering = ['label']
+
+
+
 class ProofResponse(models.Model):
     problem = models.ForeignKey(Problem,null=True,on_delete=models.CASCADE)
     proof = models.TextField(blank = True)
@@ -394,8 +431,7 @@ class Response(models.Model):
     stickied = models.BooleanField(default = 0)
     def __str__(self):
         return self.response
-
-
+    
 
 class Test(models.Model):
     name = models.CharField(max_length = 50)#Perhaps use a default naming scheme

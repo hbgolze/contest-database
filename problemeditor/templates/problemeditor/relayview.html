@@ -1,0 +1,25 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Relay Problem: {{prob.label}}{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemeditor/relays/">Relays</a></li>
+    <li class="breadcrumb-item active">{{prob.readable_label}}</li>
+  </ol>
+</nav>
+<div class="container">
+  <h2>Edit Relay Problem: {{prob.readable_label}}</h2>
+
+  <div class="row">
+    <div class="col-12">
+    {% include 'problemeditor/relay-problem-snippets/problem-item.html' with no_link=1 %}
+    </div>
+  </div>
+
+{% include 'problemeditor/relay-problem-snippets/modal-placeholders.html' %}
+{% include 'problemeditor/relay-problem-snippets/problemscripts.html' %}
+</div>
+{% endblock %}

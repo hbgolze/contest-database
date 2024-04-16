@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType,Source,BookChapter,NewComment
+from randomtest.models import Problem,Tag,Type,Solution,QuestionType,Comment,ProblemApproval,NewTag,Round,UserType,Source,BookChapter,NewComment,RelayProblem
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from randomtest.utils import newsoltexcode,compileasy
 
@@ -272,6 +272,16 @@ class AddContestForm(forms.Form):
             elif typ.default_question_type=='sa':
                 self.fields['answer%s' % i] = forms.CharField(max_length=150,label = 'Answer',widget=forms.TextInput(attrs={'class':'form-control'}))
 
+class AddRelayForm(forms.Form):
+    year = forms.CharField(max_length=4,label='Year',required=True,widget=forms.TextInput(attrs={'class':'form-control','max-width':'50px'}))
+    formletter = forms.CharField(max_length=2,label='Form',required=False,widget=forms.TextInput(attrs={'class':'form-control'}))
+    def __init__(self, *args, **kwargs):
+        super(AddRelayForm,self).__init__(*args,**kwargs)
+        for i in range(1,4):
+            self.fields['problem_text%s' % i] = forms.CharField(widget = forms.Textarea(attrs={'cols': 120, 'rows': 15,'id' : 'codetext','class':'form-control'}),label='Problem %s' % i)
+            self.fields['answer%s' % i] = forms.CharField(max_length=150,label = 'Answer',widget=forms.TextInput(attrs={'class':'form-control'}))
+
+                
 class DuplicateProblemForm(forms.Form):
     duplicate_problem_label=forms.CharField(max_length=30,required=True)
     def clean_label(self):
@@ -589,3 +599,51 @@ class NewProblemPFForm(forms.ModelForm):
         else:
             self.fields['problem_number'].widget = forms.HiddenInput()
             self.fields['problem_number'].required = False
+
+class EditRelayAnswer(forms.ModelForm):
+    class Meta:
+        model = RelayProblem
+        fields = ('answer_1','answer_2','answer_3',)
+        widgets = {
+            'answer_1': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_2': forms.TextInput(attrs={'class':'form-control'}),
+            'answer_3': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(EditRelayAnswer,self).__init__(*args,**kwargs)
+        self.fields['answer_1'].label = "R-1 Answer"
+        self.fields['answer_2'].label = "R-2 Answer"
+        self.fields['answer_3'].label = "R-3 Answer"
+        self.fields['answer_1'].required = True
+        self.fields['answer_2'].required = True
+        self.fields['answer_3'].required = True
+
+class EditBackwardRelayAnswer(forms.ModelForm):
+    class Meta:
+        model = RelayProblem
+        fields = ('backwards_answer_2','backwards_answer_3',)
+        widgets = {
+            'backwards_answer_2': forms.TextInput(attrs={'class':'form-control'}),
+            'backwards_answer_3': forms.TextInput(attrs={'class':'form-control'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(EditBackwardRelayAnswer,self).__init__(*args,**kwargs)
+        self.fields['backwards_answer_2'].label = "R-2 Backward Answer"
+        self.fields['backwards_answer_3'].label = "R-3 Backward Answer"
+
+
+class RelayProblemTextForm(forms.ModelForm):
+    class Meta:
+        model = RelayProblem
+        fields = (
+            'problem_text_1',
+            'problem_text_2',
+            'problem_text_3',
+        )
+        widgets = {
+            'problem_text_1': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
+            'problem_text_2': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
+            'problem_text_3': forms.Textarea(attrs={'style': 'min-width: 100%', 'rows': 15,'id' : 'codetext','class':'form-control'}),
+            }
+    def __init__(self, *args, **kwargs):
+        super(RelayProblemTextForm, self).__init__(*args, **kwargs)   

@@ -1,0 +1,179 @@
+
+
+<script>
+
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = jQuery.trim(cookies[i]);
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+var csrftoken = getCookie('csrftoken');
+
+function csrfSafeMethod(method) {
+    // these HTTP methods do not require CSRF protection
+    return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+}
+
+$.ajaxSetup({
+    beforeSend: function(xhr, settings) {
+        if (!csrfSafeMethod(settings.type) && !this.crossDomain) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+        }
+    },
+});
+
+
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "sitemanager" or request.user.userprofile.user_type_new.name == "contestmanager" or request.user.userprofile.user_type_new.name == "contestmod" %}
+
+
+$(document).on('click',".edit-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href").split('-')[0];
+    var relay_number = $(this).attr("href").split('-')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-relay-answer/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
+            $("#edit-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_answer_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-relay-answer/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+            $("#answer_1").html("$"+result['answer_1']+"$");
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"answer_1"]);
+            $("#answer_2").html("$"+result['answer_2']+"$");
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"answer_2"]);
+            $("#answer_3").html("$"+result['answer_3']+"$");
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"answer_3"]);
+            $("#edit-answer-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-backward-answer",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href").split('-')[0];
+    var relay_number = $(this).attr("href").split('-')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-relay-backward-answer/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-backward-answer-modal").html(result['modal-html']);
+MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-backward-answer-modal"]);
+            $("#edit-backward-answer-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_backward_answer_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-relay-backward-answer/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+	    if (result['answer_2'] != '') {
+		$("#backward_answer_2").html("$"+result['answer_2']+"$");
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub,"backward_answer_2"]);
+	    } else {
+		$("#backward_answer_2").html("N/A");
+	    }
+	    if (result['answer_3'] != '') {
+		$("#backward_answer_3").html("$"+result['answer_3']+"$");
+		MathJax.Hub.Queue(["Typeset",MathJax.Hub,"backward_answer_3"]);
+	    } else {
+		$("#backward_answer_3").html("N/A");
+	    }
+            $("#edit-backward-answer-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+
+
+$(document).on('click',".edit-latex",function(event) {
+    event.preventDefault();
+    var prob_pk = $(this).attr("href").split('-')[0];
+    var relay_number = $(this).attr("href").split('-')[1];
+    $.ajax({
+        type: 'GET',
+        url: '/problemeditor/ajax/load-edit-relay-latex/',
+        data: "pk="+prob_pk,
+        dataType: 'json',
+        success: function(result) {
+            $("#edit-latex-modal").html(result['modal-html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
+            $("#edit-latex-modal").modal("show");
+        }
+    });
+    return false;
+});
+
+$(document).on('submit',"#edit_latex_form",function(event) {
+    event.preventDefault();
+    $.ajax({
+        type: 'POST',
+        url: '/problemeditor/ajax/save-relay-latex/',
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function(result) {
+	    d = new Date();
+            $("#prob_text_1").html(result['prob-text-1']);
+            $("#prob_text_1 img").each(function(e) {
+                url = $(this).attr("src");
+                $(this).attr("src",url+"?"+d.getTime());
+            });
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"prob_text_1"]);
+            $("#prob_text_2").html(result['prob-text-2']);
+            $("#prob_text_2 img").each(function(e) {
+                url = $(this).attr("src");
+                $(this).attr("src",url+"?"+d.getTime());
+            });
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"prob_text_2"]);
+            $("#prob_text_3").html(result['prob-text-3']);
+            $("#prob_text_3 img").each(function(e) {
+                url = $(this).attr("src");
+                $(this).attr("src",url+"?"+d.getTime());
+            });
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"prob_text_3"]);
+            $("#edit-latex-modal").hide();
+            $("[data-dismiss=modal]").trigger({ type: "click" });
+        }
+    });
+    return false;
+});
+
+{% endif %}
+</script>

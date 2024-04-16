@@ -1,0 +1,46 @@
+<div class="modal-dialog">
+  <div class="modal-content">
+    <form id="edit_backward_answer_form" method='get' action='.'>
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Backward Answer</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+      </div>
+      <div class="modal-body">
+
+
+	<p>{{form.instance.readable_label}}-2</p>
+	<p>
+	    {% autoescape off %}{{form.instance.display_problem_text_2|linebreaks}} {% endautoescape %}
+	</p>
+
+	<p>{{form.instance.readable_label}}-3</p>
+	<p>
+	    {% autoescape off %}{{form.instance.display_problem_text_3|linebreaks}} {% endautoescape %}
+	</p>
+	
+	<input type="hidden" id="ba_prob_pk" name="ba_prob_pk" value="{{form.instance.pk}}">
+        {{ form.non_field_errors }}
+        <div class="form-group">
+          {% for field in form %}
+          <div class="form-group">
+            {% if field.errors %}
+            <ul class="form-errors">
+              {% for error in field.errors %}
+              <li><span class="fa fa-exclamation-triangle"></span> <strong>{{ error|escape }}</strong></li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+            {{ field.label_tag }} {{ field }}
+            {% if field.help_text %}<div class="form-helptext">{{ field.help_text }}</div>{% endif %}
+          </div>
+	  {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <input type="button" class="btn btn-secondary" data-dismiss="modal" value="Close" >
+        <input type="submit" class="btn btn-primary" value="Save">
+      </div>
+    </form>
+  </div><!-- /.modal-content -->
+</div><!-- /.modal-dialog -->
+

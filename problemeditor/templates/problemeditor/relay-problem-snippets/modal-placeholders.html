@@ -1,0 +1,12 @@
+{% if request.user.userprofile.user_type_new.name == "super" or request.user.userprofile.user_type_new.name == "contestmod" %}
+
+  <div class="modal fade" id="edit-answer-modal" role="dialog">
+
+  </div> 
+  <div class="modal fade" id="edit-backward-answer-modal" role="dialog">
+
+  </div> 
+  <div class="modal fade" id="edit-latex-modal" role="dialog">
+
+  </div>
+ {% endif %} 
