@@ -1,0 +1,105 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{fancyhdr}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+
+
+\usepackage[letterpaper]{geometry}
+\setlength\topmargin{0in}
+\setlength\headsep{0.1in}
+\setlength{\headwidth}{\textwidth}
+\fancyhead[R]{}
+\fancyhead[C]{
+{{group.name}}
+}
+\fancyhead[L]{
+}
+\pagestyle{fancy}
+
+\setlength{\textheight}{8.7in}
+
+\newlength{\problemwidth}
+\setlength{\problemwidth}{15.54cm}
+%12.95cm
+%width of answer space
+\newlength{\answerwidth}
+\setlength{\answerwidth}{3.5cm}%5.25
+% width between problem space and answer space
+\newlength{\answermargin}
+\setlength{\answermargin}{0cm}
+% width of answer blank
+\newlength{\blankwidth}
+\setlength{\blankwidth}{3.24cm}%2.7cm
+% space between problems
+\newlength{\problemskip}
+\setlength{\problemskip}{18pt}
+
+
+\usepackage{xparse}
+\usepackage{framed}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
+\title{ {{group.name}} }
+\author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+{% for p_object in group.problem_objects.all %}                                                                                
+{% with prob=p_object.problem %}                
+{% if forloop.counter0|divisibleby:2 %}
+\newpage
+\setlength{\fboxsep}{10pt}
+\setlength{\fboxrule}{1pt}
+\noindent\framebox[\textwidth][l]{\parbox{\textwidth}{
+\begin{tabular}{ll}
+Name:&\underline{\hspace{3in} }\\
+\end{tabular}
+\vspace{12pt}
+
+Answer to I-{{forloop.counter}}: \framebox[3in]{\phantom{WOW} }
+\vspace{12pt}
+
+Answer to I-{{forloop.counter|add:"1"}}: \framebox[3in]{\phantom{WOW} }
+\vspace{6pt} } }
+
+\vspace{\problemskip}
+
+{% endif %}
+
+  \textbf{I-{{forloop.counter}}:} {% if prob.question_type_new.question_type == 'multiple choice' or prob.question_type_new.question_type == 'multiple choice short answer' %}{{prob.mc_problem_text}}{% else %}{{prob.problem_text}} {% endif %}{% if include_problem_labels %} [{{prob.readable_label|poundsafe}}]{% endif %} 
+
+{% if include_answer_choices or prob.needs_answers %}
+\vspace{6pt}
+
+{{prob.answers}}
+{% endif %}
+
+\vspace{\problemskip}
+{% endwith %}
+
+{% endfor %}
+
+\end{document}
+
+{% endautoescape %}
