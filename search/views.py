@@ -73,6 +73,10 @@ def searchresults(request):
             del(z['page'])
         current_url = z.urlencode()
         form = request.GET
+        types = userprofile.user_type_new.allowed_types.all()
+        type_pks = []
+        for i in types:
+            type_pks.append(i.pk)
         if form.get('searchform','') == "start":
             testtype = form.get('tp','')
             type_args = testtype.split('_')
@@ -130,6 +134,7 @@ def searchresults(request):
                     P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)#
                 elif round_or_type == '':
                     P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend)
+                    P = P.filter(type_new__pk__in = type_pks)
                 else:
                     P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)#
                 P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
@@ -139,6 +144,7 @@ def searchresults(request):
                     P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()#
                 elif round_or_type == '':
                     P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).distinct()
+                    P = P.filter(type_new__pk__in = type_pks)
                 else:
                     P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()#
 
@@ -152,6 +158,7 @@ def searchresults(request):
                     S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
                 elif round_or_type == '':
                     S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__id__in=P).distinct()
+                    S = S.filter(parent_problem__type_new__pk__in = type_pks)
                 else:
                     S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
                 for i in keywords:
