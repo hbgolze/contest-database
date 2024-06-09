@@ -76,8 +76,12 @@ def searchresults(request):
         if form.get('searchform','') == "start":
             testtype = form.get('tp','')
             type_args = testtype.split('_')
-            round_or_type = type_args[0]
-            rt_pk = type_args[1]
+            if len(type_args) > 1:
+                round_or_type = type_args[0]
+                rt_pk = type_args[1]
+            else:
+                round_or_type = ''
+                rt_pk = ''
 
             searchterm = form.get('keywords','')
             if searchterm is None or searchterm == u'':
@@ -124,6 +128,8 @@ def searchresults(request):
             if len(tag)>0:
                 if round_or_type == "T":
                     P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)#
+                elif round_or_type == '':
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend)
                 else:
                     P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)#
                 P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
@@ -131,6 +137,8 @@ def searchresults(request):
             else:
                 if round_or_type == "T":
                     P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()#
+                elif round_or_type == '':
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).distinct()
                 else:
                     P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()#
 
@@ -142,6 +150,8 @@ def searchresults(request):
             if 'solutionsearch' in form:
                 if round_or_type == "T":
                     S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
+                elif round_or_type == '':
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__id__in=P).distinct()
                 else:
                     S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
                 for i in keywords:
@@ -173,6 +183,8 @@ def searchresults(request):
                 context['tag_list'] = [tag]
             if round_or_type == 'T':
                 context['testtypes'] = [Type.objects.get(pk=rt_pk)]
+            elif round_or_type == '':
+                context['testtypes'] = []
             else:
                 context['testtypes'] = [Round.objects.get(pk=rt_pk)]
             return HttpResponse(template.render(context,request))
