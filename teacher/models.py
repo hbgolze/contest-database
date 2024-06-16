@@ -798,6 +798,9 @@ class ProblemSet(models.Model):#like NewTest
             if i.isProblem:
                 P.append(i.problem)
         return P
+    def add_all_solutions(self):
+        for po in self.problem_objects.all():
+            po.add_all_solutions()
 
 ####sync_to_parent needs work beyond here.
 
@@ -1032,6 +1035,13 @@ class ProblemObject(models.Model):
         if test is not None:
             return ('t',test)
         return ('n',None)
+    def add_all_solutions(self):
+        if self.isProblem == 1:
+            p = self.problem
+            for sol in p.solutions.all():
+                so = SolutionObject(problem_object = self, order = self.solution_objects.count()+1, solution = sol,author = self.author,isSolution = 1)
+                so.save()
+            self.increment_version()
 #        except ProblemSet.DoesNotExist:
 #try:
 #                pset = self.test
