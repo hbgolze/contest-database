@@ -1,0 +1,230 @@
+{% extends "randomtest/base.html" %}
+
+{% block title %}Random Contest Search {% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemgroups/">My Problem Groups</a></li>
+    <li class="breadcrumb-item"><a href="/problemgroups/{{prob_group.pk}}/">{{prob_group.name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Search</li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h2>Search</h2>
+  <div class="row">
+    <div class="col">
+      <p>Enter a search term, and select more specific options if desired. This will search for problems with text matching the keywords.</p>
+
+{% if not advanced %}
+<p><a class="btn btn-secondary" href="?advanced">Advanced Mode</a></p>
+{% else %}
+<p><a class="btn btn-secondary" href="/problemgroups/{{prob_group.pk}}/search/">Basic Mode</a></p>
+{% endif %}
+
+    </div>
+  </div>
+
+
+  <div class="row">
+    <div class="col">
+      <form action="{% if advanced %}advanced_{% endif %}results/" method="get">
+	<input type="hidden" name="searchform" value="start">
+	<div class="row">
+	  <div class="form-group col-lg-3">
+	    <label for="keywords">Keywords:</label>
+	    <input type="text" name="keywords" class="form-control">
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    {% if advanced %}
+	    <label for "presets" class="control-label">Preset Type Options:</label>
+	    <select id="presets" class="form-control">
+	      <option value="">Select a preset</option>
+	      {% for preset in presets %}
+	      <option value="{{preset.actions}}">{{preset.label}}</option>
+	      {% endfor %}
+	      </select>
+	    {% endif %}
+	    <label for="tp" class="control-label">Problem Type:</label>
+	    <select{% if advanced %} multiple{% endif %} name="tp" id="tp"{% if advanced %} size="10"{% endif %}>
+	      {% for typ in types %}
+	      <option value="T_{{typ.pk}}" title="{{typ.label}}">{{typ.label}} Problems</option>
+{% for round in typ.rounds.all %}
+<option value="R_{{round.pk}}" title="{{round.name}}">&nbsp;&nbsp;&nbsp;-{{round.name}} Problems</option>
+{% endfor %}
+	  {% endfor %}
+	    </select>
+	    <script>
+              var $tp_sel = $('#tp').selectize({
+                  create: false,
+{% if advanced %}		  plugins: ['remove_button'],{% endif %}
+              });
+              </script>
+	  </div>
+	</div>
+
+	<div class="row">
+	  <div class="form-group col-lg-8">
+	    <label for="tag" class="control-label">Desired Tag (<a href="/randomtest/tagcounts/">Tag Counts</a>):</label>
+	    
+	    <select{% if advanced %} multiple{% endif %} name="tag" id="select_tag" {% if advanced %} size="10"{% endif %}>
+{% if not advanced %}	      <option value="">Unspecified</option>{% endif %}
+{% for t in tags %}
+	      <option value="{{t.tag}}" title="{{t.description}}">{{t.tag}}==={{t.description}}</option>
+	      {% endfor %}
+	    </select>
+	    {% if advanced %}
+	    <script>
+              $('#select_tag').selectize({
+                  create: false,
+                  sortField: 'text',
+		  plugins: ['remove_button'],
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+              </script>
+	    {% else %}
+	    <script>
+              $('#select_tag').selectize({
+                  create: false,
+                  sortField: 'text',
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                              return '<div class="option" title="' + label[1] + '">' +
+                              '<span class="">' + escape(label[0]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+              </script>
+	    {% endif %}
+	  </div>
+	</div>
+	{% if advanced %}
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    <div class="form-check">
+	      <input class="form-check-input" type="radio" name="unionintersection" id="intersectionradio" value="int">
+	      <label class="form-check-label" for="intersectionradio">
+		Intersection
+	      </label>
+	    </div>
+	    <div class="form-check">
+	      <input class="form-check-input" type="radio" name="unionintersection" id="unionradio" value="union" checked>
+	      <label class="form-check-label" for="unionradio">
+		Union
+	      </label>
+	    </div>
+	  </div>
+	</div>
+	{% endif %}
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    <label for="probbegin" class="control-label">Range of Problem Numbers (for all problems, leave this blank):</label>
+	    <div class="form-inline">
+	      <input type="number" name="probbegin" style="width: 75px;" class="form-control">&nbsp;to&nbsp;<input type="number" name="probend" style="width: 75px;" class="form-control">
+	    </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    <label for="yearbegin" class="control-label">Year Range (for all years, leave this blank):</label>
+	    <div class="form-inline">
+	      <input type="number" name="yearbegin" style="width: 105px;" class="form-control">&nbsp;to&nbsp;<input type="number" name="yearend" style="width: 105px;" class="form-control">
+	    </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="form-group col-lg-5">
+	    <div class="form-check">
+	      <label class="form-check-label">
+		<input class="form-check-input" type="checkbox" name="solutionsearch" value="">
+		Search Solutions
+	      </label>
+	    </div>
+	  </div>
+	</div>
+	<div class="row">
+	  <div class="form-group col-lg-5">
+            <label for="sol_opts" class="control-label">Solution Options</label>
+
+            <select name="sol_opts" class="form-control">
+              <option value="all">Search All Problems</option>
+              <option value="sols">Search Only Problems With Solutions</option>
+              <option value="nosols">Search Only Problems With No Solutions</option>
+            </select>
+	  </div>
+	</div>
+{% if advanced %}
+	<div class="row">
+	  <div class="form-group col-lg-8">
+	    <label for="tag" class="control-label">Exclude Problems from these Problem Groups:</label>
+	    <select multiple name="prob_group" id="select_prob_group" size="10">
+	      {% for pg in probgroups %}
+	      <option value="{{pg.pk}}">{{pg.pk}}==={{pg.name}}</option>
+	      {% endfor %}
+	    </select>
+	    <script>
+              $('#select_prob_group').selectize({
+                  create: false,
+                  sortField: 'text',
+		  plugins: ['remove_button'],
+                  render: {
+                      option: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '('+label[0]+')">' +
+                              '<span class="">' + escape(label[1]) + '</span>' +
+                              '</div>';
+                      },
+                      item: function (item, escape) {
+                          var label = item.text.split('===');
+                          return '<div class="option" title="' + label[1] + '('+label[0]+'">' +
+                              '<span class="">' + escape(label[1]) + '</span>' +
+                              '</div>';
+                      }
+                  }
+              });
+            </script>
+	  </div>
+	</div>
+{% endif %}
+		
+	<button type="submit" value="Search" class="btn btn-primary">Search</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  $(document).on('change','#presets', function(e) {
+      var s=$(this).val().split('|');
+      var selectize = $tp_sel[0].selectize;
+      $("#tp").val(s);
+      selectize.setValue(s);
+  });
+</script>
+
+{% endblock %}
