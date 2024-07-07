@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/outlinepdf/$', views.outline_test_as_pdf, name='pgoutlinepdfview'),
     url(r'^(?P<pk>\d+)/twoatatimepdf/$', views.twoatatime_test_as_pdf, name='pgtwoatatimepdfview'),
     url(r'^(?P<pk>\d+)/latex/$', views.latex_view, name='pglatexview'),
-
+    url(r'^(?P<pk>\d+)/answerkey/$', views.group_answer_key_as_pdf, name='pganswerkeyview'),
     url(r'^(?P<pk>\d+)/search/$', views.searchform, name='pgsearchform'),
     url(r'^(?P<pk>\d+)/search/results/$', views.searchresults, name='searchresults'),
     url(r'^(?P<pk>\d+)/search/advanced_results/$', views.advanced_searchresults, name='advancedsearchresults'),
