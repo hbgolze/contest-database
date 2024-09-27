@@ -637,6 +637,52 @@ def outline_test_as_pdf(request,**kwargs):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'groups','name':prob_group.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
 @login_required
+def outline_test_as_tex(request,**kwargs):
+    form = request.GET
+    context = {}
+    if 'include-acs' in form:
+        include_answer_choices = True
+    else:
+        include_answer_choices = False
+    if 'include-pls' in form:
+        include_problem_labels = True
+    else:
+        include_problem_labels = False
+    if 'include-tags' in form:
+        include_tags = True
+    else:
+        include_tags = False
+    if 'include-sols' in form:
+        include_sols = True
+    else:
+        include_sols = False
+    if 'include-ans' in form:
+        include_ans = True
+    else:
+        include_ans = False
+    if 'include-nts' in form:
+        include_nts = True
+    else:
+        include_nts = False
+    print(include_nts)
+    prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
+    context = {
+        'group' : prob_group,
+        'include_problem_labels' : include_problem_labels,
+        'include_answer_choices':include_answer_choices,
+        'include_tags' : include_tags,
+        'include_sols' : include_sols,
+        'include_ans' : include_ans,
+        'include_nts' : include_nts,
+    }
+    template = get_template('groups/my_latex_outline_template.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    filename = "texput.tex"
+    response = HttpResponse(rendered_tpl, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
+
+@login_required
 def twoatatime_test_as_pdf(request,**kwargs):
     form = request.GET
     context = {}
