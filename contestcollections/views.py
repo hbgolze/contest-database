@@ -153,6 +153,8 @@ def test_as_pdf(request,**kwargs):
         template = get_template('contestcollections/my_latex_halfpage_template.tex')
     elif fmt == 'twoatatime':
         template = get_template('contestcollections/my_latex_twoatatime_template.tex')
+    elif fmt == 'drill':
+        template = get_template('contestcollections/my_latex_drill_template.tex')
     else:
         template = get_template('randomtest/my_latex_template.tex')
     rendered_tpl = template.render(context).encode('utf-8')
@@ -181,6 +183,8 @@ def test_as_pdf(request,**kwargs):
             template = get_template('contestcollections/my_latex_halfpage_template.tex')
         elif fmt == 'twoatatime':
             template = get_template('contestcollections/my_latex_twoatatime_template.tex')
+        elif fmt == 'drill':
+            template = get_template('contestcollections/my_latex_drill_template.tex')
         else:
             template = get_template('randomtest/my_latex_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')

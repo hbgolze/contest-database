@@ -1,0 +1,85 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote}
+\usepackage{tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{fancyhdr}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+
+
+\usepackage[letterpaper,margin=1in]{geometry}
+
+
+
+
+\newlength{\problemwidth}
+\setlength{\problemwidth}{4.7in}
+%12.95cm
+%width of answer space
+\newlength{\answerwidth}
+\setlength{\answerwidth}{1.5in}
+% width between problem space and answer space
+\newlength{\answermargin}
+\setlength{\answermargin}{0cm}
+% width of answer blank
+\newlength{\blankwidth}
+\setlength{\blankwidth}{1in}%2.7cm
+
+
+
+\usepackage{xparse}
+\usepackage{framed}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
+\title{ {{name}} }
+\author{ {% if randomize %}Seed Number: {{seed}}{% endif %} }
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+\textbf{ {{name}} }\hfill Name: \rule{3in}{.5pt}
+
+\begin{enumerate}
+{% for prob,problemcode,problemlabel,answerchoices in rows %}
+\item
+
+\begin{minipage}[t]{\problemwidth}
+{{problemcode}} {% if include_problem_labels %}[{{problemlabel|poundsafe}}]{% endif %}
+{% if include_answer_choices or prob.needs_answers %}
+\vspace{6pt}
+
+{{answerchoices}}
+{% endif %}
+\end{minipage}\quad
+\begin{minipage}[t]{\answerwidth}
+{{forloop.counter}}.\ \underline{\hspace{\blankwidth}}
+
+\end{minipage}
+
+\bigskip
+
+\vspace{\stretch{1}}
+
+
+{% endfor %}
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}
