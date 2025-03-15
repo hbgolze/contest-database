@@ -1,0 +1,92 @@
+{% extends 'randomtest/base.html' %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Grade Drill</li>
+    </ol>
+</nav>
+<div class="container mt-4">
+    <h1 class="mb-4">Grade {{drill.readable_label}}</h1>
+    
+    <form id="gradeDrillForm">
+        {% csrf_token %}
+        <table class="table table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th>Select</th>
+                    <th>Profile</th>
+                    {% for problem in drill.drill_problems.all %}
+                    <th>Problem {{ problem.order }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in drill_records %}
+                <tr>
+                    <td><input type="checkbox" class="profile-checkbox" value="{{ record.drill_profile.id }}" name="profile_ids[]"></td>
+                    <td>{{ record.drill_profile.name }}</td>
+                    {% for problem in record.drill_record_problems.all %}
+                    <td>
+                        <input type="text" 
+                               class="form-control grade-input" 
+                               name="grade_{{ record.drill_profile.id }}_{{ problem.drill_problem.id }}" 
+                               value="{% if problem.status == -1 %}{% else %}{{problem.status}}{% endif%}">
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                {% for profile in blank_profiles %}
+                <tr>
+                    <td><input type="checkbox" class="profile-checkbox" value="{{ profile.id }}" name="profile_ids[]"></td>
+                    <td>{{ profile.name }}</td>
+                    {% for problem in drill.drill_problems.all %}
+                    <td>
+                        <input type="text" 
+                               class="form-control grade-input" 
+                               name="grade_{{ profile.id }}_{{ problem.id }}" 
+                               value="">
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <button type="submit" class="btn btn-primary">Save Selected Grades</button>
+    </form>
+</div>
+
+<script>
+$('#gradeDrillForm').submit(function(event) {
+    event.preventDefault();
+    let selectedProfiles = [];
+    
+    $('.profile-checkbox:checked').each(function() {
+        selectedProfiles.push($(this).val());
+    });
+    console.log(selectedProfiles);
+    
+    let grades = {};
+    $('.grade-input').each(function() {
+        grades[$(this).attr("name")] = $(this).val();
+    });
+    
+    var form = $(this).closest("form");
+
+    $.ajax({
+        url: '/drills/grade_drill/{{drill.pk}}/',
+        type: "POST",
+        data:  form.serialize()+'&checks='+selectedProfiles,
+        success: function(response) {
+            alert("Grades saved successfully!");
+        },
+        error: function(xhr) {
+            alert("Error saving grades. Please try again.");
+        }
+    });
+});
+</script>
+
+{% endblock %}

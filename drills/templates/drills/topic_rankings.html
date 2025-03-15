@@ -1,0 +1,56 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}{{year.year}} Topic Rankings{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Topic Rankings</li>
+    </ol>
+  </nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Topic Rankings</h1>
+    <table class="table table-bordered text-center sortable mb-4">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Alg Solves</th>
+                <th>Alg Possible</th>
+                <th>Alg Fraction</th>
+                <th>Combo Solves</th>
+                <th>Combo Possible</th>
+                <th>Combo Fraction</th>
+                <th>Geo Solves</th>
+                <th>Geo Possible</th>
+                <th>Geo Fraction</th>
+                <th>NT Solves</th>
+                <th>NT Possible</th>
+                <th>NT Fraction</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile, acgn in topic_data %}
+            <tr>
+                <td>{{profile.name}}</td>
+                <td>{{acgn.0.count}}</td>
+                <td>{{acgn.1.count}}</td>
+                <td{% if acgn.2 <= .0833 %} class="results-bg-gradient-0"{% elif acgn.2 <= .1666 %} class="results-bg-gradient-1"{% elif acgn.2 <= .25 %} class="results-bg-gradient-2"{% elif acgn.2 <= .3333%} class="results-bg-gradient-3"{% elif acgn.2 <= .4166 %} class="results-bg-gradient-4"{% elif acgn.2 <= .50 %} class="results-bg-gradient-5"{% elif acgn.2 <= .5833%} class="results-bg-gradient-6"{% elif acgn.2 <= .6666 %} class="results-bg-gradient-7"{% elif acgn.2 <= .75 %} class="results-bg-gradient-8"{% elif acgn.2 <= .8333%} class="results-bg-gradient-9"{% elif acgn.2 <= .9166%} class="results-bg-gradient-10"{% else %} class="results-bg-gradient-11"{% endif %}>{{acgn.2|floatformat:2}}</td>
+                <td>{{acgn.3.count}}</td>
+                <td>{{acgn.4.count}}</td>
+                <td{% if acgn.5 <= .0833 %} class="results-bg-gradient-0"{% elif acgn.5 <= .1666 %} class="results-bg-gradient-1"{% elif acgn.5 <= .25 %} class="results-bg-gradient-2"{% elif acgn.5 <= .3333%} class="results-bg-gradient-3"{% elif acgn.5 <= .4166 %} class="results-bg-gradient-4"{% elif acgn.5 <= .50 %} class="results-bg-gradient-5"{% elif acgn.5 <= .5833%} class="results-bg-gradient-6"{% elif acgn.5 <= .6666 %} class="results-bg-gradient-7"{% elif acgn.5 <= .75 %} class="results-bg-gradient-8"{% elif acgn.5 <= .8333%} class="results-bg-gradient-9"{% elif acgn.5 <= .9166%} class="results-bg-gradient-10"{% else %} class="results-bg-gradient-11"{% endif %}>{{acgn.5|floatformat:2}}</td>
+                <td>{{acgn.6.count}}</td>
+                <td>{{acgn.7.count}}</td>
+                <td{% if acgn.8 <= .0833 %} class="results-bg-gradient-0"{% elif acgn.8 <= .1666 %} class="results-bg-gradient-1"{% elif acgn.8 <= .25 %} class="results-bg-gradient-2"{% elif acgn.8 <= .3333%} class="results-bg-gradient-3"{% elif acgn.8 <= .4166 %} class="results-bg-gradient-4"{% elif acgn.8 <= .50 %} class="results-bg-gradient-5"{% elif acgn.8 <= .5833%} class="results-bg-gradient-6"{% elif acgn.8 <= .6666 %} class="results-bg-gradient-7"{% elif acgn.8 <= .75 %} class="results-bg-gradient-8"{% elif acgn.8 <= .8333%} class="results-bg-gradient-9"{% elif acgn.8 <= .9166%} class="results-bg-gradient-10"{% else %} class="results-bg-gradient-11"{% endif %}>{{acgn.8|floatformat:2}}</td>
+                <td>{{acgn.9.count}}</td>
+                <td>{{acgn.10.count}}</td>
+                <td{% if acgn.11 <= .0833 %} class="results-bg-gradient-0"{% elif acgn.11 <= .1666 %} class="results-bg-gradient-1"{% elif acgn.11 <= .25 %} class="results-bg-gradient-2"{% elif acgn.11 <= .3333%} class="results-bg-gradient-3"{% elif acgn.11 <= .4166 %} class="results-bg-gradient-4"{% elif acgn.11 <= .50 %} class="results-bg-gradient-5"{% elif acgn.11 <= .5833%} class="results-bg-gradient-6"{% elif acgn.11 <= .6666 %} class="results-bg-gradient-7"{% elif acgn.11 <= .75 %} class="results-bg-gradient-8"{% elif acgn.11 <= .8333%} class="results-bg-gradient-9"{% elif acgn.11 <= .9166%} class="results-bg-gradient-10"{% else %} class="results-bg-gradient-11"{% endif %}>{{acgn.11|floatformat:2}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

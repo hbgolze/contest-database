@@ -1,0 +1,101 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Manage Drill Profiles{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Manage Drill Profiles</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">Manage Profiles</h1>
+    
+    <button class="btn btn-success mb-3" data-toggle="modal" data-target="#addProfileModal">Add New Profile</button>
+    
+    
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                <th>Years</th>
+                <th>Add Year</th>
+            </tr>
+        </thead>
+        <tbody id="profileTable">
+            {% for profile in profiles %}
+            {% include "drills/snippet_profile-row.html" %}
+            {% endfor %}
+        </tbody>
+    </table>
+    
+</div>
+
+<!-- Modal for adding a new profile -->
+<div class="modal fade" id="addProfileModal" tabindex="-1" role="dialog" aria-labelledby="addProfileLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProfileLabel">Add New Profile</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addProfileForm">
+                    <div class="form-group">
+                        <label for="profileName">Name</label>
+                        <input type="text" class="form-control" id="profileName" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$('#addProfileForm').submit(function(event) {
+    event.preventDefault();
+    let name = $('#profileName').val();
+
+    $.ajax({
+        url: '/drills/manage_profiles/add/',
+        type: "POST",
+        data: {
+            name: name,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            let newRow = response['profile_row'];
+            $('#profileTable').append(newRow);
+            $('#addProfileModal').modal('hide');
+            $('#addProfileForm')[0].reset();
+        },
+        error: function(xhr) {
+            alert("Error adding profile. Please try again.");
+        }
+    });
+});
+
+$("select.js-year-select").change(function(event) {
+    event.preventDefault();
+    var form = $(this).closest("form");
+    $.ajax({
+        type: 'POST',
+        url: '{% url 'add_year' %}',
+        data: form.serialize(),
+        dataType: 'json',
+        success: function(data) {
+            let newRow = data['profile_row'];
+            $('#profile_'+data['profile_pk']).html(newRow);
+            $('#addProfileModal').modal('hide');
+            $('#addProfileForm')[0].reset();
+        }
+    });
+    return false;
+});
+</script>
+
+{% endblock %}

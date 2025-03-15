@@ -1,0 +1,17 @@
+<input type="hidden" id="editTaskId" value="{{task.id}}">
+
+<div class="form-group">
+    <label for="editTaskTopic">Topic</label>
+    <select class="form-control" id="editTaskTopic" required>
+        <option value="Algebra"{% if task.topic == "Algebra" %} selected{% endif %}>Algebra</option>
+        <option value="Geometry"{% if task.topic == "Geometry" %} selected{% endif %}>Geometry</option>
+        <option value="Combinatorics"{% if task.topic == "Combinatorics" %} selected{% endif %}>Combinatorics</option>
+        <option value="Number Theory"{% if task.topic == "Number Theory" %} selected{% endif %}>Number Theory</option>
+        <option value="Bonus"{% if task.topic == "Bonus" %} selected{% endif %}>Bonus</option>
+    </select>
+</div>
+<div class="form-group">
+    <label for="editTaskDescription">Description</label>
+    <textarea class="form-control mb-2 codetext" id="editTaskDescription" rows="4" required>{{task.description}}</textarea>
+</div>
+<button type="submit" class="btn btn-primary">Save Changes</button>

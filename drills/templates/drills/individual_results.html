@@ -1,0 +1,49 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Drill Results{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Drill Results</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ drill.readable_label }} Results</h1>
+
+    <table class="table table-bordered text-center">
+        <thead class="thead-dark">
+            <tr>
+                <th>Name</th>
+                {% for problem in drill.drill_problems.all %}
+                <th>{{ problem.order }}</th>
+                {% endfor %}
+                <th>Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in records %}
+            <tr>
+                <td>{{ record.drill_profile.name }}</td>
+                {% for problem in record.drill_record_problems.all %}
+                <td style="{% if problem.status == 1 %}background-color:#b7e1cd {% elif problem.status == 0 %}background-color:#f4c7c3{% endif %}">
+                    {% if problem.status != -1 %}{{ problem.status }}{% endif %}
+                </td>
+                {% endfor %}
+                <td>{{ record.score }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot class="tfoot-dark">
+            <tr>
+                <td></td>
+                {% for problem in drill.drill_problems.all %}
+                <td>{{ problem.number_solved }}</td>
+                {% endfor %}
+                <td></td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}

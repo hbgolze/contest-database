@@ -1,0 +1,11 @@
+    <p>
+    <label>Problem Text:</label>
+      <div id="prob_text-{{problem.id}}">{% autoescape off %}{{problem.display_problem_text|linebreaks}} {% endautoescape %}</div>
+    </p>
+      <input type="hidden" id="editProblemAnswerId" value="{{problem.id}}">
+    <p><strong>Current Answer:</strong> {{problem.answer}}</p>
+    <div class="form-group">
+        <label for="editProblemAnswer">Answer</label>
+        <input type="text" class="form-control" id="editProblemAnswer" required value="{{problem.answer}}">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Changes</button>

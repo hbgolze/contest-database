@@ -1,0 +1,209 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Drill Task Manager{% endblock %}
+<!-- Still need to edit modal ajax urls! -->
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Drill Task Manager</li>
+    </ol>
+</nav>
+<div class="container mt-4">
+    <h1 class="mb-4">Drill Task Manager</h1>
+    
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>ID</th>
+                <th>Description</th>
+                <th>Topic</th>
+                <th>Count</th>
+                <th>Edit</th>
+                <th>View Problems</th>
+            </tr>
+        </thead>
+        <tbody id="taskTableBody">
+            {% for task in tasks %}
+            <tr id="taskRow{{ task.id }}">
+                <td>{{ task.id }}</td>
+                <td>{{ task.description }}</td>
+                <td>{{ task.topic }}</td>
+                <td>{{ task.drillproblem_set.count }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" onclick="loadEditTask({{ task.id }})">Edit</button>
+                </td>
+                <td>
+                    <button class="btn btn-info btn-sm" onclick="loadProblems({{ task.id }})">View Problems</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <button class="btn btn-success" data-toggle="modal" data-target="#addTaskModal">Add New Task</button>
+</div>
+
+<!-- Modal for adding a new task -->
+<div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addTaskLabel">Add New Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addTaskForm">
+                    <div class="form-group">
+                        <label for="taskTopic">Topic</label>
+                        <select class="form-control" id="taskTopic" name="topic" required>
+                            <option value="Algebra">Algebra</option>
+                            <option value="Geometry">Geometry</option>
+                            <option value="Combinatorics">Combinatorics</option>
+                            <option value="Number Theory">Number Theory</option>
+                            <option value="Bonus">Bonus</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="taskDescription">Description</label>
+                        <input type="text" class="form-control" id="taskDescription" name="description" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Task</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing a task -->
+<div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editTaskLabel">Edit Task</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editTaskForm">
+                    <div id="edit-task-group">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing problems -->
+<div class="modal fade" id="problemsModal" tabindex="-1" role="dialog" aria-labelledby="problemsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="problemsLabel">Drill Problems</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="problemsList">
+                <!-- Problems will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+$('#addTaskForm').submit(function(event) {
+    event.preventDefault();
+    let topic = $('#taskTopic').val();
+    let description = $('#taskDescription').val();
+    
+    $.ajax({
+        url: '/drills/tasks/add/',
+        type: "POST",
+        data: {
+            topic: topic,
+            description: description,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $('#taskTableBody').append(
+                `<tr id="taskRow${response.id}"><td>${response.id}</td><td>${response.description}</td><td>${response.topic}</td><td>0</td>
+                <td><button class="btn btn-warning btn-sm" onclick="loadEditTask(${response.id})">Edit</button></td>
+                <td><button class="btn btn-info btn-sm" onclick="loadProblems(${response.id})">View Problems</button></td></tr>`
+            );
+            $('#addTaskModal').modal('hide');
+            $('#addTaskForm')[0].reset();
+        },
+        error: function(xhr) {
+            alert("Error adding task. Please try again.");
+        }
+    });
+});
+
+function loadEditTask(id) {
+    $.ajax({
+        url: `/drills/tasks/${id}/load-edit-task/`,
+        type: "POST",
+        data: {
+            task_id: id,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $('#edit-task-group').html(response['html_code']);
+            $('#editTaskModal').modal('show');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-task-group"]);
+        },
+        error: function(xhr) {
+            alert("Error loading task. Please try again.");
+        }
+    });
+    
+}
+
+$('#editTaskForm').submit(function(event) {
+    event.preventDefault();
+    let id = $('#editTaskId').val();
+    let topic = $('#editTaskTopic').val();
+    let description = $('#editTaskDescription').val();
+    
+    $.ajax({
+        url: `/drills/tasks/${id}/edit/`,
+        type: "POST",
+        data: {
+            topic: topic,
+            description: description,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $(`#taskRow${id} td:nth-child(2)`).text(description);
+            $(`#taskRow${id} td:nth-child(3)`).text(topic);
+            $('#editTaskModal').modal('hide');
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"taskRow"+id]);
+        },
+        error: function(xhr) {
+            alert("Error updating task. Please try again.");
+        }
+    });
+});
+
+function loadProblems(taskId) {
+    $.ajax({
+        url: `/drills/tasks/${taskId}/problems_modal/`,
+        type: "GET",
+        success: function(response) {
+            $('#problemsList').html(response['problem_html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemsList"]);
+            $('#problemsModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading problems. Please try again.");
+        }
+    });
+}
+</script>
+
+{% endblock %}

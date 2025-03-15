@@ -1,0 +1,120 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage[table]{xcolor}
+\usepackage{longtable}
+\usepackage{asymptote,tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+\setlength{\topmargin}{0in}
+\setlength{\headheight}{0in}
+\setlength{\headsep}{0in}
+\setlength{\textheight}{9in}
+\setlength{\textwidth}{6.5in}
+\setlength{\oddsidemargin}{0in}
+\setlength{\evensidemargin}{0in}
+\setlength{\parindent}{0.25in}
+\setlength{\parskip}{0.25in}
+\usepackage{xparse}
+\usepackage{framed}
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+\NewDocumentEnvironment{prob}{mm}{\item}{}
+\NewDocumentEnvironment{ans}{m}{}{}
+\newif\ifsolution
+\solutionfalse
+\newenvironment{sol}[1]{\begin{framed}\textbf{Solution: } }{\end{framed} }
+\title{ ARML Drill Report }
+\author{ {{profile.name}} }
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+
+\definecolor{light-gray}{gray}{0.9}
+
+\begin{document}
+\maketitle
+\section{Individual Drill Results}
+{% if drill_records|length > 0 %}
+\begin{center}
+    \rowcolors{1}{white}{light-gray}
+    
+    \begin{longtable}{c|{% for i in problem_numbers %}c{% endfor %}|c}
+        Drill&{% for i in problem_numbers %}{{forloop.counter}}&{%endfor%}Total Score\\\hline
+        {% for drill_record,buffer in drill_records %}
+        {{drill_record.drill.readable_label|poundsafe}}{% for i in drill_record.drill_record_problems.all %}&{% if i.status != -1 %}{{i.status}}{% else %}&{% endif %}{% endfor %}{% for i in buffer %}&{% endfor %}&{{drill_record.score}}\\
+        {% endfor %}
+    \end{longtable}
+\end{center}
+{% else %}
+No drills taken yet!
+{% endif %}
+%alg_correct, alg_total, alg_score, combo_correct, combo_total, combo_score, geo_correct, geo_total, geo_score, nt_correct, nt_total, nt_score)
+\section{Missed Problems, Sorted By Topic}
+\subsection{Algebra}
+Algebra Score: {{alg_correct.count}}/{{alg_total.count}}
+{% if alg_correct.count < alg_total.count %}
+\begin{enumerate}
+{% for i in alg_total %}
+{% if i in alg_correct %}{% else %}
+\item {{i.drill_problem.problem_text}} [{{i.drill_problem.readable_label|poundsafe}}]
+
+Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num_participants}} participants, or {{i.drill_problem.percent_solved|floatformat:2}}\%
+{% endif %}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+\subsection{Combinatorics}
+Combinatorics Score: {{combo_correct.count}}/{{combo_total.count}}
+{% if combo_correct.count < combo_total.count %}
+\begin{enumerate}
+{% for i in combo_total %}
+{% if i in combo_correct %}{% else %}
+\item {{i.drill_problem.problem_text}} [{{i.drill_problem.readable_label|poundsafe}}]
+
+Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num_participants}} participants, or {{i.drill_problem.percent_solved|floatformat:2}}\%
+{% endif %}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+\subsection{Geometry}
+Geometry Score: {{geo_correct.count}}/{{geo_total.count}}
+{% if geo_correct.count < geo_total.count %}
+\begin{enumerate}
+{% for i in geo_total %}
+{% if i in geo_correct %}{% else %}
+\item {{i.drill_problem.problem_text}} [{{i.drill_problem.readable_label|poundsafe}}]
+
+Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num_participants}} participants, or {{i.drill_problem.percent_solved|floatformat:2}}\%
+{% endif %}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+\subsection{Number Theory}
+Number Theory Score: {{nt_correct.count}}/{{nt_total.count}}
+{% if nt_correct.count < nt_total.count %}
+\begin{enumerate}
+{% for i in nt_total %}
+{% if i in nt_correct %}{% else %}
+\item {{i.drill_problem.problem_text}} [{{i.drill_problem.readable_label|poundsafe}}]
+
+Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num_participants}} participants, or {{i.drill_problem.percent_solved|floatformat:2}}\%
+{% endif %}
+{% endfor %}
+\end{enumerate}
+{% endif %}
+
+\end{document}
+
+{% endautoescape %}

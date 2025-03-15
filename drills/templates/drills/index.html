@@ -1,0 +1,101 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Drill Editor{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item active" aria-current="page">Drill Index</li>
+    </ol>
+  </nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Drill Index</h1>
+
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'task_manager' %}" class="btn btn-primary">Drill Task Manager</a>
+        <a href="{% url 'manage_profiles' %}" class="btn btn-primary">Manage Profiles</a>
+        <a href="{% url 'results_index' %}" class="btn btn-primary">Results Index</a>
+    </div>
+
+    <h2>Drills</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Drill Title</th>
+                <th>Author</th>
+                <th>Average Score</th>
+                <th># Participants</th>
+                <th>Grade Drill</th>
+                <th>Results</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for drill in drills %}
+            <tr>
+                <td><a href="{% url 'view_drill' drill.id %}">{{ drill.readable_label }}</a> (<a href="drill/{{drill.id}}/pdf">PDF</a> | <a href="drill/{{drill.id}}/latex">LaTeX</a>)</td>
+                <td>{{ drill.author }}</td>
+                <td>{{ drill.average_score|floatformat:2 }}/{{ drill.problem_count }}</td>
+                <td>{{ drill.num_participants }}</td>
+                <td><a href="{% url 'grade_drill' drill.id %}" class="btn btn-info btn-sm">Grade</a></td>
+                <td><a href="{% url 'drill_results' drill.id %}" class="btn btn-info btn-sm">Results</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    <h2>Drill Assignments</h2>
+    <p> <button class="btn btn-success" data-toggle="modal" data-target="#createAssignmentModal">Create New Drill Assignment</button></p>
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Drill Number</th>
+                <th>Author</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for assignment in assignments %}
+            <tr>
+                <td>Drill {{ assignment.number }}</td>
+                <td>{{assignment.author}}</td>
+                <td><a href="{% url 'view_assigned_drill' assignment.id %}" class="btn btn-info btn-sm">View</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal for creating a new drill assignment -->
+<div class="modal fade" id="createAssignmentModal" tabindex="-1" role="dialog" aria-labelledby="createAssignmentLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createAssignmentLabel">Create New Drill Assignment</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="createAssignmentForm" method="GET" action="{% url 'create_assignment' %}">
+                    <div class="form-group">
+                        <label for="author">Author</label>
+                        <input type="text" class="form-control" id="author" name="author" required>
+                    </div>
+                    <label for="year">Add to Year:</label>
+                    <select name="year" class="js-year-select form-control form-control-sm mb-1" required>
+                        <option value="" disabled selected>Select a Year</option>
+                        {% for y in year_folders %}
+                        <option value="{{y.year}}">{{y.year}}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}

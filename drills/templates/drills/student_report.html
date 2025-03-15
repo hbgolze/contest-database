@@ -1,0 +1,76 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}{{year.year}} Student Reports{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'view_student_scores' year.year %}">{{year.year}} Student Scores</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Student Report</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ profile.name }} Drill Report</h1>
+
+    <table class="table table-bordered text-center sortable mb-4">
+        <thead class="thead-dark">
+            <tr>
+                <th>Drill</th>
+                {% for i in problem_numbers %}<th>{{i}}</th>{% endfor %}
+                <th>Total Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for drill_record,buffer in drill_records %}
+            <tr>
+                <td>{{drill_record.drill.readable_label}}</td>
+                {% for problem in drill_record.drill_record_problems.all %}<td style="{% if problem.status == 1 %}background-color:#b7e1cd {% elif problem.status == 0 %}background-color:#f4c7c3{% endif %}">{% if problem.status != -1 %}{{ problem.status }}{% endif %}</td>{% endfor %}
+                {% for i in buffer %}<td></td>{% endfor %}
+                <td>{{drill_record.score}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Topic Rankings</h1>
+    <table class="table table-bordered text-center mb-4">
+        <thead class="thead-dark">
+            <tr>
+                <th></th>
+                <th>Algebra</th>
+                <th>Combinatorics</th>
+                <th>Geometry</th>
+                <th>Number Theory</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td># Solves</td>
+                <td>{{acgn.0.count}}/{{acgn.1.count}}</td>
+                <td>{{acgn.3.count}}/{{acgn.4.count}}</td>
+                <td>{{acgn.6.count}}/{{acgn.7.count}}</td>
+                <td>{{acgn.9.count}}/{{acgn.10.count}}</td>
+            </tr>
+            <tr>
+                <td>Fraction</td>
+                <td>{{acgn.2|floatformat:2}}</td>
+                <td>{{acgn.5|floatformat:2}}</td>
+                <td>{{acgn.8|floatformat:2}}</td>
+                <td>{{acgn.11|floatformat:2}}</td>
+            </tr>
+            <tr>
+                <td>Rank</td>
+                <td>{{alg_rank}}</td>
+                <td>{{combo_rank}}</td>
+                <td>{{geo_rank}}</td>
+                <td>{{nt_rank}}</td>
+            </tr>
+        </tbody>
+    </table>
+
+</div>
+{% endblock %}

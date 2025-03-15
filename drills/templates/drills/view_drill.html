@@ -1,0 +1,181 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}View Drill{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+      <li class="breadcrumb-item active" aria-current="page">View Drill</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{drill.readable_label}}</h1>
+    
+    <div class="d-flex justify-content-between mb-3">
+        <a href="{% url 'reorder_drill' drill.id %}" class="btn btn-primary">Reorder Problems</a>
+    </div>
+
+    <div class="row">
+        {% for problem in drill_problems %}
+        <div class="col-md-12">
+        <div id="drill-problem_{{problem.id}}">
+            {% include 'drills/snippet_drill-problem-card.html' %}
+        </div> 
+    </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Modal for editing LaTeX -->
+<div class="modal fade" id="editLatexModal" tabindex="-1" role="dialog" aria-labelledby="editLatexLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLatexLabel">Edit LaTeX</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editLatexForm">
+                    <div id="editLatex-div">
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for editing Answer -->
+<div class="modal fade" id="editAnswerModal" tabindex="-1" role="dialog" aria-labelledby="editAnswerLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAnswerLabel">Edit Answer</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="editAnswerForm">
+                    <div id="editAnswer-div"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for viewing problems -->
+<div class="modal fade" id="problemsModal" tabindex="-1" role="dialog" aria-labelledby="problemsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="problemsLabel">Drill Problems</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="problemsList">
+                <!-- Problems will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadEditLatex(problemId) {
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/load-edit-latex/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#editLatex-div').html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editLatex-div"]);
+            $('#editLatexModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading LaTeX. Please try again.");
+        }
+    });
+}
+
+$('#editLatexForm').submit(function(event) {
+    event.preventDefault();
+    let problemId = $('#editProblemId').val();
+    let problemText = $('#editLaTeX').val();
+    
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/save-latex/${problemId}/`,
+        type: "POST",
+        data: {
+            problem_text: problemText,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $('#drill-problem_'+problemId).html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"drill-problem_"+problemId]);
+            $('#editLatexModal').modal('hide');
+        },
+        error: function(xhr) {
+            alert("Error updating LaTeX. Please try again.");
+        }
+    });
+});
+
+function loadEditAnswer(problemId) {
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/load-edit-answer/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#editAnswer-div').html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editAnswer-div"]);
+            $('#editAnswerModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading Answer. Please try again.");
+        }
+    });
+}
+
+$('#editAnswerForm').submit(function(event) {
+    event.preventDefault();
+    let problemId = $('#editProblemAnswerId').val();
+    let answer = $('#editProblemAnswer').val();
+    console.log(problemId);
+    
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/save-answer/${problemId}/`,
+        type: "POST",
+        data: {
+            answer: answer,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $('#drill-problem_'+problemId).html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"drill-problem_"+problemId]);
+            $('#editAnswerModal').modal('hide');
+        },
+        error: function(xhr) {
+            alert("Error updating answer. Please try again.");
+        }
+    });
+});
+
+function loadProblems(taskId) {
+    $.ajax({
+        url: `/drills/tasks/${taskId}/problems_modal/`,
+        type: "GET",
+        success: function(response) {
+            $('#problemsList').html(response['problem_html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemsList"]);
+            $('#problemsModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading problems. Please try again.");
+        }
+    });
+}
+</script>
+{% endblock %}

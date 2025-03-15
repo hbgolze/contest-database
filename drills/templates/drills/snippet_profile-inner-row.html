@@ -1,0 +1,16 @@
+
+    <td>{{ profile.name }}</td>
+    <td>{% for y in profile.year.all %}<span class="badge badge-danger">{{y.year}}</span>{% endfor %}</td>
+    <td>
+        <form action="{% url 'add_year' %}" method="post" class="js-problem-group-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request}}">
+            <label for="addyear_{{profile.pk}}">Add to Year:</label>
+            <select name="addyear_{{profile.pk}}" class="js-year-select form-control form-control-sm mb-1">
+                <option value="" disabled selected>Select a Year</option>
+                {% for y in years %}
+                <option value="{{y.year}}">{{y.year}}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </td>

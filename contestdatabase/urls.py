@@ -41,6 +41,7 @@ urlpatterns = [
     url(r'^student/', include('student.urls')),
     url(r'^results/', include('results.urls')),
     url(r'^mocktests/', include('mocktests.urls')),
+    url(r'^drills/', include('drills.urls')),
 ]
 #    url(r'^accounts/login/$',randomtest.views.LoginView.as_view(template_name='randomtest/'), name='login'),
 #    url(r'^accounts/login/$',django.contrib.auth.views.login, name='login'),

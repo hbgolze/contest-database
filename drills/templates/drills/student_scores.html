@@ -1,0 +1,45 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}{{year.year}} Student Drill Scores{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{year.year}} Student Scores</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ year.year }} Student Drill Scores</h1>
+
+    <table class="table table-bordered text-center sortable mb-4">
+        <thead class="thead-light">
+            <tr>
+                <th>Name</th>
+                {% for drill in year.drills.all %}
+                <th><a href="/drills/drill/{{drill.id}}/">{{ drill.number }}</a></th>
+                {% endfor %}
+                <th>Total Score</th>
+                <th>Percentage</th>
+                <th>Report</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for profile,scores,total,pct in rows %}
+            <tr>
+                <td><a href="student/{{profile.id}}/">{{profile.name}}</a></td>
+                {% for score in scores %}
+                <td{% if score != -1 %} class="results-bg-gradient-{{score}}"{% endif %}>
+                    {% if score != -1 %}{{score}}{% endif %}
+                </td>
+                {% endfor %}
+                <td>{{total}}</td>
+                <td>{{pct|floatformat:2}}%</td>
+                <td><a class="btn btn-info" href="student/{{profile.id}}/pdf/">PDF Report</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

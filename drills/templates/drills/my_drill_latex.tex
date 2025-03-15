@@ -1,0 +1,48 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote,tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+\usepackage[margin=1in]{geometry}
+\setlength{\textheight}{9.5in}
+
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+
+
+\title{ {{drill.readable_label}} }
+\author{Assigned Author: {{drill.author}} }
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+\textbf{\relax{{drill.readable_label}}\relax}\hfill Name: \rule{3in}{.5pt}
+
+\pagestyle{empty}
+\bigskip
+\begin{enumerate}
+  {% for problem in drill.drill_problems.all %}
+\item \begin{minipage}[t]{4.7in}
+    {{problem.problem_text}} 
+    \end{minipage}\quad\begin{minipage}[t]{1.5in}\theenumi. \rule{1in}{.5pt}\end{minipage}
+
+    \bigskip
+ 
+{% endfor %}
+
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}

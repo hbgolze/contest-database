@@ -1,0 +1,53 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}View Drill{% endblock %}
+
+{% block content %}
+
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/drill/{{drill.id}}/">View Drill</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Reorder Drill</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{drill.readable_label}}</h1>
+    <form method="post" action="?">
+        {% csrf_token %}
+        <div class="row" id="problem-container">
+            {% for problem in drill.drill_problems.all %}
+            <div class="col-md-12 mb-3 problem-card" data-task-id="{{ problem.id }}">
+                <input type="hidden" id="problem_{{problem_id}}" name="problem_{{problem.id}}" value="{{problem.id}}">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">Problem {{ problem.order }}</h4>
+                        <p class="card-text">{% autoescape off %}{{problem.display_problem_text|linebreaks}} {% endautoescape %}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="text-right mt-4 mb-4">
+            <button type="submit" class="btn btn-primary">Save Drill</button>
+        </div>
+    </form>
+</div>
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const problemContainer = document.getElementById('problem-container');
+
+    new Sortable(problemContainer, {
+        animation: 150,
+        ghostClass: 'bg-light'
+    });
+
+});
+</script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+{% endblock %}

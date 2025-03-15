@@ -614,3 +614,40 @@ input.mocktest-answer {
     padding: 5px;
     text-align: center;
 }
+
+td.results-bg-gradient-0 {
+    background-color:#E67C73;
+}
+td.results-bg-gradient-1 {
+    background-color:#ea8c71;
+}
+td.results-bg-gradient-2 {
+    background-color:#ef9c6f;
+}
+td.results-bg-gradient-3 {
+    background-color:#f3ad6c;
+}
+td.results-bg-gradient-4 {
+    background-color:#f8bd6a;
+}
+td.results-bg-gradient-5 {
+    background-color:#fccd68;
+}
+td.results-bg-gradient-6 {
+    background-color:#f0d569;
+}
+td.results-bg-gradient-7 {
+    background-color:#d2cf6f;
+}
+td.results-bg-gradient-8 {
+    background-color:#b3ca76;
+}
+td.results-bg-gradient-9 {
+    background-color:#96c57c;
+}
+td.results-bg-gradient-10 {
+    background-color:#76c083;
+}
+td.results-bg-gradient-11 {
+    background-color:#57bb8b;
+}

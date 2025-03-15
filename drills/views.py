@@ -1,0 +1,733 @@
+from django.shortcuts import render, get_object_or_404, redirect
+from django.views import View
+from django.utils.timezone import now
+from .models import Drill, DrillTask, DrillProblem, DrillAssignment, DrillProfile, DrillRecord, YearFolder,DrillRecordProblem
+from django.http import HttpResponse,JsonResponse
+from django.conf import settings
+
+from django.template.loader import get_template,render_to_string
+from django.contrib.auth.decorators import permission_required
+from random import shuffle
+from randomtest.utils import compileasy,newtexcode
+
+import matplotlib
+import matplotlib.pyplot as plt
+matplotlib.use('agg')
+import numpy as np
+
+from io import BytesIO
+import base64
+
+import tempfile
+from subprocess import Popen,PIPE
+import os,os.path
+
+class DrillIndexView(View):
+    def get(self, request):
+        drills = Drill.objects.all()
+        assignments = DrillAssignment.objects.all()
+        year_folders = YearFolder.objects.all()
+        return render(request, 'drills/index.html', {'drills': drills, 'assignments': assignments, 'current_year': now().year, 'year_folders': year_folders,'nbar':'drills'})
+
+class ViewDrillView(View):
+    def get(self, request, drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        problems = drill.drill_problems.all().order_by('order')
+        return render(request, 'drills/view_drill.html', {'drill': drill, 'drill_problems': problems,'nbar':'drills'})
+
+class CreateDrillAssignmentView(View):
+    def get(self, request):
+        tasks = DrillTask.objects.all()
+        year = request.GET.get('year')
+        yf = get_object_or_404(YearFolder,year = year)
+        bag = []
+        for t in tasks:
+            problems = t.drillproblem_set.filter(drill__year_folder=yf)
+            uses = [p.drill.number for p in problems]
+            if problems.count() == 0:
+                for j in range(0,20):
+                    bag.append(t)
+            else:
+                if max(uses) <= yf.top_number - 5:
+                    for j in range(0,yf.top_number - 5 - max(uses)+1):
+                        bag.append(t)
+        shuffle(bag)
+        R = []
+        counter = 0
+        while len(R) < 25:
+            if bag[counter] not in R:
+                R.append(bag[counter])
+            counter += 1
+
+        name = str(yf.year)+' ARML Drill '+str(yf.top_number+1)
+        author = request.GET.get('author')
+        return render(request, 'drills/create_assignment.html', {'tasks': R, 'name' : name, 'author': author, 'year': year,'nbar':'drills'})
+
+    def post(self, request):
+        selected_tasks = request.POST.getlist('selected_tasks[]')
+        author = request.POST.get('author')
+        year = request.POST.get('year')
+        yf = get_object_or_404(YearFolder,year = year)
+        assignment = DrillAssignment.objects.create(author=author,year = yf, number = yf.top_number + 1)
+        yf.top_number = yf.top_number + 1
+        yf.save()
+        tasks = DrillTask.objects.filter(pk__in=selected_tasks)
+        for t in tasks:
+            assignment.problem_tasks.add(t)
+        assignment.save()
+        return redirect('view_assigned_drill',assignment_id=assignment.id)
+
+
+class ViewAssignedDrillView(View):
+    def get(self, request, assignment_id):
+        assignment = get_object_or_404(DrillAssignment, id=assignment_id)
+        return render(request, 'drills/view_assigned_drill.html', {'assignment': assignment})
+    def post(self,request,assignment_id):
+        assignment = get_object_or_404(DrillAssignment, id=assignment_id)
+        ids=[]
+        for i in request.POST:
+            if 'problem_text' in i:
+                id = i.split('_')[2]
+                ids.append(id)
+        counter = 1
+        year_folder = assignment.year
+        y = year_folder.year
+        num = assignment.number
+        drill = Drill.objects.create(year_folder = year_folder,year = y,number = num,readable_label=str(y)+' ARML Drill '+ str(num),author = assignment.author,problem_count = len(ids))
+        for id in ids:
+            task = get_object_or_404(DrillTask,id=id)
+            problem_text = request.POST.get('problem_text_'+id)
+            answer = request.POST.get('answer_'+id)
+            p = DrillProblem.objects.create(order = counter,label=str(y)+'ARMLDrill'+str(num)+'-'+str(counter),readable_label = str(y)+' ARML Drill '+str(num)+' #'+str(counter),drill = drill,problem_text = problem_text,topic = task.topic, drill_task = task,answer=answer,percent_solved=0,number_solved = 0)
+            compileasy(p.problem_text,'drillproblem_'+str(p.pk))
+            p.display_problem_text = newtexcode(p.problem_text,'drillproblem_'+str(p.pk),'')
+            p.save()
+            counter+=1
+        assignment.delete()
+        return redirect('view_drill',drill_id=drill.id)
+
+
+class DrillTaskManagerView(View):
+    def get(self, request):
+        tasks = DrillTask.objects.all().order_by('topic')
+        return render(request, 'drills/task_manager.html', {'tasks': tasks,'nbar':'drills'})
+
+class ResultsIndexView(View):
+    def get(self, request):
+        years = YearFolder.objects.all()
+        return render(request, 'drills/results_index.html', {'years': years,'nbar':'drills'})
+
+class IndividualDrillResultsView(View):
+    def get(self, request, drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        records = DrillRecord.objects.filter(drill=drill)
+
+        return render(request, 'drills/individual_results.html', {'drill': drill, 'records': records,'nbar':'drills'})
+
+class DrillProfileView(View):
+    def get(self, request, profile_id):
+        profile = get_object_or_404(DrillProfile, id=profile_id)
+        records = DrillRecord.objects.filter(drill_profile=profile)
+        return render(request, 'drills/profile.html', {'profile': profile, 'records': records,'nbar':'drills'})
+
+class DrillRankingsView(View):
+    def get(self, request):
+        profiles = DrillProfile.objects.all()
+        return render(request, 'drills/rankings.html', {'profiles': profiles,'nbar':'drills'})
+
+class GradeDrillView(View):
+    def get(self, request, drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        drill_records = drill.drill_records.order_by('drill_profile__name')
+        ids = [i.drill_profile.id for i in drill_records]
+        blank_profiles = get_object_or_404(YearFolder,year = drill.year).profiles.exclude(id__in = ids).order_by('name')# change to yearfolder
+        return render(request, 'drills/grade_drill.html', {'drill': drill, 'drill_records': drill_records,'blank_profiles':blank_profiles,'nbar':'drills'})
+    def post(self,request, drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        selected_profiles = request.POST.getlist('checks')[0].split(',')
+        grades={}
+        for i in request.POST:
+            if 'grade' in i:
+                j = i.split('_')
+                grades[j[1]+'_'+j[2]]=request.POST.get(i,'')
+        for i in grades:
+            try:
+                if grades[i]=='':
+                    pass
+                else:
+                    g = int(grades[i])
+            except ValueError:
+                return JsonResponse({"error": "Not all scores were integers."}, status=400)
+        if '' in selected_profiles:
+            return JsonResponse({'error': 'No profiles selects'},status=400)
+        for profile_id in selected_profiles:
+            dp = get_object_or_404(DrillProfile,id = profile_id)
+            if dp.drillrecord_set.filter(drill__pk = drill.pk).exists():
+                drill_record = dp.drillrecord_set.get(drill__pk = drill.pk)
+                for drp in drill_record.drill_record_problems.all():
+                    if grades[str(profile_id)+'_'+str(drp.drill_problem.id)] == "":
+                        drp.status = -1
+                    elif int(grades[str(profile_id)+'_'+str(drp.drill_problem.id)]) > 0:
+                        drp.status = 1
+                    else:
+                        drp.status = 0
+                    drp.save()
+            else:
+                drill_record = DrillRecord(drill_profile = dp,drill = drill,score = 0)
+                drill_record.save()
+                for i in range(1,drill.problem_count + 1):
+                    drill_problem = drill.drill_problems.get(order = i)
+                    status = -1
+                    if grades[str(profile_id)+'_'+str(drill_problem.id)] == "":
+                        status = -1
+                    elif int(grades[str(profile_id)+'_'+str(drill_problem.id)]) > 0:
+                        status = 1
+                    else:
+                        status = 0
+                    drp = DrillRecordProblem(drillrecord = drill_record,order = i,drill_problem = drill_problem,status=status)
+                    drp.save()
+            score = 0
+            for i in drill_record.drill_record_problems.all():
+                if i.status == 1:
+                    score += 1
+            drill_record.score = score
+            drill_record.save()
+        drill.update_stats()
+        drill_records = drill.drill_records.order_by('drill_profile__name')
+        blank_profiles = get_object_or_404(YearFolder,year = drill.year).profiles.exclude(id__in = drill_records.values('id')).order_by('name')
+        return render(request, 'drills/grade_drill.html', {'drill': drill, 'drill_records': drill_records,'blank_profiles':blank_profiles,'nbar':'drills'})
+
+
+class ManageProfilesView(View):
+    def get(self, request):
+        profiles = DrillProfile.objects.all()
+        years = YearFolder.objects.all()
+        return render(request, 'drills/manage_profiles.html', {'profiles': profiles, 'years': years,'nbar':'drills'})
+
+class StudentScoresView(View):
+    def get(self, request, year):
+        year = get_object_or_404(YearFolder, year=year)
+        rows=[]
+        for profile in year.profiles.all():
+            row = [profile]+[[-1]*year.drills.count()]+[0]+[0]
+            for record in profile.drillrecord_set.filter(drill__year_folder = year):
+                #row[1][record.drill.number-1] = record
+                row[1][record.drill.number-1] = record.score
+            row[-2] = sum(row[1]) + row[1].count(-1)
+            row[-1] = row[-2]/(10*profile.drillrecord_set.filter(drill__year_folder = year).count())*100
+            rows.append(row)
+        rows = sorted(rows,key=lambda x:-x[2])
+        
+        return render(request, 'drills/student_scores.html', {'year': year,'rows':rows,'nbar':'drills'})
+
+class StudentAveragesView(View):
+    def get(self, request, year):
+        year = get_object_or_404(YearFolder, year=year)
+        student_totals={}
+        num_drills = 0
+        for drill in year.drills.all():
+            if drill.drill_records.exists():
+                num_drills += 1
+        for profile in year.profiles.all():
+            row = [0]*num_drills
+            for record in profile.drillrecord_set.filter(drill__year_folder = year):
+                row[record.drill.number-1] = record.score
+            totals = [row[0]]
+            for i in range(1,len(row)):
+                totals.append(row[i]+totals[-1])
+            student_totals[profile.name]=totals
+        x = [i for i in range(1,num_drills+1)]
+        fig = plt.figure(figsize=(15, 9))
+        ax = plt.subplot(111)
+        final_avgs = []
+        for student in student_totals:
+            total = student_totals[student]
+            student_avgs = [total[i-1]/i for i in range(1,len(total)+1)]
+            final_avgs.append((student,student_avgs[-1]))
+            ax.plot(x,student_avgs,label=student)
+        handles, labels = plt.gca().get_legend_handles_labels()
+        final_avgs = sorted(final_avgs,key=lambda x:-x[1])
+        names = [i[0] for i in final_avgs]
+        order = [labels.index(i) for i in names]
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order],loc='center left', bbox_to_anchor=(1, 0.5))
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        image_png =buffer.getvalue()
+        plt.close()
+        buffer.close()
+        graphic = base64.b64encode(image_png)
+        graphic = graphic.decode('utf-8')
+    
+        return render(request, 'drills/student_averages.html', {'year': year,'graphic':graphic,'nbar':'drills'})
+    
+class StudentReportsView(View):
+    def get(self, request, year,profile_id):
+        year = get_object_or_404(YearFolder, year=year)
+        profile = get_object_or_404(DrillProfile, id = profile_id)
+        
+        nums = []
+        for drill in year.drills.all():
+            nums.append(drill.problem_count)
+        num_probs = max(nums+[0])
+        drill_records=[]
+
+        year_drill_records = profile.drillrecord_set.filter(drill__year_folder = year)
+        for drill_record in year_drill_records.order_by('drill__number'):
+            row = [drill_record,[0]*(num_probs - drill_record.drill.problem_count)]
+            drill_records.append(row)
+        problem_numbers = [i for i in range(1,num_probs+1)]
+
+        topic_data = []
+        for user_profile in year.profiles.all():
+            topic_data.append([user_profile,user_profile.acgn(year)])
+        topic_data = sorted(topic_data,key = lambda x:-x[1][2])#alg
+        alg_rank = 0
+        for i in range(0,len(topic_data)):
+            if topic_data[i][0].id == profile.id:
+                alg_rank = i+1
+        topic_data = sorted(topic_data,key = lambda x:-x[1][5])#combo
+        combo_rank = 0
+        for i in range(0,len(topic_data)):
+            if topic_data[i][0].id == profile.id:
+                combo_rank = i+1
+        topic_data = sorted(topic_data,key = lambda x:-x[1][8])#geo
+        geo_rank = 0
+        for i in range(0,len(topic_data)):
+            if topic_data[i][0].id == profile.id:
+                geo_rank = i+1
+        topic_data = sorted(topic_data,key = lambda x:-x[1][11])#nt
+        nt_rank = 0
+        for i in range(0,len(topic_data)):
+            if topic_data[i][0].id == profile.id:
+                nt_rank = i+1
+        
+        acgn = profile.acgn(year)
+
+        return render(request, 'drills/student_report.html', {'year': year,'profile':profile,'problem_numbers':problem_numbers,'drill_records':drill_records,
+                                                              'alg_rank':alg_rank,'combo_rank':combo_rank,'geo_rank':geo_rank,'nt_rank':nt_rank,
+                                                              'acgn':acgn,'nbar':'drills'})
+
+class TopicRankingsView(View):
+    def get(self, request, year):
+        year = get_object_or_404(YearFolder, year=year)
+        topic_data = []
+        for user_profile in year.profiles.all():
+            topic_data.append([user_profile,user_profile.acgn(year)])
+        topic_data = sorted(topic_data,key=lambda x:-x[0].score(year))
+        return render(request, 'drills/topic_rankings.html', {'year': year,'topic_data':topic_data,'nbar':'drills'})
+
+class ReorderDrillView(View):
+    def get(self, request, drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        
+        return render(request, 'drills/reorder_drill.html', {'drill': drill,'nbar':'drills'})
+    def post(self,request,drill_id):
+        drill = get_object_or_404(Drill, id=drill_id)
+        ids=[]
+        for i in request.POST:
+            if 'problem' in i:
+                id = i.split('_')[1]
+                ids.append(id)
+        counter = 1
+        for i in ids:
+            p = DrillProblem.objects.get(id=i)
+            p.update_order(counter)
+            counter += 1
+        return redirect('view_drill',drill_id=drill_id)
+
+class ProblemDifficultyView(View):
+    def get(self, request, year):
+        year = get_object_or_404(YearFolder, year=year)
+        nums = []
+        for drill in year.drills.all():
+            nums.append(drill.problem_count)
+        num_probs = max(nums+[0])
+        drills=[]
+        for drill in year.drills.all():
+            row = [drill,num_probs - drill.problem_count]
+            drills.append(row)
+        problem_numbers = [i for i in range(1,num_probs+1)]
+        return render(request, 'drills/problem_difficulty.html', {'year': year,'problem_numbers':problem_numbers,'drills':drills,'nbar':'drills'})
+
+ 
+@permission_required('drills.can_add_drill')
+def add_profile_view(request,**kwargs):
+    name = request.POST.get('name','')
+    p = DrillProfile(name=name)
+    p.save()
+    return JsonResponse({'profile_row':render_to_string('drills/snippet_profile-row.html',{'profile':p,'years': YearFolder.objects.all(),'request':request})})
+
+
+@permission_required('drills.can_add_drill')
+def add_year_to_profile(request):
+    years = [(d,p) for d, p in request.POST.items() if d.startswith('addyear')]
+    for i in years:
+        profile_pk = i[0].split('_')[1]
+        profile = get_object_or_404(DrillProfile,pk = profile_pk)
+        yf = get_object_or_404(YearFolder,year = i[1])
+        profile.year.add(yf)
+        profile.save()
+    return JsonResponse({'profile_row':render_to_string('drills/snippet_profile-inner-row.html',{'profile':profile,'years': YearFolder.objects.all(),'request':request}),'profile_pk': profile_pk})
+
+
+@permission_required('drills.can_add_drill')
+def load_problems_modal(request, task_id):
+    drill_task = DrillTask(id = task_id)
+    return JsonResponse({'problem_html':render_to_string('drills/snippet_problems-html.html',{'task': drill_task})})
+
+
+@permission_required('drills.can_add_drill')
+def save_task(request, task_id):
+    drill_task = DrillTask(id = task_id)
+    topic = request.POST.get('topic')
+    description = request.POST.get('description')
+    drill_task.topic = topic
+    drill_task.description = description
+    drill_task.save()
+    return JsonResponse({})
+
+
+@permission_required('drills.can_add_drill')
+def load_edit_task(request,task_id):
+    task = get_object_or_404(DrillTask,id = task_id)
+    return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-task.html',{'task': task})})
+
+
+@permission_required('drills.can_add_drill')
+def load_edit_latex(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-latex.html',{'problem': problem})})
+
+
+@permission_required('drills.can_add_drill')
+def save_latex(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id=problem_id)
+    problem_text = request.POST.get('problem_text')
+    problem.problem_text = problem_text
+    problem.save()
+    compileasy(problem.problem_text,'drillproblem_'+str(problem.pk))
+    problem.display_problem_text = newtexcode(problem.problem_text,'drillproblem_'+str(problem.pk),'')
+    problem.save()
+    return JsonResponse({'html_code':render_to_string('drills/snippet_drill-problem-card.html',{'problem': problem})})
+
+
+@permission_required('drills.can_add_drill')
+def load_edit_answer(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-answer.html',{'problem': problem})})
+
+
+@permission_required('drills.can_add_drill')
+def save_answer(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id=problem_id)
+    answer = request.POST.get('answer')
+    problem.answer = answer
+    problem.save()
+    return JsonResponse({'html_code':render_to_string('drills/snippet_drill-problem-card.html',{'problem': problem})})
+    
+
+@permission_required('drills.can_add_drill')
+def add_task(request):
+    topic = request.POST.get('topic')
+    description = request.POST.get('description')
+    task = DrillTask.objects.create(topic = topic,description=description)
+    return JsonResponse({'id':task.id,'description':description,'topic':topic})
+
+
+@permission_required('drills.can_add_drill')
+def load_single_problem(request, year,problem_id):
+    problem = DrillProblem.objects.get(id = problem_id)
+    return JsonResponse({'problem_html':render_to_string('drills/snippet_single-problem-html.html',{'problem': problem})})
+
+
+
+@permission_required('drills.can_add_drill')
+def assignment_pdf_view(request,assignment_id):
+    drill_assignment = get_object_or_404(DrillAssignment, id = assignment_id)
+    context = {
+        'assignment':drill_assignment,
+        }
+    
+    assignment_name = str(drill_assignment.year.year)+ ' ARML Drill '+str(drill_assignment.number)
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_assignment_latex.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'assignment':drill_assignment,
+            }
+        template = get_template('drills/my_assignment_latex.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+assignment_name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':assignment_name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+@permission_required('drills.can_add_drill')
+def individual_report_pdf_view(request,year,profile_id):
+    profile = get_object_or_404(DrillProfile, id = profile_id)
+    year = get_object_or_404(YearFolder, year = year)
+
+    nums = []
+    for drill in year.drills.all():
+        nums.append(drill.problem_count)
+    num_probs = max(nums+[0])
+    drill_records=[]
+
+    year_drill_records = profile.drillrecord_set.filter(drill__year_folder = year)
+    for drill_record in year_drill_records.order_by('drill__number'):
+        row = [drill_record,[0]*(num_probs - drill_record.drill.problem_count)]
+        drill_records.append(row)
+    problem_numbers = [i for i in range(1,num_probs+1)]
+
+    topic_data = []
+    for user_profile in year.profiles.all():
+        topic_data.append([user_profile,user_profile.acgn(year)])
+    topic_data = sorted(topic_data,key = lambda x:-x[1][2])#alg
+    alg_rank = 0
+    for i in range(0,len(topic_data)):
+        if topic_data[i][0].id == profile.id:
+            alg_rank = i+1
+    topic_data = sorted(topic_data,key = lambda x:-x[1][5])#combo
+    combo_rank = 0
+    for i in range(0,len(topic_data)):
+        if topic_data[i][0].id == profile.id:
+            combo_rank = i+1
+    topic_data = sorted(topic_data,key = lambda x:-x[1][8])#geo
+    geo_rank = 0
+    for i in range(0,len(topic_data)):
+        if topic_data[i][0].id == profile.id:
+            geo_rank = i+1
+    topic_data = sorted(topic_data,key = lambda x:-x[1][11])#nt
+    nt_rank = 0
+    for i in range(0,len(topic_data)):
+        if topic_data[i][0].id == profile.id:
+            nt_rank = i+1
+    
+    alg_correct, alg_total, alg_score, combo_correct, combo_total, combo_score, geo_correct, geo_total, geo_score, nt_correct, nt_total, nt_score = profile.acgn(year)
+    alg_total = alg_total.order_by('-drill_problem__percent_solved')
+    combo_total = combo_total.order_by('-drill_problem__percent_solved')
+    geo_total = geo_total.order_by('-drill_problem__percent_solved')
+    nt_total = nt_total.order_by('-drill_problem__percent_solved')
+    print(drill_records)
+    context = {
+        'profile':profile,
+        'drill_records':drill_records,
+        'problem_numbers':problem_numbers,
+        'alg_correct':alg_correct,
+        'alg_total':alg_total,
+        'alg_score':alg_score,
+        'combo_correct':combo_correct,
+        'combo_total':combo_total,
+        'combo_score':combo_score,
+        'geo_correct':geo_correct,
+        'geo_total':geo_total,
+        'geo_score':geo_score,
+        'nt_correct':nt_correct,
+        'nt_total':nt_total,
+        'nt_score':nt_score,
+        }
+    
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_student_report.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'profile':profile,
+            'drill_records':drill_records,
+            'problem_numbers':problem_numbers,
+            'alg_correct':alg_correct,
+            'alg_total':alg_total,
+            'alg_score':alg_score,
+            'combo_correct':combo_correct,
+            'combo_total':combo_total,
+            'combo_score':combo_score,
+            'geo_correct':geo_correct,
+            'geo_total':geo_total,
+            'geo_score':geo_score,
+            'nt_correct':nt_correct,
+            'nt_total':nt_total,
+            'nt_score':nt_score,
+            }
+        template = get_template('drills/my_student_report.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+profile.name.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':profile.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+
+@permission_required('drills.can_add_drill')
+def drill_pdf_view(request,drill_id):
+    drill = get_object_or_404(Drill, id = drill_id)
+    context = {
+        'drill':drill,
+        }
+    
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_drill_latex.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'drill':drill,
+            }
+        template = get_template('drills/my_drill_latex.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+drill.readable_label.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':drill.readable_label,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+            
+
+
+
+@permission_required('drills.can_add_drill')
+def drill_latex_view(request,drill_id):
+    drill = get_object_or_404(Drill, id = drill_id)
+    context = {
+        'drill':drill,
+        }
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_drill_latex.tex')
+    content = template.render(context).encode('utf-8')
+    filename = drill.readable_label.replace(' ','')+".tex"
+    response = HttpResponse(content, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response

@@ -1,0 +1,78 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}{{year.year}} Drill Problem Difficulty{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Problem Difficulty</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ year.year }} Drill Problem Difficulty</h1>
+    <table class="table table-bordered text-center sortable mb-4">
+        <thead class="thead-dark">
+            <tr>
+                <th>Drill</th>
+                {% for n in problem_numbers %}
+                <th>{{ n }}</th>
+                {% endfor %}
+                <th>Average Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for drill,buffer in drills %}
+            <tr>
+                <td>{{drill.readable_label}}</td>
+                {% for drill_problem in drill.drill_problems.all %}
+                <td{% if drill_problem.percent_solved <= 8.33 %} class="results-bg-gradient-0"{% elif drill_problem.percent_solved <= 16.66 %} class="results-bg-gradient-1"{% elif drill_problem.percent_solved <= 25 %} class="results-bg-gradient-2"{% elif drill_problem.percent_solved <= 33.33%} class="results-bg-gradient-3"{% elif drill_problem.percent_solved <= 41.66%} class="results-bg-gradient-4"{% elif drill_problem.percent_solved <= 50 %} class="results-bg-gradient-5"{% elif drill_problem.percent_solved <= 58.33%} class="results-bg-gradient-6"{% elif drill_problem.percent_solved <= 66.6%} class="results-bg-gradient-7"{% elif drill_problem.percent_solved <= 75%} class="results-bg-gradient-8"{% elif drill_problem.percent_solved <= 83.33%} class="results-bg-gradient-9"{% elif drill_problem.percent_solved <= 91.66%} class="results-bg-gradient-10"{% else %} class="results-bg-gradient-11"{% endif %}>
+                    <a href="#{{problem.id}}" onclick="event.preventDefault;loadProblem({{drill_problem.id}})">{{drill_problem.percent_solved|floatformat:2}}%</a>
+                </td>
+                {% endfor %}
+                {% with ''|center:buffer as range %}
+                {% for _ in range %}
+                <td><!--blank space for nonexistent problems--></td>
+                {% endfor %}
+                {% endwith %}
+                <td>{{drill.average_score|floatformat:2}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal for viewing problems -->
+<div class="modal fade" id="problemsModal" tabindex="-1" role="dialog" aria-labelledby="problemsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="problemsLabel">Drill Problems</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="problemsList">
+                <!-- Problems will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function loadProblem(problemId) {
+    $.ajax({
+        url: `/drills/results/problem_difficulty/{{year.year}}/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#problemsList').html(response['problem_html']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemsList"]);
+            $('#problemsModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading problem. Please try again.");
+        }
+    });
+}
+</script>
+{% endblock %}

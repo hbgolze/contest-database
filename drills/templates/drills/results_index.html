@@ -1,0 +1,40 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Results Index{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Results Index</li>
+    </ol>
+  </nav>
+
+<div class="container mt-4">
+    <h1 class="mb-4">Results Index</h1>
+
+    <table class="table table-striped table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Year</th>
+                <th>Student Scores Over Time</th>
+                <th>Student Average Over Time</th>
+                <th>Problem Difficulty</th>
+                <th>Topic Rankings</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for year in years %}
+            <tr>
+                <td>{{year.year}}</td>
+                <td><a href="{% url 'view_student_scores' year.year %}" class="btn btn-info btn-sm">View Scores</a></td>
+                <td><a href="{% url 'view_student_averages' year.year %}" class="btn btn-info btn-sm">View Averages</a></td>
+                <td><a href="{% url 'problem_difficulty' year.year %}" class="btn btn-info btn-sm">Problem Difficulty</a></td>
+                <td><a href="{% url 'topic_rankings' year.year %}" class="btn btn-info btn-sm">Topic Rankings</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
