@@ -85,6 +85,28 @@
     </div>
 </div>
 
+<!-- Modal for editing Solutions -->
+<div class="modal fade" id="editSolutionModal" tabindex="-1" role="dialog" aria-labelledby="editSolutionLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSolutionLabel">Edit Solution(s)</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for new solution -->
+<div class="modal fade" id="newSolutionModal" tabindex="-1" role="dialog" aria-labelledby="newSolutionLabel" aria-hidden="true">
+    
+</div>
+
 <script>
 function loadEditLatex(problemId) {
     $.ajax({
@@ -143,7 +165,6 @@ $('#editAnswerForm').submit(function(event) {
     event.preventDefault();
     let problemId = $('#editProblemAnswerId').val();
     let answer = $('#editProblemAnswer').val();
-    console.log(problemId);
     
     $.ajax({
         url: `/drills/drill/{{drill.id}}/save-answer/${problemId}/`,
@@ -177,5 +198,183 @@ function loadProblems(taskId) {
         }
     });
 }
+
+function loadEditSolutions(problemId) {
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/load-edit-solutions/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#editSolutionModal').html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editAnswer-div"]);
+            $('#editSolutionModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading solutions. Please try again.");
+        }
+    });
+}
+function loadNewSolution(problemId) {
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/load-new-solution/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#newSolutionModal').html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"newSolutionModal"]);
+            $('#newSolutionModal').modal('show');
+            $("#newSolutionModal").modal({keyboard:false,backdrop:'static'})
+            $("#newSolutionModal").data("bs.modal")._config.backdrop = "static";
+        },
+        error: function(xhr) {
+            alert("Error loading new solution modal. Please try again.");
+        }
+    });
+}
+
+$(document).on("click","#preview-latex-button", function(e) {
+    sol_text = $("#codetext[name=new_solution_text]").val().trim();
+    sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    sol_text = replace_enumitem(sol_text);
+    sol_text = replace_center(sol_text);
+
+    $("#preview-latex").html(sol_text);
+    $("#preview-latex").show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
+
+});
+
+$(document).on('submit',"#new-solution-form",function(event) {
+    event.preventDefault();
+    let problemId = $('#ns-pk').val();
+    $.ajax({
+	type: 'POST',
+        url: `/drills/drill/{{drill.id}}/save-new-solution/${problemId}/`,
+        data: $(this).serialize()+"&csrfmiddlewaretoken={{ csrf_token }}",
+        dataType: 'json',
+        success: function(result) {
+            $("#solcount-"+problemId).text(result['sol_count']);
+            $("#newSolutionModal").html(result['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"newSolutionModal"]);
+            window.location = "#editsolplaceholder_"+result['sol_id'];
+	    $("#newSolutionModal").data('bs.modal')._config.backdrop = 'true';
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".pre-delete-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[2];
+  $("#confirmdelete_"+sol_id).show();
+});
+
+$(document).on('click',".copy-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[1];
+  var sol_text = $("textarea#latexsol_"+sol_id).val();
+  navigator.clipboard.writeText(sol_text);
+
+});
+
+$(document).on('click',".no-delete-sol-link",function(e) {
+  var sol_id = $(this).attr('id').split('_')[2];
+  $("#confirmdelete_"+sol_id).hide();
+});
+
+$(document).on('click',".delete-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: `/drills/drill/{{drill.id}}/delete-solution/${prob_id}/`,
+        data: "pk="+prob_id+"&spk="+sol_id+ "&csrfmiddlewaretoken={{ csrf_token }}",
+        dataType: 'json',
+        success: function(result) {
+            if (result['deleted']==1) {
+                $("#solution-link_"+prob_id).text("View Solutions ("+result['sol_count']+")");
+                $("#num_solutions-"+prob_id).html(result['sol_count']);
+                $("#sol_"+sol_id).remove();
+                if ($("#all_solutions > div").length == 0) {
+                    $("#no-solutions").show();
+                }
+            }
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: `/drills/drill/{{drill.id}}/load-edit-single-solution/${prob_id}/`,
+        data: "pk="+prob_id+"&spk="+sol_id+ "&csrfmiddlewaretoken={{ csrf_token }}",
+        dataType: 'json',
+        success: function(result) {
+            $("#editsol_"+prob_id+"_"+sol_id).hide();
+            $("#editsolplaceholder_"+sol_id).html(result['sol_form']);
+            window.location ="#editsolplaceholder_"+sol_id;
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".save-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $.ajax({
+        type: 'POST',
+        url: `/drills/drill/{{drill.id}}/save-solution/${prob_id}/`,
+        data: "pk="+prob_id+"&spk="+sol_id+"&solution_text="+encodeURIComponent($("#editsolplaceholder_"+sol_id+" #codetext").val())+ "&csrfmiddlewaretoken={{ csrf_token }}",
+        dataType: 'json',
+        success: function(result) {
+            $("#soltext_"+sol_id).html(result['sol_text']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"soltext_"+sol_id]);
+              $("#editsolplaceholder_"+sol_id).empty()
+            d = new Date();
+            $("#soltext_"+sol_id+" img").each(function(e) {
+              url = $(this).attr("src");
+              $(this).attr("src",url+"?"+d.getTime());
+            });
+$("#editsol_"+prob_id+"_"+sol_id).show();
+          $("#soltext_"+sol_id).show();
+
+        }
+    });
+    return false;
+});
+
+$(document).on('click',".edit-primitive-preview-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    var prob_label = $(this).attr('id').split('_')[3];
+    sol_text = $("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val().trim();
+
+
+    sol_text = '<p>'+sol_text.replace(/</g,' < ').replace(/(?:\r\n|\r|\n)/g,'<br/>')+'</p>';
+
+    sol_text = replace_images(sol_text,prob_label);
+    sol_text = replace_enumitem(sol_text);
+    sol_text = replace_center(sol_text);
+
+    $("#preview_soltext_"+sol_id).html(sol_text);
+    $("#soltext_"+sol_id).hide();
+    $("#preview_soltext_"+sol_id).show();
+    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview_soltext_"+sol_id]);
+});
+
+$(document).on('click',".cancel-edit-sol-link",function(event) {
+    event.preventDefault();
+    var sol_id = $(this).attr('id').split('_')[2];
+    var prob_id = $(this).attr('id').split('_')[1];
+    $("#editsolplaceholder_"+sol_id).empty()
+    $("#soltext_"+sol_id).show();
+    $("#editsol_"+prob_id+"_"+sol_id).show();
+});
 </script>
+
+
 {% endblock %}

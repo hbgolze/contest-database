@@ -7,5 +7,7 @@
             <p><strong>Task:</strong> <a href="#" onclick="loadProblems({{ problem.drill_task.id }})">{{ problem.drill_task }}</a></p>
             <button class="btn btn-primary btn-sm" onclick="loadEditLatex({{ problem.id }})">Edit LaTeX</button>
             <button class="btn btn-secondary btn-sm" onclick="loadEditAnswer({{ problem.id }})">Edit Answer</button>
+            <button class="btn btn-warning btn-sm" onclick="loadEditSolutions({{ problem.id }})">View Solutions (<span id="solcount-{{problem.id}}">{{problem.drillproblemsolution_set.count}}</span>)</button>
+            <button class="btn btn-info btn-sm" onclick="loadNewSolution({{ problem.id }})">New Solution</button>
         </div>
     </div>

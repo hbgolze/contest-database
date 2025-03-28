@@ -89,10 +89,18 @@ class DrillProblem(models.Model):
         self.save()
     def update_order(self,i):
         self.order = i
+        self.label = str(self.drill.year_folder.year) + 'ARMLDrill'+str(self.drill.number)+'-'+str(i)
+        self.readable_label = str(self.drill.year_folder.year) + ' ARML Drill '+str(self.drill.number)+' #'+str(i)
         self.save()
         for drp in self.drillrecordproblem_set.all():
             drp.order = i
             drp.save()
+    def renumber_solutions(self):
+        i=1
+        for s in self.drillproblemsolution_set.all():
+            s.order = i
+            s.save()
+            i += 1
     class Meta:
         ordering = ['order']
 

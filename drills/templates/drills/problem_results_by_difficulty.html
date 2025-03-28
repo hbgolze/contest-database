@@ -1,0 +1,25 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}{{year.year}} Drill Results by Problem Difficulty{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+        <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
+        <li class="breadcrumb-item active" aria-current="page">Drill Results by Problem Difficulty</li>
+    </ol>
+  </nav>
+<div class="container mt-4">
+    <h1 class="mb-4">{{ year.year }} Drill Results by Problem Difficulty</h1>
+    <div>
+        <table>
+    {% for student, row in rows %}
+    <tr>
+    <td>{{student}}</td><td>{% for p in row %}<div class="bar" style="width:5px;height:20px;display:inline-block;background-color: {% if p == 1 %}green{% endif %}{% if p == 0 %}red{% endif %}{% if p == -1 %}tan{% endif %};"></div>{% endfor%}</td>
+    </tr>   
+    {% endfor %}
+</table>
+    </div>
+</div>
+{% endblock %}

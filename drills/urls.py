@@ -4,11 +4,12 @@ from .views import (
     DrillTaskManagerView, ResultsIndexView, IndividualDrillResultsView,
     DrillProfileView, DrillRankingsView, GradeDrillView, ManageProfilesView,
     StudentScoresView,StudentAveragesView,StudentReportsView,ReorderDrillView,
-    ProblemDifficultyView,TopicRankingsView,
-    add_profile_view,add_year_to_profile,load_problems_modal,save_task,
-    load_edit_task,load_edit_latex,load_edit_answer,save_answer,save_latex, 
-    add_task,load_single_problem,assignment_pdf_view,individual_report_pdf_view,
-    drill_pdf_view,drill_latex_view
+    ProblemDifficultyView,TopicRankingsView,ProblemResultsbyDifficultyView,
+    add_profile_view, add_year_to_profile, load_problems_modal, save_task,
+    load_edit_task, load_edit_latex, load_edit_answer, save_answer, save_latex, 
+    add_task, load_single_problem, assignment_pdf_view, individual_report_pdf_view,
+    drill_pdf_view, drill_latex_view, load_new_solution, load_edit_solutions,
+    save_new_solution, load_edit_single_solution, delete_solution, save_solution,
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -22,6 +23,12 @@ urlpatterns = [
     path('drill/<int:drill_id>/load-edit-answer/<int:problem_id>/', load_edit_answer, name='load_edit_answer'),
     path('drill/<int:drill_id>/save-latex/<int:problem_id>/', save_latex, name='save_latex'),
     path('drill/<int:drill_id>/save-answer/<int:problem_id>/', save_answer, name='save_answer'),
+    path('drill/<int:drill_id>/load-new-solution/<int:problem_id>/', load_new_solution, name='load_new_solution'),
+    path('drill/<int:drill_id>/save-new-solution/<int:problem_id>/', save_new_solution, name='save_new_solution'),
+    path('drill/<int:drill_id>/load-edit-solutions/<int:problem_id>/', load_edit_solutions, name='load_edit_solutions'),
+    path('drill/<int:drill_id>/load-edit-single-solution/<int:problem_id>/', load_edit_single_solution, name='load_edit_single_solution'),
+    path('drill/<int:drill_id>/save-solution/<int:problem_id>/', save_solution, name='save_solution'),
+    path('drill/<int:drill_id>/delete-solution/<int:problem_id>/', delete_solution, name='delete_solution'),
     path('grade_drill/<int:drill_id>/', permission_required('drills.can_add_drill')(GradeDrillView.as_view()), name='grade_drill'),
     path('assignment/new/', permission_required('drills.can_add_drill')(CreateDrillAssignmentView.as_view()), name='create_assignment'),
     path('assignment/<int:assignment_id>/', permission_required('drills.can_add_drill')(ViewAssignedDrillView.as_view()), name='view_assigned_drill'),
@@ -39,6 +46,7 @@ urlpatterns = [
     path('results/problem_difficulty/<int:year>/', permission_required('drills.can_add_drill')(ProblemDifficultyView.as_view()), name='problem_difficulty'),
     path('results/problem_difficulty/<int:year>/<int:problem_id>/', load_single_problem, name='load_single_problem'),
     path('results/topic_rankings/<int:year>/', permission_required('drills.can_add_drill')(TopicRankingsView.as_view()), name='topic_rankings'),
+    path('results/problem_results_by_difficulty/<int:year>/', permission_required('drills.can_add_drill')(ProblemResultsbyDifficultyView.as_view()), name='problem_results_by_difficulty'),
     path('results/<int:drill_id>/', permission_required('drills.can_add_drill')(IndividualDrillResultsView.as_view()), name='drill_results'),
     path('manage_profiles/', permission_required('drills.can_add_drill')(ManageProfilesView.as_view()), name='manage_profiles'),
     path('manage_profiles/add/', add_profile_view, name='manage_profiles_add'),

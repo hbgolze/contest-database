@@ -1,14 +1,17 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.utils.timezone import now
-from .models import Drill, DrillTask, DrillProblem, DrillAssignment, DrillProfile, DrillRecord, YearFolder,DrillRecordProblem
+from .models import Drill, DrillTask, DrillProblem, DrillAssignment, DrillProfile, DrillRecord, YearFolder,DrillRecordProblem,DrillProblemSolution
 from django.http import HttpResponse,JsonResponse
 from django.conf import settings
 
 from django.template.loader import get_template,render_to_string
+from django.template import Template, Context
 from django.contrib.auth.decorators import permission_required
 from random import shuffle
-from randomtest.utils import compileasy,newtexcode
+from randomtest.utils import compileasy,newtexcode, newsoltexcode, compiletikz
+
+from .forms import SolutionForm
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -352,6 +355,28 @@ class ProblemDifficultyView(View):
         problem_numbers = [i for i in range(1,num_probs+1)]
         return render(request, 'drills/problem_difficulty.html', {'year': year,'problem_numbers':problem_numbers,'drills':drills,'nbar':'drills'})
 
+class ProblemResultsbyDifficultyView(View):
+    def get(self, request, year):
+        year = get_object_or_404(YearFolder, year=year)
+        rows = []
+        problems = []
+        for drill in year.drills.all():
+            if drill.drill_records.exists():
+                for p in drill.drill_problems.all():
+                    problems.append(p)
+        problems = sorted(problems, key = lambda x: -x.percent_solved)
+        profiles = list(year.profiles.all())
+        profiles = sorted(profiles,key = lambda x:-x.score(year))
+        for profile in profiles:
+            row = []
+            drp = DrillRecordProblem.objects.filter(drillrecord__drill_profile = profile)
+            for p in problems:
+                if drp.filter(drill_problem = p).exists():
+                    row.append(drp.filter(drill_problem=p)[0].status)
+                else:
+                    row.append(-1)
+            rows.append((profile.name,row))
+        return render(request, 'drills/problem_results_by_difficulty.html', {'year': year,'rows':rows,'nbar':'drills'})
  
 @permission_required('drills.can_add_drill')
 def add_profile_view(request,**kwargs):
@@ -443,6 +468,67 @@ def load_single_problem(request, year,problem_id):
     return JsonResponse({'problem_html':render_to_string('drills/snippet_single-problem-html.html',{'problem': problem})})
 
 
+@permission_required('drills.can_add_drill')
+def load_edit_solutions(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    return JsonResponse({'html_code':render_to_string('drills/snippet_load-sol.html',{'problem': problem})})
+
+@permission_required('drills.can_add_drill')
+def load_new_solution(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    return JsonResponse({'html_code':render_to_string('drills/snippet_load-new-solution.html',{'problem': problem})})
+
+@permission_required('drills.can_add_drill')
+def save_new_solution(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    form = request.POST
+    order = 1
+    if problem.drillproblemsolution_set.exists():
+        s = problem.drillproblemsolution_set.order_by('-order')[0]
+        order = s.order + 1
+    s = DrillProblemSolution.objects.create(solution_text = request.POST.get('new_solution_text'),drill_problem = problem, order = order)
+    s.display_solution_text = newsoltexcode(s.solution_text, str(problem.id)+'drillsol_'+str(s.id))
+    s.save()
+    compileasy(s.solution_text,str(problem.id)+'drillsol_'+str(s.id))
+    compiletikz(s.solution_text,str(problem.id)+'drillsol_'+str(s.id))
+    return JsonResponse({'sol_count': problem.drillproblemsolution_set.count(),
+                         'html_code':render_to_string('drills/snippet_load-sol.html',{'problem': problem}),
+                         'sol_id': s.id})
+
+@permission_required('drills.can_add_drill')
+def load_edit_single_solution(request,**kwargs):
+    pk = request.POST.get('pk','')
+    spk = request.POST.get('spk','')
+    prob =  get_object_or_404(DrillProblem,pk=pk)
+    sol =  get_object_or_404(DrillProblemSolution,pk=spk)
+    form = SolutionForm(instance=sol)
+    return JsonResponse({'sol_form':render_to_string('drills/snippet_load-edit-single-sol.html',{'form':form,'prob':prob})})
+
+@permission_required('drills.can_add_drill')
+def save_solution(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    solution_id = request.POST.get('spk')
+    solution = get_object_or_404(DrillProblemSolution,id = solution_id)
+    solution.solution_text = request.POST.get('solution_text')
+    solution.save()
+    solution.display_solution_text = newsoltexcode(solution.solution_text, str(problem.id)+'drillsol_'+str(solution.id))
+    solution.save()
+    compileasy(solution.solution_text,str(problem.id)+'drillsol_'+str(solution.id))
+    compiletikz(solution.solution_text,str(problem.id)+'drillsol_'+str(solution.id))
+    s = Template('{% autoescape off %}{{solution.display_solution_text|linebreaks}}{% endautoescape %}')
+    context = Context(dict(solution=solution))
+    return JsonResponse({'sol_text':s.render(context),})
+
+
+
+@permission_required('drills.can_add_drill')
+def delete_solution(request,drill_id,problem_id):
+    problem = get_object_or_404(DrillProblem,id = problem_id)
+    solution_id = request.POST.get('spk')
+    sol = get_object_or_404(DrillProblemSolution,id = solution_id)
+    sol.delete()
+    problem.renumber_solutions()
+    return JsonResponse({'deleted':1, 'sol_count': problem.drillproblemsolution_set.count()})
 
 @permission_required('drills.can_add_drill')
 def assignment_pdf_view(request,assignment_id):

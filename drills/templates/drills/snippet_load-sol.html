@@ -1,0 +1,64 @@
+<div class="modal-dialog modal-lg">
+  
+  <!-- Modal content-->
+  <div class="modal-content">
+    <div class="modal-header">
+      <h5 class="modal-title">Solutions to {{problem.readable_label}}</h5>
+      <button type="button" class="close" data-dismiss="modal">&times;</button>
+    </div>
+    <div class="modal-body">
+	  {% autoescape off %}{{problem.display_problem_text|linebreaks}} {% endautoescape %}
+      {% if problem.drillproblemsolution_set.count > 0 %}
+      <div id="all_solutions">
+      {% for solution in problem.drillproblemsolution_set.all %}
+
+      <div id="sol_{{solution.pk}}">
+	<hr>
+	<div class="d-flex flex-row">
+	  <div class="p-2 mr-auto">
+	<label>Solution {{forloop.counter}}:</label>
+	  </div>
+	  <textarea id="latexsol_{{solution.pk}}" style="display:none">{{solution.solution_text}}</textarea>
+	  <div class="p-2">
+	    <div class="btn-group btn-group-sm float-right" role="group" aria-label="Solution options">
+	      <button type="button" class="btn btn-secondary edit-sol-link" id="editsol_{{problem.pk}}_{{solution.pk}}"><span class="fa fa-pencil"></span></button>
+	      <button type="button" class="btn btn-secondary copy-sol-link" id="copysol_{{solution.pk}}"><span class="fa fa-copy"></span></button>
+	      <button type="button" class="btn btn-danger pre-delete-sol-link" id="predeletesol_{{problem.pk}}_{{solution.pk}}"><span class="fa fa-remove"></span></button>
+	    </div>
+	  </div>
+	</div>
+	
+	<div class="alert alert-danger" role="alert" style="display:none" id="confirmdelete_{{solution.pk}}">
+	  <div class="d-flex flex-row">
+	    <div class="p-2 mr-auto">
+	      Are you sure you want to delete this solution?
+	    </div>
+	    <div class="p-2">
+	      <div class="btn-group btn-group-sm" role="group" aria-label="Solution options" style="margin-bottom 20px">
+		<button type="button" class="btn btn-danger delete-sol-link" id="deletesol_{{problem.pk}}_{{solution.pk}}">Yes</button>
+		<button type="button" class="btn btn-secondary no-delete-sol-link" id="nodeletesol_{{problem.pk}}_{{solution.pk}}">No</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<div id="soltext_{{solution.pk}}">
+		{% autoescape off %}{{solution.display_solution_text|linebreaks}}{% endautoescape %}
+	</div>
+	<div id="editsolplaceholder_{{solution.pk}}">
+
+	</div>
+      </div>
+      {% endfor %}
+      </div>
+      {% endif %}
+      <div id="no-solutions" {% if problem.drillproblemsolution_set.count > 0%}style="display:none"{% endif %}>
+	No current solutions.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    </div>
+  </div>
+  
+</div>

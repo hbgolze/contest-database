@@ -1,0 +1,32 @@
+<div class="modal-dialog modal-lg" role="document">
+
+    <div class="modal-content">
+      <form method="get" action="." id="new-solution-form">
+
+        <div class="modal-header">
+          <h5 class="modal-title">New Solution</h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="ns-pk" id="ns-pk" value="{{problem.pk}}">
+          <div class="form-group">
+            {% autoescape off %}{{problem.display_problem_text|linebreaks}} {% endautoescape %}{{problem}}
+          </div>
+          <div class="form-group">
+            <div id="preview-latex" style="display:none;white-space:pre-wrap">
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="new_solution_text" class="control-label">Solution Text</label>
+            <textarea class="form-control" min-width="100%" id="codetext" name="new_solution_text" rows="10" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="preview-latex-button">Primitive Preview</button>
+          <button type="submit" name="addsolution" class="btn btn-primary">Add Solution</button>
+        </div>
+      </form>
+    </div>
+
+  </div>
