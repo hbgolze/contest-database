@@ -205,7 +205,7 @@ function loadEditSolutions(problemId) {
         type: "GET",
         success: function(response) {
             $('#editSolutionModal').html(response['html_code']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editAnswer-div"]);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editSolutionModal"]);
             $('#editSolutionModal').modal('show');
         },
         error: function(xhr) {
