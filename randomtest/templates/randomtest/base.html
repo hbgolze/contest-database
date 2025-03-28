@@ -130,7 +130,7 @@ MathJax.Hub.Config({
     <li class="nav-item"><a class="nav-link {% if nbar == 'contestcollection' %}active{% endif %}" href="/contestcollections/">Contest Collection</a></li>
 {% if request.user.userprofile.mock_tests.count > 0%}    <li class="nav-item"><a class="nav-link {% if nbar == 'mocktests' %}active{% endif %}" href="/mocktests/">Mock Tests</a></li>{% endif %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'groups' %}active{% endif %}" href="/problemgroups/">Problem Groups</a></li>
-    {% if perms.drills.can_add_drill %}<li class="nav-item"><a class="nav-link {% if nbar == 'drills' %}active{% endif %}" href="/drills/">Drills</a></li>{% endif %}
+    {% if perms.drills.add_drill %}<li class="nav-item"><a class="nav-link {% if nbar == 'drills' %}active{% endif %}" href="/drills/">Drills</a></li>{% endif %}
     <li class="nav-item"><a class="nav-link {% if nbar == 'asy' %}active{% endif %}" href="/problemeditor/asy/">Asymptotr</a></li>
 </ul>
 </div>
