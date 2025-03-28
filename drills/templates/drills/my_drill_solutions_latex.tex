@@ -39,7 +39,7 @@
 
 {% if problem.drillproblemsolution_set.count > 0 %}
 {% for solution in problem.drillproblemsolution_set.all %}
-\textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}:{% endif %}:}
+\textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}{% endif %}:} {{solution.solution_text}}
 {% endfor %}
 {% else %}
 No Solutions Yet!
