@@ -378,7 +378,7 @@ class ProblemResultsbyDifficultyView(View):
             rows.append((profile.name,row))
         return render(request, 'drills/problem_results_by_difficulty.html', {'year': year,'rows':rows,'nbar':'drills'})
  
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def add_profile_view(request,**kwargs):
     name = request.POST.get('name','')
     p = DrillProfile(name=name)
@@ -386,7 +386,7 @@ def add_profile_view(request,**kwargs):
     return JsonResponse({'profile_row':render_to_string('drills/snippet_profile-row.html',{'profile':p,'years': YearFolder.objects.all(),'request':request})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def add_year_to_profile(request):
     years = [(d,p) for d, p in request.POST.items() if d.startswith('addyear')]
     for i in years:
@@ -398,13 +398,13 @@ def add_year_to_profile(request):
     return JsonResponse({'profile_row':render_to_string('drills/snippet_profile-inner-row.html',{'profile':profile,'years': YearFolder.objects.all(),'request':request}),'profile_pk': profile_pk})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_problems_modal(request, task_id):
     drill_task = DrillTask(id = task_id)
     return JsonResponse({'problem_html':render_to_string('drills/snippet_problems-html.html',{'task': drill_task})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def save_task(request, task_id):
     drill_task = DrillTask(id = task_id)
     topic = request.POST.get('topic')
@@ -415,19 +415,19 @@ def save_task(request, task_id):
     return JsonResponse({})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_edit_task(request,task_id):
     task = get_object_or_404(DrillTask,id = task_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-task.html',{'task': task})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_edit_latex(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-latex.html',{'problem': problem})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def save_latex(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id=problem_id)
     problem_text = request.POST.get('problem_text')
@@ -439,13 +439,13 @@ def save_latex(request,drill_id,problem_id):
     return JsonResponse({'html_code':render_to_string('drills/snippet_drill-problem-card.html',{'problem': problem})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_edit_answer(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-answer.html',{'problem': problem})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def save_answer(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id=problem_id)
     answer = request.POST.get('answer')
@@ -454,7 +454,7 @@ def save_answer(request,drill_id,problem_id):
     return JsonResponse({'html_code':render_to_string('drills/snippet_drill-problem-card.html',{'problem': problem})})
     
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def add_task(request):
     topic = request.POST.get('topic')
     description = request.POST.get('description')
@@ -462,23 +462,23 @@ def add_task(request):
     return JsonResponse({'id':task.id,'description':description,'topic':topic})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_single_problem(request, year,problem_id):
     problem = DrillProblem.objects.get(id = problem_id)
     return JsonResponse({'problem_html':render_to_string('drills/snippet_single-problem-html.html',{'problem': problem})})
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_edit_solutions(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-sol.html',{'problem': problem})})
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_new_solution(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-new-solution.html',{'problem': problem})})
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def save_new_solution(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     form = request.POST
@@ -495,7 +495,7 @@ def save_new_solution(request,drill_id,problem_id):
                          'html_code':render_to_string('drills/snippet_load-sol.html',{'problem': problem}),
                          'sol_id': s.id})
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def load_edit_single_solution(request,**kwargs):
     pk = request.POST.get('pk','')
     spk = request.POST.get('spk','')
@@ -504,7 +504,7 @@ def load_edit_single_solution(request,**kwargs):
     form = SolutionForm(instance=sol)
     return JsonResponse({'sol_form':render_to_string('drills/snippet_load-edit-single-sol.html',{'form':form,'prob':prob})})
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def save_solution(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     solution_id = request.POST.get('spk')
@@ -521,7 +521,7 @@ def save_solution(request,drill_id,problem_id):
 
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def delete_solution(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     solution_id = request.POST.get('spk')
@@ -530,7 +530,7 @@ def delete_solution(request,drill_id,problem_id):
     problem.renumber_solutions()
     return JsonResponse({'deleted':1, 'sol_count': problem.drillproblemsolution_set.count()})
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def assignment_pdf_view(request,assignment_id):
     drill_assignment = get_object_or_404(DrillAssignment, id = assignment_id)
     context = {
@@ -596,7 +596,7 @@ def assignment_pdf_view(request,assignment_id):
                 error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':assignment_name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def individual_report_pdf_view(request,year,profile_id):
     profile = get_object_or_404(DrillProfile, id = profile_id)
     year = get_object_or_404(YearFolder, year = year)
@@ -734,7 +734,7 @@ def individual_report_pdf_view(request,year,profile_id):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':profile.name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def drill_pdf_view(request,drill_id):
     drill = get_object_or_404(Drill, id = drill_id)
     context = {
@@ -802,7 +802,7 @@ def drill_pdf_view(request,drill_id):
 
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def drill_latex_view(request,drill_id):
     drill = get_object_or_404(Drill, id = drill_id)
     context = {
@@ -818,7 +818,7 @@ def drill_latex_view(request,drill_id):
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def drill_solutions_pdf_view(request,drill_id):
     drill = get_object_or_404(Drill, id = drill_id)
     context = {
@@ -884,7 +884,7 @@ def drill_solutions_pdf_view(request,drill_id):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':drill.readable_label,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
 
-@permission_required('drills.can_add_drill')
+@permission_required('drills.add_drill')
 def drill_solutions_latex_view(request,drill_id):
     drill = get_object_or_404(Drill, id = drill_id)
     context = {
