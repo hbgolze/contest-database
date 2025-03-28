@@ -33,7 +33,7 @@
         <tbody>
             {% for drill in drills %}
             <tr>
-                <td><a href="{% url 'view_drill' drill.id %}">{{ drill.readable_label }}</a> (<a href="drill/{{drill.id}}/pdf">PDF</a> | <a href="drill/{{drill.id}}/latex">LaTeX</a>)</td>
+                <td><a href="{% url 'view_drill' drill.id %}">{{ drill.readable_label }}</a> (<a href="drill/{{drill.id}}/pdf">PDF</a> | <a href="drill/{{drill.id}}/latex">LaTeX</a> | <a href="drill/{{drill.id}}/solutions_pdf">Solutions PDF</a> | <a href="drill/{{drill.id}}/solutions_latex">Solutions LaTeX</a>)</td>
                 <td>{{ drill.author }}</td>
                 <td>{{ drill.average_score|floatformat:2 }}/{{ drill.problem_count }}</td>
                 <td>{{ drill.num_participants }}</td>

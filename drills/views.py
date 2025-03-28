@@ -817,3 +817,85 @@ def drill_latex_view(request,drill_id):
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+@permission_required('drills.can_add_drill')
+def drill_solutions_pdf_view(request,drill_id):
+    drill = get_object_or_404(Drill, id = drill_id)
+    context = {
+        'drill':drill,
+        }
+    
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_drill_solutions_latex.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'drill':drill,
+            }
+        template = get_template('drills/my_drill_solutions_latex.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+drill.readable_label.replace(' ','')+'-sols.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':drill.readable_label,'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+
+@permission_required('drills.can_add_drill')
+def drill_solutions_latex_view(request,drill_id):
+    drill = get_object_or_404(Drill, id = drill_id)
+    context = {
+        'drill':drill,
+        }
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_drill_solutions_latex.tex')
+    content = template.render(context).encode('utf-8')
+    filename = drill.readable_label.replace(' ','')+"-sols.tex"
+    response = HttpResponse(content, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response

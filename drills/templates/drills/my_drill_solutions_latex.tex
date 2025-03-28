@@ -1,0 +1,53 @@
+{% load randomtest_extras %}
+{% autoescape off %}
+\documentclass[12pt]{article}
+\usepackage{amsmath}
+\usepackage{enumerate}
+\usepackage{amsfonts,amssymb}
+\usepackage{asymptote,tikz}
+\usepackage{graphicx}
+\usepackage{environ}
+\usepackage{multirow,curves}
+\usepackage{cancel}
+
+\usepackage{xwatermark}
+\DeclareFontFamily{OMX}{yhex}{}
+\DeclareFontShape{OMX}{yhex}{m}{n}{<->yhcmex10}{}
+\DeclareSymbolFont{yhlargesymbols}{OMX}{yhex}{m}{n}
+\DeclareMathAccent{\overarc}{\mathord}{yhlargesymbols}{"F3}
+
+\usepackage[margin=1in]{geometry}
+\setlength{\textheight}{9in}
+
+\newcommand{\vb}[1]{\langle#1\rangle}
+\newcommand{\cis}[1]{\text{cis}#1}
+
+
+\title{ {{drill.readable_label}} }
+\author{Assigned Author: {{drill.author}} }
+\date{}
+\graphicspath{ { {{tempdirect}}/} }
+\begin{document}
+\textbf{\relax{{drill.readable_label}}\relax---Solutions}
+
+\pagestyle{empty}
+\bigskip
+\begin{enumerate}
+  {% for problem in drill.drill_problems.all %}
+\item 
+{{problem.problem_text}} 
+
+{% if problem.drillproblemsolution_set.count > 0 %}
+{% for solution in problem.drillproblemsolution_set.all %}
+\textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}:{% endif %}:}
+{% endfor %}
+{% else %}
+No Solutions Yet!
+{% endif %}
+ 
+{% endfor %}
+
+\end{enumerate}
+\end{document}
+
+{% endautoescape %}

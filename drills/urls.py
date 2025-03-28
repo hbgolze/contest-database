@@ -10,6 +10,7 @@ from .views import (
     add_task, load_single_problem, assignment_pdf_view, individual_report_pdf_view,
     drill_pdf_view, drill_latex_view, load_new_solution, load_edit_solutions,
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
+    drill_solutions_latex_view, drill_solutions_pdf_view,
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -18,6 +19,8 @@ urlpatterns = [
     path('drill/<int:drill_id>/', permission_required('drills.can_add_drill')(ViewDrillView.as_view()), name='view_drill'),
     path('drill/<int:drill_id>/pdf/', drill_pdf_view, name='view_drill_pdf'),
     path('drill/<int:drill_id>/latex/', drill_latex_view, name='view_drill_latex'),
+    path('drill/<int:drill_id>/solutions_pdf/', drill_solutions_pdf_view, name='view_drill_solutions_pdf'),
+    path('drill/<int:drill_id>/solutions_latex/', drill_solutions_latex_view, name='view_drill_solutions_latex'),
     path('drill/<int:drill_id>/reorder/', permission_required('drills.can_add_drill')(ReorderDrillView.as_view()), name='reorder_drill'),
     path('drill/<int:drill_id>/load-edit-latex/<int:problem_id>/', load_edit_latex, name='load_edit_latex'),
     path('drill/<int:drill_id>/load-edit-answer/<int:problem_id>/', load_edit_answer, name='load_edit_answer'),
