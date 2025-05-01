@@ -50,10 +50,10 @@
 \begin{center}
     \rowcolors{1}{white}{light-gray}
     
-    \begin{longtable}{c|{% for i in problem_numbers %}c{% endfor %}|c|c}
-        Drill&{% for i in problem_numbers %}{{forloop.counter}}&{%endfor%}Total Score&Average Score\\\hline
+    \begin{longtable}{c|{% for i in problem_numbers %}c{% endfor %}|c{% if no_average %}{% else %}|c{% endif %}}
+        Drill&{% for i in problem_numbers %}{{forloop.counter}}&{%endfor%}Total Score{% if no_average %}{% else %}&Average Score{% endif %}\\\hline
         {% for drill_record,buffer in drill_records %}
-        {{drill_record.drill.readable_label|poundsafe}}{% for i in drill_record.drill_record_problems.all %}&{% if i.status != -1 %}{{i.status}}{% endif %}{% endfor %}{% for i in buffer %}&{% endfor %}&{{drill_record.score}}&{{drill_record.drill.average_score|floatformat:2}}\\
+        {{drill_record.drill.readable_label|poundsafe}}{% for i in drill_record.drill_record_problems.all %}&{% if i.status != -1 %}{{i.status}}{% endif %}{% endfor %}{% for i in buffer %}&{% endfor %}&{{drill_record.score}}{% if no_average %}{% else %}&{{drill_record.drill.average_score|floatformat:2}}{% endif %}\\
         {% endfor %}
     \end{longtable}
 \end{center}

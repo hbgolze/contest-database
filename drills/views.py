@@ -598,6 +598,9 @@ def assignment_pdf_view(request,assignment_id):
 
 @permission_required('drills.add_drill')
 def individual_report_pdf_view(request,year,profile_id):
+    no_average = 0
+    if 'no_average' in request.GET:
+        no_average = 1
     profile = get_object_or_404(DrillProfile, id = profile_id)
     year = get_object_or_404(YearFolder, year = year)
 
@@ -659,6 +662,7 @@ def individual_report_pdf_view(request,year,profile_id):
         'nt_correct':nt_correct,
         'nt_total':nt_total,
         'nt_score':nt_score,
+        'no_average':no_average,
         }
     
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -687,6 +691,7 @@ def individual_report_pdf_view(request,year,profile_id):
             'nt_correct':nt_correct,
             'nt_total':nt_total,
             'nt_score':nt_score,
+            'no_average':no_average,
             }
         template = get_template('drills/my_student_report.tex')
         rendered_tpl = template.render(context).encode('utf-8')
