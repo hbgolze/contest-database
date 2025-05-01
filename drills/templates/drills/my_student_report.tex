@@ -79,7 +79,7 @@ Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num
 \begin{enumerate}
 {% for i in alg_total %}
 {% if i in alg_correct %}{%else %}
-\item {{i.drill_problem.answer}}
+\item ${{i.drill_problem.answer}}$
 {% endif %}
 {% endfor %}
 \end{enumerate}
@@ -100,7 +100,7 @@ Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num
 \begin{enumerate}
 {% for i in combo_total %}
 {% if i in combo_correct %}{%else %}
-\item {{i.drill_problem.answer}}
+\item ${{i.drill_problem.answer}}$
 {% endif %}
 {% endfor %}
 \end{enumerate}
@@ -121,7 +121,7 @@ Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num
 \begin{enumerate}
 {% for i in geo_total %}
 {% if i in geo_correct %}{% else %}
-\item {{i.drill_problem.answer}}
+\item ${{i.drill_problem.answer}}$
 {% endif %}
 {% endfor %}
 
@@ -143,7 +143,7 @@ Difficulty: {{i.drill_problem.number_solved}} solves/{{i.drill_problem.drill.num
 \begin{enumerate}
 {% for i in nt_total %}
 {% if i in nt_correct %}{% else %}
-\item {{i.drill_problem.answer}}
+\item ${{i.drill_problem.answer}}$
 {% endif %}
 {% endfor %}
 \end{enumerate}
