@@ -3,10 +3,19 @@ from django.db import models
 # Create your models here.
 from django.utils import timezone
 
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return str(self.name)
+    class Meta:
+        ordering = ['name']
+
 class YearFolder(models.Model):
     year = models.IntegerField()
     top_number = models.IntegerField(default = 0)
-
+    category = models.ForeignKey(Category,related_name='years',on_delete=models.CASCADE,null=True)
+    
     def __str__(self):
         return str(self.year)
     class Meta:
@@ -40,6 +49,7 @@ class Drill(models.Model):
 class DrillTask(models.Model):
     TOPIC_CHOICES = [
         ('Algebra', 'Algebra'),
+        ('Arithmetic','Arithmetic'),
         ('Geometry', 'Geometry'),
         ('Combinatorics', 'Combinatorics'),
         ('Number Theory', 'Number Theory'),
@@ -48,11 +58,12 @@ class DrillTask(models.Model):
     description = models.TextField()
     topic = models.CharField(max_length=255)
     notes = models.TextField(blank=True)
-
+    category = models.ForeignKey(Category,related_name='drill_tasks',on_delete=models.CASCADE,null=True)
+    
     def __str__(self):
         return self.description
     def most_recent_usage(self,year):
-        problems = self.drillproblem_set.filter(drill__year_folder__year=year)
+        problems = self.drillproblem_set.filter(drill__year_folder=year)
         uses = [p.drill.number for p in problems]
         if len(uses) > 0:
             return max(uses)
@@ -62,6 +73,7 @@ class DrillTask(models.Model):
 class DrillProblem(models.Model):
     TOPIC_CHOICES = [
         ('Algebra', 'Algebra'),
+        ('Arithmetic', 'Arithmetic'),
         ('Geometry', 'Geometry'),
         ('Combinatorics', 'Combinatorics'),
         ('Number Theory', 'Number Theory'),
@@ -85,7 +97,7 @@ class DrillProblem(models.Model):
     def update_stats(self):
         problem_records = self.drillrecordproblem_set.all()
         self.number_solved = problem_records.filter(status=1).count()
-        self.percent_solved = 100*self.number_solved/problem_records.count()
+        self.percent_solved = 100*self.number_solved/(max(1,problem_records.count()))
         self.save()
     def update_order(self,i):
         self.order = i

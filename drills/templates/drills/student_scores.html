@@ -7,11 +7,11 @@
     <ol class="breadcrumb">
         <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
         <li class="breadcrumb-item"><a href="/drills/results/">Results Index</a></li>
-        <li class="breadcrumb-item active" aria-current="page">{{year.year}} Student Scores</li>
+        <li class="breadcrumb-item active" aria-current="page">{{year.year}} {{year.category.name}} Drill Student Scores</li>
     </ol>
   </nav>
 <div class="container mt-4">
-    <h1 class="mb-4">{{ year.year }} Student Drill Scores</h1>
+    <h1 class="mb-4">{{ year.year }} {{year.category.name}} Drill Student Scores</h1>
 
     <table class="table table-bordered text-center sortable mb-4">
         <thead class="thead-light">

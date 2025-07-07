@@ -186,7 +186,7 @@ $('#editAnswerForm').submit(function(event) {
 
 function loadProblems(taskId) {
     $.ajax({
-        url: `/drills/tasks/${taskId}/problems_modal/`,
+        url: `/drills/tasks/{{drill.year_folder.category.pk}}/${taskId}/problems_modal/`,
         type: "GET",
         success: function(response) {
             $('#problemsList').html(response['problem_html']);

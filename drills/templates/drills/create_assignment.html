@@ -19,7 +19,7 @@
     <form method="post" id="create-assignment-form" method="POST" action="/drills/assignment/new/">
         {% csrf_token %}
         <input type="hidden" id="author" name="author" value="{{author}}">
-        <input type="hidden" id="year" name="year" value="{{year}}">
+        <input type="hidden" id="year" name="year_pk" value="{{year.pk}}">
         <table class="table table-striped table-bordered">
             <thead class="thead-dark">
                 <tr>
@@ -74,7 +74,7 @@
 function loadProblems(taskId) {
     event.preventDefault();
     $.ajax({
-        url: `/drills/tasks/${taskId}/problems_modal/`,
+        url: `/drills/tasks/{{year.category.pk}}/${taskId}/problems_modal/`,
         type: "GET",
         success: function(response) {
             $('#problemsList').html(response['problem_html']);

@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views import View
 from django.utils.timezone import now
-from .models import Drill, DrillTask, DrillProblem, DrillAssignment, DrillProfile, DrillRecord, YearFolder,DrillRecordProblem,DrillProblemSolution
+from .models import Drill, DrillTask, DrillProblem, DrillAssignment, DrillProfile, DrillRecord, YearFolder,DrillRecordProblem,DrillProblemSolution,Category
 from django.http import HttpResponse,JsonResponse
 from django.conf import settings
 
@@ -27,10 +27,9 @@ import os,os.path
 
 class DrillIndexView(View):
     def get(self, request):
-        drills = Drill.objects.all()
-        assignments = DrillAssignment.objects.all()
+        categories = Category.objects.all()
         year_folders = YearFolder.objects.all()
-        return render(request, 'drills/index.html', {'drills': drills, 'assignments': assignments, 'current_year': now().year, 'year_folders': year_folders,'nbar':'drills'})
+        return render(request, 'drills/index.html', {'categories': categories, 'current_year': now().year, 'year_folders': year_folders,'nbar':'drills'})
 
 class ViewDrillView(View):
     def get(self, request, drill_id):
@@ -38,11 +37,12 @@ class ViewDrillView(View):
         problems = drill.drill_problems.all().order_by('order')
         return render(request, 'drills/view_drill.html', {'drill': drill, 'drill_problems': problems,'nbar':'drills'})
 
+###partially edited
 class CreateDrillAssignmentView(View):
     def get(self, request):
-        tasks = DrillTask.objects.all()
-        year = request.GET.get('year')
-        yf = get_object_or_404(YearFolder,year = year)
+        year_pk = request.GET.get('year_pk')
+        yf = get_object_or_404(YearFolder,pk = year_pk)
+        tasks = yf.category.drill_tasks.all()
         bag = []
         for t in tasks:
             problems = t.drillproblem_set.filter(drill__year_folder=yf)
@@ -62,15 +62,15 @@ class CreateDrillAssignmentView(View):
                 R.append(bag[counter])
             counter += 1
 
-        name = str(yf.year)+' ARML Drill '+str(yf.top_number+1)
+        name = str(yf.year) + ' ' + yf.category.name + ' Drill '+str(yf.top_number+1)
         author = request.GET.get('author')
-        return render(request, 'drills/create_assignment.html', {'tasks': R, 'name' : name, 'author': author, 'year': year,'nbar':'drills'})
+        return render(request, 'drills/create_assignment.html', {'tasks': R, 'name' : name, 'author': author, 'year': yf,'nbar':'drills'})
 
     def post(self, request):
         selected_tasks = request.POST.getlist('selected_tasks[]')
         author = request.POST.get('author')
-        year = request.POST.get('year')
-        yf = get_object_or_404(YearFolder,year = year)
+        year_pk = request.POST.get('year_pk')
+        yf = get_object_or_404(YearFolder,pk = year_pk)
         assignment = DrillAssignment.objects.create(author=author,year = yf, number = yf.top_number + 1)
         yf.top_number = yf.top_number + 1
         yf.save()
@@ -96,12 +96,12 @@ class ViewAssignedDrillView(View):
         year_folder = assignment.year
         y = year_folder.year
         num = assignment.number
-        drill = Drill.objects.create(year_folder = year_folder,year = y,number = num,readable_label=str(y)+' ARML Drill '+ str(num),author = assignment.author,problem_count = len(ids))
+        drill = Drill.objects.create(year_folder = year_folder,year = y,number = num,readable_label=str(y)+' ' + year_folder.category.name + ' Drill '+ str(num),author = assignment.author,problem_count = len(ids))
         for id in ids:
             task = get_object_or_404(DrillTask,id=id)
             problem_text = request.POST.get('problem_text_'+id)
             answer = request.POST.get('answer_'+id)
-            p = DrillProblem.objects.create(order = counter,label=str(y)+'ARMLDrill'+str(num)+'-'+str(counter),readable_label = str(y)+' ARML Drill '+str(num)+' #'+str(counter),drill = drill,problem_text = problem_text,topic = task.topic, drill_task = task,answer=answer,percent_solved=0,number_solved = 0)
+            p = DrillProblem.objects.create(order = counter,label=str(y) + year_folder.category.name.replace(' ','') + 'Drill'+str(num)+'-'+str(counter),readable_label = str(y)+' ' + year_folder.category.name + ' Drill '+str(num)+' #'+str(counter),drill = drill,problem_text = problem_text,topic = task.topic, drill_task = task,answer=answer,percent_solved=0,number_solved = 0)
             compileasy(p.problem_text,'drillproblem_'+str(p.pk))
             p.display_problem_text = newtexcode(p.problem_text,'drillproblem_'+str(p.pk),'')
             p.save()
@@ -109,11 +109,16 @@ class ViewAssignedDrillView(View):
         assignment.delete()
         return redirect('view_drill',drill_id=drill.id)
 
-
-class DrillTaskManagerView(View):
+class CategoryIndexView(View):
     def get(self, request):
-        tasks = DrillTask.objects.all().order_by('topic')
-        return render(request, 'drills/task_manager.html', {'tasks': tasks,'nbar':'drills'})
+        categories = Category.objects.all()
+        return render(request, 'drills/task_manager_index.html', {'categories': categories,'nbar':'drills'})
+    
+class DrillTaskManagerView(View):
+    def get(self, request, cat_pk):
+        category = get_object_or_404(Category,pk = cat_pk)
+        tasks = category.drill_tasks.all().order_by('topic')
+        return render(request, 'drills/task_manager.html', {'category':category, 'tasks': tasks,'nbar':'drills'})
 
 class ResultsIndexView(View):
     def get(self, request):
@@ -143,7 +148,7 @@ class GradeDrillView(View):
         drill = get_object_or_404(Drill, id=drill_id)
         drill_records = drill.drill_records.order_by('drill_profile__name')
         ids = [i.drill_profile.id for i in drill_records]
-        blank_profiles = get_object_or_404(YearFolder,year = drill.year).profiles.exclude(id__in = ids).order_by('name')# change to yearfolder
+        blank_profiles = drill.year_folder.profiles.exclude(id__in = ids).order_by('name')# change to yearfolder
         return render(request, 'drills/grade_drill.html', {'drill': drill, 'drill_records': drill_records,'blank_profiles':blank_profiles,'nbar':'drills'})
     def post(self,request, drill_id):
         drill = get_object_or_404(Drill, id=drill_id)
@@ -197,7 +202,7 @@ class GradeDrillView(View):
             drill_record.save()
         drill.update_stats()
         drill_records = drill.drill_records.order_by('drill_profile__name')
-        blank_profiles = get_object_or_404(YearFolder,year = drill.year).profiles.exclude(id__in = drill_records.values('id')).order_by('name')
+        blank_profiles = drill.year_folder.profiles.exclude(id__in = drill_records.values('id')).order_by('name')
         return render(request, 'drills/grade_drill.html', {'drill': drill, 'drill_records': drill_records,'blank_profiles':blank_profiles,'nbar':'drills'})
 
 
@@ -208,24 +213,24 @@ class ManageProfilesView(View):
         return render(request, 'drills/manage_profiles.html', {'profiles': profiles, 'years': years,'nbar':'drills'})
 
 class StudentScoresView(View):
-    def get(self, request, year):
-        year = get_object_or_404(YearFolder, year=year)
-        rows=[]
+    def get(self, request, year_pk):
+        year = get_object_or_404(YearFolder, pk=year_pk)
+        rows = []
         for profile in year.profiles.all():
             row = [profile]+[[-1]*year.drills.count()]+[0]+[0]
             for record in profile.drillrecord_set.filter(drill__year_folder = year):
                 #row[1][record.drill.number-1] = record
                 row[1][record.drill.number-1] = record.score
             row[-2] = sum(row[1]) + row[1].count(-1)
-            row[-1] = row[-2]/(10*profile.drillrecord_set.filter(drill__year_folder = year).count())*100
+            row[-1] = row[-2]/(max(1,10*profile.drillrecord_set.filter(drill__year_folder = year).count()))*100
             rows.append(row)
         rows = sorted(rows,key=lambda x:-x[2])
         
         return render(request, 'drills/student_scores.html', {'year': year,'rows':rows,'nbar':'drills'})
 
 class StudentAveragesView(View):
-    def get(self, request, year):
-        year = get_object_or_404(YearFolder, year=year)
+    def get(self, request, year_pk):
+        year = get_object_or_404(YearFolder, pk=year_pk)
         student_totals={}
         num_drills = 0
         for drill in year.drills.all():
@@ -267,8 +272,8 @@ class StudentAveragesView(View):
         return render(request, 'drills/student_averages.html', {'year': year,'graphic':graphic,'nbar':'drills'})
     
 class StudentReportsView(View):
-    def get(self, request, year,profile_id):
-        year = get_object_or_404(YearFolder, year=year)
+    def get(self, request, year_pk,profile_id):
+        year = get_object_or_404(YearFolder, pk=year_pk)
         profile = get_object_or_404(DrillProfile, id = profile_id)
         
         nums = []
@@ -314,8 +319,8 @@ class StudentReportsView(View):
                                                               'acgn':acgn,'nbar':'drills'})
 
 class TopicRankingsView(View):
-    def get(self, request, year):
-        year = get_object_or_404(YearFolder, year=year)
+    def get(self, request, year_pk):
+        year = get_object_or_404(YearFolder, pk=year_pk)
         topic_data = []
         for user_profile in year.profiles.all():
             topic_data.append([user_profile,user_profile.acgn(year)])
@@ -342,8 +347,8 @@ class ReorderDrillView(View):
         return redirect('view_drill',drill_id=drill_id)
 
 class ProblemDifficultyView(View):
-    def get(self, request, year):
-        year = get_object_or_404(YearFolder, year=year)
+    def get(self, request, year_pk):
+        year = get_object_or_404(YearFolder, pk=year_pk)
         nums = []
         for drill in year.drills.all():
             nums.append(drill.problem_count)
@@ -356,8 +361,8 @@ class ProblemDifficultyView(View):
         return render(request, 'drills/problem_difficulty.html', {'year': year,'problem_numbers':problem_numbers,'drills':drills,'nbar':'drills'})
 
 class ProblemResultsbyDifficultyView(View):
-    def get(self, request, year):
-        year = get_object_or_404(YearFolder, year=year)
+    def get(self, request, year_pk):
+        year = get_object_or_404(YearFolder, pk=year_pk)
         rows = []
         problems = []
         for drill in year.drills.all():
@@ -392,21 +397,21 @@ def add_year_to_profile(request):
     for i in years:
         profile_pk = i[0].split('_')[1]
         profile = get_object_or_404(DrillProfile,pk = profile_pk)
-        yf = get_object_or_404(YearFolder,year = i[1])
+        yf = get_object_or_404(YearFolder,pk = i[1])
         profile.year.add(yf)
         profile.save()
     return JsonResponse({'profile_row':render_to_string('drills/snippet_profile-inner-row.html',{'profile':profile,'years': YearFolder.objects.all(),'request':request}),'profile_pk': profile_pk})
 
 
 @permission_required('drills.add_drill')
-def load_problems_modal(request, task_id):
-    drill_task = DrillTask(id = task_id)
+def load_problems_modal(request,cat_pk, task_id):
+    drill_task = get_object_or_404(DrillTask,id = task_id)
     return JsonResponse({'problem_html':render_to_string('drills/snippet_problems-html.html',{'task': drill_task})})
 
 
 @permission_required('drills.add_drill')
-def save_task(request, task_id):
-    drill_task = DrillTask(id = task_id)
+def save_task(request, cat_pk,task_id):
+    drill_task = get_object_or_404(DrillTask,id = task_id)
     topic = request.POST.get('topic')
     description = request.POST.get('description')
     drill_task.topic = topic
@@ -416,7 +421,7 @@ def save_task(request, task_id):
 
 
 @permission_required('drills.add_drill')
-def load_edit_task(request,task_id):
+def load_edit_task(request,cat_pk,task_id):
     task = get_object_or_404(DrillTask,id = task_id)
     return JsonResponse({'html_code':render_to_string('drills/snippet_load-edit-task.html',{'task': task})})
 
@@ -455,15 +460,16 @@ def save_answer(request,drill_id,problem_id):
     
 
 @permission_required('drills.add_drill')
-def add_task(request):
+def add_task(request,cat_pk):
+    category = get_object_or_404(Category,pk = cat_pk)
     topic = request.POST.get('topic')
     description = request.POST.get('description')
-    task = DrillTask.objects.create(topic = topic,description=description)
+    task = DrillTask.objects.create(topic = topic,description=description,category = category)
     return JsonResponse({'id':task.id,'description':description,'topic':topic})
 
 
 @permission_required('drills.add_drill')
-def load_single_problem(request, year,problem_id):
+def load_single_problem(request, year_pk,problem_id):
     problem = DrillProblem.objects.get(id = problem_id)
     return JsonResponse({'problem_html':render_to_string('drills/snippet_single-problem-html.html',{'problem': problem})})
 
@@ -537,7 +543,7 @@ def assignment_pdf_view(request,assignment_id):
         'assignment':drill_assignment,
         }
     
-    assignment_name = str(drill_assignment.year.year)+ ' ARML Drill '+str(drill_assignment.number)
+    assignment_name = str(drill_assignment.year.year)+ ' ' + drill_assignment.year.category.name + ' Drill '+str(drill_assignment.number)
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
     asyr = asyf.read()
     asyf.close()
@@ -597,12 +603,12 @@ def assignment_pdf_view(request,assignment_id):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':assignment_name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
 @permission_required('drills.add_drill')
-def individual_report_pdf_view(request,year,profile_id):
+def individual_report_pdf_view(request,year_pk,profile_id):
     no_average = 0
     if 'no_average' in request.GET:
         no_average = 1
     profile = get_object_or_404(DrillProfile, id = profile_id)
-    year = get_object_or_404(YearFolder, year = year)
+    year = get_object_or_404(YearFolder, pk = year_pk)
 
     nums = []
     for drill in year.drills.all():

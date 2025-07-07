@@ -5,8 +5,9 @@
 {% block content %}
 <nav aria-label="breadcrumb" role="navigation">
     <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Drill Task Manager</li>
+      <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+      <li class="breadcrumb-item"><a href="../">Task Manager Index</a></li>
+      <li class="breadcrumb-item active" aria-current="page">{{category.name}} Tasks</li>
     </ol>
 </nav>
 <div class="container mt-4">
@@ -122,7 +123,7 @@ $('#addTaskForm').submit(function(event) {
     let description = $('#taskDescription').val();
     
     $.ajax({
-        url: '/drills/tasks/add/',
+        url: '/drills/tasks/{{category.pk}}/add/',
         type: "POST",
         data: {
             topic: topic,
@@ -146,7 +147,7 @@ $('#addTaskForm').submit(function(event) {
 
 function loadEditTask(id) {
     $.ajax({
-        url: `/drills/tasks/${id}/load-edit-task/`,
+        url: `/drills/tasks/{{category.pk}}/${id}/load-edit-task/`,
         type: "POST",
         data: {
             task_id: id,
@@ -171,7 +172,7 @@ $('#editTaskForm').submit(function(event) {
     let description = $('#editTaskDescription').val();
     
     $.ajax({
-        url: `/drills/tasks/${id}/edit/`,
+        url: `/drills/tasks/{{category.pk}}/${id}/edit/`,
         type: "POST",
         data: {
             topic: topic,
@@ -192,7 +193,7 @@ $('#editTaskForm').submit(function(event) {
 
 function loadProblems(taskId) {
     $.ajax({
-        url: `/drills/tasks/${taskId}/problems_modal/`,
+        url: `/drills/tasks/{{category.pk}}/${taskId}/problems_modal/`,
         type: "GET",
         success: function(response) {
             $('#problemsList').html(response['problem_html']);
