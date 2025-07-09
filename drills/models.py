@@ -161,12 +161,29 @@ class DrillProfile(models.Model):
 class DrillRecord(models.Model):
     drill_profile = models.ForeignKey(DrillProfile, on_delete=models.CASCADE)
     drill = models.ForeignKey(Drill, related_name='drill_records',on_delete=models.CASCADE)
-    score = models.IntegerField()
-
+    score = models.IntegerField()# score for non-bonus problems
+    total_score = models.IntegerField(default = 0)
+    bonus_score = models.IntegerField(default = 0)
+    
     def __str__(self):
         return f"{self.drill_profile.name} - {self.drill.readable_label}"
     class Meta:
         ordering = ['-score']
+    def update_score(self):
+        problems = self.drill_record_problems.filter(drill_problem__is_bonus = False)
+        bonus_problems = self.drill_record_problems.filter(drill_problem__is_bonus = True)
+        score,bonus_score = 0,0
+        for p in problems:
+            if p.status == 1:
+                score += 1
+        for p in bonus_problems:
+            if p.status == 1:
+                bonus_score += 1
+        self.score = score
+        self.bonus_score = bonus_score
+        self.total_score = score + bonus_score
+        print(score,bonus_score,score + bonus_score)
+        self.save()
 
 class DrillRecordProblem(models.Model):
     drillrecord = models.ForeignKey(DrillRecord, related_name='drill_record_problems', on_delete=models.CASCADE)

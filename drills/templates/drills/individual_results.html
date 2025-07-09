@@ -17,9 +17,15 @@
             <tr>
                 <th>Name</th>
                 {% for problem in drill.drill_problems.all %}
+		{% if problem.is_bonus %}
+		<th style="background-color:green">{{ problem.order }}</th>
+		{% else %}
                 <th>{{ problem.order }}</th>
+		{% endif %}
                 {% endfor %}
-                <th>Total Score</th>
+                <th>Initial Score</th>
+		<th>Bonus Score</th>
+		<th>Total Score</th>
             </tr>
         </thead>
         <tbody>
@@ -32,6 +38,8 @@
                 </td>
                 {% endfor %}
                 <td>{{ record.score }}</td>
+		<td>{{ record.bonus_score }}</td>
+		<td>{{ record.total_score }}</td>
             </tr>
             {% endfor %}
         </tbody>

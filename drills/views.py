@@ -42,12 +42,15 @@ class CreateDrillAssignmentView(View):
     def get(self, request):
         year_pk = request.GET.get('year_pk')
         yf = get_object_or_404(YearFolder,pk = year_pk)
-        tasks = yf.category.drill_tasks.all()
+        tasks = yf.category.drill_tasks.exclude(topic='Bonus')
         bag = []
+        task_counts = {}
         for t in tasks:
             problems = t.drillproblem_set.filter(drill__year_folder=yf)
-            uses = [p.drill.number for p in problems]
-            if problems.count() == 0:
+            assignments = t.drillassignment_set.filter(year = yf)
+            uses = [p.drill.number for p in problems] + [a.number for a in assignments]
+            task_counts[str(t.pk)] = len(uses)
+            if len(uses) == 0:
                 for j in range(0,20):
                     bag.append(t)
             else:
@@ -58,8 +61,8 @@ class CreateDrillAssignmentView(View):
         R = []
         counter = 0
         while len(R) < 25:
-            if bag[counter] not in R:
-                R.append(bag[counter])
+            if (bag[counter],task_counts[str(bag[counter].pk)]) not in R:
+                R.append((bag[counter],task_counts[str(bag[counter].pk)]))
             counter += 1
 
         name = str(yf.year) + ' ' + yf.category.name + ' Drill '+str(yf.top_number+1)
@@ -195,11 +198,7 @@ class GradeDrillView(View):
                     drp = DrillRecordProblem(drillrecord = drill_record,order = i,drill_problem = drill_problem,status=status)
                     drp.save()
             score = 0
-            for i in drill_record.drill_record_problems.all():
-                if i.status == 1:
-                    score += 1
-            drill_record.score = score
-            drill_record.save()
+            drill_record.update_score()
         drill.update_stats()
         drill_records = drill.drill_records.order_by('drill_profile__name')
         blank_profiles = drill.year_folder.profiles.exclude(id__in = drill_records.values('id')).order_by('name')
@@ -210,18 +209,22 @@ class ManageProfilesView(View):
     def get(self, request):
         profiles = DrillProfile.objects.all()
         years = YearFolder.objects.all()
-        return render(request, 'drills/manage_profiles.html', {'profiles': profiles, 'years': years,'nbar':'drills'})
+        categories = Category.objects.all()
+        return render(request, 'drills/manage_profiles.html', {'profiles': profiles, 'years': years,'nbar':'drills','categories': categories})
 
 class StudentScoresView(View):
     def get(self, request, year_pk):
         year = get_object_or_404(YearFolder, pk=year_pk)
         rows = []
         for profile in year.profiles.all():
-            row = [profile]+[[-1]*year.drills.count()]+[0]+[0]
+            row = [profile]+[[-1]*year.drills.count()]+[0]+[0]+[0]
+            bonus = 0
             for record in profile.drillrecord_set.filter(drill__year_folder = year):
                 #row[1][record.drill.number-1] = record
                 row[1][record.drill.number-1] = record.score
-            row[-2] = sum(row[1]) + row[1].count(-1)
+                bonus += record.total_score
+            row[-3] = sum(row[1]) + row[1].count(-1)
+            row[-2] = bonus
             row[-1] = row[-2]/(max(1,10*profile.drillrecord_set.filter(drill__year_folder = year).count()))*100
             rows.append(row)
         rows = sorted(rows,key=lambda x:-x[2])
@@ -392,6 +395,16 @@ def add_profile_view(request,**kwargs):
 
 
 @permission_required('drills.add_drill')
+def add_year_view(request,**kwargs):
+    cat_pk = request.POST.get('cat_pk','')
+    year = request.POST.get('year','')
+    category = get_object_or_404(Category, pk = cat_pk)
+    if YearFolder.objects.filter(year = year, category = category).exists():
+        return JsonResponse({'error': 'Year already exists'},status=400)
+    yf = YearFolder.objects.create(year = year, category = category)
+    return redirect('manage_profiles')
+
+@permission_required('drills.add_drill')
 def add_year_to_profile(request):
     years = [(d,p) for d, p in request.POST.items() if d.startswith('addyear')]
     for i in years:
@@ -525,7 +538,50 @@ def save_solution(request,drill_id,problem_id):
     context = Context(dict(solution=solution))
     return JsonResponse({'sol_text':s.render(context),})
 
+@permission_required('drills.add_drill')
+def add_bonus(request,drill_id):
+    drill = get_object_or_404(Drill,id = drill_id)
+    problem_text = request.POST.get('problem_text')
+    answer = request.POST.get('answer')
+    if DrillTask.objects.filter(category = drill.year_folder.category,topic="Bonus",description = "Bonus").exists():
+        task = DrillTask.objects.filter(category = drill.year_folder.category,topic="Bonus",description = "Bonus")[0]
+    else:
+        task = DrillTask.objects.create(category = drill.year_folder.category,topic="Bonus",description = "Bonus")
+    counter = drill.problem_count + 1
+    p = DrillProblem.objects.create(order = counter,
+                                    label=str(drill.year_folder.year) + drill.year_folder.category.name.replace(' ','') + 'Drill'+str(drill.number)+'-'+str(counter),
+                                    readable_label = str(drill.year_folder.year)+' ' + drill.year_folder.category.name + ' Drill '+str(drill.number)+' #'+str(counter),
+                                    drill = drill,
+                                    problem_text = problem_text,
+                                    topic = task.topic,
+                                    drill_task = task,
+                                    answer = answer,
+                                    percent_solved = 0,
+                                    number_solved = 0,
+                                    is_bonus = True)
+    compileasy(p.problem_text,'drillproblem_'+str(p.pk))
+    p.display_problem_text = newtexcode(p.problem_text,'drillproblem_'+str(p.pk),'')
+    p.save()
+    drill.problem_count = drill.problem_count + 1
+    drill.save()
+    drill_records = DrillRecord.objects.filter(drill = drill)
+    for dr in drill_records:
+        dpr = DrillRecordProblem.objects.create(drillrecord = dr, order = p.order,drill_problem = p, status = -1)
+    return JsonResponse({'success':1})
 
+@permission_required('drills.add_drill')
+def edit_author(request,drill_id):
+    drill = get_object_or_404(Drill,id = drill_id)
+    return JsonResponse({'author':drill.author})
+
+
+@permission_required('drills.add_drill')
+def save_author(request,drill_id):
+    drill = get_object_or_404(Drill,id = drill_id)
+    author = request.POST.get('author_name')
+    drill.author = author
+    drill.save()
+    return JsonResponse({'author':drill.author})
 
 @permission_required('drills.add_drill')
 def delete_solution(request,drill_id,problem_id):

@@ -32,14 +32,14 @@
                 </tr>
             </thead>
             <tbody>
-                {% for task in tasks %}
+                {% for task,counted in tasks %}
                 <tr>
                     <td>
                         <input type="checkbox" class="task-checkbox" name="selected_tasks[]" value="{{ task.id }}">
                     </td>
                     <td>{{ task.description }}</td>
                     <td>{{ task.topic }}</td>
-                    <td>{{ task.drillproblem_set.count }}</td>
+                    <td>{{ task.drillproblem_set.count }} ({{counted}} current year)</td>
                     <td>{% call_usage task 'most_recent_usage' year %}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="loadProblems({{ task.id }})">View Problems</button>

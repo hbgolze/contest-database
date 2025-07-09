@@ -12,19 +12,25 @@
   </nav>
 <div class="container mt-4">
     <h1 class="mb-4">{{drill.readable_label}}</h1>
-    
+
+    <div class="row mb-3">
+      Author:&nbsp; <span id="disp_author_name">{{drill.author}}</span>&nbsp;(<a href="#" id="edit-author"><span class="fa fa-pencil"></span></a>)
+    </div>
     <div class="d-flex justify-content-between mb-3">
         <a href="{% url 'reorder_drill' drill.id %}" class="btn btn-primary">Reorder Problems</a>
     </div>
 
-    <div class="row">
+    <div class="row mb-3">
         {% for problem in drill_problems %}
         <div class="col-md-12">
         <div id="drill-problem_{{problem.id}}">
             {% include 'drills/snippet_drill-problem-card.html' %}
         </div> 
-    </div>
+	</div>
         {% endfor %}
+    </div>
+    <div class="row mb-3">
+      <button class="btn btn-success" onclick="loadAddBonus();">Add Bonus Problem</button>
     </div>
 </div>
 
@@ -62,6 +68,57 @@
             <div class="modal-body">
                 <form id="editAnswerForm">
                     <div id="editAnswer-div"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding Bonus -->
+<div class="modal fade" id="addBonusModal" tabindex="-1" role="dialog" aria-labelledby="addBonusLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addBonusLabel">Add Bonus Problem</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addBonusForm">
+                    <div class="form-group">
+                      <label for="problem_text">Problem LaTeX</label>
+		      <textarea class="form-control codetext" min-width="100%" id="bonus_problem_text" name="problem_text" rows="10" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="bonusAnswer">Answer</label>
+                        <input type="text" class="form-control" id="bonus_Answer" name="bonus_answer" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Bonus Problem</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing Author -->
+<div class="modal fade" id="edit-author-placeholder" tabindex="-1" role="dialog" aria-labelledby="editAuthorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAuthorLabel">Edit Author</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+              <form id="editAuthorForm">
+		{% csrf_token %}
+                    <div class="form-group">
+                        <label for="author_name">Author</label>
+                        <input type="text" class="form-control" id="author_name" name="author_name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
                 </form>
             </div>
         </div>
@@ -373,6 +430,66 @@ $(document).on('click',".cancel-edit-sol-link",function(event) {
     $("#editsolplaceholder_"+sol_id).empty()
     $("#soltext_"+sol_id).show();
     $("#editsol_"+prob_id+"_"+sol_id).show();
+});
+
+function loadAddBonus() {
+    $('#codetext').val("");
+    $('#addBonusModal').modal('show');
+}
+
+$('#addBonusForm').submit(function(event) {
+    event.preventDefault();
+    let problemText = $('#bonus_problem_text').val();
+    let answer = $('#bonus_Answer').val();
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/add-bonus/`,
+        type: "POST",
+        data: {
+            problem_text: problemText,
+	    answer: answer,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+	    window.location.reload();
+        },
+        error: function(xhr) {
+            alert("Error adding bonus problem. Please try again.");
+        }
+    });
+});
+
+$(document).on('click',"#edit-author",function(e) {
+  e.preventDefault();
+  $.ajax({
+      type: 'POST',
+      url: '/drills/drill/{{drill.id}}/edit-author/',
+       data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+      dataType: 'json',
+      success: function(result) {
+	  $("#author_name").val(result['author']);
+	  $("#edit-author-placeholder").modal("show");
+      }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#editAuthorForm",function(e) {
+  e.preventDefault();
+  $.ajax({
+      type: 'POST',
+      url: '/drills/drill/{{drill.id}}/save-author/',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function(result) {
+	  $("#disp_author_name").html(result['author']);
+	  $("#edit-author-placeholder").hide();
+	  $("[data-dismiss=modal]").trigger({ type: "click" });
+      }
+  });
+  return false;
 });
 </script>
 

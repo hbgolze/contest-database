@@ -11,7 +11,8 @@ from .views import (
     add_task, load_single_problem, assignment_pdf_view, individual_report_pdf_view,
     drill_pdf_view, drill_latex_view, load_new_solution, load_edit_solutions,
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
-    drill_solutions_latex_view, drill_solutions_pdf_view,
+    drill_solutions_latex_view, drill_solutions_pdf_view, add_year_view, add_bonus,
+    edit_author, save_author, 
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -33,6 +34,9 @@ urlpatterns = [
     path('drill/<int:drill_id>/load-edit-single-solution/<int:problem_id>/', load_edit_single_solution, name='load_edit_single_solution'),
     path('drill/<int:drill_id>/save-solution/<int:problem_id>/', save_solution, name='save_solution'),
     path('drill/<int:drill_id>/delete-solution/<int:problem_id>/', delete_solution, name='delete_solution'),
+    path('drill/<int:drill_id>/add-bonus/', add_bonus, name='add_bonus'),
+    path('drill/<int:drill_id>/edit-author/', edit_author, name='edit_author'),
+    path('drill/<int:drill_id>/save-author/', save_author, name='save_author'),
     path('grade_drill/<int:drill_id>/', permission_required('drills.add_drill')(GradeDrillView.as_view()), name='grade_drill'),
     path('assignment/new/', permission_required('drills.add_drill')(CreateDrillAssignmentView.as_view()), name='create_assignment'),
     path('assignment/<int:assignment_id>/', permission_required('drills.add_drill')(ViewAssignedDrillView.as_view()), name='view_assigned_drill'),
@@ -56,6 +60,7 @@ urlpatterns = [
     path('manage_profiles/', permission_required('drills.add_drill')(ManageProfilesView.as_view()), name='manage_profiles'),
     path('manage_profiles/add/', add_profile_view, name='manage_profiles_add'),
     path('manage_profiles/add_year/', add_year_to_profile, name='add_year'),
+    path('manage_profiles/add_new_year/', add_year_view, name='add_new_year'),
     path('profile/<int:profile_id>/', permission_required('drills.add_drill')(DrillProfileView.as_view()), name='drill_profile'),
     path('rankings/', permission_required('drills.add_drill')(DrillRankingsView.as_view()), name='drill_rankings'),
     ]

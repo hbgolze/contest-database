@@ -21,12 +21,13 @@
                 <th><a href="/drills/drill/{{drill.id}}/">{{ drill.number }}</a></th>
                 {% endfor %}
                 <th>Total Score</th>
+		<th>Total Score (w/ Bonus)</th>
                 <th>Percentage</th>
                 <th>Report</th>
             </tr>
         </thead>
         <tbody>
-            {% for profile,scores,total,pct in rows %}
+            {% for profile,scores,total,total_bonus,pct in rows %}
             <tr>
                 <td><a href="student/{{profile.id}}/">{{profile.name}}</a></td>
                 {% for score in scores %}
@@ -35,6 +36,7 @@
                 </td>
                 {% endfor %}
                 <td>{{total}}</td>
+		<td>{{total_bonus}}</td>
                 <td>{{pct|floatformat:2}}%</td>
                 <td><a class="btn btn-info" href="student/{{profile.id}}/pdf/">PDF Report</a></td>
             </tr>
