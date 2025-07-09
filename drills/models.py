@@ -182,7 +182,6 @@ class DrillRecord(models.Model):
         self.score = score
         self.bonus_score = bonus_score
         self.total_score = score + bonus_score
-        print(score,bonus_score,score + bonus_score)
         self.save()
 
 class DrillRecordProblem(models.Model):
