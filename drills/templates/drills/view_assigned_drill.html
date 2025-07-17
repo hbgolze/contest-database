@@ -11,6 +11,10 @@
     <h1 class="mb-4">{{assignment.year}} ARML Drill {{assignment.number}}</h1>
     <a href="{% url 'assignment_pdf' assignment.id %}" class="btn btn-primary btn-sm mb-4">View Assignment PDF</a>
 
+    <div class="row mb-3">
+      Author:&nbsp; <span id="disp_author_name">{{assignment.author}}</span>&nbsp;(<a href="#" id="edit-author"><span class="fa fa-pencil"></span></a>)
+    </div>
+
     <form method="post" action="?">
         {% csrf_token %}
         <div class="row" id="task-container">
@@ -36,6 +40,30 @@
 
 </div>
 
+<!-- Modal for Editing Author -->
+<div class="modal fade" id="edit-author-placeholder" tabindex="-1" role="dialog" aria-labelledby="editAuthorLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAuthorLabel">Edit Author</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+              <form id="editAuthorForm">
+                {% csrf_token %}
+                    <div class="form-group">
+                        <label for="author_name">Author</label>
+                        <input type="text" class="form-control" id="author_name" name="author_name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const taskContainer = document.getElementById('task-container');
@@ -47,6 +75,40 @@ document.addEventListener('DOMContentLoaded', function() {
 
 });
 
+
+$(document).on('click',"#edit-author",function(e) {
+  e.preventDefault();
+  $.ajax({
+      type: 'POST',
+      url: '/drills/assignment/{{assignment.id}}/edit-author/',
+       data: {
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+      dataType: 'json',
+      success: function(result) {
+          $("#author_name").val(result['author']);
+          $("#edit-author-placeholder").modal("show");
+      }
+  });
+  return false;
+});
+
+
+$(document).on('submit',"#editAuthorForm",function(e) {
+  e.preventDefault();
+  $.ajax({
+      type: 'POST',
+      url: '/drills/assignment/{{assignment.id}}/save-author/',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function(result) {
+          $("#disp_author_name").html(result['author']);
+          $("#edit-author-placeholder").hide();
+          $("[data-dismiss=modal]").trigger({ type: "click" });
+      }
+  });
+  return false;
+});
 </script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>

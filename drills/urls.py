@@ -12,7 +12,7 @@ from .views import (
     drill_pdf_view, drill_latex_view, load_new_solution, load_edit_solutions,
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
     drill_solutions_latex_view, drill_solutions_pdf_view, add_year_view, add_bonus,
-    edit_author, save_author, 
+    edit_author, save_author, edit_assignment_author, save_assignment_author,
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -41,6 +41,8 @@ urlpatterns = [
     path('assignment/new/', permission_required('drills.add_drill')(CreateDrillAssignmentView.as_view()), name='create_assignment'),
     path('assignment/<int:assignment_id>/', permission_required('drills.add_drill')(ViewAssignedDrillView.as_view()), name='view_assigned_drill'),
     path('assignment/<int:assignment_id>/pdf/', assignment_pdf_view, name='assignment_pdf'),
+    path('assignment/<int:assignment_id>/edit-author/', edit_assignment_author, name='edit_assignment_author'),
+    path('assignment/<int:assignment_id>/save-author/', save_assignment_author, name='save_assignment_author'),
     path('tasks/', permission_required('drills.add_drill')(CategoryIndexView.as_view()), name='task_manager'),
     path('tasks/<int:cat_pk>/', permission_required('drills.add_drill')(DrillTaskManagerView.as_view()), name='view_category_tasks'),
     path('tasks/<int:cat_pk>/add/', add_task, name='add_task'),

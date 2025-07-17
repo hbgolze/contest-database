@@ -584,6 +584,20 @@ def save_author(request,drill_id):
     return JsonResponse({'author':drill.author})
 
 @permission_required('drills.add_drill')
+def edit_assignment_author(request,assignment_id):
+    assignment = get_object_or_404(DrillAssignment,id = assignment_id)
+    return JsonResponse({'author':assignment.author})
+
+
+@permission_required('drills.add_drill')
+def save_assignment_author(request,assignment_id):
+    assignment = get_object_or_404(DrillAssignment,id = assignment_id)
+    author = request.POST.get('author_name')
+    assignment.author = author
+    assignment.save()
+    return JsonResponse({'author':assignment.author})
+
+@permission_required('drills.add_drill')
 def delete_solution(request,drill_id,problem_id):
     problem = get_object_or_404(DrillProblem,id = problem_id)
     solution_id = request.POST.get('spk')
