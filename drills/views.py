@@ -66,7 +66,7 @@ class CreateDrillAssignmentView(View):
         R = []
         counter = 0
         while len(R) < 25:
-            if (bag[counter],task_counts[str(bag[counter].pk)]) not in R:
+            if (bag[counter],task_counts[str(bag[counter].pk)],last_usages[str(bag[counter].pk)]) not in R:
                 R.append((bag[counter],task_counts[str(bag[counter].pk)],last_usages[str(bag[counter].pk)]))
             counter += 1
 
