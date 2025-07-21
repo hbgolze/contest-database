@@ -45,11 +45,16 @@ class CreateDrillAssignmentView(View):
         tasks = yf.category.drill_tasks.exclude(topic='Bonus')
         bag = []
         task_counts = {}
+        last_usages = {}
         for t in tasks:
             problems = t.drillproblem_set.filter(drill__year_folder=yf)
             assignments = t.drillassignment_set.filter(year = yf)
             uses = [p.drill.number for p in problems] + [a.number for a in assignments]
+            last_usage = 0
+            if len(uses) > 0:
+                last_usage = max(uses) 
             task_counts[str(t.pk)] = len(uses)
+            last_usages[str(t.pk)] = last_usage
             if len(uses) == 0:
                 for j in range(0,20):
                     bag.append(t)
@@ -62,7 +67,7 @@ class CreateDrillAssignmentView(View):
         counter = 0
         while len(R) < 25:
             if (bag[counter],task_counts[str(bag[counter].pk)]) not in R:
-                R.append((bag[counter],task_counts[str(bag[counter].pk)]))
+                R.append((bag[counter],task_counts[str(bag[counter].pk)],last_usages[str(bag[counter].pk)]))
             counter += 1
 
         name = str(yf.year) + ' ' + yf.category.name + ' Drill '+str(yf.top_number+1)
