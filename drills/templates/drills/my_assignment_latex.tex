@@ -47,7 +47,7 @@
   {% if task.drillproblem_set.count > 0 %}
     \begin{enumerate}
       {% for problem in task.drillproblem_set.all %}
-        {% if problem.drill.year_folder.year < assignment.year_folder.year %}
+        {% if problem.drill.year_folder.year < assignment.year.year %}
   \item {{problem.readable_label|poundsafe}}: {{problem.problem_text}}
 
     {{problem.number_solved}} Solves/{{problem.drill.num_participants}} Participants ({{problem.percent_solved|floatformat:2}}\%)
