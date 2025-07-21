@@ -46,12 +46,22 @@
 \item {{task.description}}
   {% if task.drillproblem_set.count > 0 %}
     \begin{enumerate}
-  {% for problem in task.drillproblem_set.all %}
+      {% for problem in task.drillproblem_set.all %}
+        {% if problem.drill.year_folder.year < assignment.year_folder.year %}
   \item {{problem.readable_label|poundsafe}}: {{problem.problem_text}}
 
     {{problem.number_solved}} Solves/{{problem.drill.num_participants}} Participants ({{problem.percent_solved|floatformat:2}}\%)
-    
+    {% else %}
+      {% if problem.drill.number <= top_number %}
+         \item {{problem.readable_label|poundsafe}}: {{problem.problem_text}}
+
+           {{problem.number_solved}} Solves/{{problem.drill.num_participants}} Participants ({{problem.percent_solved|floatformat:2}}\%)
+      {% else %}
+         \item Used in unreleased drill
+      {% endif %}
+    {% endif %}
     {% endfor %}
+     
       \end{enumerate}
 {% endif %}
 {% endfor %}

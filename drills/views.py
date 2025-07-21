@@ -613,9 +613,13 @@ def delete_solution(request,drill_id,problem_id):
 
 @permission_required('drills.add_drill')
 def assignment_pdf_view(request,assignment_id):
+    top_number = 0
+    if 'top_number' in request.GET:
+        top_number = int(request.GET.get('top_number',''))
     drill_assignment = get_object_or_404(DrillAssignment, id = assignment_id)
     context = {
         'assignment':drill_assignment,
+        'top_number' : top_number,
         }
     
     assignment_name = str(drill_assignment.year.year)+ ' ' + drill_assignment.year.category.name + ' Drill '+str(drill_assignment.number)
@@ -631,6 +635,7 @@ def assignment_pdf_view(request,assignment_id):
         context = {
             'tempdirect':tempdir,
             'assignment':drill_assignment,
+            'top_number' : top_number,
             }
         template = get_template('drills/my_assignment_latex.tex')
         rendered_tpl = template.render(context).encode('utf-8')
