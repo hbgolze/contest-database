@@ -222,13 +222,13 @@ class StudentScoresView(View):
         year = get_object_or_404(YearFolder, pk=year_pk)
         rows = []
         for profile in year.profiles.all():
-            row = [profile]+[[-1]*year.drills.count()]+[0]+[0]+[0]
+            row = [profile]+[[(-1,0)]*year.drills.count()]+[0]+[0]+[0]
             bonus = 0
             for record in profile.drillrecord_set.filter(drill__year_folder = year):
                 #row[1][record.drill.number-1] = record
-                row[1][record.drill.number-1] = record.score
+                row[1][record.drill.number-1] = (record.score,record.bonus_score)
                 bonus += record.total_score
-            row[-3] = sum(row[1]) + row[1].count(-1)
+            row[-3] = sum([row[1][i][0] for i in range(0,len(row[1]))]) + row[1].count((-1,0))
             row[-2] = bonus
             row[-1] = row[-3]/(max(1,10*profile.drillrecord_set.filter(drill__year_folder = year).count()))*100#assumes 10 problems per drill
             rows.append(row)

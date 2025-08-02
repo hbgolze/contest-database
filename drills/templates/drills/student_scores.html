@@ -30,9 +30,9 @@
             {% for profile,scores,total,total_bonus,pct in rows %}
             <tr>
                 <td><a href="student/{{profile.id}}/">{{profile.name}}</a></td>
-                {% for score in scores %}
+                {% for score,bonus_score in scores %}
                 <td{% if score != -1 %} class="results-bg-gradient-{{score}}"{% endif %}>
-                    {% if score != -1 %}{{score}}{% endif %}
+                    {% if score != -1 %}{{score}}{% with ''|center:bonus_score as range %}{% for i in range %}*{% endfor %}{% endwith %}{% endif %}
                 </td>
                 {% endfor %}
                 <td>{{total}}</td>
