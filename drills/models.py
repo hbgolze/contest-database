@@ -15,6 +15,7 @@ class YearFolder(models.Model):
     year = models.IntegerField()
     top_number = models.IntegerField(default = 0)
     category = models.ForeignKey(Category,related_name='years',on_delete=models.CASCADE,null=True)
+    active = models.BooleanField(default = True)
     
     def __str__(self):
         return str(self.year)
