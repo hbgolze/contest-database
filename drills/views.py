@@ -322,9 +322,45 @@ class StudentReportsView(View):
         
         acgn = profile.acgn(year)
 
+        num_drills = 0
+        drill_avgs = []
+        for drill in year.drills.all():
+            drill_avgs.append(drill.average_score)
+            if drill.drill_records.exists():
+                num_drills += 1
+        x = [i for i in range(1,year.drills.count()+1)]
+        fig = plt.figure(figsize=(15, 9))
+        ax = plt.subplot(111)
+        print(len(x),len(drill_avgs))
+        ax.plot(x, drill_avgs,label="Average Scores")
+
+        x_student = []
+        scores = []
+        for record in profile.drillrecord_set.filter(drill__year_folder = year):
+            x_student.append(record.drill.number)
+        x_student.sort()
+        scores = [0]*len(x_student)
+        for record in profile.drillrecord_set.filter(drill__year_folder = year):
+            scores[x_student.index(record.drill.number)] = record.score
+
+        ax.plot(x_student,scores,label=profile.name)
+        handles, labels = plt.gca().get_legend_handles_labels()
+
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        ax.legend(handles,labels,loc='center left', bbox_to_anchor=(1, 0.5))
+        buffer = BytesIO()
+        plt.savefig(buffer, format='png')
+        buffer.seek(0)
+        image_png =buffer.getvalue()
+        plt.close()
+        buffer.close()
+        graphic = base64.b64encode(image_png)
+        graphic = graphic.decode('utf-8')
+        
         return render(request, 'drills/student_report.html', {'year': year,'profile':profile,'problem_numbers':problem_numbers,'drill_records':drill_records,
                                                               'alg_rank':alg_rank,'combo_rank':combo_rank,'geo_rank':geo_rank,'nt_rank':nt_rank,
-                                                              'acgn':acgn,'nbar':'drills'})
+                                                              'acgn':acgn,'nbar':'drills','graphic':graphic})
 
 class TopicRankingsView(View):
     def get(self, request, year_pk):
