@@ -8,17 +8,19 @@
     </ol>
 </nav>
 <div class="container mt-4">
-    <h1 class="mb-4">Grade {{drill.readable_label}}</h1>
-    
+  <h1 class="mb-4">Grade {{drill.readable_label}}</h1>
+  <div class="d-flex justify-content-between mb-3">
+    <button class="btn btn-primary" id="toggle-answers">Show/Hide Answers</button>
+  </div>
     <form id="gradeDrillForm">
         {% csrf_token %}
         <table class="table table-bordered">
-            <thead class="thead-dark">
+            <thead class="thead-dark sticky-header">
                 <tr>
-                    <th>Select</th>
-                    <th>Profile</th>
+                    <th class="align-top">Select</th>
+                    <th class="align-top">Profile</th>
                     {% for problem in drill.drill_problems.all %}
-                    <th>Problem {{ problem.order }}</th>
+                    <th class="align-top"><p>Problem {{ problem.order }}</p><p class="ans-display d-none">${{problem.answer}}$</p></th>
                     {% endfor %}
                 </tr>
             </thead>
@@ -87,6 +89,10 @@ $('#gradeDrillForm').submit(function(event) {
         }
     });
 });
+
+  $('#toggle-answers').click(function(event) {
+ $('.ans-display').toggleClass('d-none');      
+  });
 </script>
 
 {% endblock %}

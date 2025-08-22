@@ -651,3 +651,8 @@ td.results-bg-gradient-10 {
 td.results-bg-gradient-11 {
     background-color:#57bb8b;
 }
+.sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 10; /* Ensures it stays above other content */
+    }
