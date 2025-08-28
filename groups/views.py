@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
-from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse,ProblemGroupObject,AdvancedSearchPreset, Round
+from randomtest.models import Problem, Tag, Type, Test, UserProfile, QuestionType,get_or_create_up,UserResponse,Sticky,TestCollection,Folder,UserTest,ProblemGroup,NewTag,NewResponse,ProblemGroupObject,AdvancedSearchPreset, Round,Solution
 from randomtest.utils import newtexcode
 from .forms import GroupModelForm,AddProblemsForm,EditProblemGroupNameForm,EditProblemGroupDescriptionForm
 
