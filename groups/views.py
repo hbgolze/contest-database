@@ -109,6 +109,7 @@ def viewproblemgroup(request,pk):
     return HttpResponse(template.render(context,request))
 
 
+
 @login_required
 def viewtaggroup(request,pk):
     userprofile = get_or_create_up(request.user)
@@ -1470,3 +1471,34 @@ def load_sols(request,pk):
     return JsonResponse({'modal-html': render_to_string("randomtest/load_sol.html",{'object' : prob})})
 
 
+@login_required
+def viewproblemgroup_intersection(request,pk,target_pk):
+    userprofile = get_or_create_up(request.user)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    target_prob_group = get_object_or_404(ProblemGroup,pk=target_pk)
+    if prob_group not in userprofile.problem_groups.all() and prob_group not in userprofile.owned_problem_groups.all() and prob_group not in userprofile.editable_problem_groups.all() and prob_group not in userprofile.readonly_problem_groups.all() and prob_group not in userprofile.archived_problem_groups.all() and prob_group not in userprofile.archived_owned_problem_groups.all() and prob_group not in userprofile.archived_editable_problem_groups.all() and prob_group not in userprofile.archived_readonly_problem_groups.all():
+        return HttpResponse('Unauthorized', status=401)
+    context = {}
+    context['nbar'] = 'groups'
+    context['prob_group'] = prob_group
+    context['target_prob_group'] = target_prob_group
+    target_pks = []
+    intersecting_problems = []
+    for po in target_prob_group.problem_objects.all():
+        target_pks.append(po.problem.pk)
+    for po in prob_group.problem_objects.all():
+        if po.problem.pk in target_pks:
+            intersecting_problems.append(po.problem)
+    context['request'] = request
+    context['intersecting_problems'] = intersecting_problems
+    owned_groups = userprofile.problem_groups.exclude(pk = pk)
+    editable_groups = userprofile.editable_problem_groups.exclude(pk = pk)
+    probgroups = list(chain(owned_groups,editable_groups))
+    context['prob_groups'] = probgroups
+    #context['form'] = AddProblemsForm(userprofile=userprofile)
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.owned_problem_groups.all() or  prob_group in userprofile.editable_problem_groups.all() or prob_group in userprofile.archived_problem_groups.all() or prob_group in userprofile.archived_owned_problem_groups.all() or  prob_group in userprofile.archived_editable_problem_groups.all():
+        context['can_delete'] = 1
+    if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
+        context['can_edit'] = 1
+    template = loader.get_template('groups/probgroupintersectionview.html')
+    return HttpResponse(template.render(context,request))
