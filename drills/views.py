@@ -10,7 +10,7 @@ from django.template import Template, Context
 from django.contrib.auth.decorators import permission_required
 from random import shuffle
 from randomtest.utils import compileasy,newtexcode, newsoltexcode, compiletikz
-from randomtest.models import Type,Round,Problem,ContestTest,QuestionType
+from randomtest.models import Type,Round,Problem,ContestTest,QuestionType,UserType
 
 from .forms import SolutionForm
 
@@ -335,7 +335,7 @@ class StudentReportsView(View):
         x = [i for i in range(1,year.drills.count()+1)]
         fig = plt.figure(figsize=(15, 9))
         ax = plt.subplot(111)
-        print(len(x),len(drill_avgs))
+        #print(len(x),len(drill_avgs))
         ax.plot(x, drill_avgs,label="Average Scores")
 
         x_student = []
@@ -771,7 +771,7 @@ def individual_report_pdf_view(request,year_pk,profile_id):
     combo_total = combo_total.order_by('-drill_problem__percent_solved')
     geo_total = geo_total.order_by('-drill_problem__percent_solved')
     nt_total = nt_total.order_by('-drill_problem__percent_solved')
-    print(drill_records)
+    #print(drill_records)
     context = {
         'profile':profile,
         'drill_records':drill_records,
@@ -1038,15 +1038,17 @@ def publish_drill(request,drill_id):
     year = str(year_folder.year)
     category = drill.year_folder.category
     num = drill.drill_problems.count()
-    
     if not Type.objects.filter(label = category.name + ' Drill').exists():
-        t = Type.objects.create(type = category.name + 'Drill',
+        typ = Type.objects.create(type = category.name + 'Drill',
                                 label = category.name + ' Drill',
                                 is_contest = True,
                                 default_question_type = 'sa',
                                 readable_label_post_form = ' #',
                                 readable_label_pre_form = category.name + ' Drill',
                                 )
+        for ut in UserType.objects.filter(name__in = ['super','member','contestmanager','student','teacher','contestmod']):
+            ut.allowed_types.add(typ)
+            ut.save()
     else:
         typ = Type.objects.get(label = category.name + ' Drill')
     sa = QuestionType.objects.get(question_type='short answer')
@@ -1062,7 +1064,6 @@ def publish_drill(request,drill_id):
     default_question_type = sa
     readablelabel = readablelabel.rstrip()
     post_label = round.readable_label_post_form
-
     if ContestTest.objects.filter(short_label=label).exists() == True:
         return JsonResponse({'error':'Contest matching parameters already exists'})
 
@@ -1114,4 +1115,5 @@ def publish_drill(request,drill_id):
         new_p.save()            
         for s in p.drillproblemsolution_set.all():
             new_p.add_solution(request,s.solution_text)
+    typ.update_years()
     return redirect('/drills/')
