@@ -2,10 +2,11 @@ from __future__ import unicode_literals
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
-from django.contrib.admin.models import LogEntry
+from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
 from django.db.models import Max,Min
+from django.contrib.contenttypes.models import ContentType
 
-from randomtest.utils import compileasy,compiletikz,newtexcode
+from randomtest.utils import compileasy,compiletikz,newtexcode,newsoltexcode
 # Create your models here.
 TIMEZONES=(
     ("US/Alaska","US/Alaska"),
@@ -307,6 +308,27 @@ class Problem(models.Model):
         if readable_prefix != '':
             self.readable_label = readable_prefix+' #' + str(self.problem_number)
         self.save()
+    def add_solution(self,request,sol_text):
+        sol_num = self.top_solution_number+1
+        self.top_solution_number = sol_num
+        self.save()
+        sol = Solution.objects.create(solution_text = sol_text,solution_number = sol_num,problem_label = self.label,parent_problem = self)
+        sol.authors.add(request.user)
+        sol.save()
+        compileasy(sol.solution_text,self.label,sol='sol'+str(sol.pk))
+        compiletikz(sol.solution_text,self.label,sol='sol'+str(sol.pk))
+        sol.display_solution_text = newsoltexcode(sol.solution_text,self.label+'sol'+str(sol.pk))
+        sol.save()
+        self.solutions.add(sol)
+        self.save()
+        LogEntry.objects.log_action(
+            user_id = request.user.id,
+            content_type_id = ContentType.objects.get_for_model(sol).pk,
+            object_id = sol.id,
+            object_repr = self.label+' sol '+str(sol.solution_number),
+            action_flag = ADDITION,
+            change_message = "problemeditor/redirectproblem/"+str(self.pk)+'/',
+        )
 
 class Answer(models.Model):
     ANSWER_CHOICES = (

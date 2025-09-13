@@ -1,5 +1,7 @@
 from django.db import models
 
+from randomtest.models import Type
+
 # Create your models here.
 from django.utils import timezone
 

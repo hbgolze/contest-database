@@ -10,6 +10,7 @@ from django.template import Template, Context
 from django.contrib.auth.decorators import permission_required
 from random import shuffle
 from randomtest.utils import compileasy,newtexcode, newsoltexcode, compiletikz
+from randomtest.models import Type,Round,Problem,ContestTest,QuestionType
 
 from .forms import SolutionForm
 
@@ -24,6 +25,9 @@ import base64
 import tempfile
 from subprocess import Popen,PIPE
 import os,os.path
+
+from django.contrib.admin.models import LogEntry, ADDITION,CHANGE,DELETION
+from django.contrib.contenttypes.models import ContentType
 
 class DrillIndexView(View):
     def get(self, request):
@@ -1026,3 +1030,88 @@ def drill_solutions_latex_view(request,drill_id):
     response = HttpResponse(content, content_type='text/plain')
     response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
     return response
+
+@permission_required('drills.add_drill')
+def publish_drill(request,drill_id):
+    drill = get_object_or_404(Drill, id = drill_id)
+    year_folder = drill.year_folder
+    year = str(year_folder.year)
+    category = drill.year_folder.category
+    num = drill.drill_problems.count()
+    
+    if not Type.objects.filter(label = category.name + ' Drill').exists():
+        t = Type.objects.create(type = category.name + 'Drill',
+                                label = category.name + ' Drill',
+                                is_contest = True,
+                                default_question_type = 'sa',
+                                readable_label_post_form = ' #',
+                                readable_label_pre_form = category.name + ' Drill',
+                                )
+    else:
+        typ = Type.objects.get(label = category.name + ' Drill')
+    sa = QuestionType.objects.get(question_type='short answer')
+    formletter = ''
+    #get or create round
+    if Round.objects.filter(name = category.name + ' Drill Round ' + str(drill.number)).exists():
+        round = Round.objects.get(name = category.name + ' Drill Round ' + str(drill.number))
+    else:
+        round = Round.objects.create(name = category.name + ' Drill Round ' + str(drill.number),type = typ, default_question_type = 'sa', readable_label_pre_form = category.name + " Drill Round "+str(drill.number), readable_label_post_form = " #")
+        
+    label = year + round.name.replace(' ','') + formletter
+    readablelabel = year + ' ' + round.readable_label_pre_form + formletter
+    default_question_type = sa
+    readablelabel = readablelabel.rstrip()
+    post_label = round.readable_label_post_form
+
+    if ContestTest.objects.filter(short_label=label).exists() == True:
+        return JsonResponse({'error':'Contest matching parameters already exists'})
+
+    if round.type.allow_form_letter == True:
+        if round.readable_label_pre_form[-1] == ' ':
+            contest_label = year + ' ' + round.name + ' ' + formletter
+        else:
+            contest_label =  year + ' ' + round.name + formletter
+    else:
+        contest_label =  year + ' ' + round.name
+    contest_test = ContestTest(contest_label = contest_label, contest_type = typ, round = round,year = year, form_letter = formletter,short_label = label)
+    contest_test.save()
+    LogEntry.objects.log_action(
+        user_id = request.user.id,
+        content_type_id = ContentType.objects.get_for_model(contest_test).pk,
+        object_id = contest_test.id,
+        object_repr = contest_test.contest_label+' ('+str(num)+')',
+        action_flag = ADDITION,
+        change_message = "problemeditor/redirectcontest/"+str(contest_test.pk)+'/',
+    )
+
+    for p in drill.drill_problems.all().order_by('order'):
+        i = p.order
+        problem_number_label = str(i)
+        new_p = Problem.objects.create(problem_text = p.problem_text,
+                    answer = p.answer,
+                    sa_answer = p.answer,
+                    label = label + problem_number_label,
+                    readable_label = readablelabel + post_label + problem_number_label,
+                    type_new = typ,
+                    question_type_new = sa,
+                    problem_number = i,
+                    year = year,
+                    form_letter = formletter,
+                    test_label = label,
+                    top_solution_number = 0,
+                    contest_test = contest_test,
+        )
+        new_p.round = round
+        new_p.types.add(typ)
+        new_p.question_type.add(sa)
+        new_p.save()
+        compileasy(new_p.mc_problem_text,new_p.label)
+        compileasy(new_p.problem_text,new_p.label)
+        compiletikz(new_p.mc_problem_text,new_p.label)
+        compiletikz(new_p.problem_text,new_p.label)
+        new_p.display_problem_text = newtexcode(new_p.problem_text,new_p.label,'')
+        new_p.display_mc_problem_text = newtexcode(new_p.mc_problem_text,new_p.label,new_p.answers())
+        new_p.save()            
+        for s in p.drillproblemsolution_set.all():
+            new_p.add_solution(request,s.solution_text)
+    return redirect('/drills/')

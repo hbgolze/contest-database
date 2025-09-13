@@ -13,6 +13,7 @@ from .views import (
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
     drill_solutions_latex_view, drill_solutions_pdf_view, add_year_view, add_bonus,
     edit_author, save_author, edit_assignment_author, save_assignment_author,
+    publish_drill,
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -24,6 +25,7 @@ urlpatterns = [
     path('drill/<int:drill_id>/solutions_pdf/', drill_solutions_pdf_view, name='view_drill_solutions_pdf'),
     path('drill/<int:drill_id>/solutions_latex/', drill_solutions_latex_view, name='view_drill_solutions_latex'),
     path('drill/<int:drill_id>/reorder/', permission_required('drills.add_drill')(ReorderDrillView.as_view()), name='reorder_drill'),
+    path('drill/<int:drill_id>/publish/',publish_drill, name='publish_drill'),
     path('drill/<int:drill_id>/load-edit-latex/<int:problem_id>/', load_edit_latex, name='load_edit_latex'),
     path('drill/<int:drill_id>/load-edit-answer/<int:problem_id>/', load_edit_answer, name='load_edit_answer'),
     path('drill/<int:drill_id>/save-latex/<int:problem_id>/', save_latex, name='save_latex'),
