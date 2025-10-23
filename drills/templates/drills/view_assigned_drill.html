@@ -8,7 +8,7 @@
     </ol>
   </nav>
 <div class="container mt-4">
-    <h1 class="mb-4">{{assignment.year}} ARML Drill {{assignment.number}}</h1>
+    <h1 class="mb-4">{{assignment.year}} {{assignment.year.category}} Drill {{assignment.number}}</h1>
     <!--<a href="{% url 'assignment_pdf' assignment.id %}?top_number={{assignment.year.top_number}}" class="btn btn-primary btn-sm mb-4">View Assignment PDF</a>-->
     <a href="pdf?top_number={{assignment.year.top_number}}" class="btn btn-primary btn-sm mb-4">View Assignment PDF</a>
 
