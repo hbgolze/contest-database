@@ -104,8 +104,8 @@ class DrillProblem(models.Model):
         self.save()
     def update_order(self,i):
         self.order = i
-        self.label = str(self.drill.year_folder.year) + self.drill.year_folder.category.replace(' ','') + 'Drill'+str(self.drill.number)+'-'+str(i)
-        self.readable_label = str(self.drill.year_folder.year) + ' ' + self.drill.year_folder.category + ' Drill '+str(self.drill.number)+' #'+str(i)
+        self.label = str(self.drill.year_folder.year) + self.drill.year_folder.category.name.replace(' ','') + 'Drill'+str(self.drill.number)+'-'+str(i)
+        self.readable_label = str(self.drill.year_folder.year) + ' ' + self.drill.year_folder.category.name + ' Drill '+str(self.drill.number)+' #'+str(i)
         self.save()
         for drp in self.drillrecordproblem_set.all():
             drp.order = i
