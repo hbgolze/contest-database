@@ -1,0 +1,63 @@
+{% extends "randomtest/base.html" %}
+
+{% block title %}
+Problem Group: {{prob_group.name}}
+{% endblock %}
+
+{% block content %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.6.1/Sortable.min.js"></script>
+
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/problemgroups/">My Problem Groups</a></li>
+    <li class="breadcrumb-item"><a href="../../">{{prob_group.name}}</a></li>
+    <li class="breadcrumb-item active" aria-current="page"><span id="bc-prob_group-name">Without problems from {{target_prob_group.name}}</span></li>
+  </ol>
+</nav>
+
+<div class="container">
+  <h2>Problem Group: <span id="prob_group-name">{{prob_group.name}} without {{target_prob_group.name}}</span></h2>
+  <div class="row">
+    <div class="col-md-7">
+      <p>There are <span id="pg_object_count">{{without_problems|length}}</span> problems remaining.</p>
+
+    </div>
+    
+  </div>
+  <div class="row">
+    <div class="col">
+      <div id="msg-no-problems" style="display:{% if without_problems|length > 0 %}none;{% else %}block;{% endif %}">
+	<p>There are no problems unique to the original group.</p>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-10">
+	<div class="list-group mb-3" id="problem_object_list">	  
+	  {% for prob in without_problems %}
+          <div class="list-group-item problem-object" id="{{prob.pk}}">
+            <div class="row">
+              <div class="col-1">
+                {{forloop.counter}}.<br>
+              </div>
+              <div class="col-11">
+                {% if prob.question_type_new.question_type == 'multiple choice' %}
+                <div id="mc_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_mc_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+                <div class="answer" style="display:none" id="answer_{{prob.pk}}">Answer: {{prob.mc_answer}}</div>
+                <textarea id="latex_{{prob.pk}}" style="display:none">{{prob.mc_problem_text}}<br><br>{{prob.answers}}</textarea>
+                {% else %}
+                <div id="sa_prob_text_{{prob.pk}}">{% autoescape off %}{{prob.display_problem_text|linebreaks}} {% endautoescape %}</div>  [<a href="/problemeditor/redirectproblem/{{prob.pk}}/">{{prob.readable_label}}</a>]<br>
+
+                {% endif %}
+              </div>
+            </div>
+          </div>	  
+	  {% endfor %}
+	</div>
+    </div>
+    
+  </div>
+</div>
+
+
+{% endblock %}

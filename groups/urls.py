@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/$', views.viewproblemgroup, name='viewproblemgroup'),
     url(r'^(?P<pk>\d+)/edit/$', views.edit_pg_view, name='editproblemgroup'),
     url(r'^(?P<pk>\d+)/intersection/(?P<target_pk>\d+)/$', views.viewproblemgroup_intersection, name='viewproblemgroup_intersection'),
+    url(r'^(?P<pk>\d+)/without/(?P<target_pk>\d+)/$', views.viewproblemgroup_without, name='viewproblemgroup_without'),
     url(r'^ajax/savegroup/$', views.savegroup, name='savegroup'),
     url(r'^ajax/create-test/$', views.create_test, name='g_createtest'),
     url(r'^ajax/edit-sharing/$', views.load_sharing_modal, name='edit_sharing'),
