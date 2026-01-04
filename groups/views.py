@@ -1398,6 +1398,220 @@ def advanced_searchresults(request,pk):
             return HttpResponse(template.render(context,request))
 
 
+@login_required
+def addallproblems(request,pk):
+    userprofile = get_or_create_up(request.user)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if request.method=='GET':
+        form = request.GET
+        types = userprofile.user_type_new.allowed_types.all()
+        type_pks = []
+        print('asdf34')
+        for i in types:
+            type_pks.append(i.pk)
+        if 1:#form.get('searchform','') == "start":
+            testtype = form.get('tp','')
+            type_args = testtype.split('_')
+            if len(type_args) > 1:
+                round_or_type = type_args[0]
+                rt_pk = type_args[1]
+            else:
+                round_or_type = ''
+                rt_pk = ''
+
+            searchterm = form.get('keywords','')
+            if searchterm is None or searchterm == u'':
+                keywords = []
+            else:
+                keywords = searchterm.split(' ')
+
+            tag = form.get('tag','')
+            if tag == "Unspecified":
+                tag = ''
+
+            probbegin=form.get('probbegin','')
+            if probbegin is None or probbegin==u'':
+                probbegin=0
+            else:
+                probbegin=int(probbegin)
+
+            probend=form.get('probend','')
+            if probend is None or probend==u'':
+                probend=10000
+            else:
+                probend=int(probend)
+
+            yearbegin=form.get('yearbegin','')
+            if yearbegin is None or yearbegin==u'':
+                yearbegin=0
+            else:
+                yearbegin=int(yearbegin)
+
+            yearend=form.get('yearend','')
+            if yearend is None or yearend==u'':
+                yearend=10000
+            else:
+                yearend=int(yearend)
+
+            sol_opts = form.get('sol_opts','')
+            
+            if sol_opts == "sols":
+                P = Problem.objects.exclude(solutions=None)
+            elif sol_opts == "nosols":
+                P = Problem.objects.filter(solutions=None)
+            else:
+                P = Problem.objects.all()
+            if len(tag)>0:
+                if round_or_type == "T":
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(type_new__pk=rt_pk)#
+                elif round_or_type == '':
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend)
+                    P = P.filter(type_new__pk__in = type_pks)
+                else:
+                    P = P.filter(problem_number__gte=probbegin,problem_number__lte=probend).filter(year__gte=yearbegin,year__lte=yearend).filter(round__pk=rt_pk)#
+                P = P.filter(newtags__in=NewTag.objects.filter(tag__startswith=tag)).distinct()
+
+            else:
+                if round_or_type == "T":
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(type_new__pk = rt_pk).distinct()#
+                elif round_or_type == '':
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).distinct()
+                    P = P.filter(type_new__pk__in = type_pks)
+                else:
+                    P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend).filter(round__pk = rt_pk).distinct()#
+
+#            if form.get('solution_search','') is not None:
+#                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__types__type = testtype).distinct()
+#                for i in keywords:
+#                    S = S.filter(solution_text__contains = i)
+#                P2 = Problem.objects.filter(id__in = S.values('parent_problem_id'))
+            if 'solutionsearch' in form:
+                if round_or_type == "T":
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__type_new__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
+                elif round_or_type == '':
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__id__in=P).distinct()
+                    S = S.filter(parent_problem__type_new__pk__in = type_pks)
+                else:
+                    S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend).filter(parent_problem__round__pk = rt_pk).filter(parent_problem__id__in=P).distinct()
+                for i in keywords:
+                    S = S.filter(solution_text__contains = i)
+                for i in keywords:
+                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+                P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
+            else:
+                for i in keywords:
+                    P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+            P = list(P)
+            P = sorted(P,key = lambda x:(x.problem_number,x.year))
+            for i in P:
+                prob_group.add_to_end(i)
+            return JsonResponse({})
+
+@login_required
+def advanced_addallproblems(request,pk):
+    userprofile = get_or_create_up(request.user)
+    prob_group = get_object_or_404(ProblemGroup,pk=pk)
+    if request.method=='GET':
+        form = request.GET
+        if 1:
+            testtypes = form.getlist('tp')
+            type_pks = []
+            round_pks = []
+            for i in testtypes:
+                type_args = i.split('_')
+                if type_args[0] == 'T':
+                    type_pks.append(type_args[1])
+                else:
+                    round_pks.append(type_args[1])
+
+            searchterm = form.get('keywords','')
+            if searchterm is None or searchterm == u'':
+                keywords = []
+            else:
+                keywords = searchterm.split(' ')
+#########TAGS
+            tag_list = form.getlist('tag')
+
+            probbegin = form.get('probbegin','')
+            if probbegin is None or probbegin == u'':
+                probbegin = 0
+            else:
+                probbegin = int(probbegin)
+
+            probend = form.get('probend','')
+            if probend is None or probend == u'':
+                probend = 10000
+            else:
+                probend = int(probend)
+
+            yearbegin = form.get('yearbegin','')
+            if yearbegin is None or yearbegin == u'':
+                yearbegin = 0
+            else:
+                yearbegin = int(yearbegin)
+
+            yearend = form.get('yearend','')
+            if yearend is None or yearend == u'':
+                yearend = 10000
+            else:
+                yearend = int(yearend)
+
+            P = Problem.objects.filter(type_new__pk__in=userprofile.user_type_new.allowed_types.all())
+            sol_opts = form.get('sol_opts','')
+            if sol_opts == "sols":
+                P = P.exclude(solutions = None)
+            elif sol_opts == "nosols":
+                P = P.filter(solutions = None)
+
+            P = P.filter(problem_number__gte = probbegin,problem_number__lte = probend).filter(year__gte = yearbegin,year__lte = yearend)
+            if len(type_pks) + len(round_pks) > 0:
+                P = P.filter(Q(type_new__pk__in = type_pks)|Q(round__pk__in = round_pks))
+
+            union = request.GET.get('unionintersection')
+            if union == None or union == 'union':
+                if len(tag_list) > 0:
+                    every_tag = []
+                    for t in tag_list:
+                        every_tag += list(NewTag.objects.filter(tag__startswith = t))
+                    tag_pks = [t.pk for t in every_tag]
+                    P = P.filter(newtags__in = NewTag.objects.filter(pk__in = tag_pks)).distinct()
+            else:
+                if len(tag_list) > 0:
+                    every_tag = []
+                    for t in tag_list:
+                        every_tag += list(NewTag.objects.filter(tag__startswith = t))
+                    tag_pks = [t.pk for t in every_tag]
+                    for i in tag_pks:
+                        P = P.filter(newtags__in = NewTag.objects.filter(pk__in = [i])).distinct()
+                
+
+            for i in keywords:
+                P = P.filter(Q(problem_text__contains = i)|Q(mc_problem_text__contains = i)|Q(label = i)|Q(test_label = i))
+
+            if 'solutionsearch' in form:
+                S = Solution.objects.filter(parent_problem__problem_number__gte = probbegin,parent_problem__problem_number__lte = probend).filter(parent_problem__year__gte = yearbegin,parent_problem__year__lte = yearend)
+                if len(type_pks) > 0 or len(round_pks) > 0:
+                    S = S.filter(Q(parent_problem__type_new__pk__in = type_pks)|Q(parent_problem__round__pk__in = round_pks)).distinct()
+                for i in keywords:
+                    S = S.filter(solution_text__contains = i)
+                P = Problem.objects.filter(Q(id__in = S.values('parent_problem_id'))|Q(id__in=P))
+            if 'prob_group' in form:
+                pgs = form.getlist('prob_group','')
+                exclude_pg_list = ProblemGroup.objects.filter(pk__in = pgs)
+                exclude_prob_pks = []
+                for pg in exclude_pg_list:
+                    for po in pg.problem_objects.all():
+                        exclude_prob_pks.append(po.problem.pk)
+                P = P.exclude(pk__in=exclude_prob_pks)
+
+            P = list(P)
+            P = sorted(P,key = lambda x:(x.problem_number,x.year))
+            for i in P:
+                prob_group.add_to_end(i)
+            return JsonResponse({})
+
+
+        
 #@login_required
 #def view_presets(request):
 #    context = {}

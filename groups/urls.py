@@ -39,8 +39,10 @@ urlpatterns = [
     url(r'^(?P<pk>\d+)/search/results/$', views.searchresults, name='searchresults'),
     url(r'^(?P<pk>\d+)/search/advanced_results/$', views.advanced_searchresults, name='advancedsearchresults'),
     url(r'^(?P<pk>\d+)/search/results/add_to_group/$', views.search_add_to_group, name='add_to_group'),
+    url(r'^(?P<pk>\d+)/search/results/add-all-problems/$',views.addallproblems, name="addallproblems"),
     url(r'^(?P<pk>\d+)/search/advanced_results/add_to_group/$', views.search_add_to_group, name='add_to_group'),
     url(r'^(?P<pk>\d+)/search/results/add_to_this_group/$', views.add_to_this_group, name='add_to_this_group'),
+    url(r'^(?P<pk>\d+)/search/advanced_results/add-all-problems/$',views.advanced_addallproblems, name="advanced_addallproblems"),
     url(r'^(?P<pk>\d+)/search/advanced_results/add_to_this_group/$', views.add_to_this_group, name='add_to_this_group'),
     url(r'^ajax/load_sol/(?P<pk>\d+)/$', views.load_sols, name='search_load_solution'),
 

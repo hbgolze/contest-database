@@ -51,7 +51,14 @@ Tag:<br>
 </p>
 {% endif %}
 
-<p>{% if matchnums == 0 %}No problems match the query.{% else %}Viewing results {{rows.start_index}}-{{rows.end_index}} of {{matchnums}}.{% endif %}</p>
+  <p>{% if matchnums == 0 %}No problems match the query.{% else %}Viewing results {{rows.start_index}}-{{rows.end_index}} of {{matchnums}}.{% endif %}</p>
+
+  <p>{% if matchnums == 0 %}{% else %}<button class='btn btn-primary' id='add-all-problems'>Add All Problems to Group</button>{% endif %}
+    <div id="all-status" class="js-tagging-status">
+      
+    </div>
+
+
 </div>
 </div>
 
@@ -432,7 +439,24 @@ $(document).on('click',".view-answer-link",function(e) {
   var prob_id = $(this).attr('id').split('_')[1];
     $("#answer_"+prob_id).toggle();
 });
-  
+
+$(document).on('click',"#add-all-problems",function(e) {
+    var currentarg = JSON.stringify(window.location.href).split('?');
+    $.ajax({
+        type: 'GET',
+        url: 'add-all-problems/?'+currentarg,
+        dataType: 'json',
+	success: function(data) {
+	    $("#all-status").html("<div class='alert alert-success' role='alert'>All problems added to group.</div>");
+	    $("#all-status").show();
+	    setTimeout(function() {
+		$("#all-status").fadeOut().empty();
+	    },5000);
+	    
+        }
+    });
+});
+
 </script>
 
 {% endblock %}
