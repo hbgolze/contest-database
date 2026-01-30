@@ -3151,6 +3151,109 @@ def contestproblem_png(request,**kwargs):
 
         return response
 
+
+@login_required
+def contestproblem_solution_png(request,**kwargs):
+    contest = get_object_or_404(ContestTest, short_label=kwargs['short_label'])
+    problems = contest.problems.all().order_by('year','problem_number')
+
+    with tempfile.TemporaryDirectory() as tempdir:
+        for prob in problems:
+            num_sols = prob.solutions.count()
+            for sol in prob.solutions.all():
+                context = {
+                    'sol':sol,
+                    'num_sols':num_sols,
+                    'pk':prob.pk,
+                }
+                asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+                asyr = asyf.read()
+                asyf.close()
+                template = get_template('problemeditor/my_singlesolution_latex_template.tex')
+                rendered_tpl = template.render(context).encode('utf-8')
+                # Python3 only. For python2 check out the docs!                                                                                                                                                                                                           
+                # Create subprocess, supress output with PIPE and                                                                                                                                                                                                     
+                # run latex twice to generate the TOC properly.                                                                                                                                                                                                       
+                # Finally read the generated pdf.                                                                                                                                                                                                                     
+                fa=open(os.path.join(tempdir,'asymptote.sty'),'w')
+                fa.write(asyr)
+                fa.close()
+                context = {
+                    'sol' : sol,
+                    'num_sols' : num_sols,
+                    'pk':prob.pk,
+                    'tempdirect':tempdir,
+                }
+                template = get_template('problemeditor/my_singlesolution_latex_template.tex')
+                rendered_tpl = template.render(context).encode('utf-8')
+                ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
+                ftex.write(rendered_tpl)
+                ftex.close()
+                for i in range(1):
+                    process = Popen(
+                        ['pdflatex', 'texput.tex'],
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        cwd = tempdir,
+                    )
+                    stdout_value = process.communicate()[0]
+                L=os.listdir(tempdir)
+
+                for i in range(0,len(L)):
+                    if L[i][-4:]=='.asy':
+                        process1 = Popen(
+                            ['asy', L[i]],
+                            stdin = PIPE,
+                            stdout = PIPE,
+                            cwd = tempdir,
+                        )
+                        stdout_value = process1.communicate()[0]
+                for i in range(2):
+                    process2 = Popen(
+                        ['pdflatex', 'texput.tex'],
+                        stdin=PIPE,
+                        stdout=PIPE,
+                        cwd = tempdir,
+                    )
+                    stdout_value = process2.communicate()[0]
+                command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+                proc = subprocess.Popen(command,
+                                        shell=True,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                )
+                stdout_value = proc.communicate()[0]
+
+                command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'-sol'+str(sol.solution_number)+'.png')
+                proc = subprocess.Popen(command,
+                                        shell=True,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        stderr=subprocess.PIPE,
+                )
+                stdout_value = proc.communicate()[0]
+
+
+  
+    
+
+  
+        buffer = io.BytesIO()
+        zip_file = zipfile.ZipFile(buffer, 'w')
+        for prob in problems:
+            for sol in prob.solutions.all():
+                with open(os.path.join(tempdir,prob.label+'-sol'+str(sol.solution_number)+'.png'),'rb') as f:
+                    png = f.read()
+                    zip_file.writestr(prob.label+'-sol'+str(sol.solution_number)+'.png',png)
+        zip_file.close()
+        
+        response = HttpResponse(buffer.getvalue())
+        response['Content-Type'] = 'application/x-zip-compressed'
+        response['Content-Disposition'] = 'attachment; filename='+kwargs['short_label']+'-sols.zip'
+
+        return response
+
             
 @login_required
 def relay_index(request):

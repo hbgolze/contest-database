@@ -30,6 +30,7 @@ urlpatterns = [
     url(r'^contest/bycontest/(?P<type>\w+)/untagged/$', views.untagged_problems_view, name='contest_untagged_problems_view'),
     url(r'^contest/bycontest/(?P<type>\w+)/(?P<short_label>[-\w]+)/$', views.contesttest_view, name='contest_test_view'),
     url(r'^contest/bycontest/(?P<type>\w+)/(?P<short_label>[-\w]+)/pngs/$', views.contestproblem_png, name='contestproblem_png_view'),
+    url(r'^contest/bycontest/(?P<type>\w+)/(?P<short_label>[-\w]+)/sol_pngs/$', views.contestproblem_solution_png, name='contestproblem_sols_png_view'),
 #    url(r'^contest/bycontest/(?P<type>\w+)/(?P<short_label>[-\w]+)/latex/$', views.download_mc_contest_file, name='contest_download_mc_latex_contest'),
     url(r'^contest/bycontest/(?P<type>\w+)/(?P<tag>[-\w]+)/(?P<label>[-\w]+)/$', views.problemview, name='contest_problemview'),
     url(r'^contest/bycontest/(?P<type>\w+)/(?P<tag>[-\w]+)/(?P<label>[-\w]+)/png/$', views.singleproblem_png, name='contest_singleproblem_png'),
