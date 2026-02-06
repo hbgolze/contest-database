@@ -570,7 +570,10 @@ def outline_test_as_pdf(request,**kwargs):
         include_nts = True
     else:
         include_nts = False
-    print(include_nts)
+    if 'no-calc-icon' in form:
+        no_calc_icon = True
+    else:
+        no_calc_icon = False
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
 
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -590,6 +593,7 @@ def outline_test_as_pdf(request,**kwargs):
             'include_sols' : include_sols,
             'include_ans' : include_ans,
             'include_nts' : include_nts,
+            'no_calc_icon' : no_calc_icon,
             'tempdirect' : tempdir,
             }
         template = get_template('groups/my_latex_outline_template.tex')

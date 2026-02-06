@@ -99,7 +99,7 @@
 {% for p_object in group.problem_objects.all %}
 {% with prob=p_object.problem %}
 \item \begin{minipage}[t]{\answerwidth}
-{% if prob.calculator %}\ \underline{\hspace{\tblankwidth}}\calculator{% else %}\ \underline{\hspace{\blankwidth}}{% endif %}
+{% if no_calc_icon %}\ \underline{\hspace{\blankwidth}}{% else %}{% if prob.calculator %}\ \underline{\hspace{\tblankwidth}}\calculator{% else %}\ \underline{\hspace{\blankwidth}}{% endif %}{% endif %}
 
 \end{minipage}
 \begin{minipage}[t]{\problemwidth}
