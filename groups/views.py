@@ -474,7 +474,6 @@ def test_as_pdf(request,**kwargs):
         include_nts = True
     else:
         include_nts = False
-    print(include_nts)
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
 
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -669,7 +668,6 @@ def outline_test_as_tex(request,**kwargs):
         include_nts = True
     else:
         include_nts = False
-    print(include_nts)
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
     context = {
         'group' : prob_group,
@@ -715,7 +713,6 @@ def twoatatime_test_as_pdf(request,**kwargs):
         include_nts = True
     else:
         include_nts = False
-    print(include_nts)
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
 
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -844,7 +841,6 @@ def drill_test_as_pdf(request,**kwargs):
         include_nts = True
     else:
         include_nts = False
-    print(include_nts)
     prob_group = get_object_or_404(ProblemGroup, pk=kwargs['pk'])
 
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -1097,7 +1093,6 @@ def saveprobgroupdescription(request):
     userprofile = request.user.userprofile
     pk = request.POST.get('pk','')
     prob_group = get_object_or_404(ProblemGroup,pk=pk)
-    print(prob_group)
     if prob_group in userprofile.problem_groups.all() or prob_group in userprofile.archived_problem_groups.all():
         form = EditProblemGroupDescriptionForm(request.POST,instance = prob_group)
         form.save()
@@ -1410,7 +1405,6 @@ def addallproblems(request,pk):
         form = request.GET
         types = userprofile.user_type_new.allowed_types.all()
         type_pks = []
-        print('asdf34')
         for i in types:
             type_pks.append(i.pk)
         if 1:#form.get('searchform','') == "start":

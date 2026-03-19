@@ -2342,7 +2342,6 @@ def delete_comment(request, **kwargs):
 def new_new_comment(request,**kwargs):
     prob = get_object_or_404(Problem,pk = request.POST.get('pk',''))
     form = NewCommentForm()
-    print(JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-new-comment.html',{'form':form,'prob':prob})}))
     return JsonResponse({'modal-html':render_to_string('problemeditor/problem-snippets/modals/modal-new-comment.html',{'form':form,'prob':prob})})
 
 @login_required
