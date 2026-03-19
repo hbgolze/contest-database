@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404,redirect
 from django.http import HttpResponse,HttpResponseRedirect,Http404,JsonResponse,FileResponse
-from django.utils.http import urlquote,urlunquote
+#from django.utils.http import urlquote,urlunquote
 from django.template import loader
 from django.template.loader import get_template,render_to_string
 from django.contrib.auth.decorators import login_required,user_passes_test
@@ -1896,7 +1896,7 @@ class TagProblemList(ListView):
     template_name = 'problemeditor/tag_problem_list.html'
     paginate_by = 10
     def get_queryset(self):
-        self.tag = get_object_or_404(NewTag,pk=self.args[0])
+        self.tag = get_object_or_404(NewTag,pk=self.kwargs['pk'])
         self.exact = 0
         if 'exact' in self.request.GET:
             if self.request.GET.get('exact') == 'true':

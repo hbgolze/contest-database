@@ -1,13 +1,13 @@
-from django.conf.urls import include,url
+from django.urls import path
 
 from . import views
 #from views import TestDelete
 
 urlpatterns = [
-    url(r'^$', views.all_contests, name='all_contests'),
-    url(r'^(?P<contest_name>\w+)/$', views.contest_view, name='contest_view'),
-    url(r'^(?P<contest_name>\w+)/organizations/$', views.organization_view, name='organization_view'),
-    url(r'^(?P<contest_name>\w+)/organizations/(?P<org_pk>\w+)/$', views.organization_team_view, name='organization_team_view'),
-    url(r'^(?P<contest_name>\w+)/indiv_problems/$', views.individual_ranks, name='individual_ranks'),
-    url(r'^(?P<contest_name>\w+)/(?P<year>\w+)/$', views.contestyear_view, name='contestyear_view'),
+    path('', views.all_contests, name='all_contests'),
+    path('<str:contest_name>/', views.contest_view, name='contest_view'),
+    path('<str:contest_name>/organizations/', views.organization_view, name='organization_view'),
+    path('<str:contest_name>/organizations/<str:org_pk>/', views.organization_team_view, name='organization_team_view'),
+    path('<str:contest_name>/indiv_problems/', views.individual_ranks, name='individual_ranks'),
+    path('<str:contest_name>/<str:year>/', views.contestyear_view, name='contestyear_view'),
 ]

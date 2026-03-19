@@ -13,7 +13,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from datetime import datetime,timedelta,time
 from django.utils import timezone
 from django.conf import settings
-import pytz
+#import pytz
+from zoneinfo import ZoneInfo
 
 from randomtest.utils import newtexcode,compileasy,compiletikz,pointsum,newsoltexcode
 from randomtest.models import QuestionType,ProblemGroup,Problem,NewTag,NewResponse,Solution,UserProfile
@@ -3029,8 +3030,11 @@ def save_duedate(request):
     if data_type == 'ps':
         problemset = get_object_or_404(ProblemSet,pk=request.POST.get('edps-pk'))
         due_date = request.POST.get('due_date')
-        tz = pytz.timezone(request.user.userprofile.time_zone)
-        tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        tz = ZoneInfo(request.user.userprofile.time_zone)
+        tz_due_date = datetime.strptime(due_date,'%m/%d/%Y %I:%M %p')
+        tz_due_date = tz_due_date.replace(tzinfo = tz)
+        #tz = pytz.timezone(request.user.userprofile.time_zone)
+        #tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
         if problemset.start_date != None:
             if problemset.start_date >= tz_due_date:
                 return JsonResponse({'error': 'Due date is before start date'})
@@ -3041,8 +3045,11 @@ def save_duedate(request):
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
         due_date = request.POST.get('due_date')
-        tz = pytz.timezone(request.user.userprofile.time_zone)
-        tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
+        tz = ZoneInfo(request.user.userprofile.time_zone)
+        tz_due_date = datetime.strptime(due_date,'%m/%d/%Y %I:%M %p')
+        tz_due_date = tz_due_date.replace(tzinfo = tz)
+        #tz = pytz.timezone(request.user.userprofile.time_zone)
+        #tz_due_date = tz.localize(datetime.strptime(due_date,'%m/%d/%Y %I:%M %p'))
         if test.start_date != None:
             if test.start_date >= tz_due_date:
                 return JsonResponse({'error': 'Due date is before start date'})
@@ -3092,8 +3099,11 @@ def save_startdate(request):
     if data_type == 'ps':
         problemset = get_object_or_404(ProblemSet,pk=request.POST.get('edps-pk'))
         start_date = request.POST.get('start_date')
-        tz = pytz.timezone(request.user.userprofile.time_zone)
-        tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        tz = ZoneInfo(request.user.userprofile.time_zone)
+        tz_start_date = datetime.strptime(due_date,'%m/%d/%Y %I:%M %p')
+        tz_start_date = tz_start_date.replace(tzinfo = tz)
+        #tz = pytz.timezone(request.user.userprofile.time_zone)
+        #tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
         if problemset.due_date != None:
             if problemset.due_date <= tz_start_date:
                 return JsonResponse({'error': 'Start date is after end date'})
@@ -3104,8 +3114,11 @@ def save_startdate(request):
     elif data_type == 'tst':
         test = get_object_or_404(Test,pk=request.POST.get('edps-pk'))
         start_date = request.POST.get('start_date')
-        tz = pytz.timezone(request.user.userprofile.time_zone)
-        tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
+        tz = ZoneInfo(request.user.userprofile.time_zone)
+        tz_start_date = datetime.strptime(due_date,'%m/%d/%Y %I:%M %p')
+        tz_start_date = tz_start_date.replace(tzinfo = tz)
+        #tz = pytz.timezone(request.user.userprofile.time_zone)
+        #tz_start_date = tz.localize(datetime.strptime(start_date,'%m/%d/%Y %I:%M %p'))
         if test.due_date != None:
             if test.due_date <= tz_start_date:
                 return JsonResponse({'error': 'Start date is after end date'})
