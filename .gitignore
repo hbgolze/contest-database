@@ -18,7 +18,6 @@ logfile
 *~
 makedatabase.py
 loadproblemscommon.py
-*.txt
 makeannie.py
 instructions.py*
 harmonize.py
