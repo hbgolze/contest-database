@@ -723,6 +723,78 @@ def assignment_pdf_view(request,assignment_id):
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':assignment_name,'error_text':error_text})#####Perhaps the error page needs to be customized...  
 
 @permission_required('drills.add_drill')
+def task_topic_pdf_view(request,cat_pk,topic):
+    category = get_object_or_404(Category,pk = cat_pk)
+    tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
+    if topic == 'NumberTheory':
+        topic = 'Number Theory'
+    context = {
+        'category' : category,
+        'topic' : topic,
+        'tasks' : tasks,
+        }
+    
+    asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
+    asyr = asyf.read()
+    asyf.close()
+    template = get_template('drills/my_topic_task_problem_list.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    with tempfile.TemporaryDirectory() as tempdir:
+        fa = open(os.path.join(tempdir,'asymptote.sty'),'w')
+        fa.write(asyr)
+        fa.close()
+        context = {
+            'tempdirect':tempdir,
+            'category' : category,
+            'topic' : topic,
+            'tasks' : tasks,
+            }
+        template = get_template('drills/my_topic_task_problem_list.tex')
+        rendered_tpl = template.render(context).encode('utf-8')
+        ftex = open(os.path.join(tempdir,'texput.tex'),'wb')
+        ftex.write(rendered_tpl)
+        ftex.close()
+        for i in range(1):
+            process = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process.communicate()[0]
+        L=os.listdir(tempdir)
+
+        for i in range(0,len(L)):
+            if L[i][-4:] == '.asy':
+                process1 = Popen(
+                    ['asy', L[i]],
+                    stdin = PIPE,
+                    stdout = PIPE,
+                    cwd = tempdir,
+                    )
+                stdout_value = process1.communicate()[0]
+        for i in range(2):
+            process2 = Popen(
+                ['pdflatex', 'texput.tex'],
+                stdin = PIPE,
+                stdout = PIPE,
+                cwd = tempdir,
+            )
+            stdout_value = process2.communicate()[0]
+
+        if 'texput.pdf' in os.listdir(tempdir):
+            with open(os.path.join(tempdir, 'texput.pdf'), 'rb') as f:
+                pdf = f.read()
+                r = HttpResponse(content_type = 'application/pdf')
+                r.write(pdf)
+                r['Content-Disposition'] = 'attachment;filename="'+category.name.replace(' ','')+'-'+topic.replace(' ','')+'.pdf"'
+                return r
+        else:
+            with open(os.path.join(tempdir, 'texput.log')) as f:
+                error_text = f.read()
+                return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':category.name.replace(' ','')+'-'+topic.replace(' ',''),'error_text':error_text})#####Perhaps the error page needs to be customized...  
+            
+@permission_required('drills.add_drill')
 def individual_report_pdf_view(request,year_pk,profile_id):
     no_average = 0
     if 'no_average' in request.GET:

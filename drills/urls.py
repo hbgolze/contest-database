@@ -13,7 +13,7 @@ from .views import (
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
     drill_solutions_latex_view, drill_solutions_pdf_view, add_year_view, add_bonus,
     edit_author, save_author, edit_assignment_author, save_assignment_author,
-    publish_drill,
+    publish_drill,task_topic_pdf_view
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
@@ -48,6 +48,7 @@ urlpatterns = [
     path('tasks/', permission_required('drills.add_drill')(CategoryIndexView.as_view()), name='task_manager'),
     path('tasks/<int:cat_pk>/', permission_required('drills.add_drill')(DrillTaskManagerView.as_view()), name='view_category_tasks'),
     path('tasks/<int:cat_pk>/add/', add_task, name='add_task'),
+    path('tasks/<int:cat_pk>/pdf/<str:topic>/', task_topic_pdf_view, name='cat_topic_as_pdf'),
     path('tasks/<int:cat_pk>/<int:task_id>/problems_modal/', load_problems_modal, name='load_problems_modal'),
     path('tasks/<int:cat_pk>/<int:task_id>/edit/', save_task, name='save_task'),
     path('tasks/<int:cat_pk>/<int:task_id>/load-edit-task/', load_edit_task, name='load_edit_task'),
