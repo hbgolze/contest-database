@@ -725,9 +725,9 @@ def assignment_pdf_view(request,assignment_id):
 @permission_required('drills.add_drill')
 def task_topic_pdf_view(request,cat_pk,topic):
     category = get_object_or_404(Category,pk = cat_pk)
-    tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
     if topic == 'NumberTheory':
         topic = 'Number Theory'
+    tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
     context = {
         'category' : category,
         'topic' : topic,
