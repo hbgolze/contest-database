@@ -724,7 +724,13 @@ def assignment_pdf_view(request,assignment_id):
 
 @permission_required('drills.add_drill')
 def task_topic_pdf_view(request,cat_pk,topic):
+    top_number = 0
+    if 'top_number' in request.GET:
+        top_number = int(request.GET.get('top_number',''))
     category = get_object_or_404(Category,pk = cat_pk)
+    year = 2026
+    if category.years.exists():
+        year = category.years.all()[-1].year
     if topic == 'NumberTheory':
         topic = 'Number Theory'
     tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
@@ -732,6 +738,8 @@ def task_topic_pdf_view(request,cat_pk,topic):
         'category' : category,
         'topic' : topic,
         'tasks' : tasks,
+        'top_number' : top_number,
+        'year': year
         }
     
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -748,6 +756,8 @@ def task_topic_pdf_view(request,cat_pk,topic):
             'category' : category,
             'topic' : topic,
             'tasks' : tasks,
+            'top_number' : top_number,
+            'year': year
             }
         template = get_template('drills/my_topic_task_problem_list.tex')
         rendered_tpl = template.render(context).encode('utf-8')
