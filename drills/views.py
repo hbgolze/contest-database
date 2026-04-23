@@ -724,13 +724,15 @@ def assignment_pdf_view(request,assignment_id):
 
 @permission_required('drills.add_drill')
 def task_topic_pdf_view(request,cat_pk,topic):
-    top_number = 0
-    if 'top_number' in request.GET:
-        top_number = int(request.GET.get('top_number',''))
     category = get_object_or_404(Category,pk = cat_pk)
     year = 2026
+    top_number = 0
     if category.years.exists():
-        year = category.years.all()[-1].year
+        yf = list(category.years.all())[-1]
+        year = yf.year
+        top_number = yf.top_number
+    if 'top_number' in request.GET:
+        top_number = int(request.GET.get('top_number',''))
     if topic == 'NumberTheory':
         topic = 'Number Theory'
     tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
@@ -803,6 +805,38 @@ def task_topic_pdf_view(request,cat_pk,topic):
             with open(os.path.join(tempdir, 'texput.log')) as f:
                 error_text = f.read()
                 return render(request,'randomtest/latex_errors.html',{'nbar':'drills','name':category.name.replace(' ','')+'-'+topic.replace(' ',''),'error_text':error_text})#####Perhaps the error page needs to be customized...  
+
+@permission_required('drills.add_drill')
+def task_topic_tex_view(request,cat_pk,topic):
+    category = get_object_or_404(Category,pk = cat_pk)
+    year = 2026
+    top_number = 0
+    if category.years.exists():
+        yf = list(category.years.all())[-1]
+        year = yf.year
+        top_number = yf.top_number
+    else:
+        return
+    
+    if 'top_number' in request.GET:
+        top_number = int(request.GET.get('top_number',''))
+    if topic == 'NumberTheory':
+        topic = 'Number Theory'
+    tasks = category.drill_tasks.filter(topic=topic).order_by('topic')
+    context = {
+        'category' : category,
+        'topic' : topic,
+        'tasks' : tasks,
+        'top_number' : top_number,
+        'year': year
+        }
+
+    template = get_template('drills/my_topic_task_problem_list.tex')
+    rendered_tpl = template.render(context).encode('utf-8')
+    filename = "texput.tex"
+    response = HttpResponse(rendered_tpl, content_type='text/plain')
+    response['Content-Disposition'] = 'attachment; filename={0}'.format(filename)
+    return response
             
 @permission_required('drills.add_drill')
 def individual_report_pdf_view(request,year_pk,profile_id):
