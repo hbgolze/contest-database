@@ -11,22 +11,8 @@
     </ol>
 </nav>
 <div class="container mt-4">
-  <h1 class="mb-4">Drill Task Manager</h1>
-  <p>To restrict the download to problems up to drill n in the current year, copy the desired URL below, and then add the argument ?top_number=n to the URL.</p>
-    <div class="d-flex flex-row mb-3">
-      <div class='list-group p-3'>
-	<a class='list-group-item' href='pdf/Algebra'>Algebra Problems PDF</a>
-	<a class='list-group-item' href='pdf/Combinatorics'>Combinatorics Problems PDF</a>
-	<a class='list-group-item' href='pdf/Geometry'>Geometry Problems PDF</a>
-	<a class='list-group-item' href='pdf/NumberTheory'>Number Theory Problems PDF</a>
-      </div>
-      <div class='list-group p-3'>
-	<a class='list-group-item' href='tex/Algebra'>Algebra Problems TeX</a>
-	<a class='list-group-item' href='tex/Combinatorics'>Combinatorics Problems TeX</a>
-	<a class='list-group-item' href='tex/Geometry'>Geometry Problems TeX</a>
-	<a class='list-group-item' href='tex/NumberTheory'>Number Theory Problems TeX</a>
-      </div>
-    </div>
+    <h1 class="mb-4">Drill Task Manager</h1>
+    
     <table class="table table-striped table-bordered">
         <thead class="thead-dark">
             <tr>
@@ -219,6 +205,36 @@ function loadProblems(taskId) {
         }
     });
 }
+
+$(document).on('click',".copy-latex-link",function(e) {
+  var prob_id = $(this).attr('id').split('_')[1];
+  var prob_text = $("textarea#latex_"+prob_id).val().replace('<br>','\n\r').replace('<br>','\n\r');
+if (navigator.clipboard) {
+        navigator.clipboard.writeText(prob_text).then(function() {
+            // Success!
+        }).catch(function(err) {
+            // Failure
+            console.error('Could not copy text: ', err);
+        });
+    } else {
+        // Fallback for older browsers
+        alert('Clipboard API not supported');
+    }
+});
+$(document).on('click',"#copy-all-latex-link",function(e) {
+  var prob_text = $("textarea#all-latex").val().replace('<br>','\n\r').replace('<br>','\n\r');
+if (navigator.clipboard) {
+        navigator.clipboard.writeText(prob_text).then(function() {
+            // Success!
+        }).catch(function(err) {
+            // Failure
+            console.error('Could not copy text: ', err);
+        });
+    } else {
+        // Fallback for older browsers
+        alert('Clipboard API not supported');
+    }
+});
 </script>
 
 {% endblock %}

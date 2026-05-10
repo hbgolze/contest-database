@@ -1,12 +1,27 @@
 <div class="row" id="problem-container">
+<p>
+  <button type="button" class="btn btn-secondary" id="copy-all-latex-link">Copy All LaTeX</button>
+  <textarea id="all-latex" style="display:none">{% for p in task.drillproblem_set.all %}\item {{p.problem_text}}
+
+    %{{p.answer}}
+
+    {% endfor %}</textarea>
+  </p>
 {% for p in task.drillproblem_set.all %}
 
     <div class="col-md-12 mb-3 task-card">
         <div class="card">
             <div class="card-body">
-                <h6 class="card-title"><a href="/drills/drill/{{p.drill.pk}}">{{p.drill.readable_label}}</a> #{{p.order}}</h6>
+              <h6 class="card-title"><a href="/drills/drill/{{p.drill.pk}}">{{p.drill.readable_label}}</a> #{{p.order}}</h6>
+	      <button type="button" class="btn btn-sm  btn-secondary copy-latex-link" id="copylatex_{{p.pk}}"><span class="fa fa-copy"></span></button>
                 <p>{% autoescape off %}{{p.display_problem_text|linebreaks}} {% endautoescape %}</p>
-                <p><strong># Solves:</strong> {{p.number_solved}}/{{p.drill.num_participants}} ({{p.percent_solved|floatformat:2}}%)</p>
+		<p><strong>Answer:</strong> ${{p.answer}}$</p>
+              <p><strong># Solves:</strong> {{p.number_solved}}/{{p.drill.num_participants}} ({{p.percent_solved|floatformat:2}}%)</p>
+	      <textarea id="latex_{{p.pk}}" style="display:none">{{p.problem_text}}
+
+		%{{p.answer}}
+
+	      </textarea>
             </div>
         </div>
     </div>
