@@ -1,0 +1,151 @@
+{% extends 'randomtest/base.html' %}
+
+{% block title %}Drill Year Manager{% endblock %}
+
+{% block content %}
+<nav aria-label="breadcrumb" role="navigation">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="/drills/">Drill Index</a></li>
+    <li class="breadcrumb-item active" aria-current="page">Manage Drill Years</li>
+  </ol>
+</nav>
+
+<div class="container mt-4">
+  <h1 class="mb-4">Manage Drill Years</h1>
+
+    
+  {% for category in categories %}
+  <h2 id="cat-{{category.pk}}">{{category.name}} Drills</h2>
+  <table class="table table-striped table-bordered">
+    <thead class="thead-dark">
+      <tr>
+        <th>Year</th>
+        <th># Drills</th>
+        <th>Activate/Deactivate</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for yf in category.years.all %}
+      <tr>
+	<td>{{yf.year}}</td>
+	<td>{{yf.drills.count}}</td>
+	<td>
+	  {% if yf.active %}
+	  <button class="btn btn-secondary deactivate_year" id="deactivate_{{yf.id}}">Deactivate</button>
+	  {% else %}
+	  <button class="btn btn-secondary activate_year" id="activate_{{yf.id}}">Activate</button>
+	  {% endif %}
+	</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <button class="btn btn-primary mb-3 add-year-btn" id="add-year_{{category.id}}">Add Year</button>
+  {% endfor %}
+</div>
+
+<!-- Modal for creating a new drill year -->
+<div class="modal fade" id="createYearModal" tabindex="-1" role="dialog" aria-labelledby="createYearLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createYearLabel">Add New Year</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+              <form id="createYearForm" method="POST" action="{% url 'create_year' %}">
+		{% csrf_token %}
+		<input type="hidden" name="cat-pk" id="cat-pk">
+                    <div class="form-group">
+                        <label for="year">Year</label>
+                        <input type="text" class="form-control" id="year" name="year" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Year</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function loadEditAnswer(problemId) {
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/load-edit-answer/${problemId}/`,
+        type: "GET",
+        success: function(response) {
+            $('#editAnswer-div').html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editAnswer-div"]);
+            $('#editAnswerModal').modal('show');
+        },
+        error: function(xhr) {
+            alert("Error loading Answer. Please try again.");
+        }
+    });
+}
+
+$('#editAnswerForm').submit(function(event) {
+    event.preventDefault();
+    let problemId = $('#editProblemAnswerId').val();
+    let answer = $('#editProblemAnswer').val();
+
+    $.ajax({
+        url: `/drills/drill/{{drill.id}}/save-answer/${problemId}/`,
+        type: "POST",
+        data: {
+            answer: answer,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            $('#drill-problem_'+problemId).html(response['html_code']);
+            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"drill-problem_"+problemId]);
+            $('#editAnswerModal').modal('hide');
+        },
+        error: function(xhr) {
+            alert("Error updating answer. Please try again.");
+        }
+    });
+});
+
+$(document).on('click',".activate_year",function(e) {
+  var yf_id = $(this).attr('id').split('_')[1];
+  $.ajax({
+        url: '/drills/manage_years/ajax/activate_year/',
+        type: "POST",
+        data: {
+            yf_id: yf_id,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            window.location.reload();
+        },
+        error: function(xhr) {
+            alert("Error activating.");
+        }
+    });
+});  
+$(document).on('click',".deactivate_year",function(e) {
+  var yf_id = $(this).attr('id').split('_')[1];
+  $.ajax({
+        url: '/drills/manage_years/ajax/deactivate_year/',
+        type: "POST",
+        data: {
+            yf_id: yf_id,
+            csrfmiddlewaretoken: "{{ csrf_token }}"
+        },
+        success: function(response) {
+            window.location.reload();
+        },
+        error: function(xhr) {
+            alert("Error deactivating.");
+        }
+    });
+  
+});
+$(document).on('click',".add-year-btn",function(e) {
+var cat_id = $(this).attr('id').split('_')[1];
+$('#cat-pk').val(cat_id);
+  $('#createYearModal').modal('show');
+});
+</script>
+{% endblock %}

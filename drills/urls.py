@@ -5,7 +5,7 @@ from .views import (
     DrillProfileView, DrillRankingsView, GradeDrillView, ManageProfilesView,
     StudentScoresView,StudentAveragesView,StudentReportsView,ReorderDrillView,
     ProblemDifficultyView,TopicRankingsView,ProblemResultsbyDifficultyView,
-    CategoryIndexView,
+    CategoryIndexView,ManageDrillYearsView,
     add_profile_view, add_year_to_profile, load_problems_modal, save_task,
     load_edit_task, load_edit_latex, load_edit_answer, save_answer, save_latex, 
     add_task, load_single_problem, assignment_pdf_view, individual_report_pdf_view,
@@ -13,12 +13,17 @@ from .views import (
     save_new_solution, load_edit_single_solution, delete_solution, save_solution,
     drill_solutions_latex_view, drill_solutions_pdf_view, add_year_view, add_bonus,
     edit_author, save_author, edit_assignment_author, save_assignment_author,
-    publish_drill,task_topic_pdf_view,task_topic_tex_view,
+    publish_drill,task_topic_pdf_view,task_topic_tex_view,activate_year,deactivate_year,
+    create_year,
 )
 from django.contrib.auth.decorators import login_required,permission_required
 
 urlpatterns = [
     path('', permission_required('drills.add_drill')(DrillIndexView.as_view()), name='drill_index'),
+    path('manage_years/', permission_required('drills.add_drill')(ManageDrillYearsView.as_view()), name='manage_years'),
+    path('manage_years/ajax/activate_year/', activate_year, name='activate_year'),
+    path('manage_years/ajax/deactivate_year/', deactivate_year, name='deactivate_year'),
+    path('manage_years/create_year/', create_year, name='create_year'),
     path('drill/<int:drill_id>/', permission_required('drills.add_drill')(ViewDrillView.as_view()), name='view_drill'),
     path('drill/<int:drill_id>/pdf/', drill_pdf_view, name='view_drill_pdf'),
     path('drill/<int:drill_id>/latex/', drill_latex_view, name='view_drill_latex'),

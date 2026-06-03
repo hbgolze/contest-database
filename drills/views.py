@@ -35,6 +35,12 @@ class DrillIndexView(View):
         year_folders = YearFolder.objects.all()
         return render(request, 'drills/index.html', {'categories': categories, 'current_year': now().year, 'year_folders': year_folders,'nbar':'drills'})
 
+class ManageDrillYearsView(View):
+    def get(self, request):
+        categories = Category.objects.all()
+        year_folders = YearFolder.objects.all()
+        return render(request, 'drills/manage_years.html', {'categories': categories, 'current_year': now().year, 'year_folders': year_folders,'nbar':'drills'})
+
 class ViewDrillView(View):
     def get(self, request, drill_id):
         drill = get_object_or_404(Drill, id=drill_id)
@@ -1233,3 +1239,27 @@ def publish_drill(request,drill_id):
             new_p.add_solution(request,s.solution_text)
     typ.update_years()
     return redirect('/drills/')
+
+def activate_year(request):
+    yf_id = request.POST.get('yf_id')
+    print(yf_id)
+    yf = get_object_or_404(YearFolder,id=yf_id)
+    print(yf)
+    yf.active = True
+    yf.save()
+    return JsonResponse({})
+
+def deactivate_year(request):
+    yf_id = request.POST.get('yf_id')
+    yf = get_object_or_404(YearFolder,id=yf_id)
+    yf.active = False
+    yf.save()
+    return JsonResponse({})
+
+def create_year(request):
+    cat_pk = request.POST.get('cat-pk')
+    print(request.POST)
+    year = request.POST.get('year')
+    category = get_object_or_404(Category,id=cat_pk)
+    category.add_year(year)
+    return redirect('/drills/manage_years/')

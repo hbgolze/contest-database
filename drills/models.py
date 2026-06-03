@@ -12,6 +12,11 @@ class Category(models.Model):
         return str(self.name)
     class Meta:
         ordering = ['name']
+    def add_year(self,y):
+        if not self.years.filter(year=y).exists():
+            yf = YearFolder(year=y,category = self)
+            yf.save()
+            return yf
 
 class YearFolder(models.Model):
     year = models.IntegerField()
