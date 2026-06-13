@@ -1079,9 +1079,13 @@ def drill_latex_view(request,drill_id):
 
 @permission_required('drills.add_drill')
 def drill_solutions_pdf_view(request,drill_id):
+    bonus_problems = False
+    if 'bonus' in request.GET:
+        bonus_problems = True
     drill = get_object_or_404(Drill, id = drill_id)
     context = {
         'drill':drill,
+        'bonus_problems': bonus_problems,
         }
     
     asyf = open(settings.BASE_DIR+'/asymptote.sty','r')
@@ -1096,6 +1100,7 @@ def drill_solutions_pdf_view(request,drill_id):
         context = {
             'tempdirect':tempdir,
             'drill':drill,
+            'bonus_problems': bonus_problems,
             }
         template = get_template('drills/my_drill_solutions_latex.tex')
         rendered_tpl = template.render(context).encode('utf-8')

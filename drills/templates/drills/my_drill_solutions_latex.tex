@@ -28,23 +28,40 @@
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
-\textbf{\relax{{drill.readable_label}}\relax---Solutions}
+\textbf{\relax{{drill.readable_label}}\relax---{% if bonus_problems %}Bonus {% endif %}Solutions}
 
 \bigskip
 \begin{enumerate}
   {% for problem in drill.drill_problems.all %}
-\item 
-{{problem.problem_text}} 
+    {% if problem.is_bonus %}
+      {% if bonus_problems %}
+      \item 
+        {{problem.problem_text}} 
+      
+        {% if problem.drillproblemsolution_set.count > 0 %}
+          {% for solution in problem.drillproblemsolution_set.all %}
+            \textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}{% endif %}:} {{solution.solution_text}}
+          {% endfor %}
+        {% else %}
+          No Solutions Yet!
+        {% endif %}
+      {% endif %}
+    {% else %}
+      {% if bonus_problems %}{% else %}
+      \item 
+        {{problem.problem_text}} 
+      
+        {% if problem.drillproblemsolution_set.count > 0 %}
+          {% for solution in problem.drillproblemsolution_set.all %}
+            \textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}{% endif %}:} {{solution.solution_text}}
+          {% endfor %}
+        {% else %}
+          No Solutions Yet!
+        {% endif %}
 
-{% if problem.drillproblemsolution_set.count > 0 %}
-{% for solution in problem.drillproblemsolution_set.all %}
-\textbf{Solution{% if problem.drillproblemsolution_set.count > 1 %} {{forloop.counter}}{% endif %}:} {{solution.solution_text}}
-{% endfor %}
-{% else %}
-No Solutions Yet!
-{% endif %}
- 
-{% endfor %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
 
 \end{enumerate}
 \end{document}
