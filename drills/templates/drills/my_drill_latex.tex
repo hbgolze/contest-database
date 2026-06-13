@@ -28,19 +28,32 @@
 \date{}
 \graphicspath{ { {{tempdirect}}/} }
 \begin{document}
-\textbf{\relax{{drill.readable_label}}\relax}\hfill Name: \rule{3in}{.5pt}
+\textbf{\relax{{drill.readable_label}}{% if bonus_problems %}--Bonus{%endif%}\relax}\hfill Name: \rule{3in}{.5pt}
 
 \pagestyle{empty}
 \bigskip
 \begin{enumerate}
   {% for problem in drill.drill_problems.all %}
-\item \begin{minipage}[t]{4.7in}
-    {{problem.problem_text}} 
-    \end{minipage}\quad\begin{minipage}[t]{1.5in}\theenumi. \rule{1in}{.5pt}\end{minipage}
+    {% if problem.is_bonus %}
+      {% if bonus_problems %}
+      \item \begin{minipage}[t]{4.7in}
+        {{problem.problem_text}} 
+      \end{minipage}\quad\begin{minipage}[t]{1.5in}\theenumi. \rule{1in}{.5pt}\end{minipage}
 
-    \bigskip
- 
-{% endfor %}
+      \bigskip
+      {% endif %}
+    {% else %}
+      {% if bonus_problems %}
+      {% else %}
+      \item \begin{minipage}[t]{4.7in}
+        {{problem.problem_text}} 
+      \end{minipage}\quad\begin{minipage}[t]{1.5in}\theenumi. \rule{1in}{.5pt}\end{minipage}
+
+       \bigskip
+
+       {% endif %}
+     {% endif %}
+   {% endfor %}
 
 \end{enumerate}
 \end{document}
