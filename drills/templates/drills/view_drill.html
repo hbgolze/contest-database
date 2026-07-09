@@ -270,7 +270,7 @@ function loadEditSolutions(problemId) {
             $('#editSolutionModal').html(response['html_code']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editSolutionModal"]);
 	    d = new Date();
-            $("#soltext_"+sol_id+" img").each(function(e) {
+            $("#soltext_"+problemId+" img").each(function(e) {
               url = $(this).attr("src");
               $(this).attr("src",url+"?"+d.getTime());
             });
