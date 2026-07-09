@@ -195,6 +195,12 @@ $('#editLatexForm').submit(function(event) {
         success: function(response) {
             $('#drill-problem_'+problemId).html(response['html_code']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"drill-problem_"+problemId]);
+            d = new Date();
+            $("#problem_card-"+problemId+" img").each(function(e) {
+              url = $(this).attr("src");
+              $(this).attr("src",url+"?"+d.getTime());
+            });
+
             $('#editLatexModal').modal('hide');
         },
         error: function(xhr) {
@@ -263,6 +269,11 @@ function loadEditSolutions(problemId) {
         success: function(response) {
             $('#editSolutionModal').html(response['html_code']);
             MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editSolutionModal"]);
+	    d = new Date();
+            $("#soltext_"+sol_id+" img").each(function(e) {
+              url = $(this).attr("src");
+              $(this).attr("src",url+"?"+d.getTime());
+            });
             $('#editSolutionModal').modal('show');
         },
         error: function(xhr) {
