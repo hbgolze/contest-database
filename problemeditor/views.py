@@ -30,6 +30,7 @@ from time import time
 import tempfile
 from subprocess import Popen,PIPE
 import os,os.path
+from pathlib import Path
 from datetime import datetime,timedelta
 import io,zipfile
 
@@ -2892,23 +2893,23 @@ def singleproblem_png(request,**kwargs):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
-        command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+
+        command = ["pdfcrop", "--margin","5", Path(tempdir)/'texput.pdf', Path(tempdir)/"newtexput.pdf"]
         proc = subprocess.Popen(command,
-                                shell=True,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-        )
+                                )
         stdout_value = proc.communicate()[0]
 
-        command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
-        proc = subprocess.Popen(command,
-                                shell=True,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-        )
-        stdout_value = proc.communicate()[0]
+        with open(Path(tempdir)/(prob.label+'.png'),'wb') as f:
+            command = ["pdftoppm", "-png", Path(tempdir)/'newtexput.pdf']
+            proc = subprocess.Popen(command,
+                                    stdin=subprocess.PIPE,
+                                    stdout=f,
+                                    stderr=subprocess.PIPE,
+                                    )
+            stdout_value = proc.communicate()[0]
 
         if prob.label+'.png' in os.listdir(tempdir):
             with open(os.path.join(tempdir, prob.label+'.png'), 'rb') as f:
@@ -3002,23 +3003,26 @@ def singleproblem_png_attachment(request,**kwargs):
                 cwd = tempdir,
             )
             stdout_value = process2.communicate()[0]
-        command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+
+
+        command = ["pdfcrop", "--margin","5", Path(tempdir)/'texput.pdf', Path(tempdir)/"newtexput.pdf"]
         proc = subprocess.Popen(command,
-                                shell=True,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE,
-        )
+                                )
         stdout_value = proc.communicate()[0]
 
-        command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
-        proc = subprocess.Popen(command,
-                                shell=True,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-        )
-        stdout_value = proc.communicate()[0]
+        with open(Path(tempdir)/(prob.label+'.png'),'wb') as f:
+            command = ["pdftoppm", "-png", Path(tempdir)/'newtexput.pdf']
+            proc = subprocess.Popen(command,
+                                    stdin=subprocess.PIPE,
+                                    stdout=f,
+                                    stderr=subprocess.PIPE,
+                                    )
+            stdout_value = proc.communicate()[0]
+
+            
 
         if prob.label+'.png' in os.listdir(tempdir):
             response = FileResponse(open(tempdir+'/'+prob.label+'.png', 'rb'), content_type='image/png')
@@ -3113,28 +3117,23 @@ def contestproblem_png(request,**kwargs):
                     cwd = tempdir,
                 )
                 stdout_value = process2.communicate()[0]
-            command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+            command = ["pdfcrop", "--margin","5", Path(tempdir)/'texput.pdf', Path(tempdir)/"newtexput.pdf"]
             proc = subprocess.Popen(command,
-                                    shell=True,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
-            )
+                                    )
             stdout_value = proc.communicate()[0]
 
-            command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
-            proc = subprocess.Popen(command,
-                                    shell=True,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-            )
-            stdout_value = proc.communicate()[0]
-
-
-  
-    
-
+            with open(Path(tempdir)/(prob.label+'.png'),'wb') as f:
+                command = ["pdftoppm", "-png", Path(tempdir)/'newtexput.pdf']
+                proc = subprocess.Popen(command,
+                                        stdin=subprocess.PIPE,
+                                        stdout=f,
+                                        stderr=subprocess.PIPE,
+                                        )
+                stdout_value = proc.communicate()[0]
+            
   
         buffer = io.BytesIO()
         zip_file = zipfile.ZipFile(buffer, 'w')
@@ -3215,25 +3214,24 @@ def contestproblem_solution_png(request,**kwargs):
                         cwd = tempdir,
                     )
                     stdout_value = process2.communicate()[0]
-                command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+
+
+                command = ["pdfcrop", "--margin","5", Path(tempdir)/'texput.pdf', Path(tempdir)/"newtexput.pdf"]
                 proc = subprocess.Popen(command,
-                                        shell=True,
                                         stdin=subprocess.PIPE,
                                         stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE,
-                )
+                                        )
                 stdout_value = proc.communicate()[0]
 
-                command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'-sol'+str(sol.solution_number)+'.png')
-                proc = subprocess.Popen(command,
-                                        shell=True,
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.PIPE,
-                )
-                stdout_value = proc.communicate()[0]
-
-
+                with open(Path(tempdir)/(prob.label+"-sol"+str(sol.solution_number)+'.png'),'wb') as f:
+                    command = ["pdftoppm", "-png", Path(tempdir)/'newtexput.pdf']
+                    proc = subprocess.Popen(command,
+                                            stdin=subprocess.PIPE,
+                                            stdout=f,
+                                            stderr=subprocess.PIPE,
+                                            )
+                    stdout_value = proc.communicate()[0]
   
     
 
@@ -3500,23 +3498,24 @@ def relay_problem_zip(request,label):
                     cwd = tempdir,
                 )
                 stdout_value = process2.communicate()[0]
-            command = "pdfcrop --margin 5 %s/%s  %s/%s" % (tempdir, 'texput.pdf', tempdir,'newtexput.pdf')
+            command = ["pdfcrop", "--margin","5", Path(tempdir)/'texput.pdf', Path(tempdir)/"newtexput.pdf"]
             proc = subprocess.Popen(command,
-                                    shell=True,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
-            )
+                                    )
             stdout_value = proc.communicate()[0]
 
-            command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, relay.label+'-'+str(ii+1)+'.png')
-            proc = subprocess.Popen(command,
-                                    shell=True,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-            )
-            stdout_value = proc.communicate()[0]
+            with open(Path(tempdir)/(relay.label+"-"+str(ii+1)+'.png'),'wb') as f:
+                command = ["pdftoppm", "-png", Path(tempdir)/'newtexput.pdf']
+                proc = subprocess.Popen(command,
+                                        stdin=subprocess.PIPE,
+                                        stdout=f,
+                                        stderr=subprocess.PIPE,
+                                        )
+                stdout_value = proc.communicate()[0]
+
+
         buffer = io.BytesIO()
         zip_file = zipfile.ZipFile(buffer, 'w')
         for ii in range(0,3):

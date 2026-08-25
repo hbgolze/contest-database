@@ -8,6 +8,7 @@ import tempfile
 import os,os.path
 import re
 from zipfile import ZipFile
+from pathlib import Path
 
 #center,asy,enumerate,itemize, (tikzpicture), (includegraphics)
 #class ItemizeEnv:
@@ -558,11 +559,11 @@ def compileasy(texcode, label, sol = '', temp = False):
             L = os.listdir(tempdir)
             for j in L:
                 if 'pdf' in j:
-                    command = "pdftoppm -png %s/%s > %s%s" % (tempdir, j, settings.MEDIA_ROOT+tempfolder, j.replace('.pdf','.png'))
-                    proc = subprocess.Popen(command,
-                                            shell=True,
+                    with open(str(Path(settings.MEDIA_ROOT) / (tempfolder+j.replace('.pdf','.png'))), "wb") as f:
+                        command = ["pdftoppm","-png", os.path.join(tempdir,j)]
+                        proc = subprocess.Popen(command,
                                             stdin=subprocess.PIPE,
-                                            stdout=subprocess.PIPE,
+                                            stdout=f,
                                             stderr=subprocess.PIPE,
                                             )
                     stdout_value = proc.communicate()[0]
@@ -584,7 +585,7 @@ def compiletikz(texcode,label,sol='',temp = False):
             }
         template = get_template('randomtest/my_tikz_template.tex')
         rendered_tpl = template.render(context).encode('utf-8')
-
+        print(rendered_tpl)
 
         with tempfile.TemporaryDirectory() as tempdir:
             ftex=open(os.path.join(tempdir,'texput.tex'),'wb')
@@ -600,23 +601,24 @@ def compiletikz(texcode,label,sol='',temp = False):
                 process.communicate(rendered_tpl)
             t=os.getcwd()
             os.chdir(tempdir)
-            command = "mtxrun --script pdftrimwhite --offset=10 texput.pdf texput-2.pdf"
+            command = ["pdfcrop", "texput.pdf", "texput-2.pdf"]
+
             proc1 = subprocess.Popen(command,
-                                    shell=True,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     stderr=subprocess.PIPE,
                                     )
             stdout_value = proc1.communicate()[0]
             os.chdir(t)
-            command = "pdftoppm -png %s/%s > %s%s" % (tempdir, 'texput-2.pdf', settings.MEDIA_ROOT+tempfolder, filename + '.png')
-            proc = subprocess.Popen(command,
-                                    shell=True,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-                                    )
-            stdout_value = proc.communicate()[0]
+
+            with open(str(Path(settings.MEDIA_ROOT) / (tempfolder+filename+'.png')), "wb") as f:
+                command = ["pdftoppm","-png", os.path.join(tempdir,"texput-2.pdf")]
+                proc = subprocess.Popen(command,
+                                        stdin=subprocess.PIPE,
+                                        stdout=f,
+                                        stderr=subprocess.PIPE,
+                                        )
+                stdout_value = proc.communicate()[0]
 
 
 def pointsum(user_responses):
@@ -724,14 +726,24 @@ def make_all_pngs(L,include_problem_labels = False,include_answer_choices = True
             )
             stdout_value = proc.communicate()[0]
 
-            command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
-            proc = subprocess.Popen(command,
-                                    shell=True,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE,
-            )
-            stdout_value = proc.communicate()[0]
+            with open(str(Path(tempdir) / (prob.label+'.png')), "wb") as f:
+                command = ["pdftoppm","-png", os.path.join(tempdir,'newtexput.pdf')]
+                proc = subprocess.Popen(command,
+                                        stdin=subprocess.PIPE,
+                                        stdout=f,
+                                        stderr=subprocess.PIPE,
+                                        )
+                stdout_value = proc.communicate()[0]
+
+            
+            #command = "pdftoppm -png %s/%s > %s/%s" % (tempdir, 'newtexput.pdf', tempdir, prob.label+'.png')
+            #proc = subprocess.Popen(command,
+            #                        shell=True,
+            #                        stdin=subprocess.PIPE,
+            #                        stdout=subprocess.PIPE,
+            #                        stderr=subprocess.PIPE,
+            #)
+            #stdout_value = proc.communicate()[0]
         with ZipFile("output.zip",'w') as myzip:
             for prob in L:
                 myzip.write(tempdir+'/'+prob.label+'.png')
