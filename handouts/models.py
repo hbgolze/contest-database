@@ -6,21 +6,21 @@ from randomtest.models import Solution,Problem
 from django.utils import timezone
 
 # Create your models here.
-class ProblemSet(models.Model):#could be a type of Section???
+class HProblemSet(models.Model):#could be a type of Section???
     name=models.CharField(max_length=150)
 
-class TextBlock(models.Model):
+class HTextBlock(models.Model):
     text_code = models.TextField(blank=True)
     text_display = models.TextField(blank=True)
 
-class Proof(models.Model):
+class HProof(models.Model):
     prefix = models.CharField(max_length=20)#Theorem, Proposition, Lemma, Corollary, Example, Exercise
     proof_code = models.TextField(blank=True)
     proof_display = models.TextField(blank=True)
     isSolution = models.BooleanField(default=0)
     solution = models.ForeignKey(Solution,blank=True,null=True, related_name="handout_proof",on_delete=models.CASCADE)
 
-class Theorem(models.Model):
+class HTheorem(models.Model):
     name=models.CharField(max_length=150, default="")
     prefix = models.CharField(max_length=20)#Theorem, Proposition, Lemma, Corollary, Example, Exercise
     theorem_number = models.IntegerField()

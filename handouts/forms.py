@@ -1,6 +1,6 @@
 from django import forms
 #from django.contrib.auth.models import User
-from handouts.models import Section,SubSection,TextBlock,Proof,Theorem,Handout
+from handouts.models import Section,SubSection,HTextBlock,HProof,HTheorem,Handout
 from randomtest.utils import newtexcode
 
 
@@ -42,7 +42,7 @@ class SubsectionForm(forms.ModelForm):
             }
 class TextBlockForm(forms.ModelForm):
     class Meta:
-        model = TextBlock
+        model = HTextBlock
         fields = ('text_code',)
         widgets = {
             'text_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
@@ -58,7 +58,7 @@ class TextBlockForm(forms.ModelForm):
 
 class TheoremForm(forms.ModelForm):
     class Meta:
-        model = Theorem
+        model = HTheorem
         fields = ('prefix','name','theorem_code',)
         widgets = {
             'theorem_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),
@@ -77,7 +77,7 @@ class TheoremForm(forms.ModelForm):
 
 class ProofForm(forms.ModelForm):
     class Meta:
-        model = Proof
+        model = HProof
         fields = ('prefix','proof_code',)
         widgets = {
             'proof_code': forms.Textarea(attrs={'style':'min-width: 100%', 'rows': 15,'id' : 'codetext'}),

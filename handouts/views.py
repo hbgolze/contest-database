@@ -14,7 +14,7 @@ from django.views.generic import UpdateView,DetailView,ListView,CreateView
 #import os
 
 from .forms import SectionForm,SubsectionForm,TextBlockForm,TheoremForm,ProofForm,HandoutForm,ImageForm
-from .models import Handout,Section,DocumentElement,SubSection,TextBlock,Theorem,Proof#,ImageModel
+from .models import Handout,Section,DocumentElement,SubSection,HTextBlock,HTheorem,HProof#,ImageModel
 from randomtest.utils import newtexcode,compileasy
 from randomtest.models import get_or_create_up,SortableProblem,NewTest,Type,Tag,Problem,NewTag
 
@@ -51,7 +51,7 @@ def handouteditview(request,pk):
             h.save()
         if "addtextblock" in form:
             textbl = form.get("codetextblock","")
-            tb = TextBlock(text_code = textbl, text_display="")
+            tb = HTextBlock(text_code = textbl, text_display="")
             tb.save()
             tb.text_display = newtexcode(textbl, 'textblock_'+str(tb.pk), "")
             tb.save()
@@ -65,7 +65,7 @@ def handouteditview(request,pk):
             thmbl = form.get("codetheoremblock","")
             prefix = form.get("theorem-prefix","")
             thmname = form.get("theorem-name","")
-            th = Theorem(theorem_code = thmbl, theorem_display="",prefix=prefix,name=thmname,theorem_number=h.top_theorem_number+1)
+            th = HTheorem(theorem_code = thmbl, theorem_display="",prefix=prefix,name=thmname,theorem_number=h.top_theorem_number+1)
             th.save()
             th.theorem_display = newtexcode(thmbl, 'theoremblock_'+str(th.pk), "")
             th.save()
@@ -216,7 +216,7 @@ class SubsectionUpdateView(UpdateView):
                       
 
 class TextBlockUpdateView(UpdateView):
-    model = TextBlock
+    model = HTextBlock
     form_class = TextBlockForm
     template_name = 'handouts/textblock_edit_form.html'
 
@@ -227,20 +227,20 @@ class TextBlockUpdateView(UpdateView):
 
     def form_valid(self, form):
         form.save()
-        textblock = TextBlock.objects.get(id=self.textblock_id)
+        textblock = HTextBlock.objects.get(id=self.textblock_id)
         textblock.text_display = newtexcode(textblock.text_code, 'textblock_'+str(textblock.pk), "")
         compileasy(textblock.text_code,'textblock_'+str(textblock.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
-        return get_object_or_404(TextBlock, pk=self.textblock_id)
+        return get_object_or_404(HTextBlock, pk=self.textblock_id)
     def get_context_data(self, *args, **kwargs):
         context = super(TextBlockUpdateView, self).get_context_data(*args, **kwargs)
         context['handout'] = self.handout_id
         return context
 
 class TheoremUpdateView(UpdateView):
-    model = Theorem
+    model = HTheorem
     form_class = TheoremForm
     template_name = 'handouts/theorem_edit_form.html'
 
@@ -251,13 +251,13 @@ class TheoremUpdateView(UpdateView):
 
     def form_valid(self, form):
         form.save()
-        theorem = Theorem.objects.get(id=self.theorem_id)
+        theorem = HTheorem.objects.get(id=self.theorem_id)
         theorem.theorem_display = newtexcode(theorem.theorem_code, 'theoremblock_'+str(theorem.pk), "")
         compileasy(theorem.theorem_code,'theoremblock_'+str(theorem.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
-        return get_object_or_404(Theorem, pk=self.theorem_id)
+        return get_object_or_404(HTheorem, pk=self.theorem_id)
     def get_context_data(self, *args, **kwargs):
         context = super(TheoremUpdateView, self).get_context_data(*args, **kwargs)
         context['handout'] = self.handout_id
@@ -266,7 +266,7 @@ class TheoremUpdateView(UpdateView):
                       
 
 class ProofUpdateView(UpdateView):
-    model = Proof
+    model = HProof
     form_class = ProofForm
     template_name = 'handouts/proof_edit_form.html'
 
@@ -277,13 +277,13 @@ class ProofUpdateView(UpdateView):
 
     def form_valid(self, form):
         form.save()
-        proof = Proof.objects.get(id=self.proof_id)
+        proof = HProof.objects.get(id=self.proof_id)
         proof.proof_display = newtexcode(proof.proof_code, 'proofblock_'+str(proof.pk), "")
         compileasy(proof.proof_code,'proofblock_'+str(proof.pk))
         return redirect('/handouts/edit/'+str(self.handout_id)+'/')
 
     def get_object(self, queryset=None):
-        return get_object_or_404(Proof, pk=self.proof_id)
+        return get_object_or_404(HProof, pk=self.proof_id)
     def get_context_data(self, *args, **kwargs):
         context = super(ProofUpdateView, self).get_context_data(*args, **kwargs)
         context['handout'] = self.handout_id
