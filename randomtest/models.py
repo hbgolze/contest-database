@@ -672,7 +672,7 @@ class CollaboratorRequest(models.Model):
 #        unique_together = (('to_user', 'from_user'),) 
 
     def __str__(self): 
-        return '{from_user} wants to collaborate with {to_user}'.format({'from_user': str(self.from_user), 'to_user': str(self.to_user)}) 
+        return str(self.from_user) + ' wants to collaborate with ' + str(self.to_user)
 
 #    def accept(self): 
 #        Friendship.objects.befriend(self.from_user, self.to_user) 
