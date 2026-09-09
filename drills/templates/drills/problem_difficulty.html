@@ -66,8 +66,9 @@ function loadProblem(problemId) {
         type: "GET",
         success: function(response) {
             $('#problemsList').html(response['problem_html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemsList"]);
-            $('#problemsModal').modal('show');
+            MathJax.typesetPromise([document.getElementById("problemsList")]).then(() => {
+                $('#problemsModal').modal('show');
+            });
         },
         error: function(xhr) {
             alert("Error loading problem. Please try again.");

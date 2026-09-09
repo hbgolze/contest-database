@@ -24,13 +24,13 @@
     <title>{% block title %}Random Contest{% endblock %}</title>
 <link rel="shortcut icon" type="image/png" href="{% static 'randomtest/favicon.ico' %}"/>
     
-<script type="text/x-mathjax-config">
-  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+<script>
+  //MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 /*  MathJax.Hub.Config({TeX: {Macros: {cis: "\\text{cis}\\,", vb: ["{\\left\\langle#1\\right\\rangle}",1],pop: ["{\\text{pop}\\,(#1,#2)}",2,""], overarc : ["{\\stackrel{\\frown}{#1}}",1], textregistered : ["\\enclose{circle}{\\text{R}}"],  pounds: '{\\it\\unicode{xA3}}'},extensions: ["enclose.js","cancel.js"]}});
   MathJax.Hub.Config({config: ["MMLorHTML.js"],
   jax: ["input/TeX","input/MathML","output/HTML-CSS","output/NativeMML"],
   extensions: ["tex2jax.js","mml2jax.js","MathMenu.js","MathZoom.js"]});*/
-  {% if nbar == 'mocktests' %}
+  {% if nbar == 'mocktests2' %}
 MathJax.Hub.Config({
       config: ["MMLorHTML.js"],
       jax: ["input/TeX","input/MathML","output/HTML-CSS"],
@@ -41,15 +41,39 @@ MathJax.Hub.Config({
       }
 });
   {% else %}
-MathJax.Hub.Config({
+/*MathJax.Hub.Config({
       jax: ["input/TeX","input/MathML","output/CommonHTML"],
       extensions: ["tex2jax.js","MathMenu.js","MathZoom.js"],
       TeX: {
 	  Macros: {cis: "\\text{cis}\\,", vb: ["{\\left\\langle#1\\right\\rangle}",1],pop: ["{\\text{pop}\\,(#1,#2)}",2,""], overarc : ["{\\stackrel{\\frown}{#1}}",1], textregistered : ["\\enclose{circle}{\\text{R}}"],  pounds: '{\\it\\unicode{xA3}}'},
 	  extensions: ["AMSmath.js","AMSsymbols.js","noErrors.js","noUndefined.js", "enclose.js","cancel.js"]
       }
-});
+});*/
 
+MathJax = {
+  svg: {
+    fontCache: 'global'
+  },
+  tex: {
+    inlineMath: {'[+]': [['$', '$']]},
+    macros: {
+      cis: "\\text{cis}\\,",
+      vb: ["{\\left\\langle#1\\right\\rangle}",1],
+      pop: ["{\\text{pop}\\,(#1,#2)}",2,""],
+      overarc: ["{\\stackrel{\\frown}{#1}}",1],
+      textregistered: ["\\enclose{circle}{\\text{R}}"],
+      pounds: '{\\it\\unicode{xA3}}'
+    },
+    packages: ['base', 'ams', 'noerrors', 'noundefined', 'enclose', 'cancel']
+  },
+  options: {
+    ignoreHtmlClass: 'tex2jax_ignore',
+    processHtmlClass: 'tex2jax_process'
+  },
+  loader: {
+    load: ['[tex]/noerrors', '[tex]/enclose', '[tex]/cancel']
+  }
+};
   {% endif %}
 </script>
 
@@ -58,7 +82,10 @@ MathJax.Hub.Config({
   src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_CHTML">
 </script>-->
 <!--<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS-MML_CHTML"></script>-->
-<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=default"></script>
+<!--previous usage <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=default"></script>-->
+<!--<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>-->
+<script defer src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-svg.js"></script>
+<!--<script src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js" id="MathJax-script" async></script>-->
 <!--<script type="text/javascript" async
   src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_CHTML">
 </script>-->
@@ -104,7 +131,10 @@ MathJax.Hub.Config({
 	    <a class="dropdown-item" href="{% url 'changetimezoneview' %}">Change Time Zone</a>
             <a class="dropdown-item" href="{% url 'change_password' %}">Change Password</a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="{% url 'logout' %}">Logout</a>
+	    <form action="{% url 'logout' %}" method="post" class="m-0">
+              {% csrf_token %}
+              <button type="submit" class="dropdown-item" style="cursor:pointer;">Logout</button>
+	    </form>
           </div>
         </li>
 	{% else %}

@@ -429,9 +429,10 @@ $(document).on('click',".view-sol-link",function(e) {
         url: '/search/ajax/load_sol/'+prob_id + '/',
         dataType: 'json',
         success: function(result) {
-           $("#sol-placeholder").html(result['modal-html']);
-           MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sol-placeholder"]);
-           $("#sol-placeholder").modal("show");
+          $("#sol-placeholder").html(result['modal-html']);
+          MathJax.typesetPromise([document.getElementById("sol-placeholder")]).then(() => {
+            $("#sol-placeholder").modal("show");     
+          });
         }
     });
 });

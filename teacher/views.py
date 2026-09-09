@@ -2489,8 +2489,8 @@ def editslideview(request,pk,upk,spk,sspk):
             th.save()
             th.theorem_display = newtexcode(thmbl, 'theoremblock_'+str(th.pk), "")
             th.save()
-            compileasy(th.text_code,'theoremblock_' + str(th.pk))
-            compiletikz(th.text_code,'theoremblock_' + str(th.pk))
+            compileasy(th.theorem_code,'theoremblock_' + str(th.pk))
+            compiletikz(th.theorem_code,'theoremblock_' + str(th.pk))
             slide.top_order_number = slide.top_order_number +1
             slide.save()
             slide.increment_version()

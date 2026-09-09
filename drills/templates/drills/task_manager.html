@@ -156,7 +156,7 @@ function loadEditTask(id) {
         success: function(response) {
             $('#edit-task-group').html(response['html_code']);
             $('#editTaskModal').modal('show');
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-task-group"]);
+            MathJax.typesetPromise([document.getElementById("edit-task-group")]).then(() => {});
         },
         error: function(xhr) {
             alert("Error loading task. Please try again.");
@@ -183,7 +183,7 @@ $('#editTaskForm').submit(function(event) {
             $(`#taskRow${id} td:nth-child(2)`).text(description);
             $(`#taskRow${id} td:nth-child(3)`).text(topic);
             $('#editTaskModal').modal('hide');
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"taskRow"+id]);
+            MathJax.typesetPromise([document.getElementById("taskRow"+id)]).then(() => {});
         },
         error: function(xhr) {
             alert("Error updating task. Please try again.");
@@ -197,8 +197,9 @@ function loadProblems(taskId) {
         type: "GET",
         success: function(response) {
             $('#problemsList').html(response['problem_html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemsList"]);
-            $('#problemsModal').modal('show');
+            MathJax.typesetPromise([document.getElementById("problemsList")]).then(() => {
+                $('#problemsModal').modal('show');
+            });
         },
         error: function(xhr) {
             alert("Error loading problems. Please try again.");

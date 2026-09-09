@@ -75,8 +75,9 @@ function loadEditAnswer(problemId) {
         type: "GET",
         success: function(response) {
             $('#editAnswer-div').html(response['html_code']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"editAnswer-div"]);
-            $('#editAnswerModal').modal('show');
+            MathJax.typesetPromise([document.getElementById("editAnswer-div")]).then(() => {
+                $('#editAnswerModal').modal('show');
+            });
         },
         error: function(xhr) {
             alert("Error loading Answer. Please try again.");
@@ -98,8 +99,9 @@ $('#editAnswerForm').submit(function(event) {
         },
         success: function(response) {
             $('#drill-problem_'+problemId).html(response['html_code']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"drill-problem_"+problemId]);
-            $('#editAnswerModal').modal('hide');
+            MathJax.typesetPromise([document.getElementById("drill-problem_"+problemId)]).then(() => {
+                $('#editAnswerModal').modal('hide');
+            });
         },
         error: function(xhr) {
             alert("Error updating answer. Please try again.");

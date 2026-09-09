@@ -77,8 +77,9 @@ $(".solution-link").on('click',function(event) {
 
 
     $("#solution-placeholder").load(target, function() {
-         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-         $("#solution-placeholder").modal("show");
+		MathJax.typesetPromise([document.getElementById("solution-placeholder")]).then(() => {
+			$("#solution-placeholder").modal("show");		
+		});
     });
 });
 </script>

@@ -119,7 +119,7 @@ $("#add-problems-form").on('submit',function(event) {
             for (i=0; i < probs.length; i++) {
                 $("#probList").append(probs[i]);
             }
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"probList"]);
+            MathJax.typesetPromise([document.getElementById("probList")]).then(() => {});
         }
     });
     return false;

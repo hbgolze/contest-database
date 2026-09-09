@@ -569,8 +569,10 @@ $(document).on('click',".view-sol-link",function(e) {
         dataType: 'json',
         success: function(result) {
            $("#sol-placeholder").html(result['modal-html']);
-           MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sol-placeholder"]);
-           $("#sol-placeholder").modal("show");
+           MathJax.typesetPromise([document.getElementById("sol-placeholder")]).then(() => {
+            $("#sol-placeholder").modal("show");
+          });
+           
         }
     });
 });
@@ -598,8 +600,9 @@ $(".add-problems-form").on('submit',function(event) {
             for (i=0; i < probs.length; i++) {
                 $("#problem_object_list").append(probs[i]);
             }
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problem_object_list"]);
-            if (result['prob_list'].length > 0) {$("#msg-no-problems").hide();}
+            MathJax.typesetPromise([document.getElementById("problem_object_list")]).then(() => {
+              if (result['prob_list'].length > 0) {$("#msg-no-problems").hide();}
+            });
         }
     });
     return false;

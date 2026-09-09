@@ -162,10 +162,12 @@ $('#slides').on('submit',function(event) {
             $("#unsaved-message").fadeOut();
             $("#save-message").show();
             $("#slideList").html(result['slidelist']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"#slideList"]);
-            setTimeout(function() {
+            MathJax.typesetPromise([document.getElementById("slideList")]).then(() => {
+              setTimeout(function() {
                 $("#save-message").fadeOut();
-            },5000);
+              },5000);
+            });
+            
         }
     });
     return false;

@@ -97,8 +97,9 @@ $(document).on('click',".edit-mc-answer",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#edit-answer-modal").html(result['modal-html']);
-MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
-            $("#edit-answer-modal").modal("show");
+            MathJax.typesetPromise([document.getElementById("edit-answer-modal")]).then(() => {
+                $("#edit-answer-modal").modal("show");    
+            });
         }
     });
     return false;
@@ -114,8 +115,9 @@ $(document).on('click',".edit-sa-answer",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#edit-answer-modal").html(result['modal-html']);
-MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-answer-modal"]);
-            $("#edit-answer-modal").modal("show");
+            MathJax.typesetPromise([document.getElementById("edit-answer-modal")]).then(() => {
+                $("#edit-answer-modal").modal("show");
+            });
         }
     });
     return false;
@@ -152,8 +154,9 @@ $(document).on('click',".edit-mc-latex",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#edit-latex-modal").html(result['modal-html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
-            $("#edit-latex-modal").modal("show");
+            MathJax.typesetPromise([document.getElementById("edit-latex-modal")]).then(() => {
+                $("#edit-latex-modal").modal("show");
+            });
         }
     });
     return false;
@@ -170,8 +173,9 @@ $(document).on('click',".edit-latex",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#edit-latex-modal").html(result['modal-html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"edit-latex-modal"]);
-            $("#edit-latex-modal").modal("show");
+            MathJax.typesetPromise([document.getElementById("edit-latex-modal")]).then(() => {
+                $("#edit-latex-modal").modal("show");
+            });
         }
     });
     return false;
@@ -187,10 +191,10 @@ $(document).on('submit',"#edit_latex_form",function(event) {
         success: function(result) {
             if (result['qt'] == 'mc') {
                 $("#mc_prob_text_"+result['pk']).html(result['prob-text']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"mc_prob_text_"+result['pk']]);
+                MathJax.typesetPromise([document.getElementById("mc_prob_text_"+result['pk'])]).then(() => {});
             } else if (result['qt'] == 'sa') {
                 $("#sa_prob_text_"+result['pk']).html(result['prob-text']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"sa_prob_text_"+result['pk']]);
+                MathJax.typesetPromise([document.getElementById("sa_prob_text_"+result['pk'])]).then(() => {});
             }
                $("#edit-latex-modal").hide();
                $("[data-dismiss=modal]").trigger({ type: "click" });
@@ -207,8 +211,9 @@ $(".solution-link").click(function(event) {
     var target = "/problemeditor/ajax/load_sol/"+prob_pk+"/";
 
     $("#solution-placeholder").load(target, function() {
-         MathJax.Hub.Queue(["Typeset",MathJax.Hub,"solution-placeholder"]);
-         $("#solution-placeholder").modal("show");
+        MathJax.typesetPromise([document.getElementById("solution-placeholder")]).then(() => {
+            $("#solution-placeholder").modal("show");
+        });
     });
 });
 
@@ -222,8 +227,9 @@ $(document).on('click',".new-sol",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#new-solution-placeholder").html(result['modal-html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"new-solution-placeholder"]);
-            $("#new-solution-placeholder").modal("show");
+            MathJax.typesetPromise([document.getElementById("new-solution-placeholder")]).then(() => {
+                $("#new-solution-placeholder").modal("show");
+            });
         }
     });
     return false;
@@ -312,9 +318,11 @@ $(document).on('click',".save-sol-link",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#soltext_"+sol_id).html(result['sol_text']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"soltext_"+sol_id]);
-              $("#editsolplaceholder_"+sol_id).empty()
-            $("#soltext_"+sol_id).show();
+            MathJax.typesetPromise([document.getElementById("soltext_"+sol_id)]).then(() => {
+                $("#editsolplaceholder_"+sol_id).empty()
+                $("#soltext_"+sol_id).show();  
+            });
+              
         }
     });
     return false;
@@ -328,7 +336,7 @@ $(document).on('click',".edit-primitive-preview-link",function(event) {
     $("#preview_soltext_"+sol_id).html($("#editsolplaceholder_"+sol_id+" #codetext[name=solution_text]").val());
     $("#soltext_"+sol_id).hide();
     $("#preview_soltext_"+sol_id).show();
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview_soltext_"+sol_id]);
+    MathJax.typesetPromise([document.getElementById("preview_soltext_"+sol_id)]).then(() => {});
 });
 
 $(document).on('click',".cancel-edit-sol-link",function(event) {
@@ -351,8 +359,9 @@ $(document).on('click',".change-qt-link",function(event) {
         dataType: 'json',
         success: function(result) {
             $("#change-qt-modal").html(result['modal-html']);
-            MathJax.Hub.Queue(["Typeset",MathJax.Hub,"change-qt-modal"]);
-            $("#change-qt-modal").modal("show");
+            MathJax.typesetPromise([document.getElementById("change-qt-modal")]).then(() => {
+                $("#change-qt-modal").modal("show");
+            });
         }
     });
     return false;
@@ -385,9 +394,10 @@ $(document).on('submit',"#cqt-form",function(event) {
         success: function(result) {
                $("#problemtext_"+prob_pk).html(result['problem-div']);
                $("#question-type_"+prob_pk).html(result['qt']);
-               MathJax.Hub.Queue(["Typeset",MathJax.Hub,"problemtext_"+prob_pk]);
-               $("#change-qt-modal").hide();
-               $("[data-dismiss=modal]").trigger({ type: "click" });
+               MathJax.typesetPromise([document.getElementById("problemtext_"+prob_pk)]).then(() => {
+                    $("#change-qt-modal").hide();
+                    $("[data-dismiss=modal]").trigger({ type: "click" });
+                });
         }
     });
 
@@ -550,7 +560,7 @@ $(document).on('click',".delete-comment-link",function(event) {
 $(document).on("click","#preview-latex-button", function(e) {
     $("#preview-latex").html($("#codetext").val());
     $("#preview-latex").show();
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,"preview-latex"]);
+    MathJax.typesetPromise([document.getElementById("preview-latex")]).then(() => {});
 });
 </script>
 

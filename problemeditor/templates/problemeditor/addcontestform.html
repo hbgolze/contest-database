@@ -157,7 +157,8 @@ $(document).on('click',"#primitive-preview-link", function(e) {
     }
     $(this).before("<div class='preview-latex mt-1 mb-3'>"+p_text+"</div>");
   });
-    MathJax.Hub.Queue(["Typeset",MathJax.Hub,".preview-latex"]);
+    MathJax.typesetPromise([".preview-latex"]).then(() => {}) 
+    //MathJax.Hub.Queue(["Typeset",MathJax.Hub,]);
 });
 
 </script>
