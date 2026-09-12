@@ -624,7 +624,7 @@ $(document).on('submit',"#form-add-sourced-problem",function(event) {
                 $("#add-problem").hide();
                 $("[data-dismiss=modal]").trigger({ type: "click" });
                 $("#problemList").append(result['list-item']);
-                MathJax.typesetPromise([document.getElementById("#problem_"+result['pk'])]).then(() => {});
+                MathJax.typesetPromise([document.getElementById("problem_"+result['pk'])]).then(() => {});
 
 //            $("#msg-no-problems").hide();
             }

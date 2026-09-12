@@ -399,6 +399,10 @@ def load_qt_addproblemform(request,**kwargs):
 @user_passes_test(lambda u: mod_permission(u))
 def add_sourced_problem(request,**kwargs):
 #depends on book, person, or contest....
+    userprofile = request.user.userprofile#
+    owned_groups = userprofile.problem_groups.all()#
+    editable_groups = userprofile.editable_problem_groups.all()#
+    probgroups = list(chain(owned_groups,editable_groups))# 
     userprofile = request.user.userprofile
     is_chapter = 0
     is_contest = 0
@@ -462,7 +466,7 @@ def add_sourced_problem(request,**kwargs):
                     forcount = source.problem_set.count() + 1
                 prob.save()
 #problem_number
-                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request,'probgroups':probgroups}),'pk':prob.pk})#####only works for chapter
         elif qt == "short answer":
             pform = NewProblemSAForm(request.POST,st=st)
             if pform.is_valid():
@@ -503,7 +507,7 @@ def add_sourced_problem(request,**kwargs):
                     forcount = source.problem_set.count() + 1
                 prob.save()
 #problem_number
-                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request,'probgroups':probgroups}),'pk':prob.pk})#####only works for chapter
         elif qt == "proof":
             pform = NewProblemPFForm(request.POST,st=st)
             if pform.is_valid():
@@ -544,7 +548,7 @@ def add_sourced_problem(request,**kwargs):
                     forcount = source.problem_set.count() + 1
                 prob.save()
 #problem_number
-                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request}),'pk':prob.pk})#####only works for chapter
+                return JsonResponse({'list-item':render_to_string('problemeditor/problem-snippets/paginated-list-item.html',{'prob':prob,'forcount':forcount,'tags':tags,'request':request,'probgroups':probgroups}),'pk':prob.pk})#####only works for chapter
 
 @user_passes_test(lambda u: mod_permission(u))
 def personview(request,person_pk):
